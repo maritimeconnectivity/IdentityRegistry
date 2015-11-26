@@ -30,18 +30,13 @@ import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.StringUtils;
 
 /**
- * By default, form login will answer a successful authentication request with a
- * 301 MOVED PERMANENTLY status code; this makes sense in the context of an
- * actual login form which needs to redirect after login. For a RESTful web
- * service however, the desired response for a successful authentication should
- * be 200 OK.
+ * By default, form login will answer a successful authentication request with a 301 MOVED PERMANENTLY status code; this makes sense
+ * in the context of an actual login form which needs to redirect after login. For a RESTful web service however, the desired
+ * response for a successful authentication should be 200 OK.
  *
- * This is done by injecting a custom authentication success handler in the form
- * login filter, to replace the default one. The new handler implements the
- * exact same login as the default
- * org.springframework.security.web.authentication
- * .SavedRequestAwareAuthenticationSuccessHandler with one notable difference –
- * the redirect logic is removed
+ * This is done by injecting a custom authentication success handler in the form login filter, to replace the default one. The new
+ * handler implements the exact same login as the default org.springframework.security.web.authentication
+ * .SavedRequestAwareAuthenticationSuccessHandler with one notable difference – the redirect logic is removed
  *
  */
 public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
@@ -56,9 +51,8 @@ public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticat
     }
 
     @Override
-    public void onAuthenticationSuccess(HttpServletRequest request,
-            							HttpServletResponse response,
-            							Authentication authentication) throws ServletException, IOException {
+    public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
+            throws ServletException, IOException {
         SavedRequest savedRequest = requestCache.getRequest(request, response);
 
         if (savedRequest == null) {
@@ -66,7 +60,8 @@ public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticat
             return;
         }
         String targetUrlParam = getTargetUrlParameter();
-        if (isAlwaysUseDefaultTargetUrl() || (targetUrlParam != null && StringUtils.hasText(request.getParameter(targetUrlParam)))) {
+        if (isAlwaysUseDefaultTargetUrl()
+                || (targetUrlParam != null && StringUtils.hasText(request.getParameter(targetUrlParam)))) {
             requestCache.removeRequest(request, response);
             clearAuthenticationAttributes(request);
             return;
@@ -75,9 +70,9 @@ public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticat
     }
 
     /**
-     *
-     * @param cache - Request cache
-     */
+    *
+    * @param cache - Request cache
+    */
     public void setRequestCache(RequestCache cache) {
         this.requestCache = cache;
     }

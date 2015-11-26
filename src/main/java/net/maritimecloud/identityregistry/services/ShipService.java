@@ -25,7 +25,7 @@ public interface ShipService {
 
     void deleteShip(Long id);
 
-	Iterable<Ship> listAllShips();
-	
-	List<Ship> listOrgShips(int id);
+    Iterable<Ship> listAllShips();
+
+    List<Ship> listOrgShips(int id);
 }

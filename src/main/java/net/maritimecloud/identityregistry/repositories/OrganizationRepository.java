@@ -19,6 +19,7 @@ import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.Organization;
 
 public interface OrganizationRepository extends CrudRepository<Organization, Long> {
-	List<Organization> findByName(String lastName);
-	Organization findByShortName(String shortname);
+    List<Organization> findByName(String lastName);
+
+    Organization findByShortName(String shortname);
 }

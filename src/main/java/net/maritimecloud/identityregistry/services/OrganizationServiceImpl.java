@@ -50,8 +50,8 @@ public class OrganizationServiceImpl implements OrganizationService {
     }
 
     @Override
-	public Organization getOrganizationByShortName(String shortname) {
-    	return OrganizationRepository.findByShortName(shortname);
+    public Organization getOrganizationByShortName(String shortname) {
+        return OrganizationRepository.findByShortName(shortname);
     }
 
 }

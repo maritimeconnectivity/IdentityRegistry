@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 public class ShipController {
     private ShipService shipService;
@@ -44,8 +43,10 @@ public class ShipController {
     public void setShipService(ShipService organizationService) {
         this.shipService = organizationService;
     }
+
     /**
-     * Creates a new Ship 
+     * Creates a new Ship
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -54,16 +55,13 @@ public class ShipController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> createShip(HttpServletRequest request, @RequestBody Ship input) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	Ship newShip = this.shipService.saveShip(input);
-    	return new ResponseEntity<Ship>(newShip, HttpStatus.OK);
+        Ship newShip = this.shipService.saveShip(input);
+        return new ResponseEntity<Ship>(newShip, HttpStatus.OK);
     }
 
     /**
-     * Returns info about the ship identified by the given ID 
+     * Returns info about the ship identified by the given ID
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -72,11 +70,7 @@ public class ShipController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> getShip(HttpServletRequest request, @PathVariable Long orgId) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	Ship ship = this.shipService.getShipById(orgId);
-    	return new ResponseEntity<Ship>(ship, HttpStatus.OK);
+        Ship ship = this.shipService.getShipById(orgId);
+        return new ResponseEntity<Ship>(ship, HttpStatus.OK);
     }
 }

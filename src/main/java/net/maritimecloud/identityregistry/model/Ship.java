@@ -33,92 +33,95 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name="ships")
+@Table(name = "ships")
 public class Ship extends TimestampModel {
-	
-	public Ship() {}
 
-	@Column(name = "id_organization")
+    public Ship() {
+    }
+
+    @Column(name = "id_organization")
     private int idOrganization;
-	
-	@Column(name = "ship_org_id")
+
+    @Column(name = "ship_org_id")
     private String shipOrgId;
 
-	@Column(name = "name")
+    @Column(name = "name")
     private String name;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="ship")
-	private List<ShipAttribute> attributes;
-	
-	@OneToMany(cascade=CascadeType.ALL, mappedBy="ship")
-	private List<Certificate> certificates;
 
-	/*@ManyToOne
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ship")
+    private List<ShipAttribute> attributes;
+
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ship")
+    private List<Certificate> certificates;
+
+    /*
+    @ManyToOne
     @JoinColumn(name="id_organization")
-    private Organization organization;*/ 
+    private Organization organization;*/
 
-	@PostPersist
-	@PostUpdate
-	void setChildIds() {
-		if (this.attributes != null) {
-			for(ShipAttribute attr : this.attributes) {
-				attr.setShip(this);
-			}
-		}
-		if (this.certificates != null) {
-			for(Certificate cert : this.certificates) {
-				cert.setShip(this);
-			}
-		}
-	}
-	/******************************/
+    @PostPersist
+    @PostUpdate
+    void setChildIds() {
+        if (this.attributes != null) {
+            for (ShipAttribute attr : this.attributes) {
+                attr.setShip(this);
+            }
+        }
+        if (this.certificates != null) {
+            for (Certificate cert : this.certificates) {
+                cert.setShip(this);
+            }
+        }
+    }
+    /******************************/
     /** Getters and setters      **/
     /******************************/
     public int getIdOrganization() {
-		return idOrganization;
-	}
+        return idOrganization;
+    }
 
-	public void setIdOrganization(int idOrganization) {
-		this.idOrganization = idOrganization;
-	}
+    public void setIdOrganization(int idOrganization) {
+        this.idOrganization = idOrganization;
+    }
 
-	public String getShipOrgId() {
-		return shipOrgId;
-	}
+    public String getShipOrgId() {
+        return shipOrgId;
+    }
 
-	public void setShipOrgId(String shipOrgId) {
-		this.shipOrgId = shipOrgId;
-	}
+    public void setShipOrgId(String shipOrgId) {
+        this.shipOrgId = shipOrgId;
+    }
 
-	public String getName() {
-		return name;
-	}
+    public String getName() {
+        return name;
+    }
 
-	public void setName(String name) {
-		this.name = name;
-	}
+    public void setName(String name) {
+        this.name = name;
+    }
 
     public List<ShipAttribute> getAttributes() {
-		return attributes;
-	}
+        return attributes;
+    }
 
-	public void setAttributes(List<ShipAttribute> attributes) {
-		this.attributes = attributes;
-	}
+    public void setAttributes(List<ShipAttribute> attributes) {
+        this.attributes = attributes;
+    }
 
-	public List<Certificate> getCertificates() {
-		return certificates;
-	}
+    public List<Certificate> getCertificates() {
+        return certificates;
+    }
 
-	public void setCertificate(List<Certificate> certificates) {
-		this.certificates = certificates;
-	}
+    public void setCertificate(List<Certificate> certificates) {
+        this.certificates = certificates;
+    }
 
-	/*public Organization getOrganization() {
-		return organization;
-	}
+    /*
+    public Organization getOrganization() {
+        return organization;
+    }
 
-	public void setOrganization(Organization organization) {
-		this.organization = organization;
-	}*/
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }*/
 }

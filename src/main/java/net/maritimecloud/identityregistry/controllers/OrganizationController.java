@@ -35,7 +35,6 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
-
 @RestController
 public class OrganizationController {
     private OrganizationService organizationService;
@@ -45,13 +44,15 @@ public class OrganizationController {
     public void setOrganizationService(OrganizationService organizationService) {
         this.organizationService = organizationService;
     }
-	
+
     @Autowired
     public void setShipService(ShipService shipService) {
         this.shipService = shipService;
     }
+
     /**
-     * Receives an application for a new organization and root-user 
+     * Receives an application for a new organization and root-user
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -60,21 +61,18 @@ public class OrganizationController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	// Create password to be returned
-    	String newPassword = PasswordUtil.generatePassword();
-    	String hashedPassword = PasswordUtil.hashPassword(newPassword);
-    	input.setPassword(newPassword);
-    	input.setPasswordHash(hashedPassword);
-    	Organization newOrg = this.organizationService.saveOrganization(input);
-    	return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
+        // Create password to be returned
+        String newPassword = PasswordUtil.generatePassword();
+        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+        input.setPassword(newPassword);
+        input.setPasswordHash(hashedPassword);
+        Organization newOrg = this.organizationService.saveOrganization(input);
+        return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
 
     /**
-     * Returns info about the organization identified by the given ID 
+     * Returns info about the organization identified by the given ID
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -83,38 +81,33 @@ public class OrganizationController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable Long orgId) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	Organization org = this.organizationService.getOrganizationById(orgId);
-    	return new ResponseEntity<Organization>(org, HttpStatus.OK);
+        Organization org = this.organizationService.getOrganizationById(orgId);
+        return new ResponseEntity<Organization>(org, HttpStatus.OK);
     }
-    
+
     /**
-     * Updates info about the organization identified by the given ID 
+     * Updates info about the organization identified by the given ID
+     * 
      * @return a http reply
      */
     @RequestMapping(
             value = "/api/org/{orgId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable Long orgId, @RequestBody Organization input) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
+    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable Long orgId,
+            @RequestBody Organization input) {
+        Organization org = this.organizationService.getOrganizationById(orgId);
+        if (org != null && org.getId() == orgId) {
+            input.copyTo(org);
+            this.organizationService.saveOrganization(org);
+            return new ResponseEntity<>(HttpStatus.OK);
         }
-        return "{\"status\":\"session found!\"}";*/
-    	Organization org = this.organizationService.getOrganizationById(orgId);
-    	if (org != null && org.getId() == orgId) {
-    		input.copyTo(org);
-    		this.organizationService.saveOrganization(org);
-        	return new ResponseEntity<>(HttpStatus.OK);
-    	}
-    	return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     /**
-     * Returns a list of ships owned by the organization identified by the given ID 
+     * Returns a list of ships owned by the organization identified by the given ID
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -123,16 +116,13 @@ public class OrganizationController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> getOrganizationShips(HttpServletRequest request, @PathVariable Long orgId) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	List<Ship> ships = this.shipService.listOrgShips(orgId.intValue());
-    	return new ResponseEntity<List<Ship> >(ships, HttpStatus.OK);
+        List<Ship> ships = this.shipService.listOrgShips(orgId.intValue());
+        return new ResponseEntity<List<Ship>>(ships, HttpStatus.OK);
     }
 
     /**
-     * Returns new password for the organization identified by the given ID 
+     * Returns new password for the organization identified by the given ID
+     * 
      * @return a reply...
      */
     @RequestMapping(
@@ -141,35 +131,12 @@ public class OrganizationController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable Long orgId) {
-        /*if (request.getSession() != null) {
-        	return "{\"error\":\"No session\"}";
-        }
-        return "{\"status\":\"session found!\"}";*/
-    	String newPassword = PasswordUtil.generatePassword();
-    	String hashedPassword = PasswordUtil.hashPassword(newPassword);
-    	Organization org = this.organizationService.getOrganizationById(orgId);
-    	org.setPasswordHash(hashedPassword);
-    	this.organizationService.saveOrganization(org);
-    	String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
-    	return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
+        String newPassword = PasswordUtil.generatePassword();
+        String hashedPassword = PasswordUtil.hashPassword(newPassword);
+        Organization org = this.organizationService.getOrganizationById(orgId);
+        org.setPasswordHash(hashedPassword);
+        this.organizationService.saveOrganization(org);
+        String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
+        return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
     }
-
-    
-    /* *
-     * Returns and removes the last error
-     * @return the last error
-     
-    @RequestMapping(
-            value = "/error",
-            method = RequestMethod.GET,
-            produces = "text/plain;charset=UTF-8")
-    @ResponseBody
-    public String getError(HttpServletRequest request) {
-        if (request.getSession() != null) {
-            String error = (String)request.getSession().getAttribute("error");
-            request.getSession().removeAttribute("error");
-            return error;
-        }
-        return null;
-    }*/
 }

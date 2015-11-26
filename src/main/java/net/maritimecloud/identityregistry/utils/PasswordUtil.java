@@ -22,14 +22,14 @@ import java.security.SecureRandom;
 
 public class PasswordUtil {
 
-	public static String generatePassword() {
-		SecureRandom secRandom = new SecureRandom();
-		return new BigInteger(130, secRandom).toString(32);
-	}
-	
-	public static String hashPassword(String password) {
-		PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-		String hashedPassword = passwordEncoder.encode(password);
-		return hashedPassword;
-	}
+    public static String generatePassword() {
+        SecureRandom secRandom = new SecureRandom();
+        return new BigInteger(130, secRandom).toString(32);
+    }
+
+    public static String hashPassword(String password) {
+        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+        String hashedPassword = passwordEncoder.encode(password);
+        return hashedPassword;
+    }
 }

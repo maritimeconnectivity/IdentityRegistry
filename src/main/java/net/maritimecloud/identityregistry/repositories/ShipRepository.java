@@ -19,7 +19,7 @@ import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.Ship;
 
 public interface ShipRepository extends CrudRepository<Ship, Long> {
-	List<Ship> findByName(String lastName);
-	List<Ship> findByidOrganization(int orgId);
-}
+    List<Ship> findByName(String lastName);
 
+    List<Ship> findByidOrganization(int orgId);
+}

@@ -40,80 +40,83 @@ import javax.persistence.Transient;
  */
 
 @Entity
-@Table(name="ship_attributes")
+@Table(name = "ship_attributes")
 public class ShipAttribute extends TimestampModel {
-	
-	public ShipAttribute() {}
 
-	/*@Transient
+    public ShipAttribute() {
+    }
+
+    /*
+    @Transient
     private int idShip;*/
-	
-	@Column(name = "attribute_name")
-	private String attributeName;
 
-	@Column(name = "attribute_value")
-	private String attributeValue;
-	
-	@Column(name = "start")
-	private Date start;
-	
-	@Column(name = "end")
-	private Date end;
+    @Column(name = "attribute_name")
+    private String attributeName;
 
-	@JsonIgnore
-	@ManyToOne
-	@JoinColumn(name = "id_ship")
-	private Ship ship;
+    @Column(name = "attribute_value")
+    private String attributeValue;
 
-	/******************************/
+    @Column(name = "start")
+    private Date start;
+
+    @Column(name = "end")
+    private Date end;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_ship")
+    private Ship ship;
+
+    /******************************/
     /** Getters and setters      **/
     /******************************/
-	/*public int getIdShip() {
-		idShip = ship.getId().intValue();
-		return idShip;
-	}
+    /*
+    public int getIdShip() {
+        idShip = ship.getId().intValue(); 
+        return idShip;
+    }
 
-	public void setIdShip(int idShip) {
-		this.idShip = idShip;
-	}*/
+    public void setIdShip(int idShip) {
+        this.idShip = idShip;
+    }*/
 
-	public String getAttributeName() {
-		return attributeName;
-	}
+    public String getAttributeName() {
+        return attributeName;
+    }
 
-	public void setAttributeName(String attributeName) {
-		this.attributeName = attributeName;
-	}
+    public void setAttributeName(String attributeName) {
+        this.attributeName = attributeName;
+    }
 
-	public String getAttributeValue() {
-		return attributeValue;
-	}
+    public String getAttributeValue() {
+        return attributeValue;
+    }
 
-	public void setAttributeValue(String attributeValue) {
-		this.attributeValue = attributeValue;
-	}
+    public void setAttributeValue(String attributeValue) {
+        this.attributeValue = attributeValue;
+    }
 
-	public Date getStart() {
-		return start;
-	}
+    public Date getStart() {
+        return start;
+    }
 
-	public void setStart(Date start) {
-		this.start = start;
-	}
+    public void setStart(Date start) {
+        this.start = start;
+    }
 
-	public Date getEnd() {
-		return end;
-	}
+    public Date getEnd() {
+        return end;
+    }
 
-	public void setEnd(Date end) {
-		this.end = end;
-	}
+    public void setEnd(Date end) {
+        this.end = end;
+    }
 
-	public Ship getShip() {
-		return ship;
-	}
+    public Ship getShip() {
+        return ship;
+    }
 
-	public void setShip(Ship ship) {
-		this.ship = ship;
-	}
+    public void setShip(Ship ship) {
+        this.ship = ship;
+    }
 }

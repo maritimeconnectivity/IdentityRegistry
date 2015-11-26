@@ -19,11 +19,11 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonInclude;
 
 /**
-* Should be implemented by value objects that will be serialized as JSON.
-* <p/>
-* To allow for a more compact JSON serialization, the VO's do not serialize null properties.
-*/
-@JsonIgnoreProperties(ignoreUnknown=true)
+ * Should be implemented by value objects that will be serialized as JSON.
+ * <p/>
+ * To allow for a more compact JSON serialization, the VO's do not serialize null properties.
+ */
+@JsonIgnoreProperties(ignoreUnknown = true)
 @JsonInclude(value = JsonInclude.Include.NON_NULL)
 public interface JsonSerializable {
 }

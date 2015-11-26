@@ -42,69 +42,72 @@ import org.hibernate.annotations.Type;
  */
 
 @Entity
-@Table(name="certificates")
+@Table(name = "certificates")
 public class Certificate extends TimestampModel {
-	
-	public Certificate() {}
 
-	/*@Transient
-    private int idShip;*/
-	
-	@Column(name = "certificate", columnDefinition="MEDIUMTEXT")
+    public Certificate() {
+    }
+
+    /*
+    @Transient
+    private int idShip;
+    */
+
+    @Column(name = "certificate", columnDefinition = "MEDIUMTEXT")
     private String certificate;
-	
-	@Column(name = "start")
-	private Date start;
-	
-	@Column(name = "end")
-	private Date end;
 
-	@JsonIgnore
-	@ManyToOne
-	@JoinColumn(name = "id_ship")
-	private Ship ship;
+    @Column(name = "start")
+    private Date start;
 
-	/******************************/
+    @Column(name = "end")
+    private Date end;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_ship")
+    private Ship ship;
+
+    /******************************/
     /** Getters and setters      **/
     /******************************/
-	/*public int getIdShip() {
-		idShip = ship.getId().intValue();
-		return idShip;
-	}
+    /*
+    public int getIdShip() { 
+        idShip = ship.getId().intValue(); return idShip;
+    }
 
-	public void setIdShip(int idShip) {
-		this.idShip = idShip;
-	}*/
+    public void setIdShip(int idShip) {
+        this.idShip = idShip;
+    }*/
 
-	public String getCertificate() {
-		return certificate;
-	}
+    public String getCertificate() {
+        return certificate;
+    }
 
-	public void setCertificate(String certificate) {
-		this.certificate = certificate;
-	}
+    public void setCertificate(String certificate) {
+        this.certificate = certificate;
+    }
 
-	public Date getStart() {
-		return start;
-	}
+    public Date getStart() {
+        return start;
+    }
 
-	public void setStart(Date start) {
-		this.start = start;
-	}
+    public void setStart(Date start) {
+        this.start = start;
+    }
 
-	public Date getEnd() {
-		return end;
-	}
+    public Date getEnd() {
+        return end;
+    }
 
-	public void setEnd(Date end) {
-		this.end = end;
-	}
+    public void setEnd(Date end) {
+        this.end = end;
+    }
 
-	public Ship getShip() {
-		return ship;
-	}
+    public Ship getShip() {
+        return ship;
+    }
 
-	public void setShip(Ship ship) {
-		this.ship = ship;
-	}
+    public void setShip(Ship ship) {
+        this.ship = ship;
+    }
 }

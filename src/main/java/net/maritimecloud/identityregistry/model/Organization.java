@@ -16,16 +16,10 @@ package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
@@ -37,33 +31,33 @@ import javax.persistence.Transient;
  */
 
 @Entity
-@Table(name="organizations")
+@Table(name = "organizations")
 public class Organization extends TimestampModel {
-	
-	@Column(name = "name")
+
+    @Column(name = "name")
     private String name;
-	
-	@Column(name = "short_name")
+
+    @Column(name = "short_name")
     private String shortName;
-	
-	@Column(name = "email")
+
+    @Column(name = "email")
     private String email;
-	
-	@Column(name = "url")
+
+    @Column(name = "url")
     private String url;
-	
-	@Column(name = "address")
+
+    @Column(name = "address")
     private String address;
-	
-	@Column(name = "country")
+
+    @Column(name = "country")
     private String country;
-	
-	@Column(name = "type")
+
+    @Column(name = "type")
     private String type;
-	
+
     @JsonIgnore
     @Column(name = "password_hash")
-	private String passwordHash;
+    private String passwordHash;
 
     // Only used when a organization is first created to return a password.
     @Transient
@@ -72,8 +66,9 @@ public class Organization extends TimestampModel {
     @JsonIgnore
     private byte[] logo;
 
-    public Organization() {}
-    
+    public Organization() {
+    }
+
     /** Copies this organization into the other */
     public Organization copyTo(Organization org) {
         Objects.requireNonNull(org);
@@ -91,18 +86,18 @@ public class Organization extends TimestampModel {
     public Organization copy() {
         return copyTo(new Organization());
     }
-    
+
     /******************************/
     /** Getters and setters      **/
     /******************************/
 
-	public String getType() {
-		return type;
-	}
+    public String getType() {
+        return type;
+    }
 
-	public void setType(String type) {
-		this.type = type;
-	}
+    public void setType(String type) {
+        this.type = type;
+    }
 
     public String getName() {
         return name;
@@ -144,36 +139,36 @@ public class Organization extends TimestampModel {
         this.logo = logo;
     }
 
-	public String getShortName() {
-		return shortName;
-	}
+    public String getShortName() {
+        return shortName;
+    }
 
-	public void setShortName(String shortName) {
-		this.shortName = shortName;
-	}
+    public void setShortName(String shortName) {
+        this.shortName = shortName;
+    }
 
-	public String getAddress() {
-		return address;
-	}
+    public String getAddress() {
+        return address;
+    }
 
-	public void setAddress(String address) {
-		this.address = address;
-	}
+    public void setAddress(String address) {
+        this.address = address;
+    }
 
-	public String getPasswordHash() {
-		return passwordHash;
-	}
+    public String getPasswordHash() {
+        return passwordHash;
+    }
 
-	public void setPasswordHash(String passwordHash) {
-		this.passwordHash = passwordHash;
-	}
+    public void setPasswordHash(String passwordHash) {
+        this.passwordHash = passwordHash;
+    }
 
-	public String getPassword() {
-		return password;
-	}
+    public String getPassword() {
+        return password;
+    }
 
-	public void setPassword(String password) {
-		this.password = password;
-	}
+    public void setPassword(String password) {
+        this.password = password;
+    }
 
 }

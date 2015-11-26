@@ -53,6 +53,6 @@ public class ShipServiceImpl implements ShipService {
 
     @Override
     public List<Ship> listOrgShips(int orgId) {
-    	return ShipRepository.findByidOrganization(orgId);
+        return ShipRepository.findByidOrganization(orgId);
     }
 }

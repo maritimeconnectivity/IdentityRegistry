@@ -28,41 +28,40 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationFa
 @Configuration
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
-	@Autowired
-	DataSource dataSource;
-	
-	@Override
-	protected void configure(HttpSecurity http) throws Exception {
-		http
-			.csrf().disable()
-			.authorizeRequests()
-				.antMatchers(HttpMethod.POST, "/api/**").authenticated()
-				.antMatchers(HttpMethod.PUT, "/api/**").authenticated()
-				.antMatchers(HttpMethod.DELETE, "/api/**").authenticated()
-				.antMatchers(HttpMethod.GET, "/api/**").authenticated()
-				.anyRequest().permitAll()
-		.and()
-			.formLogin()
-			// This will make a successful login return HTTP 200 
-			.successHandler(new RestAuthenticationSuccessHandler())
-			// This will make a failed login return HTTP 401 (because a failed redirect url isn't given)
-			.failureHandler(new SimpleUrlAuthenticationFailureHandler())
-			.permitAll()
-		.and()
-			.logout().permitAll()
-		;
-	}
+    @Autowired
+    DataSource dataSource;
 
-	@Autowired
-	public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
-		
-	  auth.jdbcAuthentication().dataSource(dataSource)
-		.usersByUsernameQuery(
-			"SELECT short_name, password_hash, 1 FROM organizations WHERE short_name=?")
-		.passwordEncoder(new BCryptPasswordEncoder())
-		.authoritiesByUsernameQuery("SELECT ?, 'ROLE_ADMIN' FROM DUAL")
-		/*.authoritiesByUsernameQuery(
-			"select username, role from user_roles where username=?")*/
-		;
-	}	
+    @Override
+    protected void configure(HttpSecurity http) throws Exception {
+        http
+            .csrf().disable()
+            .authorizeRequests()
+                .antMatchers(HttpMethod.POST, "/api/org/apply").permitAll()
+                .antMatchers(HttpMethod.POST, "/api/**").authenticated()
+                .antMatchers(HttpMethod.PUT, "/api/**").authenticated()
+                .antMatchers(HttpMethod.DELETE, "/api/**").authenticated()
+                .antMatchers(HttpMethod.GET, "/api/**").authenticated()
+                .anyRequest().permitAll()
+        .and()
+            .formLogin()
+                // This will make a successful login return HTTP 200
+                .successHandler(new RestAuthenticationSuccessHandler())
+                // This will make a failed login return HTTP 401 (because a failed redirect url isn't given)
+                .failureHandler(new SimpleUrlAuthenticationFailureHandler())
+                .permitAll()
+        .and()
+            .logout().permitAll()
+        ;
+    }
+
+    @Autowired
+    public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
+
+        auth.jdbcAuthentication().dataSource(dataSource)
+                .usersByUsernameQuery("SELECT short_name, password_hash, 1 FROM organizations WHERE short_name=?")
+                .passwordEncoder(new BCryptPasswordEncoder())
+                .authoritiesByUsernameQuery("SELECT ?, 'ROLE_ADMIN' FROM DUAL")
+                //.authoritiesByUsernameQuery( "select username, role from user_roles where username=?")
+        ;
+    }
 }

@@ -23,7 +23,7 @@ public interface OrganizationService {
 
     void deleteOrganization(Long id);
 
-	Iterable<Organization> listAllOrganizations();
-	
-	Organization getOrganizationByShortName(String shortname);
+    Iterable<Organization> listAllOrganizations();
+
+    Organization getOrganizationByShortName(String shortname);
 }

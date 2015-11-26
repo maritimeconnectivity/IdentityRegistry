@@ -38,14 +38,14 @@ import net.maritimecloud.identityregistry.model.Organization;*/
 @Component
 public class MCAuthenticationProvider implements AuthenticationProvider {
 
-	
-    /*private OrganizationService organizationService;
-
+    /*
+    private OrganizationService organizationService;
+    
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
         this.organizationService = organizationService;
     }*/
-    
+
     @Override
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
@@ -54,7 +54,7 @@ public class MCAuthenticationProvider implements AuthenticationProvider {
         // The login name is the org shortname
         // Organization org = this.organizationService.getOrganizationByShortName(name);
         // if an org was found, test the password
-        //if (org != null && (new BCryptPasswordEncoder().matches(password, org.getPasswordHash()))) {
+        // if (org != null && (new BCryptPasswordEncoder().matches(password, org.getPasswordHash()))) {
         if (!password.isEmpty()) {
             List<GrantedAuthority> grantedAuths = new ArrayList<>();
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
@@ -63,14 +63,13 @@ public class MCAuthenticationProvider implements AuthenticationProvider {
             System.out.println("Got authenticated: " + auth.isAuthenticated());
             return auth;
         } else {
-        	System.out.println("Didn't get authenticated");
-        	throw new BadCredentialsException("Bad Credentials");
+            System.out.println("Didn't get authenticated");
+            throw new BadCredentialsException("Bad Credentials");
         }
     }
- 
+
     @Override
     public boolean supports(Class<?> authentication) {
         return authentication.equals(UsernamePasswordAuthenticationToken.class);
     }
 }
-

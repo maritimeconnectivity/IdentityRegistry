@@ -26,11 +26,11 @@ import javax.persistence.PreUpdate;
 
 @MappedSuperclass
 public class TimestampModel implements JsonSerializable {
-	@Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-	@Column(name = "id")
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
+    @Column(name = "id")
     protected Long id;
-	
+
     @Column(name = "created_at")
     protected Date createdAt;
 
@@ -40,29 +40,29 @@ public class TimestampModel implements JsonSerializable {
     /** Called at creation, set created_at and updated_at timestamp */
     @PrePersist
     void createdAt() {
-      this.createdAt = this.updatedAt = new Date();
+        this.createdAt = this.updatedAt = new Date();
     }
 
     /** Called on update, set updated_at timestamp */
     @PreUpdate
     void updatedAt() {
-      this.updatedAt = new Date();
+        this.updatedAt = new Date();
     }
 
-	public Long getId() {
-		return id;
-	}
-	
-	protected void setId(Long id) {
-		this.id = id;
-	}
+    public Long getId() {
+        return id;
+    }
 
-	public Date getCreatedAt() {
-		return createdAt;
-	}
+    protected void setId(Long id) {
+        this.id = id;
+    }
 
-	public Date getUpdatedAt() {
-		return updatedAt;
-	}
+    public Date getCreatedAt() {
+        return createdAt;
+    }
+
+    public Date getUpdatedAt() {
+        return updatedAt;
+    }
 
 }
