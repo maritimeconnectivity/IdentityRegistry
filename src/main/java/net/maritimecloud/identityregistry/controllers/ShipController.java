@@ -65,12 +65,50 @@ public class ShipController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/ship/{orgId}",
+            value = "/api/ship/{shipId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getShip(HttpServletRequest request, @PathVariable Long orgId) {
-        Ship ship = this.shipService.getShipById(orgId);
+    public ResponseEntity<?> getShip(HttpServletRequest request, @PathVariable Long shipId) {
+        Ship ship = this.shipService.getShipById(shipId);
         return new ResponseEntity<Ship>(ship, HttpStatus.OK);
     }
+
+    /**
+     * Updates a Ship
+     * 
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/ship/{shipId}",
+            method = RequestMethod.PUT)
+    @ResponseBody
+    public ResponseEntity<?> updateShip(HttpServletRequest request, @PathVariable Long shipId, @RequestBody Ship input) {
+        Ship ship = this.shipService.getShipById(shipId);
+        if (ship != null && ship.getId() == input.getId()) {
+            input.copyTo(ship);
+            this.shipService.saveShip(ship);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
+    /**
+     * Deletes a Ship
+     * 
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/ship/{shipId}",
+            method = RequestMethod.DELETE)
+    @ResponseBody
+    public ResponseEntity<?> deleteShip(HttpServletRequest request, @PathVariable Long shipId) {
+        Ship ship = this.shipService.getShipById(shipId);
+        if (ship != null) {
+            this.shipService.deleteShip(shipId);
+            return new ResponseEntity<>(HttpStatus.OK);
+        }
+        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+    }
+
 }

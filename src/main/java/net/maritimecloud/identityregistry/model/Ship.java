@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -58,6 +59,18 @@ public class Ship extends TimestampModel {
     @ManyToOne
     @JoinColumn(name="id_organization")
     private Organization organization;*/
+
+    /** Copies this organization into the other */
+    public Ship copyTo(Ship ship) {
+        Objects.requireNonNull(ship);
+        ship.setId(id);
+        ship.setIdOrganization(idOrganization);
+        ship.setName(name);
+        ship.setShipOrgId(shipOrgId);
+        ship.setAttributes(attributes);
+        ship.setCertificate(certificates);
+        return ship;
+    }
 
     @PostPersist
     @PostUpdate

@@ -79,6 +79,7 @@ public class Organization extends TimestampModel {
         org.setUrl(url);
         org.setCountry(country);
         org.setLogo(logo);
+        org.setType(type);
         return org;
     }
 
@@ -163,10 +164,12 @@ public class Organization extends TimestampModel {
         this.passwordHash = passwordHash;
     }
 
+    // Only used when a organization is first created to return a password.
     public String getPassword() {
         return password;
     }
 
+ // Only used when a organization is first created to return a password.
     public void setPassword(String password) {
         this.password = password;
     }
