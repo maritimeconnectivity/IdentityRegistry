@@ -36,6 +36,18 @@ CREATE TABLE `ship_attributes` (
   PRIMARY KEY  (`id`)
 );
 
+CREATE TABLE `users` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_org` INT,
+  `user_org_id` VARCHAR(512),
+  `email` VARCHAR(255),
+  `name` VARCHAR(255),
+  `id_keycloak` VARCHAR(255),
+  `creation_at` DATETIME,
+  `modified_at` DATETIME,
+  PRIMARY KEY  (`id`)
+);
+
 CREATE TABLE `certificates` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_ship` INT,
@@ -49,7 +61,9 @@ CREATE TABLE `certificates` (
   PRIMARY KEY  (`id`)
 );
 
+ALTER TABLE `users` ADD CONSTRAINT `users_fk1` FOREIGN KEY (`id_org`) REFERENCES organizations(`id`);
 ALTER TABLE `ships` ADD CONSTRAINT `ships_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
 ALTER TABLE `ship_attributes` ADD CONSTRAINT `ship_attributes_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
 ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
+ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk2` FOREIGN KEY (`id_user`) REFERENCES users(`id`);
 
