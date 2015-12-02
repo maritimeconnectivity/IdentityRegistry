@@ -7,6 +7,7 @@ A MySQL/MariaDB is used as datastore, it can be setup running this commands from
 $ ./setup/setup-db.sh
 ```
 You will be prompted for the root password for the database. The script will create a new user and this user will be used to create the needed tables.
+If you see this error: ```ERROR 1698 (28000): Access denied for user 'root'@'localhost'```, try running the command with ```sudo```.
 
 The database can be drop with this command:
 ```sh

@@ -49,7 +49,7 @@ public class User extends TimestampModel {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ship")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<Certificate> certificates;
 
     /*

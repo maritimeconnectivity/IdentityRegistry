@@ -38,13 +38,13 @@ CREATE TABLE `ship_attributes` (
 
 CREATE TABLE `users` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `id_org` INT,
+  `id_organization` INT,
   `user_org_id` VARCHAR(512),
   `email` VARCHAR(255),
   `name` VARCHAR(255),
   `id_keycloak` VARCHAR(255),
-  `creation_at` DATETIME,
-  `modified_at` DATETIME,
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
   PRIMARY KEY  (`id`)
 );
 
