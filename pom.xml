@@ -66,6 +66,11 @@
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
+		<dependency>
+			<groupId>org.mitre</groupId>
+			<artifactId>openid-connect-client</artifactId>
+            <version>1.2.2</version>
+		</dependency>
 	</dependencies>
 	
 	<build>

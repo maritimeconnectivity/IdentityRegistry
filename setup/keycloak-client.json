@@ -1,0 +1,14 @@
+{
+  "http://localhost:9080/auth/realms/master": {
+    "client_id": "idreg",
+    "client_secret": "b524cbce-d529-47bf-ab38-3fe7e2ab231a",
+    "client_secret_expires_at": 0,
+    "redirect_uris": [
+      "http://localhost:8080/oidc/api/org/1"
+    ],
+    "token_endpoint_auth_method": "client_secret_basic",
+    "scope": "openid name email",
+    "grant_types": [],
+    "response_types": []
+  }
+}

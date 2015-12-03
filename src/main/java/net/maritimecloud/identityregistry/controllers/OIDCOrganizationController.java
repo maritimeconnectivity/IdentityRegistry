@@ -36,8 +36,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("admin")
-public class OrganizationController {
+@RequestMapping("oidc")
+public class OIDCOrganizationController {
     private OrganizationService organizationService;
     private ShipService shipService;
 
@@ -52,27 +52,8 @@ public class OrganizationController {
     }
 
     /**
-     * Receives an application for a new organization and root-user
-     * 
-     * @return a reply...
-     */
-    @RequestMapping(
-            value = "/api/org/apply",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
-        // Create password to be returned
-        String newPassword = PasswordUtil.generatePassword();
-        String hashedPassword = PasswordUtil.hashPassword(newPassword);
-        input.setPassword(newPassword);
-        input.setPasswordHash(hashedPassword);
-        Organization newOrg = this.organizationService.saveOrganization(input);
-        return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
-    }
-
-    /**
      * Returns info about the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      */
     @RequestMapping(
@@ -86,14 +67,14 @@ public class OrganizationController {
 
     /**
      * Updates info about the organization identified by the given ID
-     * 
+     *
      * @return a http reply
      */
     @RequestMapping(
             value = "/api/org/{orgId}",
             method = RequestMethod.PUT)
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable Long orgId,
-            @RequestBody Organization input) {
+                                                @RequestBody Organization input) {
         Organization org = this.organizationService.getOrganizationById(orgId);
         if (org != null && org.getId() == orgId) {
             input.copyTo(org);
@@ -105,7 +86,7 @@ public class OrganizationController {
 
     /**
      * Returns a list of ships owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      */
     @RequestMapping(
@@ -119,7 +100,7 @@ public class OrganizationController {
 
     /**
      * Returns new password for the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      */
     @RequestMapping(
