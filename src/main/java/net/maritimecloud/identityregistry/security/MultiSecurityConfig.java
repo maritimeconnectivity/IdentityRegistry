@@ -14,35 +14,32 @@
  */
 package net.maritimecloud.identityregistry.security;
 
-import java.util.Map;
-import java.util.HashMap;
-import java.util.HashSet;
-
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
-import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
-import org.springframework.security.web.context.SecurityContextPersistenceFilter;
-import org.springframework.security.web.authentication.AnonymousAuthenticationFilter;
-import org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint;
-import org.mitre.openid.connect.client.OIDCAuthenticationProvider;
-import org.mitre.openid.connect.client.OIDCAuthenticationFilter;
-import org.mitre.openid.connect.client.service.impl.StaticSingleIssuerService;
-import org.mitre.openid.connect.client.service.impl.DynamicServerConfigurationService;
-import org.mitre.openid.connect.client.service.impl.StaticClientConfigurationService;
-import org.mitre.oauth2.model.ClientDetailsEntity.AuthMethod;
-import org.mitre.oauth2.model.RegisteredClient;
-import org.mitre.openid.connect.client.service.impl.PlainAuthRequestUrlBuilder;
-import org.mitre.openid.connect.client.service.impl.JsonFileRegisteredClientService;
+import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
+import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.beans.factory.config.ConfigurableBeanFactory;
+import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
+import org.keycloak.adapters.springsecurity.client.KeycloakClientRequestFactory;
+import org.keycloak.adapters.springsecurity.client.KeycloakRestTemplate;
+import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -59,7 +56,7 @@ public class MultiSecurityConfig  {
         protected void configure(HttpSecurity http) throws Exception {
         	System.out.println("Configuring Admin");
             http
-                .csrf().disable()
+                //.csrf().disable()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/admin/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.POST, "/admin/api/**").authenticated()
@@ -91,49 +88,73 @@ public class MultiSecurityConfig  {
         }
     }
 
+
     @Configuration
     @Order(1)
-    public static class OIDCWebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+    @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
+    public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
+    {
     	
-        protected void configure(HttpSecurity http) throws Exception {
-        	System.out.println("Configuring OIDC");
-        	String issuerUrl = "http://localhost:9080/auth/realms/master";
-        	OIDCAuthenticationProvider oidcAuthenticationProvider = new OIDCAuthenticationProvider();
-        	// Create a Filter to setup OIDC
-        	OIDCAuthenticationFilter oidcFilter = new OIDCAuthenticationFilter();
-        	// Connect an issuer
-        	StaticSingleIssuerService issuerService = new StaticSingleIssuerService();
-        	issuerService.setIssuer(issuerUrl); // From keycloak
-        	oidcFilter.setIssuerService(issuerService);
-        	// Using DynamicServerConfigurationService should mean that it fetches the config
-        	// directly from issuer + "/.well-known/openid-configuration"
-        	oidcFilter.setServerConfigurationService(new DynamicServerConfigurationService());
-        	// Configure client, uses static conf, meaning only one issuer
-        	StaticClientConfigurationService clientConf = new StaticClientConfigurationService();
-        	// Fetch client (keycloak) setup from file
-        	JsonFileRegisteredClientService jsonRegClient = new JsonFileRegisteredClientService("setup/keycloak-client.json");
-        	Map<String, RegisteredClient> clientsMap = new HashMap<String, RegisteredClient>();
-        	clientsMap.put(issuerUrl, jsonRegClient.getByIssuer(issuerUrl));
-        	clientConf.setClients(clientsMap);
-        	oidcFilter.setClientConfigurationService(clientConf);
-        	oidcFilter.setAuthRequestUrlBuilder(new PlainAuthRequestUrlBuilder());
-        	
-        	http
-        		//.antMatcher("/oidc/**")
-                .csrf().disable()
-                .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
-                    //.anyRequest().denyAll()
-                .and()
-                    .authenticationProvider(oidcAuthenticationProvider)
-                .addFilterBefore(oidcFilter, BasicAuthenticationFilter.class)
-                .exceptionHandling().authenticationEntryPoint(new LoginUrlAuthenticationEntryPoint("/openid_connect_login"))
-            ;
+        // Enables client to client communication
+        @Autowired
+        public KeycloakClientRequestFactory keycloakClientRequestFactory;
+
+        @Bean
+        @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
+        public KeycloakRestTemplate keycloakRestTemplate() {
+            return new KeycloakRestTemplate(keycloakClientRequestFactory);
         }
 
+        /**
+         * Registers the KeycloakAuthenticationProvider with the authentication manager.
+         */
+        @Autowired
+        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+            auth.authenticationProvider(keycloakAuthenticationProvider());
+        }
+
+        /**
+         * Defines the session authentication strategy.
+         */
+        @Bean
+        @Override
+        protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+            return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+        }
+
+        @Override
+        protected void configure(HttpSecurity http) throws Exception
+        {
+            super.configure(http);
+        	http
+                .requestMatchers()
+                    .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
+                .and()
+	            .authorizeRequests().anyRequest().authenticated()
+                    /*.antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()*/
+
+        ;
+
+        }
+
+        @Bean
+        public FilterRegistrationBean keycloakAuthenticationProcessingFilterRegistrationBean(
+                KeycloakAuthenticationProcessingFilter filter) {
+            FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+            registrationBean.setEnabled(false);
+            return registrationBean;
+        }
+
+        @Bean
+        public FilterRegistrationBean keycloakPreAuthActionsFilterRegistrationBean(
+                KeycloakPreAuthActionsFilter filter) {
+            FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
+            registrationBean.setEnabled(false);
+            return registrationBean;
+        }
     }
 
     // See https://docs.spring.io/spring-security/site/docs/4.0.x/reference/html/x509.html
@@ -141,11 +162,12 @@ public class MultiSecurityConfig  {
     @Configuration
     @Order(3)
     public static class X509WebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+
+        @Override
         protected void configure(HttpSecurity http) throws Exception {
         	System.out.println("Configuring X509");
             http
             	.antMatcher("/x509/**")
-                .csrf().disable()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()

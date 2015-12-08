@@ -67,9 +67,9 @@
             <artifactId>spring-boot-starter-security</artifactId>
         </dependency>
 		<dependency>
-			<groupId>org.mitre</groupId>
-			<artifactId>openid-connect-client</artifactId>
-            <version>1.2.2</version>
+		    <groupId>org.keycloak</groupId>
+		    <artifactId>keycloak-spring-security-adapter</artifactId>
+		    <version>1.6.1.Final</version>
 		</dependency>
 	</dependencies>
 	
