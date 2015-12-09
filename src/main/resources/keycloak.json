@@ -6,5 +6,6 @@
   "resource": "idreg",
   "credentials": {
     "secret": "b524cbce-d529-47bf-ab38-3fe7e2ab231a"
-  }
+  },
+  "use-resource-role-mappings": true
 }

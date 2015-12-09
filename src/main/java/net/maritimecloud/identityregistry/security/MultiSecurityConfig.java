@@ -54,25 +54,24 @@ public class MultiSecurityConfig  {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-        	System.out.println("Configuring Admin");
             http
-                //.csrf().disable()
+                .csrf().disable() // Needed for the simple REST login
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/admin/api/org/apply").permitAll()
-                    .antMatchers(HttpMethod.POST, "/admin/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/admin/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/admin/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/admin/api/**").authenticated()
+                    .antMatchers(HttpMethod.POST, "/admin/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.PUT, "/admin/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.DELETE, "/admin/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.GET, "/admin/api/**").hasRole("ADMIN")
                     //.anyRequest().denyAll()
-                .and()
-                    .formLogin()
-                        // This will make a successful login return HTTP 200
-                        .successHandler(new RestAuthenticationSuccessHandler())
-                        // This will make a failed login return HTTP 401 (because a failed redirect url isn't given)
-                        .failureHandler(new SimpleUrlAuthenticationFailureHandler())
-                        .permitAll()
-                .and()
-                    .logout().permitAll()
+            .and()
+                .formLogin()
+                    // This will make a successful login return HTTP 200
+                    .successHandler(new RestAuthenticationSuccessHandler())
+                    // This will make a failed login return HTTP 401 (because a failed redirect url isn't given)
+                    .failureHandler(new SimpleUrlAuthenticationFailureHandler())
+                    .permitAll()
+            .and()
+                .logout().permitAll()
             ;
         }
 
@@ -83,6 +82,8 @@ public class MultiSecurityConfig  {
                     .usersByUsernameQuery("SELECT short_name, password_hash, 1 FROM organizations WHERE short_name=?")
                     .passwordEncoder(new BCryptPasswordEncoder())
                     .authoritiesByUsernameQuery("SELECT ?, 'ROLE_ADMIN' FROM DUAL")
+                    // Assign ROLE_ADMIN and ROLE_LOCAL to the user
+                    //.authoritiesByUsernameQuery("SELECT * FROM (SELECT ?) u, (SELECT 'ROLE_ADMIN' UNION SELECT 'ROLE_LOCAL') r;")
             //.authoritiesByUsernameQuery( "select username, role from user_roles where username=?")
             ;
         }
@@ -119,6 +120,8 @@ public class MultiSecurityConfig  {
         @Bean
         @Override
         protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
+            // Change from RegisterSessionAuthenticationStrategy to NullAuthenticatedSessionStrategy
+            // if changing from confidential to bearer-only
             return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
         }
 
@@ -127,15 +130,14 @@ public class MultiSecurityConfig  {
         {
             super.configure(http);
         	http
-                .requestMatchers()
-                    .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
+                    .requestMatchers()
+                        .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
                 .and()
-	            .authorizeRequests().anyRequest().authenticated()
-                    /*.antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()*/
-
+                    .authorizeRequests()
+                        .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("USER")
+                        .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("USER")
+                        .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("USER")
+                        .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
         ;
 
         }
@@ -165,7 +167,6 @@ public class MultiSecurityConfig  {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-        	System.out.println("Configuring X509");
             http
             	.antMatcher("/x509/**")
                 .authorizeRequests()
@@ -174,9 +175,9 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
                     //.anyRequest().denyAll()
-                .and()
-                    .x509()
-                        .subjectPrincipalRegex("CN=(.*?),")
+            .and()
+                .x509()
+                    .subjectPrincipalRegex("CN=(.*?),")
             ;
         }
 
