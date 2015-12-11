@@ -129,15 +129,15 @@ public class MultiSecurityConfig  {
         protected void configure(HttpSecurity http) throws Exception
         {
             super.configure(http);
-        	http
-                    .requestMatchers()
-                        .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
-                .and()
-                    .authorizeRequests()
-                        .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("USER")
-                        .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("USER")
-                        .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("USER")
-                        .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
+            http
+                .requestMatchers()
+                    .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
+            .and()
+                .authorizeRequests()
+                    .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ADMIN")
+                    .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
         ;
 
         }

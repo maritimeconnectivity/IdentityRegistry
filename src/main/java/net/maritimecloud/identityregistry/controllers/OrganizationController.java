@@ -35,7 +35,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping("admin")
+@RequestMapping(value={"admin", "oidc", "x509"})
 public class OrganizationController {
     private OrganizationService organizationService;
     private ShipService shipService;
