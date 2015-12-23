@@ -34,22 +34,22 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "users")
-public class User extends TimestampModel {
+@Table(name = "devices")
+public class Device extends TimestampModel {
 
-    public User() {
+    public Device() {
     }
 
     @Column(name = "id_organization")
     private int idOrganization;
 
-    @Column(name = "user_org_id")
-    private String userOrgId;
+    @Column(name = "device_org_id")
+    private String deviceOrgId;
 
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "device")
     private List<Certificate> certificates;
 
     /*
@@ -58,14 +58,14 @@ public class User extends TimestampModel {
     private Organization organization;*/
 
     /** Copies this organization into the other */
-    public User copyTo(User user) {
-        Objects.requireNonNull(user);
-        user.setId(id);
-        user.setIdOrganization(idOrganization);
-        user.setName(name);
-        user.setUserOrgId(userOrgId);
-        user.setCertificate(certificates);
-        return user;
+    public Device copyTo(Device device) {
+        Objects.requireNonNull(device);
+        device.setId(id);
+        device.setIdOrganization(idOrganization);
+        device.setName(name);
+        device.setDeviceOrgId(deviceOrgId);
+        device.setCertificate(certificates);
+        return device;
     }
 
     @PostPersist
@@ -73,7 +73,7 @@ public class User extends TimestampModel {
     void setChildIds() {
         if (this.certificates != null) {
             for (Certificate cert : this.certificates) {
-                cert.setUser(this);
+                cert.setDevice(this);
             }
         }
     }
@@ -88,12 +88,12 @@ public class User extends TimestampModel {
         this.idOrganization = idOrganization;
     }
 
-    public String getUserOrgId() {
-        return userOrgId;
+    public String getDeviceOrgId() {
+        return deviceOrgId;
     }
 
-    public void setUserOrgId(String userOrgId) {
-        this.userOrgId = userOrgId;
+    public void setDeviceOrgId(String deviceOrgId) {
+        this.deviceOrgId = deviceOrgId;
     }
 
     public String getName() {
@@ -111,14 +111,5 @@ public class User extends TimestampModel {
     public void setCertificate(List<Certificate> certificates) {
         this.certificates = certificates;
     }
-
-    /*
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }*/
 }
 

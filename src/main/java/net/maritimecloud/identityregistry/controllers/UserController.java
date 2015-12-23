@@ -48,7 +48,7 @@ public class UserController {
      * Creates a new User
      * 
      * @return a reply...
-     */
+     */ 
     @RequestMapping(
             value = "/api/user",
             method = RequestMethod.POST,

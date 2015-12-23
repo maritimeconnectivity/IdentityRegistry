@@ -7,6 +7,9 @@ CREATE TABLE `organizations` (
   `country` VARCHAR(64),
   `type` VARCHAR(64),
   `url` VARCHAR(512),
+  `oidc_well_known_url` VARCHAR(512),
+  `oidc_client_name`VARCHAR(512),
+  `oidc_client_secret`VARCHAR(512),
   `password_hash` VARCHAR(512),
   `logo` BLOB,
   `created_at` DATETIME,
@@ -48,6 +51,17 @@ CREATE TABLE `users` (
   PRIMARY KEY  (`id`)
 );
 
+CREATE TABLE `devices` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_organization` INT,
+  `device_org_id` VARCHAR(512),
+  `name` VARCHAR(255),
+  `id_keycloak` VARCHAR(255),
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  PRIMARY KEY  (`id`)
+);
+
 CREATE TABLE `certificates` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_ship` INT,
@@ -61,9 +75,10 @@ CREATE TABLE `certificates` (
   PRIMARY KEY  (`id`)
 );
 
-ALTER TABLE `users` ADD CONSTRAINT `users_fk1` FOREIGN KEY (`id_org`) REFERENCES organizations(`id`);
+ALTER TABLE `users` ADD CONSTRAINT `users_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
+ALTER TABLE `devices` ADD CONSTRAINT `devices_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
 ALTER TABLE `ships` ADD CONSTRAINT `ships_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
 ALTER TABLE `ship_attributes` ADD CONSTRAINT `ship_attributes_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
 ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
 ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk2` FOREIGN KEY (`id_user`) REFERENCES users(`id`);
-
+ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk3` FOREIGN KEY (`id_device`) REFERENCES devices(`id`);

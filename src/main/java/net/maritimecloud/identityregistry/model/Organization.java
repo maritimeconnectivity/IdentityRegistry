@@ -55,6 +55,17 @@ public class Organization extends TimestampModel {
     @Column(name = "type")
     private String type;
 
+    @Column(name = "oidc_well_known_url")
+    private String OIDCWellKnownUrl;
+
+    @JsonIgnore
+    @Column(name = "oidc_client_name")
+    private String OIDCClientName;
+
+    @JsonIgnore
+    @Column(name = "oidc_client_secret")
+    private String OIDCClientSecret;
+
     @JsonIgnore
     @Column(name = "password_hash")
     private String passwordHash;
@@ -172,6 +183,30 @@ public class Organization extends TimestampModel {
  // Only used when a organization is first created to return a password.
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getOIDCWellKnownUrl() {
+        return OIDCWellKnownUrl;
+    }
+
+    public void setOIDCWellKnownUrl(String oIDCWellKnownUrl) {
+        this.OIDCWellKnownUrl = oIDCWellKnownUrl;
+    }
+
+    public String getOIDCClientName() {
+        return OIDCClientName;
+    }
+
+    public void setOIDCClientName(String oIDCClientName) {
+        OIDCClientName = oIDCClientName;
+    }
+
+    public String getOIDCClientSecret() {
+        return OIDCClientSecret;
+    }
+
+    public void setOIDCClientSecret(String oIDCClientSecret) {
+        OIDCClientSecret = oIDCClientSecret;
     }
 
 }
