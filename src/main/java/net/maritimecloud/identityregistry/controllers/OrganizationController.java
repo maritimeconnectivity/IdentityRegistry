@@ -20,6 +20,7 @@ import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.Ship;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.ShipService;
+import net.maritimecloud.identityregistry.utils.KeycloakUtil;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
 import java.util.List;
@@ -66,6 +67,15 @@ public class OrganizationController {
         input.setPassword(newPassword);
         input.setPasswordHash(hashedPassword);
         Organization newOrg = this.organizationService.saveOrganization(input);
+        // If a well-known url and client id and secret was supplied, we create a new IDP
+        if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty() 
+                && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
+                && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
+            KeycloakUtil kcu = new KeycloakUtil();
+            kcu.serviceAccountLogin();
+            kcu.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+            kcu.getIDPs();
+        }
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
 

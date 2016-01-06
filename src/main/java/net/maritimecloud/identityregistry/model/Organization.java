@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.Objects;
 
@@ -55,16 +56,17 @@ public class Organization extends TimestampModel {
     @Column(name = "type")
     private String type;
 
+    @JsonIgnore
     @Column(name = "oidc_well_known_url")
-    private String OIDCWellKnownUrl;
+    private String oidcWellKnownUrl;
 
     @JsonIgnore
     @Column(name = "oidc_client_name")
-    private String OIDCClientName;
+    private String oidcClientName;
 
     @JsonIgnore
     @Column(name = "oidc_client_secret")
-    private String OIDCClientSecret;
+    private String oidcClientSecret;
 
     @JsonIgnore
     @Column(name = "password_hash")
@@ -83,7 +85,6 @@ public class Organization extends TimestampModel {
     /** Copies this organization into the other */
     public Organization copyTo(Organization org) {
         Objects.requireNonNull(org);
-        org.setId(id);
         org.setName(name);
         org.setShortName(shortName);
         org.setEmail(email);
@@ -91,6 +92,10 @@ public class Organization extends TimestampModel {
         org.setCountry(country);
         org.setLogo(logo);
         org.setType(type);
+        org.setOidcClientName(oidcClientName);
+        org.setOidcClientSecret(oidcClientSecret);
+        org.setOidcWellKnownUrl(oidcWellKnownUrl);
+        org.setPasswordHash(passwordHash);
         return org;
     }
 
@@ -185,28 +190,34 @@ public class Organization extends TimestampModel {
         this.password = password;
     }
 
-    public String getOIDCWellKnownUrl() {
-        return OIDCWellKnownUrl;
+    @JsonIgnore
+    public String getOidcWellKnownUrl() {
+        return oidcWellKnownUrl;
     }
 
-    public void setOIDCWellKnownUrl(String oIDCWellKnownUrl) {
-        this.OIDCWellKnownUrl = oIDCWellKnownUrl;
+    @JsonProperty
+    public void setOidcWellKnownUrl(String oidcWellKnownUrl) {
+        this.oidcWellKnownUrl = oidcWellKnownUrl;
     }
 
-    public String getOIDCClientName() {
-        return OIDCClientName;
+    @JsonIgnore
+    public String getOidcClientName() {
+        return oidcClientName;
     }
 
-    public void setOIDCClientName(String oIDCClientName) {
-        OIDCClientName = oIDCClientName;
+    @JsonProperty
+    public void setOidcClientName(String oidcClientName) {
+        this.oidcClientName = oidcClientName;
     }
 
-    public String getOIDCClientSecret() {
-        return OIDCClientSecret;
+    @JsonIgnore
+    public String getOidcClientSecret() {
+        return oidcClientSecret;
     }
 
-    public void setOIDCClientSecret(String oIDCClientSecret) {
-        OIDCClientSecret = oIDCClientSecret;
+    @JsonProperty
+    public void setOidcClientSecret(String oidcClientSecret) {
+        this.oidcClientSecret = oidcClientSecret;
     }
 
 }

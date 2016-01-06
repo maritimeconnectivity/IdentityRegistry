@@ -1,0 +1,1 @@
+{"name":"Test Org med IDP","shortName":"TOIDP","country":"Denmark","url":"http://localhost:8090/", "oidcWellKnownUrl": "http://localhost:9080/auth/realms/testidp/.well-known/openid-configuration", "oidcClientName": "masterrealm", "oidcClientSecret": "33afa598-5453-4590-804d-d01dd4edc694"}

@@ -1,0 +1,10 @@
+{
+  "realm": "master",
+  "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAjvlzipLVuBqUw5XbHX0i19qjKZk/fYQkPhgu1MrybGrgYOIesqCXlNbsiiAEypHC6/T1s0/1cR7OA0213JbS0dayNFUiNejOQgqYBHQQszyYgctEQxgwuhBvrgN0NLOfOyS+Hhw5rq5hAdunYYvWcKKzqaQwQxLFusP5z4gunG4J+8LiO9BsPi/kBKTq7IiYZHTvwphRtv0Mds7eZ4E1DrfEU3hKlXNzIiswnivBthYYORsSOYeAlgAUzf1BMnFhPnqnLXrTKxfp/DVCCOWFwZrQiLFSX44hRTEYdSHPIhPQaKQJao/LANeorlcYO6IoVIIVa6vbDYq5IdH9/6GF6QIDAQAB",
+  "auth-server-url": "http://localhost:9080/auth",
+  "ssl-required": "external",
+  "resource": "mcidreg",
+  "credentials": {
+    "secret": "1b1f1686-1391-4b25-b770-906a2ffc7db9"
+  }
+}
