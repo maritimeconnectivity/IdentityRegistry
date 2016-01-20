@@ -18,10 +18,10 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.User;
+import net.maritimecloud.identityregistry.model.Device;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.services.UserService;
+import net.maritimecloud.identityregistry.services.DeviceService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
@@ -44,8 +44,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(value={"admin", "oidc", "x509"})
-public class UserController {
-    private UserService userService;
+public class DeviceController {
+    private DeviceService deviceService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
 
@@ -59,28 +59,28 @@ public class UserController {
         this.organizationService = organizationService;
     }
     @Autowired
-    public void setUserService(UserService organizationService) {
-        this.userService = organizationService;
+    public void setDeviceService(DeviceService organizationService) {
+        this.deviceService = organizationService;
     }
 
     /**
-     * Creates a new User
+     * Creates a new Device
      * 
      * @return a reply...
      */ 
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user",
+            value = "/api/org/{orgShortName}/device",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> createUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) {
+    public ResponseEntity<?> createDevice(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Device input) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 input.setIdOrganization(org.getId().intValue());
-                User newUser = this.userService.saveUser(input);
-                return new ResponseEntity<User>(newUser, HttpStatus.OK);
+                Device newDevice = this.deviceService.saveDevice(input);
+                return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
         } else {
@@ -89,26 +89,26 @@ public class UserController {
     }
 
     /**
-     * Returns info about the user identified by the given ID
+     * Returns info about the device identified by the given ID
      * 
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user/{userId}",
+            value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                Device device = this.deviceService.getDeviceById(deviceId);
+                if (device == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
-                    return new ResponseEntity<User>(user, HttpStatus.OK);
+                if (device.getIdOrganization() == org.getId().intValue()) {
+                    return new ResponseEntity<Device>(device, HttpStatus.OK);
                 }
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
@@ -119,26 +119,26 @@ public class UserController {
     }
 
     /**
-     * Updates a User
+     * Updates a Device
      * 
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user/{userId}",
+            value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) {
+    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
+                Device device = this.deviceService.getDeviceById(deviceId);
+                if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getId() == input.getId() && user.getIdOrganization() == org.getId().intValue()) {
-                    input.copyTo(user);
-                    this.userService.saveUser(user);
+                if (device.getId() == input.getId() && device.getIdOrganization() == org.getId().intValue()) {
+                    input.copyTo(device);
+                    this.deviceService.saveDevice(device);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -149,25 +149,25 @@ public class UserController {
     }
 
     /**
-     * Deletes a User
+     * Deletes a Device
      * 
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user/{userId}",
+            value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
+                Device device = this.deviceService.getDeviceById(deviceId);
+                if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
-                    this.userService.deleteUser(userId);
+                if (device.getIdOrganization() == org.getId().intValue()) {
+                    this.deviceService.deleteDevice(deviceId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -183,16 +183,16 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/users",
+            value = "/api/org/{orgShortName}/devices",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> getOrganizationShips(HttpServletRequest request, @PathVariable String orgShortName) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                List<User> users = this.userService.listOrgUsers(org.getId().intValue());
-                return new ResponseEntity<List<User>>(users, HttpStatus.OK);
+                List<Device> devices = this.deviceService.listOrgDevices(org.getId().intValue());
+                return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
         } else {
@@ -206,36 +206,36 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user/{userId}/generatecertificate",
+            value = "/api/org/{orgShortName}/device/{deviceId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
+            // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                Device device = this.deviceService.getDeviceById(deviceId);
+                if (device == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
-                    // Generate keypair for user
-                    KeyPair userKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(org.getCountry(), org.getName(), user.getName(), user.getName(), user.getEmail(), userKeyPair.getPublic());
+                if (device.getIdOrganization() == org.getId().intValue()) {
+                    // Generate keypair for device
+                    KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
+                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic());
                     String pemCertificate = "";
                     try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
+                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded());
                     } catch (CertificateEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded());
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded());
+                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded());
+                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded());
                     Certificate newMCCert = new Certificate();
                     newMCCert.setCertificate(pemCertificate);
-                    newMCCert.setStart(userCert.getNotBefore());
-                    newMCCert.setEnd(userCert.getNotAfter());
-                    newMCCert.setUser(user);
+                    newMCCert.setStart(deviceCert.getNotBefore());
+                    newMCCert.setEnd(deviceCert.getNotAfter());
+                    newMCCert.setDevice(device);
                     this.certificateService.saveCertificate(newMCCert);
                     String jsonReturn = "{ \"publickey\":\"" + pemPublicKey + "\", \"privatekey\":\"" + pemPrivateKey + "\", \"certificate\":\"" + pemCertificate + "\"  }";
 

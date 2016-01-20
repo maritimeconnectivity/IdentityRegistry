@@ -49,6 +49,9 @@ public class User extends TimestampModel {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "email")
+    private String email;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     private List<Certificate> certificates;
 
@@ -102,6 +105,14 @@ public class User extends TimestampModel {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getEmail() {
+        return email;
+    }
+
+    public void setEmail(String email) {
+        this.email = email;
     }
 
     public List<Certificate> getCertificates() {
