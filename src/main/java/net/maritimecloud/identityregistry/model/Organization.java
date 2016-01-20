@@ -107,6 +107,17 @@ public class Organization extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
+    @JsonIgnore
+    @Override
+    public Long getId() {
+        return id;
+    }
+
+    @JsonIgnore
+    @Override
+    protected void setId(Long id) {
+        this.id = id;
+    }
 
     public String getType() {
         return type;

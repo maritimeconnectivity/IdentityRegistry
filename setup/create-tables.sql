@@ -14,7 +14,8 @@ CREATE TABLE `organizations` (
   `logo` BLOB,
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`),
+  UNIQUE (`short_name`)
 );
 
 CREATE TABLE `ships` (
@@ -24,7 +25,8 @@ CREATE TABLE `ships` (
   `name` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY  (`id`),
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
 CREATE TABLE `ship_attributes` (
@@ -36,7 +38,8 @@ CREATE TABLE `ship_attributes` (
   `end` DATETIME,
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_ship`) REFERENCES ships(`id`)
 );
 
 CREATE TABLE `users` (
@@ -48,7 +51,8 @@ CREATE TABLE `users` (
   `id_keycloak` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
 CREATE TABLE `devices` (
@@ -59,7 +63,8 @@ CREATE TABLE `devices` (
   `id_keycloak` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
 CREATE TABLE `certificates` (
@@ -72,13 +77,8 @@ CREATE TABLE `certificates` (
   `end` DATETIME,
   `created_at` DATETIME,
   `updated_at` DATETIME,
-  PRIMARY KEY  (`id`)
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_ship`) REFERENCES ships(`id`),
+  FOREIGN KEY (`id_user`) REFERENCES users(`id`),
+  FOREIGN KEY (`id_device`) REFERENCES devices(`id`)
 );
-
-ALTER TABLE `users` ADD CONSTRAINT `users_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
-ALTER TABLE `devices` ADD CONSTRAINT `devices_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
-ALTER TABLE `ships` ADD CONSTRAINT `ships_fk1` FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`);
-ALTER TABLE `ship_attributes` ADD CONSTRAINT `ship_attributes_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
-ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk1` FOREIGN KEY (`id_ship`) REFERENCES ships(`id`);
-ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk2` FOREIGN KEY (`id_user`) REFERENCES users(`id`);
-ALTER TABLE `certificates` ADD CONSTRAINT `certificates_fk3` FOREIGN KEY (`id_device`) REFERENCES devices(`id`);

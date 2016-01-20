@@ -48,11 +48,6 @@ public class Certificate extends TimestampModel {
     public Certificate() {
     }
 
-    /*
-    @Transient
-    private int idShip;
-    */
-
     @Column(name = "certificate", columnDefinition = "MEDIUMTEXT")
     private String certificate;
 
@@ -80,14 +75,6 @@ public class Certificate extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    /*
-    public int getIdShip() { 
-        idShip = ship.getId().intValue(); return idShip;
-    }
-
-    public void setIdShip(int idShip) {
-        this.idShip = idShip;
-    }*/
 
     public String getCertificate() {
         return certificate;

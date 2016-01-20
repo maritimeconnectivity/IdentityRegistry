@@ -14,6 +14,8 @@
  */
 package net.maritimecloud.identityregistry.security;
 
+import java.security.Security;
+
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,6 +36,7 @@ import org.springframework.security.web.authentication.session.RegisterSessionAu
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
 import org.keycloak.adapters.springsecurity.client.KeycloakClientRequestFactory;
 import org.keycloak.adapters.springsecurity.client.KeycloakRestTemplate;
@@ -167,6 +170,10 @@ public class MultiSecurityConfig  {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
+            // We should probably place this somewhere else...
+            Security.addProvider(new BouncyCastleProvider());
+
+
             http
             	.antMatcher("/x509/**")
                 .authorizeRequests()

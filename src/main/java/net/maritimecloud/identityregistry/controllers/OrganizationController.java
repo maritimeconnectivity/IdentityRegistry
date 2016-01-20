@@ -17,19 +17,33 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.Ship;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.services.ShipService;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
-import java.util.List;
+import java.security.cert.Certificate;
+import java.security.cert.X509Certificate;
+import java.io.StringWriter;
+import java.security.KeyPair;
+import java.security.KeyStore.PrivateKeyEntry;
+import java.security.Principal;
+import java.util.Locale;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemWriter;
+import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -39,16 +53,10 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping(value={"admin", "oidc", "x509"})
 public class OrganizationController {
     private OrganizationService organizationService;
-    private ShipService shipService;
 
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
         this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setShipService(ShipService shipService) {
-        this.shipService = shipService;
     }
 
     /**
@@ -85,11 +93,20 @@ public class OrganizationController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgId}",
+            value = "/api/org/{shortName}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable Long orgId) {
-        Organization org = this.organizationService.getOrganizationById(orgId);
+    public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable String shortName) {
+        /*KeyPair kp = CertificateUtil.generateKeyPair();
+        CertificateUtil.saveKeyPairInKeyStore(kp, CertificateUtil.keystorePath, CertificateUtil.keystorePassword);
+        
+        
+        System.out.println("private key:");
+        System.out.println(kp.getPrivate().toString());
+        System.out.println("publix key:");
+        System.out.println(kp.getPublic().toString());*/
+
+        Organization org = this.organizationService.getOrganizationByShortName(shortName);
         return new ResponseEntity<Organization>(org, HttpStatus.OK);
     }
 
@@ -99,31 +116,22 @@ public class OrganizationController {
      * @return a http reply
      */
     @RequestMapping(
-            value = "/api/org/{orgId}",
+            value = "/api/org/{shortName}",
             method = RequestMethod.PUT)
-    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable Long orgId,
+    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String shortName,
             @RequestBody Organization input) {
-        Organization org = this.organizationService.getOrganizationById(orgId);
-        if (org != null && org.getId() == orgId) {
-            input.copyTo(org);
-            this.organizationService.saveOrganization(org);
-            return new ResponseEntity<>(HttpStatus.OK);
+        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(shortName)) {
+                input.copyTo(org);
+                this.organizationService.saveOrganization(org);
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-    }
-
-    /**
-     * Returns a list of ships owned by the organization identified by the given ID
-     * 
-     * @return a reply...
-     */
-    @RequestMapping(
-            value = "/api/org/{orgId}/ships",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganizationShips(HttpServletRequest request, @PathVariable Long orgId) {
-        List<Ship> ships = this.shipService.listOrgShips(orgId.intValue());
-        return new ResponseEntity<List<Ship>>(ships, HttpStatus.OK);
     }
 
     /**
@@ -132,16 +140,25 @@ public class OrganizationController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgId}/getnewpassword",
+            value = "/api/org/{shortName}/getnewpassword",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable Long orgId) {
-        String newPassword = PasswordUtil.generatePassword();
-        String hashedPassword = PasswordUtil.hashPassword(newPassword);
-        Organization org = this.organizationService.getOrganizationById(orgId);
-        org.setPasswordHash(hashedPassword);
-        this.organizationService.saveOrganization(org);
-        String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
-        return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
+    public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable String shortName) {
+        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(shortName)) {
+                String newPassword = PasswordUtil.generatePassword();
+                String hashedPassword = PasswordUtil.hashPassword(newPassword);
+                org.setPasswordHash(hashedPassword);
+                this.organizationService.saveOrganization(org);
+                String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
+                return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
     }
+
 }

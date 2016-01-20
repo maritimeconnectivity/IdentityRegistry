@@ -24,6 +24,8 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 @MappedSuperclass
 public class TimestampModel implements JsonSerializable {
     @Id

@@ -40,6 +40,7 @@ public class Ship extends TimestampModel {
     public Ship() {
     }
 
+    @JsonIgnore
     @Column(name = "id_organization")
     private int idOrganization;
 
@@ -60,7 +61,7 @@ public class Ship extends TimestampModel {
     @JoinColumn(name="id_organization")
     private Organization organization;*/
 
-    /** Copies this organization into the other */
+    /** Copies this ship into the other */
     public Ship copyTo(Ship ship) {
         Objects.requireNonNull(ship);
         ship.setId(id);
@@ -125,6 +126,7 @@ public class Ship extends TimestampModel {
         return certificates;
     }
 
+    @JsonIgnore
     public void setCertificate(List<Certificate> certificates) {
         this.certificates = certificates;
     }

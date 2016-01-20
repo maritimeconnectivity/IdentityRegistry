@@ -18,16 +18,26 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Organization;
+import net.maritimecloud.identityregistry.model.Ship;
 import net.maritimecloud.identityregistry.model.User;
+import net.maritimecloud.identityregistry.services.OrganizationService;
+import net.maritimecloud.identityregistry.services.ShipService;
 import net.maritimecloud.identityregistry.services.UserService;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 
 import java.util.ArrayList;
+import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -38,7 +48,12 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping(value={"admin", "oidc", "x509"})
 public class UserController {
     private UserService userService;
+    private OrganizationService organizationService;
 
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
     @Autowired
     public void setUserService(UserService organizationService) {
         this.userService = organizationService;
@@ -50,13 +65,23 @@ public class UserController {
      * @return a reply...
      */ 
     @RequestMapping(
-            value = "/api/user",
+            value = "/api/org/{orgShortName}/user",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> createUser(HttpServletRequest request, @RequestBody User input) {
-        User newUser = this.userService.saveUser(input);
-        return new ResponseEntity<User>(newUser, HttpStatus.OK);
+    public ResponseEntity<?> createUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                input.setIdOrganization(org.getId().intValue());
+                User newUser = this.userService.saveUser(input);
+                return new ResponseEntity<User>(newUser, HttpStatus.OK);
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
     }
 
     /**
@@ -65,13 +90,28 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/user/{userId}",
+            value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getUser(HttpServletRequest request, @PathVariable Long userId) {
-        User user = this.userService.getUserById(userId);
-        return new ResponseEntity<User>(user, HttpStatus.OK);
+    public ResponseEntity<?> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                User user = this.userService.getUserById(userId);
+                if (user == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (user.getIdOrganization() == org.getId().intValue()) {
+                    return new ResponseEntity<User>(user, HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+                
     }
 
     /**
@@ -80,17 +120,28 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/user/{userId}",
+            value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable Long userId, @RequestBody User input) {
-        User user = this.userService.getUserById(userId);
-        if (user != null && user.getId() == input.getId()) {
-            input.copyTo(user);
-            this.userService.saveUser(user);
-            return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                User user = this.userService.getUserById(userId);
+                if (user == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (user.getId() == input.getId() && user.getIdOrganization() == org.getId().intValue()) {
+                    input.copyTo(user);
+                    this.userService.saveUser(user);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
     /**
@@ -99,16 +150,27 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/user/{userId}",
+            value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable Long userId) {
-        User user = this.userService.getUserById(userId);
-        if (user != null) {
-            this.userService.deleteUser(userId);
-            return new ResponseEntity<>(HttpStatus.OK);
+    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                User user = this.userService.getUserById(userId);
+                if (user == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (user.getIdOrganization() == org.getId().intValue()) {
+                    this.userService.deleteUser(userId);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
-        return new ResponseEntity<>(HttpStatus.NOT_FOUND);
     }
 
 }
