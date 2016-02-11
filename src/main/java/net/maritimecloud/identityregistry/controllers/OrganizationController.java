@@ -97,15 +97,6 @@ public class OrganizationController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable String shortName) {
-        /*KeyPair kp = CertificateUtil.generateKeyPair();
-        CertificateUtil.saveKeyPairInKeyStore(kp, CertificateUtil.keystorePath, CertificateUtil.keystorePassword);
-        
-        
-        System.out.println("private key:");
-        System.out.println(kp.getPrivate().toString());
-        System.out.println("publix key:");
-        System.out.println(kp.getPublic().toString());*/
-
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         return new ResponseEntity<Organization>(org, HttpStatus.OK);
     }
@@ -123,7 +114,7 @@ public class OrganizationController {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(shortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
                 input.copyTo(org);
                 this.organizationService.saveOrganization(org);
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -147,7 +138,7 @@ public class OrganizationController {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(shortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
                 String newPassword = PasswordUtil.generatePassword();
                 String hashedPassword = PasswordUtil.hashPassword(newPassword);
                 org.setPasswordHash(hashedPassword);

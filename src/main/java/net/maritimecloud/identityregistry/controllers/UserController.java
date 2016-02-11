@@ -77,7 +77,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 input.setIdOrganization(org.getId().intValue());
                 User newUser = this.userService.saveUser(input);
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
@@ -102,7 +102,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -131,7 +131,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -161,7 +161,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -190,7 +190,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 List<User> users = this.userService.listOrgUsers(org.getId().intValue());
                 return new ResponseEntity<List<User>>(users, HttpStatus.OK);
             }
@@ -213,7 +213,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);

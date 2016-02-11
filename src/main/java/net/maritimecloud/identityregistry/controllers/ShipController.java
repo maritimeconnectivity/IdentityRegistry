@@ -80,7 +80,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 input.setIdOrganization(org.getId().intValue());
                 Ship newShip = this.shipService.saveShip(input);
                 return new ResponseEntity<Ship>(newShip, HttpStatus.OK);
@@ -105,7 +105,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Ship ship = this.shipService.getShipById(shipId);
                 if (ship == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -133,7 +133,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Ship ship = this.shipService.getShipById(shipId);
                 if (ship == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -163,7 +163,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Ship ship = this.shipService.getShipById(shipId);
                 if (ship == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -192,7 +192,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 List<Ship> ships = this.shipService.listOrgShips(org.getId().intValue());
                 return new ResponseEntity<List<Ship>>(ships, HttpStatus.OK);
             }
@@ -215,7 +215,7 @@ public class ShipController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Ship ship = this.shipService.getShipById(shipId);
                 if (ship == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);

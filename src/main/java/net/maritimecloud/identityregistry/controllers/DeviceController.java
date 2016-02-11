@@ -77,7 +77,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 input.setIdOrganization(org.getId().intValue());
                 Device newDevice = this.deviceService.saveDevice(input);
                 return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
@@ -102,7 +102,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -131,7 +131,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -161,7 +161,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
@@ -190,7 +190,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 List<Device> devices = this.deviceService.listOrgDevices(org.getId().intValue());
                 return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
             }
@@ -213,7 +213,7 @@ public class DeviceController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);

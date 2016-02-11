@@ -1,3 +1,17 @@
+/* Copyright 2016 Danish Maritime Authority.
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *      http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
 package net.maritimecloud.identityregistry.utils;
 
 import java.io.FileInputStream;
@@ -10,7 +24,6 @@ import java.security.InvalidAlgorithmParameterException;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.KeyStore;
-import java.security.KeyStore.Entry;
 import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
@@ -31,6 +44,7 @@ import java.util.Locale;
 import java.security.spec.ECGenParameterSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
@@ -39,12 +53,15 @@ import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
+import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
@@ -53,19 +70,22 @@ import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.bouncycastle.operator.bc.BcContentSignerBuilder;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
-/**
- * @author tgc
- *
- */
 public class CertificateUtil {
 
-    public static final String ROOT_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud Identity Registry, CN=MaritimeCloud Identity Registry Root Certificate, E=info@maritimecloud.net";
-    public static final String KEYSTORE_PATH = "/tmp/mc-keystore.jks";
+    public static final String ROOT_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud, CN=MaritimeCloud Root Certificate, E=info@maritimecloud.net";
+    public static final String MCIDREG_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud Identity Registry, CN=MaritimeCloud Identity Registry Certificate, E=info@maritimecloud.net";
+    public static final String ROOT_KEYSTORE_PATH = "mc-root-keystore.jks"; // /etc/ssl/certs/java/cacerts
+    public static final String INTERMEDIATE_KEYSTORE_PATH = "mc-it-keystore.jks";
     public static final String KEYSTORE_PASSWORD = "changeit";
+    public static final String TRUSTSTORE_PATH = "mc-truststore.jks";
+    public static final String TRUSTSTORE_PASSWORD = "changeit";
     public static final String ROOT_CERT_ALIAS = "rootcert";
+    public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
+    public static final String KEYSTORE_TYPE = "jks";
     
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
@@ -78,17 +98,45 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public static X509Certificate buildAndSignCert(PrivateKey signerPrivateKey, PublicKey subjectPublicKey, String issuer, String subject) throws Exception {
-        X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(new X500Name(issuer),
+    public static X509Certificate buildAndSignCert(PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject, String type) throws Exception {
+        /*X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(new X500Name(issuer),
                                                                             BigInteger.valueOf(1),
                                                                             new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
                                                                             new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000),
                                                                             new X500Name(subject),
-                                                                            subjectPublicKey);
+                                                                            subjectPublicKey);*/
+        X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(new X500Name(issuer),
+                                                                                BigInteger.valueOf(1),
+                                                                                new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
+                                                                                new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000),
+                                                                                new X500Name(subject),
+                                                                                subjectPublicKey);
+        JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
+        // Create certificate extensions
+        if ("ROOTCA".equals(type)) {
+            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.19"), true, new BasicConstraints(true))
+                                   .addExtension(new ASN1ObjectIdentifier("2.5.29.15"), true, new X509KeyUsage(X509KeyUsage.digitalSignature |
+                                                                                                               X509KeyUsage.nonRepudiation   |
+                                                                                                               X509KeyUsage.keyEncipherment  |
+                                                                                                               X509KeyUsage.keyCertSign      |
+                                                                                                               X509KeyUsage.dataEncipherment));
+        } else if ("INTERMEDIATE".equals(type)) {
+            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.15"), true, new X509KeyUsage(X509KeyUsage.digitalSignature |
+                                                                                                               X509KeyUsage.nonRepudiation   |
+                                                                                                               X509KeyUsage.keyEncipherment  |
+                                                                                                               X509KeyUsage.keyCertSign      |
+                                                                                                               X509KeyUsage.dataEncipherment))
+                                    .addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                                    .addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+        } else {
+            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                                   .addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+        }
+        
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA224withECDSA");
         builder.setProvider(CertificateUtil.BC_PROVIDER_NAME);
         ContentSigner signer = builder.build(signerPrivateKey);
-        return new JcaX509CertificateConverter().setProvider(CertificateUtil.BC_PROVIDER_NAME).getCertificate(certBldr.build(signer));
+        return new JcaX509CertificateConverter().setProvider(CertificateUtil.BC_PROVIDER_NAME).getCertificate(certV3Bldr.build(signer));
     }
     
     
@@ -124,38 +172,79 @@ public class CertificateUtil {
     /**
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
      * 
-     * @param kp
      * @param keystoreFilename
      * @param password
      */
-    public static void saveKeyPairInKeyStore(KeyPair kp, String keystoreFilename, String password) {
-        KeyStore ks;
-        FileOutputStream fos = null;
+    public static void initCA() {
+        KeyPair cakp = generateKeyPair(); 
+        KeyPair imkp = generateKeyPair(); 
+        KeyStore rootks;
+        KeyStore itks;
+        KeyStore ts;
+        FileOutputStream rootfos = null;
+        FileOutputStream itfos = null;
+        FileOutputStream tsfos = null;
+        FileInputStream fis = null;
         try {
-            ks = KeyStore.getInstance(KeyStore.getDefaultType());
-            ks.load(null, password.toCharArray());
+            rootks = KeyStore.getInstance(KEYSTORE_TYPE); // KeyStore.getDefaultType() 
+            rootks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            itks = KeyStore.getInstance(KEYSTORE_TYPE); // KeyStore.getDefaultType() 
+            itks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
             // Store away the keystore.
-            fos = new FileOutputStream(keystoreFilename);
-            X509Certificate cert;
+            rootfos = new FileOutputStream(CertificateUtil.ROOT_KEYSTORE_PATH);
+            itfos = new FileOutputStream(CertificateUtil.INTERMEDIATE_KEYSTORE_PATH);
+            X509Certificate cacert;
             try {
-                cert = CertificateUtil.buildAndSignCert(kp.getPrivate(), kp.getPublic(), CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME);
+                cacert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
+                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
                 return;
             }
-            Certificate[] certChain = new Certificate[1];  
-            certChain[0] = cert;
-            ks.setKeyEntry(CertificateUtil.ROOT_CERT_ALIAS, kp.getPrivate(), password.toCharArray(), certChain);
-            ks.store(fos, password.toCharArray());
+            X509Certificate imcert;
+            try {
+                imcert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
+                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.MCIDREG_CERT_X500_NAME, "INTERMEDIATE");
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return;
+            }
+            Certificate[] certChain = new Certificate[1];
+            certChain[0] = cacert;
+            rootks.setKeyEntry(CertificateUtil.ROOT_CERT_ALIAS, cakp.getPrivate(), CertificateUtil.KEYSTORE_PASSWORD.toCharArray(), certChain);
+            rootks.store(rootfos, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            rootks = KeyStore.getInstance(KeyStore.getDefaultType());
+            rootks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            
+            certChain = new Certificate[2];
+            certChain[0] = imcert;
+            certChain[1] = cacert;
+            itks.setKeyEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, imkp.getPrivate(), CertificateUtil.KEYSTORE_PASSWORD.toCharArray(), certChain);
+            itks.store(itfos, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            
+            // Store away the truststore.
+            ts = KeyStore.getInstance(KeyStore.getDefaultType());
+            ts.load(null, CertificateUtil.TRUSTSTORE_PASSWORD.toCharArray());
+            tsfos = new FileOutputStream(CertificateUtil.TRUSTSTORE_PATH);
+            ts.setCertificateEntry(CertificateUtil.ROOT_CERT_ALIAS, cacert);
+            ts.setCertificateEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, imcert);
+            ts.store(tsfos, CertificateUtil.TRUSTSTORE_PASSWORD.toCharArray());
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
             return;
         } finally {
             try {
-                if (fos != null) {
-                    fos.close();
+                if (rootfos != null) {
+                    rootfos.close();
+                }
+                if (itfos != null) {
+                    itfos.close();
+                }
+                if (tsfos != null) {
+                    tsfos.close();
                 }
             } catch (IOException e) {
                 // TODO Auto-generated catch block
@@ -171,7 +260,7 @@ public class CertificateUtil {
      * @return The generated keypair
      */
     public static KeyPair generateKeyPair() {
-        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("prime192v1");
+        ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("secp384r1");
         KeyPairGenerator g;
         try {
             g = KeyPairGenerator.getInstance("ECDSA", CertificateUtil.BC_PROVIDER_NAME);
@@ -200,7 +289,7 @@ public class CertificateUtil {
     public static PrivateKeyEntry getRootCertEntry() {
         FileInputStream is;
         try {
-            is = new FileInputStream(CertificateUtil.KEYSTORE_PATH);
+            is = new FileInputStream(CertificateUtil.INTERMEDIATE_KEYSTORE_PATH);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -208,10 +297,10 @@ public class CertificateUtil {
         }
         KeyStore keystore;
         try {
-            keystore = KeyStore.getInstance(KeyStore.getDefaultType());
+            keystore = KeyStore.getInstance(KEYSTORE_TYPE);
             keystore.load(is, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
-            PrivateKeyEntry rootCertEntry = (PrivateKeyEntry) keystore.getEntry(CertificateUtil.ROOT_CERT_ALIAS, protParam);
+            PrivateKeyEntry rootCertEntry = (PrivateKeyEntry) keystore.getEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, protParam);
             return rootCertEntry;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableEntryException e) {
@@ -238,7 +327,7 @@ public class CertificateUtil {
         X509Certificate rootx509cert = (X509Certificate) rootCert;
         // Get subject
         Principal principal = rootx509cert.getSubjectDN();
-        String rootSubjectDn = principal.getName();
+        String rootSubjectDn = reverseX500Name(principal.getName());
         // Get issuer
         //principal = rootx509cert.getIssuerDN();
         //String issuerDn = principal.getName();
@@ -260,7 +349,7 @@ public class CertificateUtil {
                               "E=" + email;
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(rootCertEntry.getPrivateKey(), publickey, rootSubjectDn, orgSubjectDn);
+            orgCert = CertificateUtil.buildAndSignCert(rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, rootSubjectDn, orgSubjectDn, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -268,6 +357,22 @@ public class CertificateUtil {
         return orgCert;
 
     }
+    
+    /**
+     * For some reason the X500Name is reversed when extracted from X509Certificate Principal,
+     * so here we reverese it again 
+     */
+    private static String reverseX500Name(String name) {
+        String[] RDN = name.split(",");
+        StringBuffer buf = new StringBuffer(name.length());
+        for(int i = RDN.length - 1; i >= 0; i--){
+            if(i != RDN.length - 1)
+                buf.append(',');
+            buf.append(RDN[i]);
+        }
+        return buf.toString();
+    }
+    
     
     /**
      * Convert a cert/key to pem from "encoded" format (byte[])
@@ -292,5 +397,13 @@ public class CertificateUtil {
         }
         return pemFormat;
     }
-
+    
+    /* 
+     * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates
+    public static void main(String[] args) {
+        Security.addProvider(new BouncyCastleProvider());
+        System.out.println("Initializing CA");
+        CertificateUtil.initCA();
+        System.out.println("Done initializing CA");
+    }*/
 }

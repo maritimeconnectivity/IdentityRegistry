@@ -15,7 +15,6 @@
 package net.maritimecloud.identityregistry.security;
 
 import java.security.Security;
-
 import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -173,20 +172,22 @@ public class MultiSecurityConfig  {
             // We should probably place this somewhere else...
             Security.addProvider(new BouncyCastleProvider());
 
-
             http
-            	.antMatcher("/x509/**")
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
-                    //.anyRequest().denyAll()
+                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()//.hasRole("USER")
+                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()//.hasRole("USER")
+                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()//.hasRole("USER")
+                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()//.hasRole("USER")
             .and()
                 .x509()
-                    .subjectPrincipalRegex("CN=(.*?),")
+                    .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?),"
+                    .userDetailsService(x509UserDetailsService())
             ;
         }
 
+        @Bean
+        public X509UserDetailsService x509UserDetailsService() {
+            return new X509UserDetailsService();
+        }
     }
 }
