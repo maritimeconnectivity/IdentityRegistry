@@ -40,20 +40,29 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.Locale;
+import java.util.Map;
+import java.util.Vector;
 import java.security.spec.ECGenParameterSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1OctetString;
 import org.bouncycastle.asn1.ASN1Sequence;
 import org.bouncycastle.asn1.DERNull;
+import org.bouncycastle.asn1.DERPrintableString;
+import org.bouncycastle.asn1.DERSet;
 import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
 import org.bouncycastle.asn1.pkcs.RSAPublicKey;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.X500NameBuilder;
 import org.bouncycastle.asn1.x500.style.BCStyle;
+import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.Extension;
+import org.bouncycastle.asn1.x509.SubjectDirectoryAttributes;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
@@ -86,6 +95,8 @@ public class CertificateUtil {
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
+    // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
+    public static final String FLAGSTATE_OID = "2.25.323100633285601570573910217875371967771";
     
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
@@ -98,7 +109,8 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public static X509Certificate buildAndSignCert(PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject, String type) throws Exception {
+    public static X509Certificate buildAndSignCert(PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
+                                                   Map<String, String> customAttrs, String type) throws Exception {
         /*X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(new X500Name(issuer),
                                                                             BigInteger.valueOf(1),
                                                                             new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
@@ -114,25 +126,30 @@ public class CertificateUtil {
         JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
         // Create certificate extensions
         if ("ROOTCA".equals(type)) {
-            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.19"), true, new BasicConstraints(true))
-                                   .addExtension(new ASN1ObjectIdentifier("2.5.29.15"), true, new X509KeyUsage(X509KeyUsage.digitalSignature |
-                                                                                                               X509KeyUsage.nonRepudiation   |
-                                                                                                               X509KeyUsage.keyEncipherment  |
-                                                                                                               X509KeyUsage.keyCertSign      |
-                                                                                                               X509KeyUsage.dataEncipherment));
+            certV3Bldr = certV3Bldr.addExtension(Extension.basicConstraints, true, new BasicConstraints(true))
+                                   .addExtension(Extension.keyUsage, true, new X509KeyUsage(X509KeyUsage.digitalSignature |
+                                                                                            X509KeyUsage.nonRepudiation   |
+                                                                                            X509KeyUsage.keyEncipherment  |
+                                                                                            X509KeyUsage.keyCertSign      |
+                                                                                            X509KeyUsage.dataEncipherment));
         } else if ("INTERMEDIATE".equals(type)) {
-            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.15"), true, new X509KeyUsage(X509KeyUsage.digitalSignature |
-                                                                                                               X509KeyUsage.nonRepudiation   |
-                                                                                                               X509KeyUsage.keyEncipherment  |
-                                                                                                               X509KeyUsage.keyCertSign      |
-                                                                                                               X509KeyUsage.dataEncipherment))
-                                    .addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                    .addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+            certV3Bldr = certV3Bldr.addExtension(Extension.keyUsage, true, new X509KeyUsage(X509KeyUsage.digitalSignature |
+                                                                                            X509KeyUsage.nonRepudiation   |
+                                                                                            X509KeyUsage.keyEncipherment  |
+                                                                                            X509KeyUsage.keyCertSign      |
+                                                                                            X509KeyUsage.dataEncipherment))
+                                   .addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
         } else {
-            certV3Bldr = certV3Bldr.addExtension(new ASN1ObjectIdentifier("2.5.29.35"), false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                   .addExtension(new ASN1ObjectIdentifier("2.5.29.14"), false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+            Vector<Attribute> attributeVector = new Vector<Attribute>();
+            Attribute atribute = new Attribute(new ASN1ObjectIdentifier(FLAGSTATE_OID), new DERSet(new DERPrintableString("")));
+            attributeVector.add(atribute);
+            SubjectDirectoryAttributes sda = new SubjectDirectoryAttributes(attributeVector);
+            certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey))
+                                   .addExtension(Extension.subjectDirectoryAttributes, false, sda);
+
         }
-        
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA224withECDSA");
         builder.setProvider(CertificateUtil.BC_PROVIDER_NAME);
         ContentSigner signer = builder.build(signerPrivateKey);
@@ -171,6 +188,7 @@ public class CertificateUtil {
     
     /**
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
+     * Should only be used to init the CA.
      * 
      * @param keystoreFilename
      * @param password
@@ -196,7 +214,7 @@ public class CertificateUtil {
             X509Certificate cacert;
             try {
                 cacert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
-                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME, "ROOTCA");
+                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME, null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -205,7 +223,7 @@ public class CertificateUtil {
             X509Certificate imcert;
             try {
                 imcert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
-                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.MCIDREG_CERT_X500_NAME, "INTERMEDIATE");
+                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.MCIDREG_CERT_X500_NAME, null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -325,13 +343,6 @@ public class CertificateUtil {
         PrivateKeyEntry rootCertEntry = CertificateUtil.getRootCertEntry();
         java.security.cert.Certificate rootCert = rootCertEntry.getCertificate();
         X509Certificate rootx509cert = (X509Certificate) rootCert;
-        // Get subject
-        Principal principal = rootx509cert.getSubjectDN();
-        String rootSubjectDn = reverseX500Name(principal.getName());
-        // Get issuer
-        //principal = rootx509cert.getIssuerDN();
-        //String issuerDn = principal.getName();
-        
         // Try to find the correct country code, else we just use the country name as code
         String orgCountryCode = country;
         String[] locales = Locale.getISOCountries();
@@ -347,9 +358,11 @@ public class CertificateUtil {
                               "OU=" + orgUnitName + ", " +
                               "CN=" + callName + ", " +
                               "E=" + email;
+        HashMap<String, String> customAttr = new HashMap<String, String>();
+        customAttr.put(FLAGSTATE_OID, orgCountryCode);
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, rootSubjectDn, orgSubjectDn, "ENTITY");
+            orgCert = CertificateUtil.buildAndSignCert(rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
