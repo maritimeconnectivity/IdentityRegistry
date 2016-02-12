@@ -19,40 +19,40 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import net.maritimecloud.identityregistry.model.Ship;
-import net.maritimecloud.identityregistry.repositories.ShipRepository;
+import net.maritimecloud.identityregistry.model.Vessel;
+import net.maritimecloud.identityregistry.repositories.VesselRepository;
 
 @Service
-public class ShipServiceImpl implements ShipService {
-    private ShipRepository ShipRepository;
+public class VesselServiceImpl implements VesselService {
+    private VesselRepository VesselRepository;
 
     @Autowired
-    public void setShipRepository(ShipRepository ShipRepository) {
-        this.ShipRepository = ShipRepository;
+    public void setVesselRepository(VesselRepository VesselRepository) {
+        this.VesselRepository = VesselRepository;
     }
 
     @Override
-    public Iterable<Ship> listAllShips() {
-        return ShipRepository.findAll();
+    public Iterable<Vessel> listAllVessels() {
+        return VesselRepository.findAll();
     }
 
     @Override
-    public Ship getShipById(Long id) {
-        return ShipRepository.findOne(id);
+    public Vessel getVesselById(Long id) {
+        return VesselRepository.findOne(id);
     }
 
     @Override
-    public Ship saveShip(Ship ship) {
-        return ShipRepository.save(ship);
+    public Vessel saveVessel(Vessel vessel) {
+        return VesselRepository.save(vessel);
     }
 
     @Override
-    public void deleteShip(Long id) {
-        ShipRepository.delete(id);
+    public void deleteVessel(Long id) {
+        VesselRepository.delete(id);
     }
 
     @Override
-    public List<Ship> listOrgShips(int orgId) {
-        return ShipRepository.findByidOrganization(orgId);
+    public List<Vessel> listOrgVessels(int orgId) {
+        return VesselRepository.findByidOrganization(orgId);
     }
 }

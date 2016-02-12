@@ -18,7 +18,7 @@ import java.util.List;
 
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Device;
-import net.maritimecloud.identityregistry.model.Ship;
+import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.model.User;
 
 public interface CertificateService {
@@ -28,7 +28,7 @@ public interface CertificateService {
 
     void deleteCertificate(Long id);
 
-    List<Certificate> listShipCertificate(Ship ship);
+    List<Certificate> listShipCertificate(Vessel vessel);
 
     List<Certificate> listUserCertificate(User user);
     

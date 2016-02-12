@@ -18,11 +18,11 @@ import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Device;
-import net.maritimecloud.identityregistry.model.Ship;
+import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.model.User;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
-    List<Certificate> findByship(Ship ship);
+    List<Certificate> findByship(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
 }

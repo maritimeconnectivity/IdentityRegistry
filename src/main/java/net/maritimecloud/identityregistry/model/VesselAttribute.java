@@ -40,15 +40,15 @@ import javax.persistence.Transient;
  */
 
 @Entity
-@Table(name = "ship_attributes")
-public class ShipAttribute extends TimestampModel {
+@Table(name = "vessel_attributes")
+public class VesselAttribute extends TimestampModel {
 
-    public ShipAttribute() {
+    public VesselAttribute() {
     }
 
     /*
     @Transient
-    private int idShip;*/
+    private int idVessel;*/
 
     @Column(name = "attribute_name")
     private String attributeName;
@@ -64,20 +64,20 @@ public class ShipAttribute extends TimestampModel {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id_ship")
-    private Ship ship;
+    @JoinColumn(name = "id_vessel")
+    private Vessel vessel;
 
     /******************************/
     /** Getters and setters      **/
     /******************************/
     /*
-    public int getIdShip() {
-        idShip = ship.getId().intValue(); 
-        return idShip;
+    public int getIdVessel() {
+        idVessel = vessel.getId().intValue(); 
+        return idVessel;
     }
 
-    public void setIdShip(int idShip) {
-        this.idShip = idShip;
+    public void setIdVessel(int idVessel) {
+        this.idVessel = idVessel;
     }*/
 
     public String getAttributeName() {
@@ -112,11 +112,11 @@ public class ShipAttribute extends TimestampModel {
         this.end = end;
     }
 
-    public Ship getShip() {
-        return ship;
+    public Vessel getVessel() {
+        return vessel;
     }
 
-    public void setShip(Ship ship) {
-        this.ship = ship;
+    public void setVessel(Vessel vessel) {
+        this.vessel = vessel;
     }
 }

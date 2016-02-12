@@ -59,8 +59,8 @@ public class Certificate extends TimestampModel {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id_ship")
-    private Ship ship;
+    @JoinColumn(name = "id_vessel")
+    private Vessel vessel;
 
     @JsonIgnore
     @ManyToOne
@@ -100,12 +100,12 @@ public class Certificate extends TimestampModel {
         this.end = end;
     }
 
-    public Ship getShip() {
-        return ship;
+    public Vessel getVessel() {
+        return vessel;
     }
 
-    public void setShip(Ship ship) {
-        this.ship = ship;
+    public void setVessel(Vessel vessel) {
+        this.vessel = vessel;
     }
 
     public User getUser() {

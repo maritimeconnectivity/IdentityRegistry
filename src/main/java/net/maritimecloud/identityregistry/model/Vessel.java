@@ -34,26 +34,26 @@ import javax.persistence.Table;
  */
 
 @Entity
-@Table(name = "ships")
-public class Ship extends TimestampModel {
+@Table(name = "vessels")
+public class Vessel extends TimestampModel {
 
-    public Ship() {
+    public Vessel() {
     }
 
     @JsonIgnore
     @Column(name = "id_organization")
     private int idOrganization;
 
-    @Column(name = "ship_org_id")
-    private String shipOrgId;
+    @Column(name = "vessel_org_id")
+    private String vesselOrgId;
 
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ship")
-    private List<ShipAttribute> attributes;
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel")
+    private List<VesselAttribute> attributes;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "ship")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel")
     private List<Certificate> certificates;
 
     /*
@@ -61,29 +61,29 @@ public class Ship extends TimestampModel {
     @JoinColumn(name="id_organization")
     private Organization organization;*/
 
-    /** Copies this ship into the other */
-    public Ship copyTo(Ship ship) {
-        Objects.requireNonNull(ship);
-        ship.setId(id);
-        ship.setIdOrganization(idOrganization);
-        ship.setName(name);
-        ship.setShipOrgId(shipOrgId);
-        ship.setAttributes(attributes);
-        ship.setCertificate(certificates);
-        return ship;
+    /** Copies this vessel into the other */
+    public Vessel copyTo(Vessel vessel) {
+        Objects.requireNonNull(vessel);
+        vessel.setId(id);
+        vessel.setIdOrganization(idOrganization);
+        vessel.setName(name);
+        vessel.setVesselOrgId(vesselOrgId);
+        vessel.setAttributes(attributes);
+        vessel.setCertificate(certificates);
+        return vessel;
     }
 
     @PostPersist
     @PostUpdate
     void setChildIds() {
         if (this.attributes != null) {
-            for (ShipAttribute attr : this.attributes) {
-                attr.setShip(this);
+            for (VesselAttribute attr : this.attributes) {
+                attr.setVessel(this);
             }
         }
         if (this.certificates != null) {
             for (Certificate cert : this.certificates) {
-                cert.setShip(this);
+                cert.setVessel(this);
             }
         }
     }
@@ -98,12 +98,12 @@ public class Ship extends TimestampModel {
         this.idOrganization = idOrganization;
     }
 
-    public String getShipOrgId() {
-        return shipOrgId;
+    public String getVesselOrgId() {
+        return vesselOrgId;
     }
 
-    public void setShipOrgId(String shipOrgId) {
-        this.shipOrgId = shipOrgId;
+    public void setVesselOrgId(String vesselOrgId) {
+        this.vesselOrgId = vesselOrgId;
     }
 
     public String getName() {
@@ -114,11 +114,11 @@ public class Ship extends TimestampModel {
         this.name = name;
     }
 
-    public List<ShipAttribute> getAttributes() {
+    public List<VesselAttribute> getAttributes() {
         return attributes;
     }
 
-    public void setAttributes(List<ShipAttribute> attributes) {
+    public void setAttributes(List<VesselAttribute> attributes) {
         this.attributes = attributes;
     }
 

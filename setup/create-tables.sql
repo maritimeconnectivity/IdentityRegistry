@@ -18,10 +18,10 @@ CREATE TABLE `organizations` (
   UNIQUE (`short_name`)
 );
 
-CREATE TABLE `ships` (
+CREATE TABLE `vessels` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
-  `ship_org_id` VARCHAR(512),
+  `vessel_org_id` VARCHAR(512),
   `name` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
@@ -29,9 +29,9 @@ CREATE TABLE `ships` (
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
-CREATE TABLE `ship_attributes` (
+CREATE TABLE `vessel_attributes` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `id_ship` INT,
+  `id_vessel` INT,
   `attribute_name` VARCHAR(512),
   `attribute_value` VARCHAR(512),
   `start` DATETIME,
@@ -39,7 +39,7 @@ CREATE TABLE `ship_attributes` (
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id_ship`) REFERENCES ships(`id`)
+  FOREIGN KEY (`id_vessel`) REFERENCES vessels(`id`)
 );
 
 CREATE TABLE `users` (
@@ -69,7 +69,7 @@ CREATE TABLE `devices` (
 
 CREATE TABLE `certificates` (
   `id` INT NOT NULL AUTO_INCREMENT,
-  `id_ship` INT,
+  `id_vessel` INT,
   `id_user` INT,
   `id_device` INT,
   `certificate` MEDIUMTEXT,
@@ -78,7 +78,7 @@ CREATE TABLE `certificates` (
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
-  FOREIGN KEY (`id_ship`) REFERENCES ships(`id`),
+  FOREIGN KEY (`id_vessel`) REFERENCES vessels(`id`),
   FOREIGN KEY (`id_user`) REFERENCES users(`id`),
   FOREIGN KEY (`id_device`) REFERENCES devices(`id`)
 );

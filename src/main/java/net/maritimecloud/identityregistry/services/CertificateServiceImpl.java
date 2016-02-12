@@ -21,7 +21,7 @@ import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Device;
-import net.maritimecloud.identityregistry.model.Ship;
+import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.model.User;
 import net.maritimecloud.identityregistry.repositories.CertificateRepository;
 
@@ -50,8 +50,8 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<Certificate> listShipCertificate(Ship ship) {
-        return CertificateRepository.findByship(ship);
+    public List<Certificate> listShipCertificate(Vessel vessel) {
+        return CertificateRepository.findByship(vessel);
     }
     
     @Override
