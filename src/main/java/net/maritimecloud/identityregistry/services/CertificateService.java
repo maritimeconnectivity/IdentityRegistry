@@ -28,7 +28,7 @@ public interface CertificateService {
 
     void deleteCertificate(Long id);
 
-    List<Certificate> listShipCertificate(Vessel vessel);
+    List<Certificate> listVesselCertificate(Vessel vessel);
 
     List<Certificate> listUserCertificate(User user);
     

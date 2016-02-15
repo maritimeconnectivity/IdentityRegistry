@@ -33,7 +33,7 @@ The API changes very rapidly at the moment, so look in the output when the app s
 ## Insert data
 First an Organization must be added. It can be done like this using curl from the console to POST data to the REST interface:
 ```sh
-$ curl -H "Content-Type: application/json" --data @setup/dma.json http://localhost:8443/admin/api/org/apply
+$ curl -k -H "Content-Type: application/json" --data @setup/dma.json https://localhost:8443/admin/api/org/apply
 ```
 
 This will return some json looking like this, which is mostly an echo of the posted json:
@@ -43,14 +43,14 @@ This will return some json looking like this, which is mostly an echo of the pos
 
 So now an Organization named "Danish Maritime Authority" has been created. Make a note of the "shortName" and "password" since they will be used for authentication, which is the next step:
 ```sh
-$ curl -i -X POST -d username=DMA -d password=iklugohe4agngesqpv3c4jm34g -c ./cookies.txt http://localhost:8443/login
+$ curl -k -i -X POST -d username=DMA -d password=iklugohe4agngesqpv3c4jm34g -c ./cookies.txt https://localhost:8443/login
 ```
 Change the username and password as needed. A authentication token will be saved into the file cookies.txt, and can now be used to access the API.
 
 To create some vessels for Organization with shortname "DMA", do this (note that "DMA" is included in the url):
 ```sh
-$ curl -H "Content-Type: application/json" -b cookies.txt --data @setup/ship1.json http://localhost:8443/admin/api/org/DMA/vessel
-$ curl -H "Content-Type: application/json" -b cookies.txt --data @setup/ship2.json http://localhost:8443/admin/api/org/DMA/vessel
+$ curl -k -H "Content-Type: application/json" -b cookies.txt --data @setup/ship1.json https://localhost:8443/admin/api/org/DMA/vessel
+$ curl -k -H "Content-Type: application/json" -b cookies.txt --data @setup/ship2.json https://localhost:8443/admin/api/org/DMA/vessel
 ```
 
 Each command will (mostly) return an echo of the json posted to the api:
@@ -66,12 +66,12 @@ To setup an organization with its own Identity Provider, the Identity Registry c
 ## Login using certificates
 To login using certificates a client certificate must first be generated and signed by the MaritimeCloud Identity Registry. For a vessel it can be done like this:
 ```sh
-$ curl -b cookies.txt -k https://localhost:8443/x509/api/org/DMA/vessel/1/generatecertificate
-```sh
+$ curl -b cookies.txt -k https://localhost:8443/admin/api/org/DMA/vessel/1/generatecertificate
+```
 
-This will return a public key, private key and a signed certificate in PEM format for this vessel, and should be saved locally. The certificate is saved in the Identity Registry, but the keys will not.
+This will return a public key, private key and a certificate in PEM format for this vessel signed by the MaritimeCloud, and should be saved locally. The certificate is saved in the Identity Registry, but the keys is not.
 
 If the private key is stored in ```ship-private.pem``` and the certificate in ```ship-cert.pem```, an example of use could be this:
 ```sh
-curl -i -k https://localhost:8443/admin/api/org/DMA/vessel/2 --key ship-private.pem --cert ship-cert.pem
+curl -i -k https://localhost:8443/x509/api/org/DMA/vessel/2 --key ship-private.pem --cert ship-cert.pem
 ```

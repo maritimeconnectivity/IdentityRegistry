@@ -50,8 +50,8 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<Certificate> listShipCertificate(Vessel vessel) {
-        return CertificateRepository.findByship(vessel);
+    public List<Certificate> listVesselCertificate(Vessel vessel) {
+        return CertificateRepository.findByvessel(vessel);
     }
     
     @Override

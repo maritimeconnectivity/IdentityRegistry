@@ -108,7 +108,7 @@ public class VesselController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (vessel.getIdOrganization() == org.getId().intValue()) {
                     return new ResponseEntity<Vessel>(vessel, HttpStatus.OK);
@@ -136,7 +136,7 @@ public class VesselController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (vessel.getId() == input.getId() && vessel.getIdOrganization() == org.getId().intValue()) {
                     input.copyTo(vessel);
@@ -166,7 +166,7 @@ public class VesselController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (vessel.getIdOrganization() == org.getId().intValue()) {
                     this.vesselService.deleteVessel(vesselId);
@@ -218,7 +218,7 @@ public class VesselController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (vessel.getIdOrganization() == org.getId().intValue()) {
                     // Generate keypair for vessel

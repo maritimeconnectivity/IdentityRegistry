@@ -134,7 +134,7 @@ public class UserController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (user.getId() == input.getId() && user.getIdOrganization() == org.getId().intValue()) {
                     input.copyTo(user);
@@ -164,7 +164,7 @@ public class UserController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.SHIP_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (user.getIdOrganization() == org.getId().intValue()) {
                     this.userService.deleteUser(userId);
@@ -178,7 +178,7 @@ public class UserController {
     }
 
     /**
-     * Returns a list of ships owned by the organization identified by the given ID
+     * Returns a list of devices owned by the organization identified by the given ID
      * 
      * @return a reply...
      */
@@ -186,7 +186,7 @@ public class UserController {
             value = "/api/org/{orgShortName}/users",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganizationShips(HttpServletRequest request, @PathVariable String orgShortName) {
+    public ResponseEntity<?> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgShortName) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -201,7 +201,7 @@ public class UserController {
     }
 
     /**
-     * Returns new certificate for the ship identified by the given ID
+     * Returns new certificate for the user identified by the given ID
      * 
      * @return a reply...
      */
