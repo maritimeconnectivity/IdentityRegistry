@@ -19,24 +19,29 @@ import org.keycloak.RSATokenVerifier;
 import org.keycloak.adapters.KeycloakDeployment;
 import org.keycloak.adapters.KeycloakDeploymentBuilder;
 import org.keycloak.adapters.authentication.ClientCredentialsProviderUtils;
+import org.keycloak.admin.client.Keycloak;
+import org.keycloak.admin.client.resource.IdentityProviderResource;
+import org.keycloak.admin.client.resource.IdentityProvidersResource;
 import org.keycloak.common.VerificationException;
 import org.keycloak.representations.AccessToken;
 import org.keycloak.representations.AccessTokenResponse;
+import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
+import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
-import org.springframework.core.io.FileSystemResource;
 import org.springframework.core.io.Resource;
+import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,37 +49,49 @@ import java.util.Map;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpDelete;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.client.methods.HttpPost;
+import org.apache.http.client.methods.HttpPut;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.NameValuePair;
-import org.codehaus.jackson.JsonParseException;
-import org.codehaus.jackson.map.JsonMappingException;
-import org.codehaus.jackson.map.ObjectMapper;
 
-public class KeycloakUtil {
-    @Value("${keycloak.configurationFile:WEB-INF/keycloak.json}")
-    private Resource keycloakConfigFileResource;
-    
+public class KeycloakServiceAccountUtil {
     public static final String ERROR = "error";
     public static final String TOKEN = "token";
     public static final String TOKEN_PARSED = "idTokenParsed";
     public static final String REFRESH_TOKEN = "refreshToken";
     public static final String PRODUCTS = "products";
     public static final String CLIENT_AUTH_METHOD = "clientAuthMethod";
+    private KeycloakDeployment deployment;
     private String token;
     private String refreshToken;
     private AccessToken tokenParsed;
-    
-    private ObjectMapper jsonMapper;
+    private String baseUrl;
+    private String realm;
+    private Keycloak keycloakInstance;
 
-    public KeycloakUtil() {
-        this.jsonMapper = new ObjectMapper();
+    
+    
+    /**
+     * Constructor, loads KeycloakDeployment.
+     */
+    public KeycloakServiceAccountUtil() {
+        this.deployment = this.getKeycloakDeployment();
+        this.baseUrl = deployment.getAuthServerBaseUrl();
+        this.realm = deployment.getRealm();
     }
 
+    /**
+     * Helper function to extract string from HttpEntity
+     * 
+     * @param entity
+     * @return
+     * @throws IOException
+     */
     public static String getContent(HttpEntity entity) throws IOException {
         if (entity == null) return null;
         InputStream is = entity.getContent();
@@ -91,13 +108,19 @@ public class KeycloakUtil {
             try {
                 is.close();
             } catch (IOException ignored) {
-
             }
         }
-
     }
 
-    private void setTokens(KeycloakDeployment deployment, AccessTokenResponse tokenResponse) throws IOException, VerificationException {
+    /**
+     * Sets tokens after login
+     * 
+     * @param deployment
+     * @param tokenResponse
+     * @throws IOException
+     * @throws VerificationException
+     */
+    private void setTokens(AccessTokenResponse tokenResponse) throws IOException, VerificationException {
         this.token = tokenResponse.getToken();
         this.refreshToken = tokenResponse.getRefreshToken();
         this.tokenParsed = RSATokenVerifier.verifyToken(token, deployment.getRealmKey(), deployment.getRealmInfoUrl());
@@ -143,16 +166,22 @@ public class KeycloakUtil {
         }
     }*/
     
-    public IdentityProviderRepresentation getIDP(AccessTokenResponse res) {
-
+    /**
+     * Fetches and returns data on an IDP
+     * 
+     * @param name   name of the IDP
+     * @return
+     */
+    public IdentityProviderRepresentation getIDP(String name) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         try {
-            HttpGet get = new HttpGet("/admin/realms/{realm}/identity-provider/instances/{alias}");
-            get.addHeader("Authorization", "Bearer " + res.getToken());
+            HttpGet get = new HttpGet(baseUrl + "/admin/realms/" + realm + "/identity-provider/instances/" + name);
+            get.addHeader("Authorization", "Bearer " + token);
             try {
                 HttpResponse response = client.execute(get);
                 if (response.getStatusLine().getStatusCode() != 200) {
                     System.out.println(response.getStatusLine().getStatusCode());
+                    return null;
                 }
                 HttpEntity entity = response.getEntity();
                 InputStream is = entity.getContent();
@@ -174,7 +203,13 @@ public class KeycloakUtil {
         }
     }
     
-    public void createIdentityProvider(String name, String wellKnownUrl, String clientId, String clientSecret) {
+    /**
+     * Get IDP info by parsing info from wellKnownUrl json
+     * 
+     * @param wellKnownUrl The url to parse
+     * @return
+     */
+    private IdentityProviderRepresentation getIdpFromWellKnownUrl(String wellKnownUrl) {
         // Get IDP info by parsing info from wellKnownUrl json
         URL url;
         try {
@@ -182,7 +217,7 @@ public class KeycloakUtil {
         } catch (MalformedURLException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
-            return;
+            return null;
         }
         HttpURLConnection request;
         try {
@@ -191,23 +226,24 @@ public class KeycloakUtil {
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
-            return;
+            return null;
         }
         Map<String,Object> idpData;
         try {
-            idpData = this.jsonMapper.readValue(new InputStreamReader((InputStream) request.getContent()), Map.class);
-        } catch (JsonParseException e) {
+            //idpData = this.jsonMapper.readValue(new InputStreamReader((InputStream) request.getContent()), Map.class);
+            idpData = JsonSerialization.readValue((InputStream) request.getContent(), Map.class);
+        /*} catch (JsonParseException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return;
+            return null;
         } catch (JsonMappingException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return;
+            return null;*/
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
-            return;
+            return null;
         }
         // Extract the endpoints from the json
         String authEndpoint = (String) idpData.get("authorization_endpoint");
@@ -218,7 +254,6 @@ public class KeycloakUtil {
         
         // Insert data into IDP data structure
         IdentityProviderRepresentation idp = new IdentityProviderRepresentation();
-        idp.setAlias(name);
         idp.setEnabled(true);
         idp.setProviderId("keycloak-oidc"); // can be "keycloak-oidc","oidc" or "saml"
         idp.setTrustEmail(false);
@@ -229,44 +264,102 @@ public class KeycloakUtil {
         Map<String, String> IDPConf = new HashMap<String, String>();
         IDPConf.put("userInfoUrl", userInfoEndpoint);
         IDPConf.put("validateSignature", "true");
-        IDPConf.put("clientId", clientId);
         IDPConf.put("tokenUrl", tokenEndpoint);
         IDPConf.put("authorizationUrl", authEndpoint);
         IDPConf.put("logoutUrl", endSessionEndpoint);
-        IDPConf.put("clientSecret", clientSecret);
         IDPConf.put("issuer", issuer);
         idp.setConfig(IDPConf);
+        return idp;
+    }
+    
+    /**
+     * Creates or updates an IDP.
+     * 
+     * @param name          name of the IDP
+     * @param wellKnownUrl  the url where info on the IDP can be obtained
+     * @param clientId      the id used for the MC in the IDP
+     * @param clientSecret  the secret used for the MC in the IDP
+     */
+    public void createIdentityProvider(String name, String wellKnownUrl, String clientId, String clientSecret) {
+        // Get IDP info by parsing info from wellKnownUrl json
+        IdentityProviderRepresentation idp = getIdpFromWellKnownUrl(wellKnownUrl);
+        if (idp == null) {
+            return;
+        }
+        // Insert data into IDP data structure
+        idp.setAlias(name);
+        Map<String, String> IDPConf = idp.getConfig();
+        IDPConf.put("clientId", clientId);
+        IDPConf.put("clientSecret", clientSecret);
+        idp.setConfig(IDPConf);
         
-        // Now POST the IDP data to keycloak 
-        KeycloakDeployment deployment = getKeycloakDeployment();
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-
+        // Check if the IDP already exists
+        IdentityProviderRepresentation oldIdp = null;
         try {
-            HttpPost post = new HttpPost(deployment.getAuthServerBaseUrl() + "/admin/realms/master/identity-provider/instances");
-            if (token != null) {
-                post.addHeader("Authorization", "Bearer " + token);
+            oldIdp = this.getIDP(clientId);
+        } catch (Exception e) {
+        }
+        
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        // If the IDP already exists, update it, otherwise create it.
+        if (oldIdp == null) {
+            // Now POST the IDP data to keycloak 
+            try {
+                HttpPost post = new HttpPost(deployment.getAuthServerBaseUrl() + "/admin/realms/" + realm + "/identity-provider/instances");
+                if (token != null) {
+                    post.addHeader("Authorization", "Bearer " + token);
+                }
+                System.out.println("idp creating json: " + JsonSerialization.writeValueAsString(idp));
+                StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(idp));
+                input.setContentType("application/json");
+                post.setEntity(input);
+                HttpResponse response = client.execute(post);
+                int status = response.getStatusLine().getStatusCode();
+                HttpEntity entity = response.getEntity();
+                if (status != 201) {
+                    String json = getContent(entity);
+                    String error = "IDP creation failed. Bad status: " + status + " response: " + json;
+                    System.out.println(error);
+                    //req.setAttribute(ERROR, error);
+                } else {
+                    System.out.println("IDP created! " + getContent(entity));
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
-            System.out.println("idp creating json: " + JsonSerialization.writeValueAsString(idp));
-            StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(idp));
-            input.setContentType("application/json");
-            post.setEntity(input);
-            HttpResponse response = client.execute(post);
-            int status = response.getStatusLine().getStatusCode();
-            HttpEntity entity = response.getEntity();
-            if (status != 201) {
-                String json = getContent(entity);
-                String error = "IDP creation failed. Bad status: " + status + " response: " + json;
-                System.out.println(error);
-                //req.setAttribute(ERROR, error);
-            } else {
-                System.out.println("IDP created! " + getContent(entity));
+        } else {
+            // Now PUT the IDP data to keycloak 
+            try {
+                HttpPut put = new HttpPut(deployment.getAuthServerBaseUrl() + "/admin/realms/" + realm + "/identity-provider/instances/" + clientId);
+                if (token != null) {
+                    put.addHeader("Authorization", "Bearer " + token);
+                }
+                System.out.println("idp update json: " + JsonSerialization.writeValueAsString(idp));
+                StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(idp));
+                input.setContentType("application/json");
+                put.setEntity(input);
+                HttpResponse response = client.execute(put);
+                int status = response.getStatusLine().getStatusCode();
+                HttpEntity entity = response.getEntity();
+                if (status != 201) {
+                    String json = getContent(entity);
+                    String error = "IDP update failed. Bad status: " + status + " response: " + json;
+                    System.out.println(error);
+                    //req.setAttribute(ERROR, error);
+                } else {
+                    System.out.println("IDP updated! " + getContent(entity));
+                }
+            } catch (IOException ioe) {
+                ioe.printStackTrace();
             }
-        } catch (IOException ioe) {
         }
     }
     
+    /**
+     * Use the clientId in the loaded KeycloakDeployment to log in to Keycloak using a service account.
+     * Copied from Keycloaks service-account example and modified to fit in.
+     */
     public void serviceAccountLogin() {
-        KeycloakDeployment deployment = getKeycloakDeployment();
         CloseableHttpClient client = HttpClientBuilder.create().build();
 
         try {
@@ -300,7 +393,7 @@ public class KeycloakUtil {
             } else {
                 String json = getContent(entity);
                 AccessTokenResponse tokenResp = JsonSerialization.readValue(json, AccessTokenResponse.class);
-                setTokens(deployment, tokenResp);
+                setTokens(tokenResp);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -311,10 +404,13 @@ public class KeycloakUtil {
         }
     }
     
+    
+    /**
+     * Gets and prints a list of the IDPs available in the keycloak instance.
+     */
     public void getIDPs() {
         CloseableHttpClient client = HttpClientBuilder.create().build();
-
-        HttpGet get = new HttpGet("http://localhost:9080" + "/auth/admin/realms/master/identity-provider/instances");
+        HttpGet get = new HttpGet(baseUrl + "/auth/admin/realms/" + realm + "/identity-provider/instances");
         if (token != null) {
             get.addHeader("Authorization", "Bearer " + token);
         }
@@ -339,7 +435,94 @@ public class KeycloakUtil {
             //req.setAttribute(ERROR, "Failed retrieve products. IOException occured. See server.log for details. Message is: " + ioe.getMessage());
         }
     }
-    
+
+    /**
+     * Deletes the IDP identified by the given name.
+     * 
+     * @param name    the IDP to be deleted.
+     */
+    public void deleteIDP(String name) {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        HttpDelete delete = new HttpDelete(baseUrl + "/auth/admin/realms/" + realm + "/identity-provider/instances/" + name);
+        if (token != null) {
+            delete.addHeader("Authorization", "Bearer " + token);
+        }
+        try {
+            HttpResponse response = client.execute(delete);
+            HttpEntity entity = response.getEntity();
+            int status = response.getStatusLine().getStatusCode();
+            if (status != 200 && status != 204) {
+                String json = getContent(entity);
+                String error = "Failed deleting IDP. Status: " + status + ", content: " + json;
+                System.out.println(error);
+                //req.setAttribute(ERROR, error);
+            } else {
+                System.out.println("Deleted IDP " + name);
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+            //req.setAttribute(ERROR, "Failed retrieve products. IOException occured. See server.log for details. Message is: " + ioe.getMessage());
+        }
+    }
+
+    public void createUser(String name, String password, String email, String orgShortName) {
+        UserRepresentation user = new UserRepresentation();
+        user.setUsername(name);
+        user.setEnabled(true);
+        if (email != null && !email.trim().isEmpty()) {
+            user.setEmail(email);
+            user.setEmailVerified(true);
+        }
+        // Set roles for the MD identity register - the clientId of the portal should be updated as needed!
+        /*HashMap<String, List<String>> clientRoles = new HashMap<String, List<String>>();
+        String clientId = "mcregportal"; //deployment.getResourceCredentials().keySet().iterator().next();
+        clientRoles.put(clientId, Arrays.asList("ROLE_ADMIN"));
+        user.setClientRoles(clientRoles);*/
+        
+        // Set attributes
+        Map<String, Object> attr = new HashMap<String,Object>();
+        attr.put("org", orgShortName);
+        attr.put("permissions", "MCADMIN");
+        user.setAttributes(attr);
+        
+        // Set credentials
+        CredentialRepresentation cred = new CredentialRepresentation();
+        cred.setType(CredentialRepresentation.PASSWORD);
+        cred.setValue(password);
+        user.setCredentials(Arrays.asList(cred));
+        
+        // Now POST the IDP data to keycloak 
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        try {
+            HttpPost post = new HttpPost(deployment.getAuthServerBaseUrl() + "/admin/realms/" + realm + "/users");
+            if (token != null) {
+                post.addHeader("Authorization", "Bearer " + token);
+            }
+            System.out.println("user creating json: " + JsonSerialization.writeValueAsString(user));
+            StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(user));
+            input.setContentType("application/json");
+            post.setEntity(input);
+            HttpResponse response = client.execute(post);
+            int status = response.getStatusLine().getStatusCode();
+            HttpEntity entity = response.getEntity();
+            if (status != 201) {
+                String json = getContent(entity);
+                String error = "IDP creation failed. Bad status: " + status + " response: " + json;
+                System.out.println(error);
+                //req.setAttribute(ERROR, error);
+            } else {
+                System.out.println("IDP created! " + getContent(entity));
+            }
+        } catch (IOException ioe) {
+            ioe.printStackTrace();
+        }
+    }
+
+    /**
+     * Load a KeycloakDeployment instance from "WEB-INF/keycloak.json" and returns it
+     * 
+     * @return The loaded KeycloakDeployment instance.
+     */
     private KeycloakDeployment getKeycloakDeployment() {
         try {
             Resource resource = new ClassPathResource("WEB-INF/keycloak.json");

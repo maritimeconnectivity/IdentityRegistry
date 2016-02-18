@@ -28,6 +28,9 @@ import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
+import javax.persistence.Transient;
+
+import org.hibernate.annotations.Where;
 
 /**
  * Model object representing an organization
@@ -46,14 +49,22 @@ public class User extends TimestampModel {
     @Column(name = "user_org_id")
     private String userOrgId;
 
-    @Column(name = "name")
-    private String name;
+    @Column(name = "first_name")
+    private String firstName;
+
+    @Column(name = "last_name")
+    private String lastName;
 
     @Column(name = "email")
     private String email;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
+
+    // Only used when a user is first created to return a password.
+    @Transient
+    private String password;
 
     /*
     @ManyToOne
@@ -65,7 +76,7 @@ public class User extends TimestampModel {
         Objects.requireNonNull(user);
         user.setId(id);
         user.setIdOrganization(idOrganization);
-        user.setName(name);
+        user.setFirstName(firstName);
         user.setUserOrgId(userOrgId);
         user.setCertificate(certificates);
         return user;
@@ -99,12 +110,20 @@ public class User extends TimestampModel {
         this.userOrgId = userOrgId;
     }
 
-    public String getName() {
-        return name;
+    public String getFirstName() {
+        return firstName;
     }
 
-    public void setName(String name) {
-        this.name = name;
+    public void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    public String getLastName() {
+        return lastName;
+    }
+
+    public void setLastName(String lastName) {
+        this.lastName = lastName;
     }
 
     public String getEmail() {
@@ -131,5 +150,16 @@ public class User extends TimestampModel {
     public void setOrganization(Organization organization) {
         this.organization = organization;
     }*/
+
+    // Only used when a user is first created to return a password.
+    public String getPassword() {
+        return password;
+    }
+
+    // Only used when a user is first created to return a password.
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
 }
 

@@ -19,8 +19,7 @@ import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.User;
 
 public interface UserRepository extends CrudRepository<User, Long> {
-    List<User> findByName(String lastName);
+    List<User> findByUserOrgId(String userOrgId);
 
     List<User> findByidOrganization(int orgId);
 }
-

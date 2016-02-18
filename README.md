@@ -61,6 +61,25 @@ Each command will (mostly) return an echo of the json posted to the api:
 ## Login using Openid Connect (Keykloak)
 To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](http://keycloak.github.io/docs/userguide/keycloak-server/html/ch08.html#spring-security-adapter) is used for easy integration. See Keycloaks documentation for how to register a client. After setting it up get the "Keycloak JSON" from the clients installation tab and place it in `src/main/webapp/WEB-INF/keycloak.json`.
 
+Now a special user must be set up to allow the registration of Identity Providers in keycloak. Create the user in Keycloak, assign a non-temporary password and assign the "admin" role. Now put the info of the created user in `src/main/resources/application.properties` like this:
+```properties
+net.maritimecloud.idreg.keycloak-broker-admin-user=idreg-admin
+net.maritimecloud.idreg.keycloak-broker-admin-password=idreg-admin
+net.maritimecloud.idreg.keycloak-broker-admin-client=security-admin-console
+net.maritimecloud.idreg.keycloak-broker-realm=master
+net.maritimecloud.idreg.keycloak-broker-base-url=http://localhost:9080/auth/
+```
+The client `security-admin-console` is a standard Keycloak client that will be used when accessing the Keycloak API, but its settings needs to be changed first. So go to the configuration page of the client `security-admin-console` and enable "Direct Access Grants", which will allow the create user to login and access the keycloak API.
+
+Besides the Identity Providers we also need to be able to create users in Keycloak, to support OpenID Connect login of admin users, and users from an Organization without their own Identity Provider. This can be the same keycloak instance as used for Identity Providers, or a different one, or perhaps the same instance but a different realm. In this other instance/realm a user must be created in the same way as described above, and the info saved to `src/main/resources/application.properties`, like this:
+```properties
+net.maritimecloud.idreg.keycloak-project-users-admin-user=idreg-admin
+net.maritimecloud.idreg.keycloak-project-users-admin-password=idreg-admin
+net.maritimecloud.idreg.keycloak-project-users-admin-client=security-admin-console
+net.maritimecloud.idreg.keycloak-project-users-realm=master
+net.maritimecloud.idreg.keycloak-project-users-base-url=http://localhost:9080/auth/
+```
+
 To setup an organization with its own Identity Provider, the Identity Registry can automatically set it up using a few extra attributes in the organization json when creating it. See ```setup/testidp.json``` for an example. The Identity Provider must support OpenID Connect and have set up a client. The client id and secret is 2 of the needed attributes for Identity Provider registration, the last one is a link to the "well-known url", as defined in the [OpenID Connect Discovery Specs](https://openid.net/specs/openid-connect-discovery-1_0.html#ProviderConfig).
 
 ## Login using certificates
@@ -73,5 +92,5 @@ This will return a public key, private key and a certificate in PEM format for t
 
 If the private key is stored in ```ship-private.pem``` and the certificate in ```ship-cert.pem```, an example of use could be this:
 ```sh
-curl -i -k https://localhost:8443/x509/api/org/DMA/vessel/2 --key ship-private.pem --cert ship-cert.pem
+$ curl -i -k https://localhost:8443/x509/api/org/DMA/vessel/2 --key ship-private.pem --cert ship-cert.pem
 ```

@@ -24,7 +24,9 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.UserService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
@@ -63,6 +65,9 @@ public class UserController {
         this.userService = organizationService;
     }
 
+    @Autowired
+    private KeycloakAdminUtil keycloakAU;
+
     /**
      * Creates a new User
      * 
@@ -80,6 +85,14 @@ public class UserController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 input.setIdOrganization(org.getId().intValue());
                 User newUser = this.userService.saveUser(input);
+                // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
+                if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                    String password = PasswordUtil.generatePassword();
+                    String keycloakUsername = orgShortName.toLowerCase() + "." + newUser.getUserOrgId();
+                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                    keycloakAU.createUser(keycloakUsername, password, newUser.getFirstName(), newUser.getLastName(), newUser.getEmail(), orgShortName, KeycloakAdminUtil.NORMAL_USER);
+                    newUser.setPassword(password);
+                }
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
@@ -134,11 +147,20 @@ public class UserController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (user.getUserOrgId() != input.getUserOrgId()) {
+                    return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_REQUEST);
                 }
                 if (user.getId() == input.getId() && user.getIdOrganization() == org.getId().intValue()) {
                     input.copyTo(user);
                     this.userService.saveUser(user);
+                    // Update user in keycloak if created there.
+                    if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                        String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
+                        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                        keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail());
+                    }
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -164,10 +186,16 @@ public class UserController {
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (user.getIdOrganization() == org.getId().intValue()) {
                     this.userService.deleteUser(userId);
+                    // Remove user from keycloak if created there.
+                    if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                        String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
+                        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                        keycloakAU.deleteUser(keycloakUsername);
+                    }
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -178,7 +206,7 @@ public class UserController {
     }
 
     /**
-     * Returns a list of devices owned by the organization identified by the given ID
+     * Returns a list of users belonging to the organization identified by the given ID
      * 
      * @return a reply...
      */
@@ -209,7 +237,7 @@ public class UserController {
             value = "/api/org/{orgShortName}/user/{userId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> newUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -219,9 +247,13 @@ public class UserController {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (user.getIdOrganization() == org.getId().intValue()) {
+                    // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
+                    Certificate newMCCert = new Certificate();
+                    newMCCert.setUser(user);
+                    newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for user
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(org.getCountry(), org.getName(), user.getName(), user.getName(), user.getEmail(), userKeyPair.getPublic());
+                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), user.getFirstName(), user.getFirstName(), user.getEmail(), userKeyPair.getPublic());
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
@@ -231,7 +263,6 @@ public class UserController {
                     }
                     String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded());
                     String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded());
-                    Certificate newMCCert = new Certificate();
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(userCert.getNotBefore());
                     newMCCert.setEnd(userCert.getNotAfter());
@@ -240,6 +271,40 @@ public class UserController {
                     String jsonReturn = "{ \"publickey\":\"" + pemPublicKey + "\", \"privatekey\":\"" + pemPrivateKey + "\", \"certificate\":\"" + pemCertificate + "\"  }";
 
                     return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
+                }
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
+    /**
+     * Revokes certificate for the user identified by the given ID
+     * 
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/user/{userId}/revokecertificate/{certId}",
+            method = RequestMethod.DELETE,
+            produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+                User user = this.userService.getUserById(userId);
+                if (user == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (user.getIdOrganization() == org.getId().intValue()) {
+                    Certificate cert = this.certificateService.getCertificateById(certId);
+                    User certUser = cert.getUser();
+                    if (certUser != null && certUser.getId().equals(user.getId())) {
+                        cert.setRevoked(true);
+                        this.certificateService.saveCertificate(cert);
+                        return new ResponseEntity<>(HttpStatus.OK);
+                    }
                 }
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);

@@ -35,12 +35,15 @@ import java.security.SecureRandom;
 import java.security.Security;
 import java.security.Signature;
 import java.security.UnrecoverableEntryException;
+import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
+import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Vector;
@@ -61,12 +64,16 @@ import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x509.Attribute;
 import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.SubjectDirectoryAttributes;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
 import org.bouncycastle.cert.X509v1CertificateBuilder;
+import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
 import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder;
@@ -74,10 +81,12 @@ import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
+import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.bouncycastle.x509.X509V2CRLGenerator;
 import org.bouncycastle.operator.bc.BcContentSignerBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -97,7 +106,8 @@ public class CertificateUtil {
     public static final String KEYSTORE_TYPE = "jks";
     // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
     public static final String FLAGSTATE_OID = "2.25.323100633285601570573910217875371967771";
-    
+
+
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
      * the given issuer-private-key. The issuer and subject will be identified in the strings provided.
@@ -109,7 +119,7 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public static X509Certificate buildAndSignCert(PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
+    public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
         /*X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(new X500Name(issuer),
                                                                             BigInteger.valueOf(1),
@@ -118,7 +128,7 @@ public class CertificateUtil {
                                                                             new X500Name(subject),
                                                                             subjectPublicKey);*/
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(new X500Name(issuer),
-                                                                                BigInteger.valueOf(1),
+                                                                                BigInteger.valueOf(serialNumber),
                                                                                 new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
                                                                                 new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000),
                                                                                 new X500Name(subject),
@@ -213,7 +223,7 @@ public class CertificateUtil {
             itfos = new FileOutputStream(CertificateUtil.INTERMEDIATE_KEYSTORE_PATH);
             X509Certificate cacert;
             try {
-                cacert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
+                cacert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
                                                         CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME, null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -222,7 +232,7 @@ public class CertificateUtil {
             }
             X509Certificate imcert;
             try {
-                imcert = CertificateUtil.buildAndSignCert(cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
+                imcert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
                                                         CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.MCIDREG_CERT_X500_NAME, null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -339,7 +349,7 @@ public class CertificateUtil {
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public static X509Certificate generateCertForEntity(String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey) {
+    public static X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey) {
         PrivateKeyEntry rootCertEntry = CertificateUtil.getRootCertEntry();
         java.security.cert.Certificate rootCert = rootCertEntry.getCertificate();
         X509Certificate rootx509cert = (X509Certificate) rootCert;
@@ -362,14 +372,56 @@ public class CertificateUtil {
         customAttr.put(FLAGSTATE_OID, orgCountryCode);
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
+            orgCert = CertificateUtil.buildAndSignCert(serialNumber, rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
         return orgCert;
-
     }
+    
+    /**
+     * Creates a Certificate Revocation List (CRL) for the certificate serialnumbers given.
+     * 
+     * @param revokesSerialNumbers  List of the serialnumbers that should be revoked.
+     * @return
+     */
+    public X509CRL generateCRL(List<BigInteger> revokesSerialNumbers) {
+        Date now = new Date();
+        X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
+        crlBuilder.setNextUpdate(new Date(now.getTime() + 100000));
+        for (BigInteger sn : revokesSerialNumbers) {
+            crlBuilder.addCRLEntry(sn, now, CRLReason.privilegeWithdrawn);
+        }
+        //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
+        //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
+        
+        PrivateKeyEntry keyEntry = getRootCertEntry();
+        
+        JcaContentSignerBuilder signBuilder = new JcaContentSignerBuilder("SHA224withECDSA");
+        signBuilder.setProvider(CertificateUtil.BC_PROVIDER_NAME);
+        ContentSigner signer;
+        try {
+            signer = signBuilder.build(keyEntry.getPrivateKey());
+        } catch (OperatorCreationException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return null;
+        }
+        
+        X509CRLHolder cRLHolder = crlBuilder.build(signer);
+        JcaX509CRLConverter converter = new JcaX509CRLConverter();
+        converter.setProvider(CertificateUtil.BC_PROVIDER_NAME);
+        X509CRL crl = null;
+        try {
+            crl = converter.getCRL(cRLHolder);
+        } catch (CRLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return crl;
+    }
+
     
     /**
      * For some reason the X500Name is reversed when extracted from X509Certificate Principal,
@@ -385,6 +437,7 @@ public class CertificateUtil {
         }
         return buf.toString();
     }
+    
     
     
     /**

@@ -16,33 +16,20 @@ package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Transient;
-
-import org.hibernate.annotations.Type;
 
 /**
  * Model object representing an organization
  */
 
 @Entity
-@Table(name = "certificates")
+@Table(name="certificates")
 public class Certificate extends TimestampModel {
 
     public Certificate() {
@@ -56,6 +43,9 @@ public class Certificate extends TimestampModel {
 
     @Column(name = "end")
     private Date end;
+
+    @Column(name = "revoked")
+    private boolean revoked;
 
     @JsonIgnore
     @ManyToOne
@@ -98,6 +88,14 @@ public class Certificate extends TimestampModel {
 
     public void setEnd(Date end) {
         this.end = end;
+    }
+
+    public boolean getRevoked() {
+        return revoked;
+    }
+
+    public void setRevoked(boolean revoked) {
+        this.revoked = revoked;
     }
 
     public Vessel getVessel() {

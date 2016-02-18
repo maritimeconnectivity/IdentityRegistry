@@ -29,6 +29,8 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 
+import org.hibernate.annotations.Where;
+
 /**
  * Model object representing an organization
  */
@@ -50,6 +52,7 @@ public class Device extends TimestampModel {
     private String name;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "device")
+    @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /*

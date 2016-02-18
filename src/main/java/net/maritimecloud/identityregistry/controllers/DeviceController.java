@@ -219,9 +219,13 @@ public class DeviceController {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (device.getIdOrganization() == org.getId().intValue()) {
+                    // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
+                    Certificate newMCCert = new Certificate();
+                    newMCCert.setDevice(device);
+                    newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for device
                     KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic());
+                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic());
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded());
@@ -231,7 +235,6 @@ public class DeviceController {
                     }
                     String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded());
                     String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded());
-                    Certificate newMCCert = new Certificate();
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(deviceCert.getNotBefore());
                     newMCCert.setEnd(deviceCert.getNotAfter());

@@ -17,33 +17,20 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Organization;
+import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
-import net.maritimecloud.identityregistry.utils.KeycloakUtil;
+import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
-import java.security.cert.Certificate;
-import java.security.cert.X509Certificate;
-import java.io.StringWriter;
-import java.security.KeyPair;
-import java.security.KeyStore.PrivateKeyEntry;
-import java.security.Principal;
-import java.util.Locale;
-import java.util.Map;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
-import org.bouncycastle.util.io.pem.PemObject;
-import org.bouncycastle.util.io.pem.PemWriter;
-import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -53,6 +40,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping(value={"admin", "oidc", "x509"})
 public class OrganizationController {
     private OrganizationService organizationService;
+
+    @Autowired
+    private KeycloakAdminUtil keycloakAU;
 
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
@@ -74,16 +64,19 @@ public class OrganizationController {
         String hashedPassword = PasswordUtil.hashPassword(newPassword);
         input.setPassword(newPassword);
         input.setPasswordHash(hashedPassword);
-        Organization newOrg = this.organizationService.saveOrganization(input);
+        // Make sure all shortnames are uppercase
+        input.setShortName(input.getShortName().trim().toUpperCase());
         // If a well-known url and client id and secret was supplied, we create a new IDP
-        if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty() 
+        if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
                 && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
                 && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
-            KeycloakUtil kcu = new KeycloakUtil();
-            kcu.serviceAccountLogin();
-            kcu.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
-            kcu.getIDPs();
+            keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+            keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
         }
+        // Create admin user in the keycloak instance handling users
+        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+        keycloakAU.createUser(input.getShortName(), input.getShortName(), input.getShortName(), newPassword, input.getEmail(), input.getShortName(), KeycloakAdminUtil.ADMIN_USER);
+        Organization newOrg = this.organizationService.saveOrganization(input);
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
 
@@ -102,6 +95,20 @@ public class OrganizationController {
     }
 
     /**
+     * Returns list of all organizations
+     * 
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/orgs",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> getOrganization(HttpServletRequest request) {
+        Iterable<Organization> orgs = this.organizationService.listAllOrganizations();
+        return new ResponseEntity<Iterable<Organization>>(orgs, HttpStatus.OK);
+    }
+
+    /**
      * Updates info about the organization identified by the given ID
      * 
      * @return a http reply
@@ -113,9 +120,24 @@ public class OrganizationController {
             @RequestBody Organization input) {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
+            if (!shortName.equals(input.getShortName())) {
+                return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_GATEWAY);
+            }
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
-                input.copyTo(org);
+                // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
+                if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
+                        && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
+                        && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    // If client ids are different we delete the old IDP in keycloak
+                    if (!org.getOidcClientName().equals(input.getOidcClientName())) {
+                        keycloakAU.deleteIdentityProvider(input.getShortName());
+                    }
+                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+                }
+                // TODO: Remove old IDP if new input doesn't contain IDP info
+                input.copyToSecure(org);
                 this.organizationService.saveOrganization(org);
                 return new ResponseEntity<>(HttpStatus.OK);
             }

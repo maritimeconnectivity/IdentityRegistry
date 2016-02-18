@@ -99,6 +99,28 @@ public class Organization extends TimestampModel {
         return org;
     }
 
+    /** Copies this organization into the other.
+     * Only updates OIDC if non-null content is given, skips password and shortname */
+    public Organization copyToSecure(Organization org) {
+        Objects.requireNonNull(org);
+        org.setName(name);
+        org.setEmail(email);
+        org.setUrl(url);
+        org.setCountry(country);
+        org.setLogo(logo);
+        org.setType(type);
+        if (oidcClientName != null) {
+            org.setOidcClientName(oidcClientName);
+        }
+        if (oidcClientSecret != null) {
+            org.setOidcClientSecret(oidcClientSecret);
+        }
+        if (oidcWellKnownUrl != null) {
+            org.setOidcWellKnownUrl(oidcWellKnownUrl);
+        }
+        return org;
+    }
+
     /** Creates a copy of this organization */
     public Organization copy() {
         return copyTo(new Organization());
@@ -196,7 +218,7 @@ public class Organization extends TimestampModel {
         return password;
     }
 
- // Only used when a organization is first created to return a password.
+    // Only used when a organization is first created to return a password.
     public void setPassword(String password) {
         this.password = password;
     }
