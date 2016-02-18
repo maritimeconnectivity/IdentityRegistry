@@ -30,6 +30,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
@@ -57,6 +58,7 @@ public class MultiSecurityConfig  {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
+                .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                 .csrf().disable() // Needed for the simple REST login
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/admin/api/org/apply").permitAll()
@@ -79,7 +81,6 @@ public class MultiSecurityConfig  {
 
         @Autowired
         public void configAuthentication(AuthenticationManagerBuilder auth) throws Exception {
-
             auth.jdbcAuthentication().dataSource(dataSource)
                     .usersByUsernameQuery("SELECT short_name, password_hash, 1 FROM organizations WHERE short_name=?")
                     .passwordEncoder(new BCryptPasswordEncoder())
@@ -97,7 +98,6 @@ public class MultiSecurityConfig  {
     @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
     public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
     {
-    	
         // Enables client to client communication
         @Autowired
         public KeycloakClientRequestFactory keycloakClientRequestFactory;
@@ -141,7 +141,6 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ADMIN")
                     .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
         ;
-
         }
 
         @Bean
