@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Certificate;
+import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.User;
 import net.maritimecloud.identityregistry.model.Vessel;
@@ -260,10 +261,10 @@ public class VesselController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}/revokecertificate/{certId}",
-            method = RequestMethod.DELETE,
+            value = "/api/org/{orgShortName}/vessel/{vesselId}/certificates/{certId}/revoke",
+            method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @PathVariable Long certId) {
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the vessel has the needed rights
@@ -276,6 +277,14 @@ public class VesselController {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     Vessel certVessel = cert.getVessel();
                     if (certVessel != null && certVessel.getId().equals(vessel.getId())) {
+                        if (!input.validateReason()) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        if (input.getRevokedAt() == null) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        cert.setRevokedAt(input.getRevokedAt());
+                        cert.setRevokeReason(input.getRevokationReason());
                         cert.setRevoked(true);
                         this.certificateService.saveCertificate(cert);
                         return new ResponseEntity<>(HttpStatus.OK);

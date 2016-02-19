@@ -47,6 +47,24 @@ public class Certificate extends TimestampModel {
     @Column(name = "revoked")
     private boolean revoked;
 
+    @Column(name= "revoked_at")
+    private Date revokedAt;
+
+    /* Can contain values as in rfc5280:
+        unspecified (0)
+        keyCompromise (1)
+        CACompromise (2)
+        affiliationChanged (3)
+        superseded (4)
+        cessationOfOperation (5)
+        certificateHold (6)
+        removeFromCRL (8)
+        privilegeWithdrawn (9)
+        AACompromise (10)
+       We only store the text value, in lowercase. */
+    @Column(name = "revoke_reason")
+    private String revokeReason;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_vessel")
@@ -96,6 +114,22 @@ public class Certificate extends TimestampModel {
 
     public void setRevoked(boolean revoked) {
         this.revoked = revoked;
+    }
+
+    public Date getRevokedAt() {
+        return revokedAt;
+    }
+
+    public void setRevokedAt(Date revokedAt) {
+        this.revokedAt = revokedAt;
+    }
+
+    public String getRevokeReason() {
+        return revokeReason;
+    }
+
+    public void setRevokeReason(String revokeReason) {
+        this.revokeReason = revokeReason;
     }
 
     public Vessel getVessel() {

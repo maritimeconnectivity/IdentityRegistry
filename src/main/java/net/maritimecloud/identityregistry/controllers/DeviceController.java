@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Certificate;
+import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.Device;
 import net.maritimecloud.identityregistry.services.CertificateService;
@@ -250,6 +251,49 @@ public class DeviceController {
             return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
     }
+
+    /**
+     * Revokes certificate for the device identified by the given ID
+     * 
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/device/{deviceId}/certificates/{certId}/revoke",
+            method = RequestMethod.POST,
+            produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the device has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+                Device device = this.deviceService.getDeviceById(deviceId);
+                if (device == null) {
+                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
+                }
+                if (device.getIdOrganization() == org.getId().intValue()) {
+                    Certificate cert = this.certificateService.getCertificateById(certId);
+                    Device certDevice = cert.getDevice();
+                    if (certDevice != null && certDevice.getId().equals(device.getId())) {
+                        if (!input.validateReason()) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        if (input.getRevokedAt() == null) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        cert.setRevokedAt(input.getRevokedAt());
+                        cert.setRevokeReason(input.getRevokationReason());
+                        cert.setRevoked(true);
+                        this.certificateService.saveCertificate(cert);
+                        return new ResponseEntity<>(HttpStatus.OK);
+                    }
+                }
+            }
+            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
 
 }
 

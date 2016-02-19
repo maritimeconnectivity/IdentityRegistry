@@ -77,6 +77,8 @@ CREATE TABLE `certificates` (
   `start` DATETIME,
   `end` DATETIME,
   `revoked` BOOLEAN,
+  `revoke_reason` VARCHAR(64),
+  `revoked_at` DATETIME,
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),

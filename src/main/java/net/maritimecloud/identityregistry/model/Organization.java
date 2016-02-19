@@ -21,9 +21,6 @@ import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -77,6 +74,7 @@ public class Organization extends TimestampModel {
     private String password;
 
     @JsonIgnore
+    @Column(name = "logo")
     private byte[] logo;
 
     public Organization() {
@@ -101,7 +99,7 @@ public class Organization extends TimestampModel {
 
     /** Copies this organization into the other.
      * Only updates OIDC if non-null content is given, skips password and shortname */
-    public Organization copyToSecure(Organization org) {
+    public Organization selectiveCopyTo(Organization org) {
         Objects.requireNonNull(org);
         org.setName(name);
         org.setEmail(email);

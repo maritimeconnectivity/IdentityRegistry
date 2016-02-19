@@ -137,7 +137,7 @@ public class OrganizationController {
                     keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
                 }
                 // TODO: Remove old IDP if new input doesn't contain IDP info
-                input.copyToSecure(org);
+                input.selectiveCopyTo(org);
                 this.organizationService.saveOrganization(org);
                 return new ResponseEntity<>(HttpStatus.OK);
             }

@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.model.Certificate;
+import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.User;
 import net.maritimecloud.identityregistry.services.CertificateService;
@@ -253,7 +254,8 @@ public class UserController {
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for user
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), user.getFirstName(), user.getFirstName(), user.getEmail(), userKeyPair.getPublic());
+                    String name = user.getFirstName() + " " + user.getLastName();
+                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), name, name, user.getEmail(), userKeyPair.getPublic());
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
@@ -285,10 +287,10 @@ public class UserController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/user/{userId}/revokecertificate/{certId}",
-            method = RequestMethod.DELETE,
+            value = "/api/org/{orgShortName}/user/{userId}/certificates/{certId}/revoke",
+            method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId) {
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -301,6 +303,14 @@ public class UserController {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     User certUser = cert.getUser();
                     if (certUser != null && certUser.getId().equals(user.getId())) {
+                        if (!input.validateReason()) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        if (input.getRevokedAt() == null) {
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                        }
+                        cert.setRevokedAt(input.getRevokedAt());
+                        cert.setRevokeReason(input.getRevokationReason());
                         cert.setRevoked(true);
                         this.certificateService.saveCertificate(cert);
                         return new ResponseEntity<>(HttpStatus.OK);

@@ -7,4 +7,6 @@ public class MCIdRegConstants {
     public static final String USER_NOT_FOUND = "The user could not be found.";
     public static final String DEVICE_NOT_FOUND = "The device could not be found.";
     public static final String URL_DATA_MISMATCH = "There is a mismatch between the url arguments and the data provided!";
+    public static final String INVALID_REVOCATION_REASON = "The revocation reason is invalid!";
+    public static final String INVALID_REVOCATION_DATE = "The revocation date must be set!";
 }
