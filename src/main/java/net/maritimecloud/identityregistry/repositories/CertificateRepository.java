@@ -15,6 +15,8 @@
 package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
+
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.Device;
@@ -25,5 +27,7 @@ public interface CertificateRepository extends CrudRepository<Certificate, Long>
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
+    @Query("SELECT c FROM Certificate c WHERE c.revoked=1 AND CURDATE() BETWEEN c.start AND c.end")
+    List<Certificate> findRevoked();
 }
 

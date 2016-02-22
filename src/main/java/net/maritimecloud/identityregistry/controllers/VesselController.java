@@ -281,7 +281,7 @@ public class VesselController {
                             return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
                         }
                         if (input.getRevokedAt() == null) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_DATE, HttpStatus.BAD_REQUEST);
                         }
                         cert.setRevokedAt(input.getRevokedAt());
                         cert.setRevokeReason(input.getRevokationReason());

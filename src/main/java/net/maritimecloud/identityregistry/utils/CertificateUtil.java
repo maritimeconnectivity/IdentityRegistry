@@ -104,6 +104,7 @@ public class CertificateUtil {
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
+    public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
     // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
     public static final String FLAGSTATE_OID = "2.25.323100633285601570573910217875371967771";
 
@@ -160,10 +161,10 @@ public class CertificateUtil {
                                    .addExtension(Extension.subjectDirectoryAttributes, false, sda);
 
         }
-        JcaContentSignerBuilder builder = new JcaContentSignerBuilder("SHA224withECDSA");
-        builder.setProvider(CertificateUtil.BC_PROVIDER_NAME);
+        JcaContentSignerBuilder builder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
+        builder.setProvider(BC_PROVIDER_NAME);
         ContentSigner signer = builder.build(signerPrivateKey);
-        return new JcaX509CertificateConverter().setProvider(CertificateUtil.BC_PROVIDER_NAME).getCertificate(certV3Bldr.build(signer));
+        return new JcaX509CertificateConverter().setProvider(BC_PROVIDER_NAME).getCertificate(certV3Bldr.build(signer));
     }
     
     
@@ -215,16 +216,16 @@ public class CertificateUtil {
         FileInputStream fis = null;
         try {
             rootks = KeyStore.getInstance(KEYSTORE_TYPE); // KeyStore.getDefaultType() 
-            rootks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            rootks.load(null, KEYSTORE_PASSWORD.toCharArray());
             itks = KeyStore.getInstance(KEYSTORE_TYPE); // KeyStore.getDefaultType() 
-            itks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            itks.load(null, KEYSTORE_PASSWORD.toCharArray());
             // Store away the keystore.
-            rootfos = new FileOutputStream(CertificateUtil.ROOT_KEYSTORE_PATH);
-            itfos = new FileOutputStream(CertificateUtil.INTERMEDIATE_KEYSTORE_PATH);
+            rootfos = new FileOutputStream(ROOT_KEYSTORE_PATH);
+            itfos = new FileOutputStream(INTERMEDIATE_KEYSTORE_PATH);
             X509Certificate cacert;
             try {
                 cacert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
-                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.ROOT_CERT_X500_NAME, null, "ROOTCA");
+                                                        ROOT_CERT_X500_NAME, ROOT_CERT_X500_NAME, null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -233,7 +234,7 @@ public class CertificateUtil {
             X509Certificate imcert;
             try {
                 imcert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
-                                                        CertificateUtil.ROOT_CERT_X500_NAME, CertificateUtil.MCIDREG_CERT_X500_NAME, null, "INTERMEDIATE");
+                                                        ROOT_CERT_X500_NAME, MCIDREG_CERT_X500_NAME, null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -241,24 +242,24 @@ public class CertificateUtil {
             }
             Certificate[] certChain = new Certificate[1];
             certChain[0] = cacert;
-            rootks.setKeyEntry(CertificateUtil.ROOT_CERT_ALIAS, cakp.getPrivate(), CertificateUtil.KEYSTORE_PASSWORD.toCharArray(), certChain);
-            rootks.store(rootfos, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            rootks.setKeyEntry(ROOT_CERT_ALIAS, cakp.getPrivate(), KEYSTORE_PASSWORD.toCharArray(), certChain);
+            rootks.store(rootfos, KEYSTORE_PASSWORD.toCharArray());
             rootks = KeyStore.getInstance(KeyStore.getDefaultType());
-            rootks.load(null, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            rootks.load(null, KEYSTORE_PASSWORD.toCharArray());
             
             certChain = new Certificate[2];
             certChain[0] = imcert;
             certChain[1] = cacert;
-            itks.setKeyEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, imkp.getPrivate(), CertificateUtil.KEYSTORE_PASSWORD.toCharArray(), certChain);
-            itks.store(itfos, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
+            itks.setKeyEntry(INTERMEDIATE_CERT_ALIAS, imkp.getPrivate(), KEYSTORE_PASSWORD.toCharArray(), certChain);
+            itks.store(itfos, KEYSTORE_PASSWORD.toCharArray());
             
             // Store away the truststore.
             ts = KeyStore.getInstance(KeyStore.getDefaultType());
-            ts.load(null, CertificateUtil.TRUSTSTORE_PASSWORD.toCharArray());
-            tsfos = new FileOutputStream(CertificateUtil.TRUSTSTORE_PATH);
-            ts.setCertificateEntry(CertificateUtil.ROOT_CERT_ALIAS, cacert);
-            ts.setCertificateEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, imcert);
-            ts.store(tsfos, CertificateUtil.TRUSTSTORE_PASSWORD.toCharArray());
+            ts.load(null, TRUSTSTORE_PASSWORD.toCharArray());
+            tsfos = new FileOutputStream(TRUSTSTORE_PATH);
+            ts.setCertificateEntry(ROOT_CERT_ALIAS, cacert);
+            ts.setCertificateEntry(INTERMEDIATE_CERT_ALIAS, imcert);
+            ts.store(tsfos, TRUSTSTORE_PASSWORD.toCharArray());
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -291,7 +292,7 @@ public class CertificateUtil {
         ECGenParameterSpec ecGenSpec = new ECGenParameterSpec("secp384r1");
         KeyPairGenerator g;
         try {
-            g = KeyPairGenerator.getInstance("ECDSA", CertificateUtil.BC_PROVIDER_NAME);
+            g = KeyPairGenerator.getInstance("ECDSA", BC_PROVIDER_NAME);
         } catch (NoSuchAlgorithmException | NoSuchProviderException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
@@ -317,7 +318,7 @@ public class CertificateUtil {
     public static PrivateKeyEntry getRootCertEntry() {
         FileInputStream is;
         try {
-            is = new FileInputStream(CertificateUtil.INTERMEDIATE_KEYSTORE_PATH);
+            is = new FileInputStream(INTERMEDIATE_KEYSTORE_PATH);
         } catch (FileNotFoundException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -326,9 +327,9 @@ public class CertificateUtil {
         KeyStore keystore;
         try {
             keystore = KeyStore.getInstance(KEYSTORE_TYPE);
-            keystore.load(is, CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
-            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(CertificateUtil.KEYSTORE_PASSWORD.toCharArray());
-            PrivateKeyEntry rootCertEntry = (PrivateKeyEntry) keystore.getEntry(CertificateUtil.INTERMEDIATE_CERT_ALIAS, protParam);
+            keystore.load(is, KEYSTORE_PASSWORD.toCharArray());
+            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray());
+            PrivateKeyEntry rootCertEntry = (PrivateKeyEntry) keystore.getEntry(INTERMEDIATE_CERT_ALIAS, protParam);
             return rootCertEntry;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableEntryException e) {
@@ -386,20 +387,43 @@ public class CertificateUtil {
      * @param revokesSerialNumbers  List of the serialnumbers that should be revoked.
      * @return
      */
-    public X509CRL generateCRL(List<BigInteger> revokesSerialNumbers) {
+    public static X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
         Date now = new Date();
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
         crlBuilder.setNextUpdate(new Date(now.getTime() + 100000));
-        for (BigInteger sn : revokesSerialNumbers) {
-            crlBuilder.addCRLEntry(sn, now, CRLReason.privilegeWithdrawn);
+        for (net.maritimecloud.identityregistry.model.Certificate cert : revokedCerts) {
+            int reason = 0;
+            String certReason = cert.getRevokeReason().toLowerCase();
+            if ("unspecified".equals(certReason)) {
+                reason = CRLReason.unspecified;
+            } else if ("keycompromise".equals(certReason)) {
+                reason = CRLReason.keyCompromise;
+            } else if ("cacompromise".equals(certReason)) {
+                reason = CRLReason.cACompromise;
+            } else if ("affiliationchanged".equals(certReason)) {
+                reason = CRLReason.affiliationChanged;
+            } else if ("superseded".equals(certReason)) {
+                reason = CRLReason.superseded;
+            } else if ("cessationofoperation".equals(certReason)) {
+                reason = CRLReason.cessationOfOperation;
+            } else if ("certificateHold".equals(certReason)) {
+                reason = CRLReason.certificateHold;
+            } else if ("removefromcrl".equals(certReason)) {
+                reason = CRLReason.removeFromCRL;
+            } else if ("privilegewithdrawn".equals(certReason)) {
+                reason = CRLReason.privilegeWithdrawn;
+            } else if ("aacompromise".equals(certReason)) {
+                reason = CRLReason.aACompromise;
+            }
+            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId().longValue()), now, reason);
         }
         //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
         //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
         
         PrivateKeyEntry keyEntry = getRootCertEntry();
         
-        JcaContentSignerBuilder signBuilder = new JcaContentSignerBuilder("SHA224withECDSA");
-        signBuilder.setProvider(CertificateUtil.BC_PROVIDER_NAME);
+        JcaContentSignerBuilder signBuilder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
+        signBuilder.setProvider(BC_PROVIDER_NAME);
         ContentSigner signer;
         try {
             signer = signBuilder.build(keyEntry.getPrivateKey());
@@ -411,7 +435,7 @@ public class CertificateUtil {
         
         X509CRLHolder cRLHolder = crlBuilder.build(signer);
         JcaX509CRLConverter converter = new JcaX509CRLConverter();
-        converter.setProvider(CertificateUtil.BC_PROVIDER_NAME);
+        converter.setProvider(BC_PROVIDER_NAME);
         X509CRL crl = null;
         try {
             crl = converter.getCRL(cRLHolder);
@@ -443,7 +467,7 @@ public class CertificateUtil {
     /**
      * Convert a cert/key to pem from "encoded" format (byte[])
      * 
-     * @param type The type, currently "CERTIFICATE", "PUBLIC KEY" or "PRIVATE KEY" are used
+     * @param type The type, currently "CERTIFICATE", "PUBLIC KEY", "PRIVATE KEY" or "X509 CRL" are used
      * @param encoded The encoded byte[]
      * @return The Pem formated cert/key
      */

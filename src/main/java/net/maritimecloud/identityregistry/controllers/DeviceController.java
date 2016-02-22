@@ -116,7 +116,6 @@ public class DeviceController {
         } else {
             return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
         }
-                
     }
 
     /**
@@ -278,7 +277,7 @@ public class DeviceController {
                             return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
                         }
                         if (input.getRevokedAt() == null) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_DATE, HttpStatus.BAD_REQUEST);
                         }
                         cert.setRevokedAt(input.getRevokedAt());
                         cert.setRevokeReason(input.getRevokationReason());

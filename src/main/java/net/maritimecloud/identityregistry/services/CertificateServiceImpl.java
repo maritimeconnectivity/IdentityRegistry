@@ -61,7 +61,12 @@ public class CertificateServiceImpl implements CertificateService {
     
     @Override
     public List<Certificate> listDeviceCertificate(Device device) {
-        return CertificateRepository.findBydevice(device);     
+        return CertificateRepository.findBydevice(device);
+    }
+
+    @Override
+    public List<Certificate> listRevokedCertificate() {
+        return CertificateRepository.findRevoked();
     }
 }
 
