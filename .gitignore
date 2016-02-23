@@ -1,0 +1,11 @@
+.DS_Store
+target
+.checkstyle
+.settings
+.project
+.classpath
+.idea
+*.iml
+/bin/
+wildfly-*
+.mvn
