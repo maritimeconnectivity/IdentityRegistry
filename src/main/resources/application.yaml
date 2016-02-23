@@ -1,14 +1,5 @@
 spring:
     profiles.active: development
----
-spring:
-    profiles: development
-# Database setup
-    datasource:
-        url: jdbc:mysql://localhost/identity_registry
-        username: idreg
-        password: idreg
-        driverClassName: com.mysql.jdbc.Driver
 
 # SSL
 server:
@@ -43,6 +34,16 @@ net:
             keycloak-project-users-admin-client: security-admin-console
             keycloak-project-users-realm: master
             keycloak-project-users-base-url: http://localhost:9080/auth/
+---
+spring:
+    profiles: development
+# Database setup
+    datasource:
+        url: jdbc:mysql://localhost/identity_registry
+        username: idreg
+        password: idreg
+        driverClassName: com.mysql.jdbc.Driver
+
 ---
 spring:
     profiles: test
