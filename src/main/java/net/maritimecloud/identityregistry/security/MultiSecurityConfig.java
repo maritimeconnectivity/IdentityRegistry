@@ -32,6 +32,7 @@ import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
+import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.beans.factory.config.ConfigurableBeanFactory;
@@ -122,9 +123,10 @@ public class MultiSecurityConfig  {
         @Bean
         @Override
         protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-            // Change from RegisterSessionAuthenticationStrategy to NullAuthenticatedSessionStrategy
-            // if changing from confidential to bearer-only
-            return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+            // When using as confidential keycloak/OpenID Connect client:
+            //return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
+            // When using as bearer-only keycloak/OpenID Connect client:
+            return new NullAuthenticatedSessionStrategy();
         }
 
         @Override
@@ -161,7 +163,6 @@ public class MultiSecurityConfig  {
     }
 
     // See https://docs.spring.io/spring-security/site/docs/4.0.x/reference/html/x509.html
-    // Needs some work to actually work!!
     @Configuration
     @Order(3)
     public static class X509WebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
