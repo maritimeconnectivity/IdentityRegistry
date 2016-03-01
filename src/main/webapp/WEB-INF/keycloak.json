@@ -4,6 +4,8 @@
   "auth-server-url": "http://localhost:9080/auth",
   "ssl-required": "external",
   "resource": "mcidreg",
+  "bearer-only" : true,
+  "enable-cors": true,
   "credentials": {
     "secret": "1b1f1686-1391-4b25-b770-906a2ffc7db9"
   },

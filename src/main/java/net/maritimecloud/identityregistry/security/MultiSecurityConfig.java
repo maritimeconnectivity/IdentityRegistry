@@ -19,28 +19,20 @@ import javax.sql.DataSource;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Scope;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
-import org.springframework.security.core.session.SessionRegistryImpl;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
-import org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-import org.springframework.beans.factory.config.ConfigurableBeanFactory;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
-import org.keycloak.adapters.springsecurity.KeycloakSecurityComponents;
-import org.keycloak.adapters.springsecurity.client.KeycloakClientRequestFactory;
-import org.keycloak.adapters.springsecurity.client.KeycloakRestTemplate;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
@@ -96,19 +88,8 @@ public class MultiSecurityConfig  {
 
     @Configuration
     @Order(1)
-    @ComponentScan(basePackageClasses = KeycloakSecurityComponents.class)
     public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
     {
-        // Enables client to client communication
-        @Autowired
-        public KeycloakClientRequestFactory keycloakClientRequestFactory;
-
-        @Bean
-        @Scope(ConfigurableBeanFactory.SCOPE_PROTOTYPE)
-        public KeycloakRestTemplate keycloakRestTemplate() {
-            return new KeycloakRestTemplate(keycloakClientRequestFactory);
-        }
-
         /**
          * Registers the KeycloakAuthenticationProvider with the authentication manager.
          */
@@ -134,15 +115,13 @@ public class MultiSecurityConfig  {
         {
             super.configure(http);
             http
-                .requestMatchers()
-                    .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
-            .and()
                 .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ADMIN")
-                    .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
-        ;
+                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
+                    .anyRequest().permitAll()
+            ;
         }
 
         @Bean

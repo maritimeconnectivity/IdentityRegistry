@@ -1,6 +1,12 @@
 spring:
     profiles.active: development
 
+# logging
+#logging.level:
+#    org.springframework.web: DEBUG
+#    org.springframework.security: DEBUG
+#    org.keycloak.adapters: DEBUG
+
 # SSL
 server:
     port: 8443
