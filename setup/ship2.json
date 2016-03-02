@@ -11,8 +11,12 @@
          "attributeValue":"OZFB"
       },
       {
-         "attributeName":"Port Of Register",
-         "attributeValue":"KØBENHAVN"
+         "attributeName":"Flagstate",
+         "attributeValue":"Denmark"
+      },
+      {
+         "attributeName":"mrn",
+         "attributeValue":"urn:mrn:imo:vessel:9080950"
       }
    ]
 }

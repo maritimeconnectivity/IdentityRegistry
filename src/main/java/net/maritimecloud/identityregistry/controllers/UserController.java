@@ -255,7 +255,7 @@ public class UserController {
                     // Generate keypair for user
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
                     String name = user.getFirstName() + " " + user.getLastName();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), name, name, user.getEmail(), userKeyPair.getPublic());
+                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), name, name, user.getEmail(), userKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());

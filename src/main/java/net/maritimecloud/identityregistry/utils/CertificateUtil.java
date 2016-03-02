@@ -28,66 +28,42 @@ import java.security.KeyStore.PrivateKeyEntry;
 import java.security.KeyStoreException;
 import java.security.NoSuchAlgorithmException;
 import java.security.NoSuchProviderException;
-import java.security.Principal;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
-import java.security.Signature;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Vector;
 import java.security.spec.ECGenParameterSpec;
 
-import org.bouncycastle.asn1.ASN1Encodable;
-import org.bouncycastle.asn1.ASN1ObjectIdentifier;
-import org.bouncycastle.asn1.ASN1OctetString;
-import org.bouncycastle.asn1.ASN1Sequence;
-import org.bouncycastle.asn1.DERNull;
-import org.bouncycastle.asn1.DERPrintableString;
-import org.bouncycastle.asn1.DERSet;
-import org.bouncycastle.asn1.pkcs.PKCSObjectIdentifiers;
-import org.bouncycastle.asn1.pkcs.RSAPublicKey;
+import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
-import org.bouncycastle.asn1.x500.X500NameBuilder;
-import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x509.Attribute;
-import org.bouncycastle.asn1.x509.AlgorithmIdentifier;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLReason;
 import org.bouncycastle.asn1.x509.Extension;
-import org.bouncycastle.asn1.x509.SubjectDirectoryAttributes;
-import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.GeneralName;
+import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.cert.X509CRLHolder;
-import org.bouncycastle.cert.X509CertificateHolder;
-import org.bouncycastle.cert.X509v1CertificateBuilder;
 import org.bouncycastle.cert.X509v2CRLBuilder;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CRLConverter;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509ExtensionUtils;
-import org.bouncycastle.cert.jcajce.JcaX509v1CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
-import org.bouncycastle.operator.DefaultDigestAlgorithmIdentifierFinder;
-import org.bouncycastle.operator.DefaultSignatureAlgorithmIdentifierFinder;
 import org.bouncycastle.operator.OperatorCreationException;
-import org.bouncycastle.operator.bc.BcRSAContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
-import org.bouncycastle.x509.X509V2CRLGenerator;
-import org.bouncycastle.operator.bc.BcContentSignerBuilder;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
@@ -105,9 +81,17 @@ public class CertificateUtil {
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
     public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
-    // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
-    public static final String FLAGSTATE_OID = "2.25.323100633285601570573910217875371967771";
 
+    // OIDs used for the extra info stored in the SubjectAlternativeName extension
+    // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
+    public static final String MC_OID_FLAGSTATE = "2.25.323100633285601570573910217875371967771";
+    public static final String MC_OID_CALLSIGN = "2.25.208070283325144527098121348946972755227";
+    public static final String MC_OID_IMO_NUMBER = "2.25.291283622413876360871493815653100799259";
+    public static final String MC_OID_MMSI_NUMBER = "2.25.328433707816814908768060331477217690907";
+    // See http://www.shipais.com/doc/Pifaq/1/22/ and https://help.marinetraffic.com/hc/en-us/articles/205579997-What-is-the-significance-of-the-AIS-SHIPTYPE-number-
+    public static final String MC_OID_AIS_SHIPTYPE = "2.25.107857171638679641902842130101018412315";
+    public static final String MC_OID_MRN = "2.25.57343886297412775677905049923597223195";
+    public static final String MC_OID_PERMISSIONS = "2.25.174437629172304915481663724171734402331";
 
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
@@ -122,16 +106,10 @@ public class CertificateUtil {
      */
     public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
-        /*X509v1CertificateBuilder certBldr = new JcaX509v1CertificateBuilder(new X500Name(issuer),
-                                                                            BigInteger.valueOf(1),
-                                                                            new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
-                                                                            new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000),
-                                                                            new X500Name(subject),
-                                                                            subjectPublicKey);*/
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(new X500Name(issuer),
                                                                                 BigInteger.valueOf(serialNumber),
-                                                                                new Date(System.currentTimeMillis() - 24 * 60 * 60 * 1000),
-                                                                                new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 1000),
+                                                                                new Date(System.currentTimeMillis() - 24 * 60 * 60 * 60 * 1000), // Valid from yesterday 
+                                                                                new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 60 * 1000), // Valid for a year
                                                                                 new X500Name(subject),
                                                                                 subjectPublicKey);
         JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
@@ -152,13 +130,21 @@ public class CertificateUtil {
                                    .addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
                                    .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
         } else {
-            Vector<Attribute> attributeVector = new Vector<Attribute>();
-            Attribute atribute = new Attribute(new ASN1ObjectIdentifier(FLAGSTATE_OID), new DERSet(new DERPrintableString("")));
-            attributeVector.add(atribute);
-            SubjectDirectoryAttributes sda = new SubjectDirectoryAttributes(attributeVector);
+            // Subject Alternative Name
+            GeneralName[] genNames = null;
+            if (customAttrs != null && !customAttrs.isEmpty()) {
+                genNames = new GeneralName[customAttrs.size()];
+                Iterator<Map.Entry<String,String>> it = customAttrs.entrySet().iterator();
+                int idx = 0;
+                while (it.hasNext()) {
+                    Map.Entry<String,String> pair = (Map.Entry<String,String>)it.next();
+                    genNames[idx] = new GeneralName(GeneralName.otherName, new DERUTF8String(pair.getKey() + ";" + pair.getValue()));
+                    idx++;
+                }
+            }
             certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
                                    .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey))
-                                   .addExtension(Extension.subjectDirectoryAttributes, false, sda);
+                                   .addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
 
         }
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
@@ -166,36 +152,6 @@ public class CertificateUtil {
         ContentSigner signer = builder.build(signerPrivateKey);
         return new JcaX509CertificateConverter().setProvider(BC_PROVIDER_NAME).getCertificate(certV3Bldr.build(signer));
     }
-    
-    
-    /*public static void generateCert(KeyPair kp) {
-        X500NameBuilder builder = new X500NameBuilder(BCStyle.INSTANCE);
-        
-        builder.addRDN(BCStyle.C, "DK");
-        builder.addRDN(BCStyle.O, "MaritimeCloud");
-        builder.addRDN(BCStyle.OU, "MaritimeCloud Identity Registry");
-        builder.addRDN(BCStyle.CN, "MaritimeCloud Identity Registry Root Certificate");
-        builder.addRDN(BCStyle.E, "info@maritimecloud.net");
-
-        // create the certificate - version 3 - without extensions
-        AlgorithmIdentifier sigAlgId = new DefaultSignatureAlgorithmIdentifierFinder().find("SHA224withECDSA");
-        //AlgorithmIdentifier digAlgId = new DefaultDigestAlgorithmIdentifierFinder().find(sigAlgId);
-
-        //ContentSigner sigGen = new BcRSAContentSignerBuilder(sigAlgId, digAlgId).build(kp.getPrivate());
-        //AlgorithmIdentifier pubAlgId = new AlgorithmIdentifier(PKCSObjectIdentifiers.rsaEncryption, DERNull.INSTANCE));
-        //SubjectPublicKeyInfo pubInfo = new SubjectPublicKeyInfo(pubAlgId, (ASN1Encodable) new RSAPublicKey(lwPubKey.getModulus(), lwPubKey.getExponent());
-        SubjectPublicKeyInfo pubInfo = new SubjectPublicKeyInfo(ASN1Sequence.getInstance(kp.getPublic().getEncoded()));
-        X509v3CertificateBuilder certGen = new X509v3CertificateBuilder(builder.build(), 
-                                                                        BigInteger.valueOf(1), 
-                                                                        new Date(System.currentTimeMillis() - 50000),
-                                                                        new Date(System.currentTimeMillis() + 50000), 
-                                                                        builder.build(), 
-                                                                        pubInfo);
-
-        X509CertificateHolder certHolder = certGen.build(sigGen);
-        System.out.println(certHolder.getEncoded().toString());
-    }*/
-    
     
     /**
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
@@ -311,11 +267,11 @@ public class CertificateUtil {
     
     
     /**
-     * Loads the root MaritimeCloud certificate from the keystore
+     * Loads the MaritimeCloud certificate used for signing from the keystore
      *  
      * @return
      */
-    public static PrivateKeyEntry getRootCertEntry() {
+    public static PrivateKeyEntry getSigningCertEntry() {
         FileInputStream is;
         try {
             is = new FileInputStream(INTERMEDIATE_KEYSTORE_PATH);
@@ -329,8 +285,8 @@ public class CertificateUtil {
             keystore = KeyStore.getInstance(KEYSTORE_TYPE);
             keystore.load(is, KEYSTORE_PASSWORD.toCharArray());
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray());
-            PrivateKeyEntry rootCertEntry = (PrivateKeyEntry) keystore.getEntry(INTERMEDIATE_CERT_ALIAS, protParam);
-            return rootCertEntry;
+            PrivateKeyEntry signingCertEntry = (PrivateKeyEntry) keystore.getEntry(INTERMEDIATE_CERT_ALIAS, protParam);
+            return signingCertEntry;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableEntryException e) {
             // TODO Auto-generated catch block
@@ -350,10 +306,10 @@ public class CertificateUtil {
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public static X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey) {
-        PrivateKeyEntry rootCertEntry = CertificateUtil.getRootCertEntry();
-        java.security.cert.Certificate rootCert = rootCertEntry.getCertificate();
-        X509Certificate rootx509cert = (X509Certificate) rootCert;
+    public static X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey, Map<String, String> customAttr) {
+        PrivateKeyEntry signingCertEntry = CertificateUtil.getSigningCertEntry();
+        java.security.cert.Certificate signingCert = signingCertEntry.getCertificate();
+        X509Certificate signingX509Cert = (X509Certificate) signingCert;
         // Try to find the correct country code, else we just use the country name as code
         String orgCountryCode = country;
         String[] locales = Locale.getISOCountries();
@@ -369,11 +325,9 @@ public class CertificateUtil {
                               "OU=" + orgUnitName + ", " +
                               "CN=" + callName + ", " +
                               "E=" + email;
-        HashMap<String, String> customAttr = new HashMap<String, String>();
-        customAttr.put(FLAGSTATE_OID, orgCountryCode);
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(serialNumber, rootCertEntry.getPrivateKey(), rootx509cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
+            orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -420,7 +374,7 @@ public class CertificateUtil {
         //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
         //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
         
-        PrivateKeyEntry keyEntry = getRootCertEntry();
+        PrivateKeyEntry keyEntry = getSigningCertEntry();
         
         JcaContentSignerBuilder signBuilder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
         signBuilder.setProvider(BC_PROVIDER_NAME);

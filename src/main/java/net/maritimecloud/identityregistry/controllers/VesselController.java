@@ -21,6 +21,7 @@ import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.User;
 import net.maritimecloud.identityregistry.model.Vessel;
+import net.maritimecloud.identityregistry.model.VesselAttribute;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.VesselService;
@@ -31,6 +32,7 @@ import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -230,7 +232,30 @@ public class VesselController {
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for vessel
                     KeyPair vesselKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), vessel.getName(), vessel.getName(), "", vesselKeyPair.getPublic());
+                    HashMap<String, String> attrs = new HashMap<String, String>();
+                    for (VesselAttribute attr : vessel.getAttributes()) {
+                        String attrName = attr.getAttributeName().toLowerCase();
+                        switch(attrName) {
+                        case "callsign":
+                            attrs.put(CertificateUtil.MC_OID_CALLSIGN, attr.getAttributeValue());
+                            break;
+                        case "imo number":
+                            attrs.put(CertificateUtil.MC_OID_IMO_NUMBER, attr.getAttributeValue());
+                            break;
+                        case "mmsi number":
+                            attrs.put(CertificateUtil.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
+                            break;
+                        case "flagstate":
+                            attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
+                            break;
+                        case "mrn":
+                            attrs.put(CertificateUtil.MC_OID_MRN, attr.getAttributeValue());
+                            break;
+                        default:
+                            System.out.println("Unexpected attribute value: " + attrName);
+                        }
+                    }
+                    X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), vessel.getName(), vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded());

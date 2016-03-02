@@ -54,7 +54,9 @@ public class AccessControlUtil {
                 return true;
             }
         } else {
-            System.out.println("Unknown authentication method: " + auth.getClass());
+            if (auth != null) {
+                System.out.println("Unknown authentication method: " + auth.getClass());
+            }
         }
         
         return false;

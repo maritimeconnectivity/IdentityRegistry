@@ -225,7 +225,7 @@ public class DeviceController {
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for device
                     KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic());
+                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded());
