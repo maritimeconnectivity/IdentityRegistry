@@ -75,7 +75,7 @@ public class OrganizationController {
         }
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        keycloakAU.createUser(input.getShortName(), input.getShortName(), input.getShortName(), newPassword, input.getEmail(), input.getShortName(), KeycloakAdminUtil.ADMIN_USER);
+        keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), KeycloakAdminUtil.ADMIN_USER);
         Organization newOrg = this.organizationService.saveOrganization(input);
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }

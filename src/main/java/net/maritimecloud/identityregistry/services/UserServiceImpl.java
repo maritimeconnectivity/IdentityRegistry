@@ -42,6 +42,11 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
+    public User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId) {
+        return UserRepository.findByUserOrgIdAndIdOrganization(userOrgId, orgId);
+    }
+
+    @Override
     public User saveUser(User user) {
         return UserRepository.save(user);
     }
@@ -53,7 +58,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public List<User> listOrgUsers(int orgId) {
-        return UserRepository.findByidOrganization(orgId);
+        return UserRepository.findByIdOrganization(orgId);
     }
 }
 

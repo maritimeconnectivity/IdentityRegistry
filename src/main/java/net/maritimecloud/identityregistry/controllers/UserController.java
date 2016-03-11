@@ -323,5 +323,39 @@ public class UserController {
         }
     }
 
+    /**
+     * Sync user from keycloak, diff from create/update user is that this should only be done by
+     * the keycloak sync-mechanism. 
+     * 
+     * @return a reply...
+     */ 
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/user-sync/",
+            method = RequestMethod.POST,
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            String userOrgId = input.getUserOrgId();
+            if (userOrgId == null || userOrgId.isEmpty()) {
+                return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.BAD_REQUEST);
+            }
+            User oldUser = this.userService.getUserByUserOrgIdAndIdOrganization(userOrgId, org.getId());
+            // If user does not exists, we create him
+            if (oldUser == null) {
+                input.setIdOrganization(org.getId().intValue());
+                this.userService.saveUser(input);
+            } else {
+                // Update the existing user and save
+                oldUser = input.selectiveCopyTo(oldUser);
+                this.userService.saveUser(oldUser);
+            }
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+        }
+    }
+
 }
 

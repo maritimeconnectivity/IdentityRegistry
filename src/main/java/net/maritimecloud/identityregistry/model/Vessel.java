@@ -32,7 +32,7 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Where;
 
 /**
- * Model object representing an organization
+ * Model object representing a vessel
  */
 
 @Entity

@@ -33,7 +33,7 @@ import javax.persistence.Transient;
 import org.hibernate.annotations.Where;
 
 /**
- * Model object representing an organization
+ * Model object representing an user
  */
 
 @Entity
@@ -58,6 +58,9 @@ public class User extends TimestampModel {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "permissions")
+    private String permissions;
+
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
@@ -66,19 +69,27 @@ public class User extends TimestampModel {
     @Transient
     private String password;
 
-    /*
-    @ManyToOne
-    @JoinColumn(name="id_organization")
-    private Organization organization;*/
-
-    /** Copies this organization into the other */
+    /** Copies this user into the other */
     public User copyTo(User user) {
         Objects.requireNonNull(user);
         user.setId(id);
         user.setIdOrganization(idOrganization);
+        user.setEmail(email);
         user.setFirstName(firstName);
+        user.setLastName(lastName);
         user.setUserOrgId(userOrgId);
+        user.setPermissions(permissions);
         user.setCertificate(certificates);
+        return user;
+    }
+    /** Copies this user into the other
+     * Only update things that are allowed to change on update */
+    public User selectiveCopyTo(User user) {
+        Objects.requireNonNull(user);
+        user.setEmail(email);
+        user.setFirstName(firstName);
+        user.setLastName(lastName);
+        user.setPermissions(permissions);
         return user;
     }
 
@@ -134,6 +145,12 @@ public class User extends TimestampModel {
         this.email = email;
     }
 
+    public String getPermissions() {
+        return permissions;
+    }
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
+    }
     public List<Certificate> getCertificates() {
         return certificates;
     }
@@ -141,15 +158,6 @@ public class User extends TimestampModel {
     public void setCertificate(List<Certificate> certificates) {
         this.certificates = certificates;
     }
-
-    /*
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }*/
 
     // Only used when a user is first created to return a password.
     public String getPassword() {

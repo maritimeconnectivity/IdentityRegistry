@@ -31,14 +31,14 @@ net:
             keycloak-broker-admin-user: idreg-admin
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console
-            keycloak-broker-realm: master
+            keycloak-broker-realm: MaritimeCloud
             keycloak-broker-base-url: http://localhost:9080/auth/
 
             # Login info for the keycloak used for project users
             keycloak-project-users-admin-user: idreg-admin
             keycloak-project-users-admin-password: idreg-admin
             keycloak-project-users-admin-client: security-admin-console
-            keycloak-project-users-realm: master
+            keycloak-project-users-realm: MaritimeCloud
             keycloak-project-users-base-url: http://localhost:9080/auth/
 ---
 spring:

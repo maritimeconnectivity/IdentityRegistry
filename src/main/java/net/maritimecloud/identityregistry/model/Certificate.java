@@ -25,7 +25,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Model object representing an organization
+ * Model object representing a certificate
  */
 
 @Entity

@@ -38,8 +38,8 @@ import java.security.cert.Certificate;
 import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -107,10 +107,16 @@ public class CertificateUtil {
      */
     public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
+        Calendar cal = Calendar.getInstance();
+        cal.add(Calendar.DATE, -1);
+        Date yesterday = cal.getTime();
+        cal.add(Calendar.DATE, 1);
+        cal.add(Calendar.YEAR, 1);
+        Date nextYear = cal.getTime();
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(new X500Name(issuer),
                                                                                 BigInteger.valueOf(serialNumber),
-                                                                                new Date(System.currentTimeMillis() - 24 * 60 * 60 * 60 * 1000), // Valid from yesterday 
-                                                                                new Date(System.currentTimeMillis() + 365 * 24 * 60 * 60 * 60 * 1000), // Valid for a year
+                                                                                yesterday, // Valid from yesterday 
+                                                                                nextYear, // Valid for a year
                                                                                 new X500Name(subject),
                                                                                 subjectPublicKey);
         JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
@@ -401,7 +407,6 @@ public class CertificateUtil {
         return crl;
     }
 
-    
     /**
      * For some reason the X500Name is reversed when extracted from X509Certificate Principal,
      * so here we reverese it again 
@@ -416,9 +421,7 @@ public class CertificateUtil {
         }
         return buf.toString();
     }
-    
-    
-    
+
     /**
      * Convert a cert/key to pem from "encoded" format (byte[])
      * 

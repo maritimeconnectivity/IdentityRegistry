@@ -21,6 +21,8 @@ import net.maritimecloud.identityregistry.model.User;
 public interface UserService {
     User getUserById(Long id);
 
+    User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId);
+
     User saveUser(User user);
 
     void deleteUser(Long id);

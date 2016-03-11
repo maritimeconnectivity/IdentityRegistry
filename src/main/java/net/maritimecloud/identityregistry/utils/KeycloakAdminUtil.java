@@ -19,6 +19,7 @@ import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
 import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
+import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.util.JsonSerialization;
@@ -189,6 +190,28 @@ public class KeycloakAdminUtil {
         } else {
             keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().create(idp);
         }
+        /* The admin client does not yet support creating mappers, but it is planned to be added "soon"...
+         * 
+        // Create mapper for hardcoded org value
+        IdentityProviderMapperRepresentation orgMapper = new IdentityProviderMapperRepresentation();
+        orgMapper.setIdentityProviderAlias(name);
+        orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
+        orgMapper.setName(name + " org mapper");
+        Map<String, String> orgMapperConf = new HashMap<String, String>();
+        orgMapperConf.put("attribute.value", name);
+        orgMapperConf.put("attribute", "org");
+        orgMapper.setConfig(orgMapperConf);
+
+        // Create mapper for permissions attribute
+        IdentityProviderMapperRepresentation permissionsMapper = new IdentityProviderMapperRepresentation();
+        permissionsMapper.setIdentityProviderAlias(name);
+        permissionsMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
+        permissionsMapper.setName(name + " org mapper");
+        Map<String, String> permissionsMapperConf = new HashMap<String, String>();
+        permissionsMapperConf.put("claim", "permissions");
+        permissionsMapperConf.put("user.attribute", "permissions");
+        permissionsMapper.setConfig(permissionsMapperConf);
+        */
     }
     
     /**
