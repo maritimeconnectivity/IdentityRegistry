@@ -29,5 +29,5 @@ public interface UserService {
 
     Iterable<User> listAllUsers();
 
-    List<User> listOrgUsers(int id);
+    List<User> listOrgUsers(Long id);
 }

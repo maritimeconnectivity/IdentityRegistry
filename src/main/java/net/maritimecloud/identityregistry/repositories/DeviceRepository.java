@@ -21,6 +21,6 @@ import net.maritimecloud.identityregistry.model.Device;
 public interface DeviceRepository extends CrudRepository<Device, Long> {
     List<Device> findByName(String lastName);
 
-    List<Device> findByidOrganization(int orgId);
+    List<Device> findByidOrganization(Long orgId);
 }
 

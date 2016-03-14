@@ -52,7 +52,7 @@ public class DeviceServiceImpl implements DeviceService {
     }
 
     @Override
-    public List<Device> listOrgDevices(int orgId) {
+    public List<Device> listOrgDevices(Long orgId) {
         return DeviceRepository.findByidOrganization(orgId);
     }
 }

@@ -52,7 +52,7 @@ public class VesselServiceImpl implements VesselService {
     }
 
     @Override
-    public List<Vessel> listOrgVessels(int orgId) {
+    public List<Vessel> listOrgVessels(Long orgId) {
         return VesselRepository.findByidOrganization(orgId);
     }
 }

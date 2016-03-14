@@ -85,7 +85,7 @@ public class VesselController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                input.setIdOrganization(org.getId().intValue());
+                input.setIdOrganization(org.getId());
                 Vessel newVessel = this.vesselService.saveVessel(input);
                 return new ResponseEntity<Vessel>(newVessel, HttpStatus.OK);
             }
@@ -114,7 +114,7 @@ public class VesselController {
                 if (vessel == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (vessel.getIdOrganization() == org.getId().intValue()) {
+                if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                     return new ResponseEntity<Vessel>(vessel, HttpStatus.OK);
                 }
             }
@@ -142,7 +142,7 @@ public class VesselController {
                 if (vessel == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (vessel.getId() == input.getId() && vessel.getIdOrganization() == org.getId().intValue()) {
+                if (vessel.getId().compareTo(input.getId()) == 0 && vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.copyTo(vessel);
                     this.vesselService.saveVessel(vessel);
                     return new ResponseEntity<>(HttpStatus.OK);
@@ -172,7 +172,7 @@ public class VesselController {
                 if (vessel == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (vessel.getIdOrganization() == org.getId().intValue()) {
+                if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.vesselService.deleteVessel(vesselId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
@@ -198,7 +198,7 @@ public class VesselController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                List<Vessel> vessels = this.vesselService.listOrgVessels(org.getId().intValue());
+                List<Vessel> vessels = this.vesselService.listOrgVessels(org.getId());
                 return new ResponseEntity<List<Vessel>>(vessels, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
@@ -225,7 +225,7 @@ public class VesselController {
                 if (vessel == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (vessel.getIdOrganization() == org.getId().intValue()) {
+                if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setVessel(vessel);
@@ -298,10 +298,10 @@ public class VesselController {
                 if (vessel == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (vessel.getIdOrganization() == org.getId().intValue()) {
+                if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     Vessel certVessel = cert.getVessel();
-                    if (certVessel != null && certVessel.getId().equals(vessel.getId())) {
+                    if (certVessel != null && certVessel.getId().compareTo(vessel.getId()) == 0) {
                         if (!input.validateReason()) {
                             return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
                         }

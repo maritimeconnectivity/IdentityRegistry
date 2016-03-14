@@ -57,7 +57,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public List<User> listOrgUsers(int orgId) {
+    public List<User> listOrgUsers(Long orgId) {
         return UserRepository.findByIdOrganization(orgId);
     }
 }

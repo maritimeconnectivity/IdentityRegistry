@@ -271,9 +271,9 @@ public class KeycloakAdminUtil {
         Map<String, Object> attr = new HashMap<String,Object>();
         attr.put("org", Arrays.asList(orgShortName));
         if (userType == ADMIN_USER) {
-            attr.put("permissions", Arrays.asList("MCADMIN", "MCUSER"));
+            attr.put("permissions", "MCADMIN,MCUSER");
         } else if (userType == NORMAL_USER) {
-            attr.put("permissions", Arrays.asList("MCUSER"));
+            attr.put("permissions", "MCUSER");
         }
         user.setAttributes(attr);
         Response ret = keycloakUserInstance.realm(keycloakBrokerRealm).users().create(user);

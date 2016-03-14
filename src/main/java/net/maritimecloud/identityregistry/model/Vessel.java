@@ -44,7 +44,7 @@ public class Vessel extends TimestampModel {
 
     @JsonIgnore
     @Column(name = "id_organization")
-    private int idOrganization;
+    private Long idOrganization;
 
     @Column(name = "vessel_org_id")
     private String vesselOrgId;
@@ -93,11 +93,11 @@ public class Vessel extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public int getIdOrganization() {
+    public Long getIdOrganization() {
         return idOrganization;
     }
 
-    public void setIdOrganization(int idOrganization) {
+    public void setIdOrganization(Long idOrganization) {
         this.idOrganization = idOrganization;
     }
 

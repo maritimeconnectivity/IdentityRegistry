@@ -21,5 +21,5 @@ import net.maritimecloud.identityregistry.model.User;
 public interface UserRepository extends CrudRepository<User, Long> {
     User findByUserOrgIdAndIdOrganization(String userOrgId, Long idOrganization);
 
-    List<User> findByIdOrganization(int orgId);
+    List<User> findByIdOrganization(Long orgId);
 }

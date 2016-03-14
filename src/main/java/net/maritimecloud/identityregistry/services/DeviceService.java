@@ -27,5 +27,5 @@ public interface DeviceService {
 
     Iterable<Device> listAllDevices();
 
-    List<Device> listOrgDevices(int id);
+    List<Device> listOrgDevices(Long id);
 }

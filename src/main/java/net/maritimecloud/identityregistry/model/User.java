@@ -43,8 +43,9 @@ public class User extends TimestampModel {
     public User() {
     }
 
+    @JsonIgnore
     @Column(name = "id_organization")
-    private int idOrganization;
+    private Long idOrganization;
 
     @Column(name = "user_org_id")
     private String userOrgId;
@@ -105,11 +106,11 @@ public class User extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public int getIdOrganization() {
+    public Long getIdOrganization() {
         return idOrganization;
     }
 
-    public void setIdOrganization(int idOrganization) {
+    public void setIdOrganization(Long idOrganization) {
         this.idOrganization = idOrganization;
     }
 

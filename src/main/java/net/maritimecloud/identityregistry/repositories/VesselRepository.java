@@ -21,5 +21,5 @@ import net.maritimecloud.identityregistry.model.Vessel;
 public interface VesselRepository extends CrudRepository<Vessel, Long> {
     List<Vessel> findByName(String lastName);
 
-    List<Vessel> findByidOrganization(int orgId);
+    List<Vessel> findByidOrganization(Long orgId);
 }

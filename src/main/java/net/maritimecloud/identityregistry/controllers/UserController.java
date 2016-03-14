@@ -84,7 +84,7 @@ public class UserController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                input.setIdOrganization(org.getId().intValue());
+                input.setIdOrganization(org.getId());
                 User newUser = this.userService.saveUser(input);
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
@@ -121,7 +121,7 @@ public class UserController {
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
+                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     return new ResponseEntity<User>(user, HttpStatus.OK);
                 }
             }
@@ -153,7 +153,7 @@ public class UserController {
                 if (user.getUserOrgId() != input.getUserOrgId()) {
                     return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_REQUEST);
                 }
-                if (user.getId() == input.getId() && user.getIdOrganization() == org.getId().intValue()) {
+                if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.copyTo(user);
                     this.userService.saveUser(user);
                     // Update user in keycloak if created there.
@@ -189,7 +189,7 @@ public class UserController {
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
+                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.userService.deleteUser(userId);
                     // Remove user from keycloak if created there.
                     if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
@@ -220,7 +220,7 @@ public class UserController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                List<User> users = this.userService.listOrgUsers(org.getId().intValue());
+                List<User> users = this.userService.listOrgUsers(org.getId());
                 return new ResponseEntity<List<User>>(users, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
@@ -247,7 +247,7 @@ public class UserController {
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
+                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setUser(user);
@@ -299,10 +299,10 @@ public class UserController {
                 if (user == null) {
                     return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (user.getIdOrganization() == org.getId().intValue()) {
+                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     User certUser = cert.getUser();
-                    if (certUser != null && certUser.getId().equals(user.getId())) {
+                    if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
                         if (!input.validateReason()) {
                             return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
                         }
@@ -344,7 +344,7 @@ public class UserController {
             User oldUser = this.userService.getUserByUserOrgIdAndIdOrganization(userOrgId, org.getId());
             // If user does not exists, we create him
             if (oldUser == null) {
-                input.setIdOrganization(org.getId().intValue());
+                input.setIdOrganization(org.getId());
                 this.userService.saveUser(input);
             } else {
                 // Update the existing user and save

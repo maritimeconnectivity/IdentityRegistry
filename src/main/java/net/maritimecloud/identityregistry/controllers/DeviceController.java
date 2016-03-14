@@ -79,7 +79,7 @@ public class DeviceController {
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                input.setIdOrganization(org.getId().intValue());
+                input.setIdOrganization(org.getId());
                 Device newDevice = this.deviceService.saveDevice(input);
                 return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
             }
@@ -108,7 +108,7 @@ public class DeviceController {
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (device.getIdOrganization() == org.getId().intValue()) {
+                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     return new ResponseEntity<Device>(device, HttpStatus.OK);
                 }
             }
@@ -136,7 +136,7 @@ public class DeviceController {
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (device.getId() == input.getId() && device.getIdOrganization() == org.getId().intValue()) {
+                if (device.getId().compareTo(input.getId()) == 0 && device.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.copyTo(device);
                     this.deviceService.saveDevice(device);
                     return new ResponseEntity<>(HttpStatus.OK);
@@ -166,7 +166,7 @@ public class DeviceController {
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (device.getIdOrganization() == org.getId().intValue()) {
+                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.deviceService.deleteDevice(deviceId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
@@ -191,7 +191,7 @@ public class DeviceController {
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                List<Device> devices = this.deviceService.listOrgDevices(org.getId().intValue());
+                List<Device> devices = this.deviceService.listOrgDevices(org.getId());
                 return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
             }
             return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
@@ -218,7 +218,7 @@ public class DeviceController {
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (device.getIdOrganization() == org.getId().intValue()) {
+                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setDevice(device);
@@ -269,10 +269,10 @@ public class DeviceController {
                 if (device == null) {
                     return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
-                if (device.getIdOrganization() == org.getId().intValue()) {
+                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     Device certDevice = cert.getDevice();
-                    if (certDevice != null && certDevice.getId().equals(device.getId())) {
+                    if (certDevice != null && certDevice.getId().compareTo(device.getId()) == 0) {
                         if (!input.validateReason()) {
                             return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
                         }

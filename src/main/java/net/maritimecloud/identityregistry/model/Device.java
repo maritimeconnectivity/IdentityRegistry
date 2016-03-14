@@ -43,7 +43,7 @@ public class Device extends TimestampModel {
     }
 
     @Column(name = "id_organization")
-    private int idOrganization;
+    private Long idOrganization;
 
     @Column(name = "device_org_id")
     private String deviceOrgId;
@@ -83,11 +83,11 @@ public class Device extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public int getIdOrganization() {
+    public Long getIdOrganization() {
         return idOrganization;
     }
 
-    public void setIdOrganization(int idOrganization) {
+    public void setIdOrganization(Long idOrganization) {
         this.idOrganization = idOrganization;
     }
 

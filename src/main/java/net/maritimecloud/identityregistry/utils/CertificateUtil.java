@@ -46,6 +46,10 @@ import java.util.Locale;
 import java.util.Map;
 import java.security.spec.ECGenParameterSpec;
 
+import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.DERSequence;
+import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x509.BasicConstraints;
@@ -145,7 +149,10 @@ public class CertificateUtil {
                 int idx = 0;
                 while (it.hasNext()) {
                     Map.Entry<String,String> pair = (Map.Entry<String,String>)it.next();
-                    genNames[idx] = new GeneralName(GeneralName.otherName, new DERUTF8String(pair.getKey() + ";" + pair.getValue()));
+                    //genNames[idx] = new GeneralName(GeneralName.otherName, new DERUTF8String(pair.getKey() + ";" + pair.getValue()));
+                    DERSequence othernameSequence = new DERSequence(new ASN1Encodable[]{
+                            new ASN1ObjectIdentifier(pair.getKey()), new DERTaggedObject(true, 0, new DERUTF8String(pair.getValue()))});
+                    genNames[idx] = new GeneralName(GeneralName.otherName, othernameSequence);
                     idx++;
                 }
             }
@@ -176,7 +183,6 @@ public class CertificateUtil {
         FileOutputStream rootfos = null;
         FileOutputStream itfos = null;
         FileOutputStream tsfos = null;
-        FileInputStream fis = null;
         try {
             rootks = KeyStore.getInstance(KEYSTORE_TYPE); // KeyStore.getDefaultType() 
             rootks.load(null, KEYSTORE_PASSWORD.toCharArray());
@@ -376,7 +382,7 @@ public class CertificateUtil {
             } else if ("aacompromise".equals(certReason)) {
                 reason = CRLReason.aACompromise;
             }
-            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId().longValue()), now, reason);
+            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId()), now, reason);
         }
         //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
         //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
