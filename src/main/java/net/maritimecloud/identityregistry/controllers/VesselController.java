@@ -143,7 +143,7 @@ public class VesselController {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (vessel.getId().compareTo(input.getId()) == 0 && vessel.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.copyTo(vessel);
+                    input.selectiveCopyTo(vessel);
                     this.vesselService.saveVessel(vessel);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }

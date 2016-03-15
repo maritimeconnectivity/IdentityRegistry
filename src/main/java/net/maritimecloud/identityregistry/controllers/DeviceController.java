@@ -137,7 +137,7 @@ public class DeviceController {
                     return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
                 }
                 if (device.getId().compareTo(input.getId()) == 0 && device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.copyTo(device);
+                    input.selectiveCopyTo(device);
                     this.deviceService.saveDevice(device);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }

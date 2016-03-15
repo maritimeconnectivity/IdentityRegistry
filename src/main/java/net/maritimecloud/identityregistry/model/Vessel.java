@@ -73,6 +73,17 @@ public class Vessel extends TimestampModel {
         vessel.setVesselOrgId(vesselOrgId);
         vessel.setAttributes(attributes);
         vessel.setCertificate(certificates);
+        vessel.setChildIds();
+        return vessel;
+    }
+
+    /** Copies this vessel into the other
+     * Only update things that are allowed to change on update */
+    public Vessel selectiveCopyTo(Vessel vessel) {
+        vessel.setName(name);
+        vessel.setVesselOrgId(vesselOrgId);
+        vessel.setAttributes(attributes);
+        vessel.setChildIds();
         return vessel;
     }
 

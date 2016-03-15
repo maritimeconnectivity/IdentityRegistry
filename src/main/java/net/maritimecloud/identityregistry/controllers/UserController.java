@@ -154,7 +154,7 @@ public class UserController {
                     return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_REQUEST);
                 }
                 if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.copyTo(user);
+                    input.selectiveCopyTo(user);
                     this.userService.saveUser(user);
                     // Update user in keycloak if created there.
                     if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {

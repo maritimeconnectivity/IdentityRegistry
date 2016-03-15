@@ -81,8 +81,10 @@ public class User extends TimestampModel {
         user.setUserOrgId(userOrgId);
         user.setPermissions(permissions);
         user.setCertificate(certificates);
+        user.setChildIds();
         return user;
     }
+
     /** Copies this user into the other
      * Only update things that are allowed to change on update */
     public User selectiveCopyTo(User user) {
@@ -91,6 +93,7 @@ public class User extends TimestampModel {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPermissions(permissions);
+        user.setChildIds();
         return user;
     }
 

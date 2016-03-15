@@ -68,6 +68,16 @@ public class Device extends TimestampModel {
         device.setName(name);
         device.setDeviceOrgId(deviceOrgId);
         device.setCertificate(certificates);
+        device.setChildIds();
+        return device;
+    }
+
+    /** Copies this device into the other
+     * Only update things that are allowed to change on update */
+    public Device selectiveCopyTo(Device device) {
+        device.setName(name);
+        device.setDeviceOrgId(deviceOrgId);
+        device.setChildIds();
         return device;
     }
 

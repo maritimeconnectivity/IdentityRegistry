@@ -4,5 +4,6 @@
   "bearer-only": true,
   "auth-server-url": "http://localhost:9080/auth",
   "ssl-required": "external",
+  "enable-cors": true,
   "resource": "mcidreg"
 }

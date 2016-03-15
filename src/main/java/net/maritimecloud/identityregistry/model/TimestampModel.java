@@ -33,7 +33,7 @@ public class TimestampModel implements JsonSerializable {
     @Column(name = "id")
     protected Long id;
 
-    @Column(name = "created_at")
+    @Column(name = "created_at", updatable=false)
     protected Date createdAt;
 
     @Column(name = "updated_at")
@@ -66,5 +66,4 @@ public class TimestampModel implements JsonSerializable {
     public Date getUpdatedAt() {
         return updatedAt;
     }
-
 }
