@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.services.OrganizationService;
@@ -37,7 +38,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(value={"admin", "oidc", "x509"})
+@RequestMapping(value={"oidc", "x509"})
 public class OrganizationController {
     private OrganizationService organizationService;
 
@@ -84,13 +85,17 @@ public class OrganizationController {
      * Returns info about the organization identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{shortName}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable String shortName) {
+    public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        if (org == null) {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
         return new ResponseEntity<Organization>(org, HttpStatus.OK);
     }
 
@@ -112,16 +117,17 @@ public class OrganizationController {
      * Updates info about the organization identified by the given ID
      * 
      * @return a http reply
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{shortName}",
             method = RequestMethod.PUT)
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String shortName,
-            @RequestBody Organization input) {
+            @RequestBody Organization input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
             if (!shortName.equals(input.getShortName())) {
-                return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_GATEWAY);
+                throw new McBasicRestException(HttpStatus.BAD_GATEWAY, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
@@ -141,9 +147,9 @@ public class OrganizationController {
                 this.organizationService.saveOrganization(org);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -151,12 +157,13 @@ public class OrganizationController {
      * Returns new password for the organization identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{shortName}/getnewpassword",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable String shortName) {
+    public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -168,9 +175,9 @@ public class OrganizationController {
                 String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
                 return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 

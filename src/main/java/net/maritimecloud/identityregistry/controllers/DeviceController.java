@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
@@ -44,7 +45,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(value={"admin", "oidc", "x509"})
+@RequestMapping(value={"oidc", "x509"})
 public class DeviceController {
     private DeviceService deviceService;
     private OrganizationService organizationService;
@@ -68,13 +69,14 @@ public class DeviceController {
      * Creates a new Device
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */ 
     @RequestMapping(
             value = "/api/org/{orgShortName}/device",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> createDevice(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Device input) {
+    public ResponseEntity<?> createDevice(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Device input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
@@ -83,9 +85,9 @@ public class DeviceController {
                 Device newDevice = this.deviceService.saveDevice(input);
                 return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -93,28 +95,29 @@ public class DeviceController {
      * Returns info about the device identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
+    public ResponseEntity<?> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     return new ResponseEntity<Device>(device, HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -122,19 +125,20 @@ public class DeviceController {
      * Updates a Device
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) {
+    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getId().compareTo(input.getId()) == 0 && device.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.selectiveCopyTo(device);
@@ -142,9 +146,9 @@ public class DeviceController {
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -152,28 +156,29 @@ public class DeviceController {
      * Deletes a Device
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/device/{deviceId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
+    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.VESSEL_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.deviceService.deleteDevice(deviceId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -181,12 +186,13 @@ public class DeviceController {
      * Returns a list of devices owned by the organization identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/devices",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgShortName) {
+    public ResponseEntity<?> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
@@ -194,9 +200,9 @@ public class DeviceController {
                 List<Device> devices = this.deviceService.listOrgDevices(org.getId());
                 return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -204,19 +210,20 @@ public class DeviceController {
      * Returns new certificate for the device identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/device/{deviceId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) {
+    public ResponseEntity<?> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
@@ -245,9 +252,9 @@ public class DeviceController {
                     return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -255,29 +262,30 @@ public class DeviceController {
      * Revokes certificate for the device identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/device/{deviceId}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) {
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the device has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 Device device = this.deviceService.getDeviceById(deviceId);
                 if (device == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.DEVICE_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     Device certDevice = cert.getDevice();
                     if (certDevice != null && certDevice.getId().compareTo(device.getId()) == 0) {
                         if (!input.validateReason()) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
                         }
                         if (input.getRevokedAt() == null) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_DATE, HttpStatus.BAD_REQUEST);
+                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
                         }
                         cert.setRevokedAt(input.getRevokedAt());
                         cert.setRevokeReason(input.getRevokationReason());
@@ -287,9 +295,9 @@ public class DeviceController {
                     }
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 

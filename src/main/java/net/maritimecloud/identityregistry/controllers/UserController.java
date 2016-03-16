@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
@@ -46,7 +47,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(value={"admin", "oidc", "x509"})
+@RequestMapping(value={"oidc", "x509"})
 public class UserController {
     private UserService userService;
     private OrganizationService organizationService;
@@ -73,13 +74,14 @@ public class UserController {
      * Creates a new User
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */ 
     @RequestMapping(
             value = "/api/org/{orgShortName}/user",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> createUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) {
+    public ResponseEntity<?> createUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -96,9 +98,9 @@ public class UserController {
                 }
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -106,28 +108,29 @@ public class UserController {
      * Returns info about the user identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     return new ResponseEntity<User>(user, HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
                 
     }
@@ -136,22 +139,23 @@ public class UserController {
      * Updates a User
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) {
+    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getUserOrgId() != input.getUserOrgId()) {
-                    return new ResponseEntity<>(MCIdRegConstants.URL_DATA_MISMATCH, HttpStatus.BAD_REQUEST);
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
                 }
                 if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.selectiveCopyTo(user);
@@ -165,9 +169,9 @@ public class UserController {
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -175,19 +179,20 @@ public class UserController {
      * Deletes a User
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.userService.deleteUser(userId);
@@ -200,9 +205,9 @@ public class UserController {
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -210,12 +215,13 @@ public class UserController {
      * Returns a list of users belonging to the organization identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/users",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgShortName) {
+    public ResponseEntity<?> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -223,9 +229,9 @@ public class UserController {
                 List<User> users = this.userService.listOrgUsers(org.getId());
                 return new ResponseEntity<List<User>>(users, HttpStatus.OK);
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -233,19 +239,20 @@ public class UserController {
      * Returns new certificate for the user identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/user/{userId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) {
+    public ResponseEntity<?> newUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
@@ -275,9 +282,9 @@ public class UserController {
                     return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -285,29 +292,30 @@ public class UserController {
      * Revokes certificate for the user identified by the given ID
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/{orgShortName}/user/{userId}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) {
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
-                    return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.NOT_FOUND);
+                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     User certUser = cert.getUser();
                     if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
                         if (!input.validateReason()) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_REASON, HttpStatus.BAD_REQUEST);
+                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
                         }
                         if (input.getRevokedAt() == null) {
-                            return new ResponseEntity<>(MCIdRegConstants.INVALID_REVOCATION_DATE, HttpStatus.BAD_REQUEST);
+                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
                         }
                         cert.setRevokedAt(input.getRevokedAt());
                         cert.setRevokeReason(input.getRevokationReason());
@@ -317,9 +325,9 @@ public class UserController {
                     }
                 }
             }
-            return new ResponseEntity<>(MCIdRegConstants.MISSING_RIGHTS, HttpStatus.FORBIDDEN);
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -328,18 +336,19 @@ public class UserController {
      * the keycloak sync-mechanism. 
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */ 
     @RequestMapping(
             value = "/api/org/{orgShortName}/user-sync/",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) {
+    public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             String userOrgId = input.getUserOrgId();
             if (userOrgId == null || userOrgId.isEmpty()) {
-                return new ResponseEntity<>(MCIdRegConstants.USER_NOT_FOUND, HttpStatus.BAD_REQUEST);
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             User oldUser = this.userService.getUserByUserOrgIdAndIdOrganization(userOrgId, org.getId());
             // If user does not exists, we create him
@@ -353,7 +362,7 @@ public class UserController {
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            return new ResponseEntity<>(MCIdRegConstants.ORG_NOT_FOUND, HttpStatus.NOT_FOUND);
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 

@@ -35,7 +35,7 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 
 @RestController
-@RequestMapping(value={"admin", "oidc", "x509"})
+@RequestMapping(value={"oidc", "x509"})
 public class CertificateController {
     private CertificateService certificateService;
 
