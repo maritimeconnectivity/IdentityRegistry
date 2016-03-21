@@ -157,9 +157,10 @@ public class CertificateUtil {
                 }
             }
             certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey))
-                                   .addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
-
+                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+            if (genNames != null) {
+                certV3Bldr = certV3Bldr.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
+            }
         }
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
         builder.setProvider(BC_PROVIDER_NAME);

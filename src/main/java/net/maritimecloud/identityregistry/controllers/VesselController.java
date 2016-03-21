@@ -264,13 +264,13 @@ public class VesselController {
                     X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), vessel.getName(), vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded());
+                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded()).replace("\n", "\\n");
                     } catch (CertificateEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", vesselKeyPair.getPublic().getEncoded());
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", vesselKeyPair.getPrivate().getEncoded());
+                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", vesselKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", vesselKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(vesselCert.getNotBefore());
                     newMCCert.setEnd(vesselCert.getNotAfter());
