@@ -22,8 +22,6 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
@@ -80,7 +78,8 @@ public class User extends TimestampModel {
         user.setLastName(lastName);
         user.setUserOrgId(userOrgId);
         user.setPermissions(permissions);
-        user.setCertificate(certificates);
+        user.getCertificates().clear();
+        user.getCertificates().addAll(certificates);
         user.setChildIds();
         return user;
     }
@@ -152,15 +151,13 @@ public class User extends TimestampModel {
     public String getPermissions() {
         return permissions;
     }
+
     public void setPermissions(String permissions) {
         this.permissions = permissions;
     }
+
     public List<Certificate> getCertificates() {
         return certificates;
-    }
-
-    public void setCertificate(List<Certificate> certificates) {
-        this.certificates = certificates;
     }
 
     // Only used when a user is first created to return a password.

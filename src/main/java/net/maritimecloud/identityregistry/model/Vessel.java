@@ -22,8 +22,6 @@ import java.util.Objects;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
@@ -52,17 +50,12 @@ public class Vessel extends TimestampModel {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel")
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel")
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
-
-    /*
-    @ManyToOne
-    @JoinColumn(name="id_organization")
-    private Organization organization;*/
 
     /** Copies this vessel into the other */
     public Vessel copyTo(Vessel vessel) {
@@ -71,8 +64,10 @@ public class Vessel extends TimestampModel {
         vessel.setIdOrganization(idOrganization);
         vessel.setName(name);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.setAttributes(attributes);
-        vessel.setCertificate(certificates);
+        vessel.getAttributes().clear();
+        vessel.getAttributes().addAll(attributes);
+        vessel.getCertificates().clear();
+        vessel.getCertificates().addAll(certificates);
         vessel.setChildIds();
         return vessel;
     }
@@ -82,7 +77,8 @@ public class Vessel extends TimestampModel {
     public Vessel selectiveCopyTo(Vessel vessel) {
         vessel.setName(name);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.setAttributes(attributes);
+        vessel.getAttributes().clear();
+        vessel.getAttributes().addAll(attributes);
         vessel.setChildIds();
         return vessel;
     }
@@ -132,25 +128,7 @@ public class Vessel extends TimestampModel {
         return attributes;
     }
 
-    public void setAttributes(List<VesselAttribute> attributes) {
-        this.attributes = attributes;
-    }
-
     public List<Certificate> getCertificates() {
         return certificates;
     }
-
-    @JsonIgnore
-    public void setCertificate(List<Certificate> certificates) {
-        this.certificates = certificates;
-    }
-
-    /*
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }*/
 }

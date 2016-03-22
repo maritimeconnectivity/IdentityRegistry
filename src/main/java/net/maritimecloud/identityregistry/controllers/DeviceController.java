@@ -236,13 +236,13 @@ public class DeviceController {
                     X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded());
+                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded()).replace("\n", "\\n");
                     } catch (CertificateEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded());
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded());
+                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
                     PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(deviceCert.getNotBefore());

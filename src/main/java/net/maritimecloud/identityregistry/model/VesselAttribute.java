@@ -16,24 +16,13 @@ package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 /**
  * Model object representing an organization
@@ -45,10 +34,6 @@ public class VesselAttribute extends TimestampModel {
 
     public VesselAttribute() {
     }
-
-    /*
-    @Transient
-    private int idVessel;*/
 
     @Column(name = "attribute_name")
     private String attributeName;
@@ -70,15 +55,6 @@ public class VesselAttribute extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    /*
-    public int getIdVessel() {
-        idVessel = vessel.getId().intValue(); 
-        return idVessel;
-    }
-
-    public void setIdVessel(int idVessel) {
-        this.idVessel = idVessel;
-    }*/
 
     public String getAttributeName() {
         return attributeName;

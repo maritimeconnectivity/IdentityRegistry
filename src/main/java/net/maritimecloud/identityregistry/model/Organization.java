@@ -75,7 +75,7 @@ public class Organization extends TimestampModel {
 
     @JsonIgnore
     @Column(name = "approved")
-    private String approved;
+    private boolean approved;
 
     public Organization() {
     }
@@ -243,11 +243,11 @@ public class Organization extends TimestampModel {
         this.oidcClientSecret = oidcClientSecret;
     }
 
-    public String getApproved() {
+    public boolean getApproved() {
         return approved;
     }
 
-    public void setApproved(String approved) {
+    public void setApproved(boolean approved) {
         this.approved = approved;
     }
 

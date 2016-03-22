@@ -23,7 +23,7 @@ $ mvn install
 ## Run
 Run using you favorite IDE or using the console:
 ```sh
-$ java -jar target/mc-identityregistry-core-0.0.1-SNAPSHOT.war
+$ java -jar target/mc-identityregistry-core-latest.war
 ```
 Change the version number as needed.
 

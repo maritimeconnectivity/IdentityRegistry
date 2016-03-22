@@ -40,6 +40,8 @@ net:
             keycloak-project-users-admin-client: security-admin-console
             keycloak-project-users-realm: MaritimeCloud
             keycloak-project-users-base-url: http://localhost:9080/auth/
+
+            auto-approve-organizations: true
 ---
 spring:
     profiles: development

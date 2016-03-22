@@ -94,7 +94,7 @@ public class UserController {
                     String password = PasswordUtil.generatePassword();
                     String keycloakUsername = orgShortName.toLowerCase() + "." + newUser.getUserOrgId();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    keycloakAU.createUser(keycloakUsername, password, newUser.getFirstName(), newUser.getLastName(), newUser.getEmail(), orgShortName, KeycloakAdminUtil.NORMAL_USER);
+                    keycloakAU.createUser(keycloakUsername, password, newUser.getFirstName(), newUser.getLastName(), newUser.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
                     newUser.setPassword(password);
                 }
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
@@ -165,7 +165,7 @@ public class UserController {
                     if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
                         String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                        keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail());
+                        keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail(), true);
                     }
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
@@ -266,13 +266,13 @@ public class UserController {
                     X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), name, name, user.getEmail(), userKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
+                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
                     } catch (CertificateEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded());
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded());
+                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
                     PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(userCert.getNotBefore());

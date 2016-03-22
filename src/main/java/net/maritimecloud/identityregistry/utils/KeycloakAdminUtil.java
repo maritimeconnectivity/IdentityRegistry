@@ -251,12 +251,12 @@ public class KeycloakAdminUtil {
      * @param orgShortName  shortname of the org
      * @param userType      type of user, determines rights.
      */
-    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, int userType) {
+    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, boolean enabled, int userType) {
         System.out.println("creating user: " + username);
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
-        user.setEnabled(true);
+        user.setEnabled(enabled);
         if (email != null && !email.trim().isEmpty()) {
             user.setEmail(email);
             user.setEmailVerified(true);
@@ -271,9 +271,9 @@ public class KeycloakAdminUtil {
         Map<String, Object> attr = new HashMap<String,Object>();
         attr.put("org", Arrays.asList(orgShortName));
         if (userType == ADMIN_USER) {
-            attr.put("permissions", "MCADMIN,MCUSER");
+            attr.put("permissions", Arrays.asList("MCADMIN,MCUSER"));
         } else if (userType == NORMAL_USER) {
-            attr.put("permissions", "MCUSER");
+            attr.put("permissions",  Arrays.asList("MCUSER"));
         }
         user.setAttributes(attr);
         Response ret = keycloakUserInstance.realm(keycloakBrokerRealm).users().create(user);
@@ -306,7 +306,7 @@ public class KeycloakAdminUtil {
      * @param lastName      last name of user
      * @param email         email of the user
      */
-    public void updateUser(String username,  String firstName, String lastName, String email) {
+    public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) {
         UserRepresentation user = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1).get(0);
         boolean updated = false;
         if (email != null && !email.trim().isEmpty()) {

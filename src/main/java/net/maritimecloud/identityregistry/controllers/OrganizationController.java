@@ -18,18 +18,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
-import java.util.List;
-
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -50,6 +48,9 @@ public class OrganizationController {
         this.organizationService = organizationService;
     }
 
+    @Value("${net.maritimecloud.idreg.auto-approve-organizations}")
+    private boolean autoApprove;
+
     /**
      * Receives an application for a new organization and root-user
      * 
@@ -62,23 +63,54 @@ public class OrganizationController {
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
         // Create password to be returned
         String newPassword = PasswordUtil.generatePassword();
-        String hashedPassword = PasswordUtil.hashPassword(newPassword);
         input.setPassword(newPassword);
         // Make sure all shortnames are uppercase
         input.setShortName(input.getShortName().trim().toUpperCase());
-        // If a well-known url and client id and secret was supplied, we create a new IDP
-        if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
-                && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
-                && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
-            keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-            keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+        if (this.autoApprove) {
+            input.setApproved(true);
+        } else {
+            input.setApproved(false);
         }
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), KeycloakAdminUtil.ADMIN_USER);
+        keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), this.autoApprove, KeycloakAdminUtil.ADMIN_USER);
         Organization newOrg = this.organizationService.saveOrganization(input);
+        // TODO: Send email to organization
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
+
+    /**
+     * Approves the organization identified by the given ID
+     * 
+     * @return a reply...
+     * @throws McBasicRestException 
+     */
+    @RequestMapping(
+            value = "/api/org/{shortName}/approve",
+            method = RequestMethod.GET)
+    public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
+        // TODO: Admin Authentication!!!!
+        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        if (org == null) {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+        if (org.getApproved()) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
+        }
+        // Create the Identity Provider for the org
+        if (org.getOidcWellKnownUrl() != null && !org.getOidcWellKnownUrl().isEmpty()
+                && org.getOidcClientName() != null && !org.getOidcClientName().isEmpty()
+                && org.getOidcClientSecret() != null && !org.getOidcClientSecret().isEmpty()) {
+            keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+            keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getOidcWellKnownUrl(), org.getOidcClientName(), org.getOidcClientSecret());
+        }
+        // Create admin user in the keycloak instance handling users
+        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+        keycloakAU.updateUser(org.getShortName(), org.getShortName(), org.getShortName(), org.getEmail(), true);
+        // TODO: send email to organization
+        return new ResponseEntity<>(HttpStatus.OK);
+    }
+
 
     /**
      * Returns info about the organization identified by the given ID

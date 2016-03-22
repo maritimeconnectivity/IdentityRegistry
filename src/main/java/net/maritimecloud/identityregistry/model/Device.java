@@ -14,16 +14,12 @@
  */
 package net.maritimecloud.identityregistry.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
@@ -55,11 +51,6 @@ public class Device extends TimestampModel {
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    /*
-    @ManyToOne
-    @JoinColumn(name="id_organization")
-    private Organization organization;*/
-
     /** Copies this organization into the other */
     public Device copyTo(Device device) {
         Objects.requireNonNull(device);
@@ -67,7 +58,8 @@ public class Device extends TimestampModel {
         device.setIdOrganization(idOrganization);
         device.setName(name);
         device.setDeviceOrgId(deviceOrgId);
-        device.setCertificate(certificates);
+        device.getCertificates().clear();
+        device.getCertificates().addAll(certificates);
         device.setChildIds();
         return device;
     }
@@ -119,10 +111,6 @@ public class Device extends TimestampModel {
 
     public List<Certificate> getCertificates() {
         return certificates;
-    }
-
-    public void setCertificate(List<Certificate> certificates) {
-        this.certificates = certificates;
     }
 }
 
