@@ -20,18 +20,15 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import net.maritimecloud.identityregistry.model.ExceptionModel;
+
 @ControllerAdvice
 public class McExceptionResolver {
 
     @ExceptionHandler(McBasicRestException.class)
-    public ResponseEntity<?> processRestError(McBasicRestException ex) {
+    public ResponseEntity<ExceptionModel> processRestError(McBasicRestException ex) {
         // mimics the standard spring error structure on exceptions 
-        HashMap<String, Object> error = new HashMap<String, Object>();
-        error.put("timestamp", ex.getTimestamp());
-        error.put("status", ex.getStatus().value());
-        error.put("error", ex.getError());
-        error.put("message", ex.getErrorMessage());
-        error.put("path", ex.getPath());
-        return new ResponseEntity<>(error, ex.getStatus());
+        ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
+        return new ResponseEntity<ExceptionModel>(exp, ex.getStatus());
     }
 }

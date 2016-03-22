@@ -59,7 +59,7 @@ public class OrganizationController {
             value = "/api/org/apply",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
+    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
         // Create password to be returned
         String newPassword = PasswordUtil.generatePassword();
         String hashedPassword = PasswordUtil.hashPassword(newPassword);
@@ -91,7 +91,7 @@ public class OrganizationController {
             value = "/api/org/{shortName}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
+    public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -108,7 +108,7 @@ public class OrganizationController {
             value = "/api/orgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganization(HttpServletRequest request) {
+    public ResponseEntity<Iterable<Organization>> getOrganization(HttpServletRequest request) {
         Iterable<Organization> orgs = this.organizationService.listAllOrganizations();
         return new ResponseEntity<Iterable<Organization>>(orgs, HttpStatus.OK);
     }
@@ -152,33 +152,4 @@ public class OrganizationController {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
-
-    /**
-     * Returns new password for the organization identified by the given ID
-     * 
-     * @return a reply...
-     * @throws McBasicRestException 
-     */
-    @RequestMapping(
-            value = "/api/org/{shortName}/getnewpassword",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newOrgPassword(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(shortName);
-        if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
-                String newPassword = PasswordUtil.generatePassword();
-                String hashedPassword = PasswordUtil.hashPassword(newPassword);
-                org.setPasswordHash(hashedPassword);
-                this.organizationService.saveOrganization(org);
-                String jsonReturn = "{ \"password\":\"" + newPassword + "\"}";
-                return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
-    }
-
 }

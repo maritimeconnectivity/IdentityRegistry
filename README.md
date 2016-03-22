@@ -75,7 +75,7 @@ $ curl -i -k https://localhost:8443/x509/api/org/DMA/vessel/2 --key ship-private
 ```
 
 ## Available REST API
-The API changes very rapidly at the moment, so look in the output when the app start for "RequestMappingHandlerMapping" messages that mentions the endpoints.  
+The API is documented using Swagger/OpenAPI 2.0, and can be obtained from [http://<hostname:port>/v2/api-docs].
 
 ## Insert data
 Inserting data can be done using the MaritimeCloud Portal, or by "firing" REST requests from the console. Below is a step by step guide to put data into the Identity Registry using by firing REST requests from the console, commands for both Linux/Mac (using curl) and Windows (using Invoke-RestMethod in PowerShell).

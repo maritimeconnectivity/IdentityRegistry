@@ -20,6 +20,7 @@ import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
+import net.maritimecloud.identityregistry.model.PemCertificate;
 import net.maritimecloud.identityregistry.model.Vessel;
 import net.maritimecloud.identityregistry.model.VesselAttribute;
 import net.maritimecloud.identityregistry.services.CertificateService;
@@ -81,7 +82,7 @@ public class VesselController {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> createVessel(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Vessel input) throws McBasicRestException {
+    public ResponseEntity<Vessel> createVessel(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Vessel input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -107,7 +108,7 @@ public class VesselController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> getVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
+    public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -197,7 +198,7 @@ public class VesselController {
             value = "/api/org/{orgShortName}/vessels",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+    public ResponseEntity<List<Vessel>> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         // Enable filters on certificates to filter out revoked and outdated certificates
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
@@ -222,7 +223,7 @@ public class VesselController {
             value = "/api/org/{orgShortName}/vessel/{vesselId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> newVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
+    public ResponseEntity<PemCertificate> newVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
@@ -271,13 +272,12 @@ public class VesselController {
                     }
                     String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", vesselKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
                     String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", vesselKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
+                    PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
                     newMCCert.setCertificate(pemCertificate);
                     newMCCert.setStart(vesselCert.getNotBefore());
                     newMCCert.setEnd(vesselCert.getNotAfter());
                     this.certificateService.saveCertificate(newMCCert);
-                    String jsonReturn = "{ \"publickey\":\"" + pemPublicKey + "\", \"privatekey\":\"" + pemPrivateKey + "\", \"certificate\":\"" + pemCertificate + "\"  }";
-
-                    return new ResponseEntity<String>(jsonReturn, HttpStatus.OK);
+                    return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
                 }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
