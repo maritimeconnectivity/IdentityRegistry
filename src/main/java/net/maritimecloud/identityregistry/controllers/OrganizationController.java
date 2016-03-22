@@ -64,7 +64,6 @@ public class OrganizationController {
         String newPassword = PasswordUtil.generatePassword();
         String hashedPassword = PasswordUtil.hashPassword(newPassword);
         input.setPassword(newPassword);
-        input.setPasswordHash(hashedPassword);
         // Make sure all shortnames are uppercase
         input.setShortName(input.getShortName().trim().toUpperCase());
         // If a well-known url and client id and secret was supplied, we create a new IDP

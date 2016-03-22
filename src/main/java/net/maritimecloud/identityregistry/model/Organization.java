@@ -65,10 +65,6 @@ public class Organization extends TimestampModel {
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
-    @JsonIgnore
-    @Column(name = "password_hash")
-    private String passwordHash;
-
     // Only used when a organization is first created to return a password.
     @Transient
     private String password;
@@ -76,6 +72,10 @@ public class Organization extends TimestampModel {
     @JsonIgnore
     @Column(name = "logo")
     private byte[] logo;
+
+    @JsonIgnore
+    @Column(name = "approved")
+    private String approved;
 
     public Organization() {
     }
@@ -93,12 +93,12 @@ public class Organization extends TimestampModel {
         org.setOidcClientName(oidcClientName);
         org.setOidcClientSecret(oidcClientSecret);
         org.setOidcWellKnownUrl(oidcWellKnownUrl);
-        org.setPasswordHash(passwordHash);
+        org.setApproved(approved);
         return org;
     }
 
     /** Copies this organization into the other.
-     * Only updates OIDC if non-null content is given, skips password and shortname */
+     * Only updates OIDC if non-null content is given, skips approved and shortname */
     public Organization selectiveCopyTo(Organization org) {
         Objects.requireNonNull(org);
         org.setName(name);
@@ -203,14 +203,6 @@ public class Organization extends TimestampModel {
         this.address = address;
     }
 
-    public String getPasswordHash() {
-        return passwordHash;
-    }
-
-    public void setPasswordHash(String passwordHash) {
-        this.passwordHash = passwordHash;
-    }
-
     // Only used when a organization is first created to return a password.
     public String getPassword() {
         return password;
@@ -249,6 +241,14 @@ public class Organization extends TimestampModel {
     @JsonProperty
     public void setOidcClientSecret(String oidcClientSecret) {
         this.oidcClientSecret = oidcClientSecret;
+    }
+
+    public String getApproved() {
+        return approved;
+    }
+
+    public void setApproved(String approved) {
+        this.approved = approved;
     }
 
 }
