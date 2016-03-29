@@ -35,7 +35,7 @@ public class CertificateRevocation implements JsonSerializable {
             "certificatehold",
             "removefromcrl",
             "privilegewithdrawn",
-            "aaCompromise"));
+            "aacompromise"));
         String reason = getRevokationReason();
         if (reason != null && validReasons.contains(reason)) {
             return true;

@@ -90,7 +90,7 @@ public class UserController {
                 input.setIdOrganization(org.getId());
                 User newUser = this.userService.saveUser(input);
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
-                if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     String password = PasswordUtil.generatePassword();
                     String keycloakUsername = orgShortName.toLowerCase() + "." + newUser.getUserOrgId();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
@@ -162,7 +162,7 @@ public class UserController {
                     input.selectiveCopyTo(user);
                     this.userService.saveUser(user);
                     // Update user in keycloak if created there.
-                    if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                    if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                         String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                         keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail(), true);
@@ -198,7 +198,7 @@ public class UserController {
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                     this.userService.deleteUser(userId);
                     // Remove user from keycloak if created there.
-                    if (org.getOidcClientName() == null && org.getOidcClientName().trim().isEmpty()) {
+                    if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                         String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                         keycloakAU.deleteUser(keycloakUsername);
