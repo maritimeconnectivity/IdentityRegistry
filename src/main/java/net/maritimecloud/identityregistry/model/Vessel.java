@@ -50,10 +50,10 @@ public class Vessel extends TimestampModel {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
+    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel")
+    @OneToMany(mappedBy = "vessel")
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
 

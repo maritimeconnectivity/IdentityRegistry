@@ -25,6 +25,7 @@ import org.springframework.security.config.annotation.authentication.builders.Au
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
@@ -66,6 +67,7 @@ public class MultiSecurityConfig  {
         {
             super.configure(http);
             http
+                .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                 .csrf().disable()
                 .requestMatchers()
                     .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter

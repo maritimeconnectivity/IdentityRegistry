@@ -47,7 +47,7 @@ public class Device extends TimestampModel {
     @Column(name = "name")
     private String name;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "device")
+    @OneToMany(mappedBy = "device")
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
 

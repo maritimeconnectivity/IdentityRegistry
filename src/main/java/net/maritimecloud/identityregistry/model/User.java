@@ -60,7 +60,7 @@ public class User extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "user")
+    @OneToMany(mappedBy = "user")
     @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
     private List<Certificate> certificates;
 
