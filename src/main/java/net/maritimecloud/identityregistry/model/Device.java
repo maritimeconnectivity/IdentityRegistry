@@ -23,6 +23,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
 import org.hibernate.annotations.Where;
@@ -82,6 +83,16 @@ public class Device extends TimestampModel {
             }
         }
     }
+
+    @PreRemove
+    public void preRemove() {
+        if (this.certificates != null) {
+            for (Certificate cert : this.certificates) {
+                cert.setVessel(null);
+            }
+        }
+    }
+
     /******************************/
     /** Getters and setters      **/
     /******************************/

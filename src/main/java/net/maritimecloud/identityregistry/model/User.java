@@ -25,6 +25,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
+import javax.persistence.PreRemove;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
@@ -105,6 +106,16 @@ public class User extends TimestampModel {
             }
         }
     }
+
+    @PreRemove
+    public void preRemove() {
+        if (this.certificates != null) {
+            for (Certificate cert : this.certificates) {
+                cert.setVessel(null);
+            }
+        }
+    }
+
     /******************************/
     /** Getters and setters      **/
     /******************************/
