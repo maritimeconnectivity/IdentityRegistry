@@ -62,7 +62,7 @@ public class User extends TimestampModel {
     private String permissions;
 
     @OneToMany(mappedBy = "user")
-    @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
+    @Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     // Only used when a user is first created to return a password.

@@ -49,7 +49,7 @@ public class Device extends TimestampModel {
     private String name;
 
     @OneToMany(mappedBy = "device")
-    @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
+    @Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /** Copies this organization into the other */

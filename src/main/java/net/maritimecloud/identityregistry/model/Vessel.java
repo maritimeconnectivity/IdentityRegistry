@@ -55,7 +55,7 @@ public class Vessel extends TimestampModel {
     private List<VesselAttribute> attributes;
 
     @OneToMany(mappedBy = "vessel")
-    @Where(clause="revoked != 1 AND CURDATE() BETWEEN start AND end")
+    @Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /** Copies this vessel into the other */
