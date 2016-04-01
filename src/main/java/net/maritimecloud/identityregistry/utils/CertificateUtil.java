@@ -336,8 +336,10 @@ public class CertificateUtil {
         String orgSubjectDn = "C=" + orgCountryCode + ", " +
                               "O=" + orgName + ", " +
                               "OU=" + orgUnitName + ", " +
-                              "CN=" + callName + ", " +
-                              "E=" + email;
+                              "CN=" + callName;
+        if (email != null && !email.isEmpty()) {
+            orgSubjectDn += ", " + "E=" + email;
+        }
         X509Certificate orgCert = null;
         try {
             orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");

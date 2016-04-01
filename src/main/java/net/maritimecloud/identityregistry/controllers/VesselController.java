@@ -233,7 +233,7 @@ public class VesselController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
                 if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
+                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setVessel(vessel);
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
@@ -262,7 +262,8 @@ public class VesselController {
                             System.out.println("Unexpected attribute value: " + attrName);
                         }
                     }
-                    X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), vessel.getName(), vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
+                    String o = org.getShortName() + ";" + org.getName();
+                    X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "vessel", vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded()).replace("\n", "\\n");

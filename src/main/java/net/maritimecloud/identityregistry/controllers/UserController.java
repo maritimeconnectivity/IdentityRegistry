@@ -256,14 +256,15 @@ public class UserController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
+                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setUser(user);
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for user
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
                     String name = user.getFirstName() + " " + user.getLastName();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), name, name, user.getEmail(), userKeyPair.getPublic(), null);
+                    String o = org.getShortName() + ";" + org.getName();
+                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");

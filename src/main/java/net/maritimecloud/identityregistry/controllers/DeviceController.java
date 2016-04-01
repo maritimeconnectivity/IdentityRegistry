@@ -227,13 +227,14 @@ public class DeviceController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be use as certificate serialnumber
+                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
                     Certificate newMCCert = new Certificate();
                     newMCCert.setDevice(device);
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for device
                     KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
-                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), org.getName(), device.getName(), device.getName(), "", deviceKeyPair.getPublic(), null);
+                    String o = org.getShortName() + ";" + org.getName();
+                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "device", device.getName(), "", deviceKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded()).replace("\n", "\\n");
