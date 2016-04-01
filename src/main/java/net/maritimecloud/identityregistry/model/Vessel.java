@@ -16,8 +16,11 @@ package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
+import java.util.TimeZone;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -54,8 +57,8 @@ public class Vessel extends TimestampModel {
     @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
-    @OneToMany(mappedBy = "vessel")
-    @Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
+    @OneToMany(mappedBy = "vessel", orphanRemoval=false)
+    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /** Copies this vessel into the other */
@@ -102,7 +105,17 @@ public class Vessel extends TimestampModel {
     @PreRemove
     public void preRemove() {
         if (this.certificates != null) {
+            // Dates are converted to UTC before saving into the DB
+            Calendar cal = Calendar.getInstance();
+            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+            Date now = new Date(cal.getTimeInMillis() - offset);
             for (Certificate cert : this.certificates) {
+                // Revoke certificates
+                cert.setRevokedAt(now);
+                cert.setEnd(now);
+                cert.setRevokeReason("cessationofoperation");
+                cert.setRevoked(true);
+                // Detach certificate from entity
                 cert.setVessel(null);
             }
         }

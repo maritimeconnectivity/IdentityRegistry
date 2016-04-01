@@ -14,6 +14,8 @@
  */
 package net.maritimecloud.identityregistry.model;
 
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -49,7 +51,7 @@ public class Device extends TimestampModel {
     private String name;
 
     @OneToMany(mappedBy = "device")
-    @Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
+    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /** Copies this organization into the other */
@@ -87,9 +89,20 @@ public class Device extends TimestampModel {
     @PreRemove
     public void preRemove() {
         if (this.certificates != null) {
+            // Dates are converted to UTC before saving into the DB
+            Calendar cal = Calendar.getInstance();
+            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+            Date now = new Date(cal.getTimeInMillis() - offset);
             for (Certificate cert : this.certificates) {
+                // Revoke certificates
+                cert.setRevokedAt(now);
+                cert.setEnd(now);
+                cert.setRevokeReason("cessationofoperation");
+                cert.setRevoked(true);
+                // Detach certificate from entity
                 cert.setVessel(null);
             }
+
         }
     }
 

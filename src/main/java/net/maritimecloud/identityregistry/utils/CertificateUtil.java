@@ -112,7 +112,8 @@ public class CertificateUtil {
      */
     public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
-        Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("UTC"));
+        // Dates are converted to GMT/UTC inside the cert builder 
+        Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
         cal.add(Calendar.YEAR, 1);
         Date nextYear = cal.getTime();
@@ -359,7 +360,7 @@ public class CertificateUtil {
     public static X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
         Date now = new Date();
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
-        crlBuilder.setNextUpdate(new Date(now.getTime() + 100000));
+        crlBuilder.setNextUpdate(new Date(now.getTime() + 24 * 60 * 60 * 1000)); // The next CRL is tomorrow (dummy value)
         for (net.maritimecloud.identityregistry.model.Certificate cert : revokedCerts) {
             int reason = 0;
             String certReason = cert.getRevokeReason().toLowerCase();

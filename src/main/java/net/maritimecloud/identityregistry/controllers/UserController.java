@@ -34,6 +34,8 @@ import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -276,8 +278,11 @@ public class UserController {
                     String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
                     PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
                     newMCCert.setCertificate(pemCertificate);
-                    newMCCert.setStart(userCert.getNotBefore());
-                    newMCCert.setEnd(userCert.getNotAfter());
+                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
+                    Calendar cal = Calendar.getInstance();
+                    long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+                    newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
+                    newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
                     newMCCert.setUser(user);
                     this.certificateService.saveCertificate(newMCCert);
                     return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
