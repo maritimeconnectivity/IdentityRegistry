@@ -31,6 +31,7 @@ import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -89,14 +90,21 @@ public class UserController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
-                input.setIdOrganization(org.getId());
-                User newUser = this.userService.saveUser(input);
+                String password = null;
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                    String password = PasswordUtil.generatePassword();
-                    String keycloakUsername = orgShortName.toLowerCase() + "." + newUser.getUserOrgId();
+                    password = PasswordUtil.generatePassword();
+                    String keycloakUsername = orgShortName.toLowerCase() + "." + input.getUserOrgId();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    keycloakAU.createUser(keycloakUsername, password, newUser.getFirstName(), newUser.getLastName(), newUser.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                    try {
+                        keycloakAU.createUser(keycloakUsername, password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                    } catch (IOException e) {
+                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+                    }
+                }
+                input.setIdOrganization(org.getId());
+                User newUser = this.userService.saveUser(input);
+                if (password != null) {
                     newUser.setPassword(password);
                 }
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
@@ -161,14 +169,18 @@ public class UserController {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
                 }
                 if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.selectiveCopyTo(user);
-                    this.userService.saveUser(user);
                     // Update user in keycloak if created there.
                     if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                         String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                        keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail(), true);
+                        try {
+                            keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail(), true);
+                        } catch (IOException e) {
+                            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
+                        }
                     }
+                    input.selectiveCopyTo(user);
+                    this.userService.saveUser(user);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }

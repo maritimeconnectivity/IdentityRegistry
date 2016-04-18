@@ -10,4 +10,10 @@ public class MCIdRegConstants {
     public static final String INVALID_REVOCATION_REASON = "The revocation reason is invalid!";
     public static final String INVALID_REVOCATION_DATE = "The revocation date must be set!";
     public static final String ORG_ALREADY_APPROVED = "This organization has already been approved!";
+    public static final String COULD_NOT_GET_DATA_FROM_IDP = "Could not read data from Identity Provider!";
+    public static final String INVALID_IDP_URL = "The Identity Provider URL is invalid!";
+    public static final String ERROR_CREATING_ADMIN_KC_USER = "An error occured while trying to create the admin user of the Organization!";
+    public static final String ERROR_UPDATING_ADMIN_KC_USER = "An error occured while trying to update the admin user of the Organization!";
+    public static final String ERROR_CREATING_KC_USER = "An error occured while trying to create the admin user of the Organization!";
+    public static final String ERROR_UPDATING_KC_USER = "An error occured while trying to update the admin user of the Organization!";
 }

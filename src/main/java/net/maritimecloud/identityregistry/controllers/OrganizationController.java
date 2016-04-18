@@ -24,6 +24,9 @@ import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
+import java.io.IOException;
+import java.net.MalformedURLException;
+
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -55,12 +58,13 @@ public class OrganizationController {
      * Receives an application for a new organization and root-user
      * 
      * @return a reply...
+     * @throws McBasicRestException 
      */
     @RequestMapping(
             value = "/api/org/apply",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) {
+    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) throws McBasicRestException {
         // Create password to be returned
         String newPassword = PasswordUtil.generatePassword();
         input.setPassword(newPassword);
@@ -73,7 +77,11 @@ public class OrganizationController {
         }
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), this.autoApprove, KeycloakAdminUtil.ADMIN_USER);
+        try {
+            keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), this.autoApprove, KeycloakAdminUtil.ADMIN_USER);
+        } catch (IOException e) {
+            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
+        }
         Organization newOrg = this.organizationService.saveOrganization(input);
         // TODO: Send email to organization
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
@@ -102,11 +110,24 @@ public class OrganizationController {
                 && org.getOidcClientName() != null && !org.getOidcClientName().isEmpty()
                 && org.getOidcClientSecret() != null && !org.getOidcClientSecret().isEmpty()) {
             keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-            keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getOidcWellKnownUrl(), org.getOidcClientName(), org.getOidcClientSecret());
+            try {
+                keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getOidcWellKnownUrl(), org.getOidcClientName(), org.getOidcClientSecret());
+            } catch (MalformedURLException e) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
+            } catch (IOException e) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+            }
         }
-        // Create admin user in the keycloak instance handling users
+        // Enable admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        keycloakAU.updateUser(org.getShortName(), org.getShortName(), org.getShortName(), org.getEmail(), true);
+        try {
+            keycloakAU.updateUser(org.getShortName(), org.getShortName(), org.getShortName(), org.getEmail(), true);
+        } catch (IOException e) {
+            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_ADMIN_KC_USER, request.getServletPath());
+        }
+        // Enabled the organization and save it
+        org.setApproved(true);
+        this.organizationService.saveOrganization(org);
         // TODO: send email to organization
         return new ResponseEntity<>(HttpStatus.OK);
     }
@@ -171,7 +192,13 @@ public class OrganizationController {
                     if (!org.getOidcClientName().equals(input.getOidcClientName())) {
                         keycloakAU.deleteIdentityProvider(input.getShortName());
                     }
-                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+                    try {
+                        keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+                    } catch (MalformedURLException e) {
+                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
+                    } catch (IOException e) {
+                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+                    }
                 }
                 // TODO: Remove old IDP if new input doesn't contain IDP info
                 input.selectiveCopyTo(org);

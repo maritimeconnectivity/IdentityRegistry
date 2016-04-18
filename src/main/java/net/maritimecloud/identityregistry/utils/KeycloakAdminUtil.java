@@ -17,7 +17,6 @@ package net.maritimecloud.identityregistry.utils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
-import org.keycloak.admin.client.resource.UsersResource;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
@@ -102,33 +101,27 @@ public class KeycloakAdminUtil {
      * 
      * @param wellKnownUrl The url to parse
      * @return  The IDP
+     * @throws MalformedURLException
+     * @throws IOException 
      */
-    private IdentityProviderRepresentation getIdpFromWellKnownUrl(String wellKnownUrl) {
+    private IdentityProviderRepresentation getIdpFromWellKnownUrl(String wellKnownUrl) throws MalformedURLException, IOException {
         // Get IDP info by parsing info from wellKnownUrl json
         URL url;
         try {
             url = new URL(wellKnownUrl);
         } catch (MalformedURLException e1) {
-            // TODO Auto-generated catch block
             e1.printStackTrace();
-            return null;
+            throw e1;
         }
         HttpURLConnection request;
+        Map<String,Object> idpData;
         try {
             request = (HttpURLConnection) url.openConnection();
             request.connect();
-        } catch (IOException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-            return null;
-        }
-        Map<String,Object> idpData;
-        try {
             idpData = JsonSerialization.readValue((InputStream) request.getContent(), Map.class);
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
+        } catch (IOException e1) {
+            e1.printStackTrace();
+            throw e1;
         }
         // Extract the endpoints from the json
         String authEndpoint = (String) idpData.get("authorization_endpoint");
@@ -164,13 +157,12 @@ public class KeycloakAdminUtil {
      * @param wellKnownUrl  the url where info on the IDP can be obtained
      * @param clientId      the id used for the MC in the IDP
      * @param clientSecret  the secret used for the MC in the IDP
+     * @throws IOException 
+     * @throws MalformedURLException 
      */
-    public void createIdentityProvider(String name, String wellKnownUrl, String clientId, String clientSecret) {
+    public void createIdentityProvider(String name, String wellKnownUrl, String clientId, String clientSecret) throws MalformedURLException, IOException {
         // Get IDP info by parsing info from wellKnownUrl json
         IdentityProviderRepresentation idp = getIdpFromWellKnownUrl(wellKnownUrl);
-        if (idp == null) {
-            return;
-        }
         // Insert data into IDP data structure
         idp.setAlias(name);
         Map<String, String> IDPConf = idp.getConfig();
@@ -250,8 +242,9 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @param orgShortName  shortname of the org
      * @param userType      type of user, determines rights.
+     * @throws IOException 
      */
-    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, boolean enabled, int userType) {
+    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, boolean enabled, int userType) throws IOException {
         System.out.println("creating user: " + username);
 
         UserRepresentation user = new UserRepresentation();
@@ -279,7 +272,7 @@ public class KeycloakAdminUtil {
         Response ret = keycloakUserInstance.realm(keycloakBrokerRealm).users().create(user);
         if (ret.getStatus() != 201) {
             System.out.println("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
-            return;
+            throw new IOException("User creation failed: " + ret.readEntity(String.class));
         }
         System.out.println("created user, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
         ret.close();
@@ -305,9 +298,15 @@ public class KeycloakAdminUtil {
      * @param firstName     first name of user
      * @param lastName      last name of user
      * @param email         email of the user
+     * @throws IOException 
      */
-    public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) {
-        UserRepresentation user = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1).get(0);
+    public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) throws IOException {
+        List<UserRepresentation> userReps = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1);
+        if (userReps.size() != 1) {
+            System.out.println("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
+            throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
+        }
+        UserRepresentation user = userReps.get(0);
         boolean updated = false;
         if (email != null && !email.trim().isEmpty()) {
             user.setEmail(email);
