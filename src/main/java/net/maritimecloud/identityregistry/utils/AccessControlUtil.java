@@ -18,6 +18,8 @@ import java.util.Map;
 
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -27,7 +29,9 @@ import org.springframework.security.ldap.userdetails.InetOrgPerson;
 public class AccessControlUtil {
 
     public static final String ORG_PROPERTY_NAME = "org";
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
+
     public static boolean hasAccessToOrg(String orgName, String orgShortName) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof KeycloakAuthenticationToken) {
@@ -55,7 +59,7 @@ public class AccessControlUtil {
             }
         } else {
             if (auth != null) {
-                System.out.println("Unknown authentication method: " + auth.getClass());
+                logger.debug("Unknown authentication method: " + auth.getClass());
             }
         }
         

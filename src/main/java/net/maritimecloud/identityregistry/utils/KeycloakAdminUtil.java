@@ -38,6 +38,9 @@ import java.util.Map;
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @Component
 public class KeycloakAdminUtil {
     // Load the info needed to log into the Keycloak instance that is used as ID Broker (hosts ID Providers) 
@@ -74,7 +77,9 @@ public class KeycloakAdminUtil {
 
     private Keycloak keycloakBrokerInstance = null;
     private Keycloak keycloakUserInstance = null;
-    
+
+    private static final Logger logger = LoggerFactory.getLogger(KeycloakAdminUtil.class);
+
     /**
      * Constructor.
      */
@@ -219,16 +224,16 @@ public class KeycloakAdminUtil {
         IdentityProvidersResource idps2 =  keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders();
         try {
             IdentityProviderRepresentation idp2 = idps2.get("toidp-asdfgh").toRepresentation();
-            System.out.println(idp2.getAlias());
+            logger.debug(idp2.getAlias());
         } catch(NotFoundException nfe) {
         }
         
         List<IdentityProviderRepresentation> idps = idps2.findAll();
         for (IdentityProviderRepresentation idp : idps) {
-            System.out.println(idp.getProviderId());
+            logger.debug(idp.getProviderId());
         }
         
-        System.out.println(keycloakBrokerAdminUser + ", "  + keycloakBrokerAdminPassword + ", " + keycloakBrokerAdminClient);
+        logger.debug(keycloakBrokerAdminUser + ", "  + keycloakBrokerAdminPassword + ", " + keycloakBrokerAdminClient);
     }
 
 
@@ -245,7 +250,7 @@ public class KeycloakAdminUtil {
      * @throws IOException 
      */
     public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, boolean enabled, int userType) throws IOException {
-        System.out.println("creating user: " + username);
+        logger.debug("creating user: " + username);
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(username);
@@ -271,10 +276,10 @@ public class KeycloakAdminUtil {
         user.setAttributes(attr);
         Response ret = keycloakUserInstance.realm(keycloakBrokerRealm).users().create(user);
         if (ret.getStatus() != 201) {
-            System.out.println("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
+            logger.debug("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
             throw new IOException("User creation failed: " + ret.readEntity(String.class));
         }
-        System.out.println("created user, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
+        logger.debug("created user, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
         ret.close();
         
         // Set credentials
@@ -285,9 +290,9 @@ public class KeycloakAdminUtil {
         // Find the user by searching for the username
         user = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1).get(0);
         user.setCredentials(Arrays.asList(cred));
-        System.out.println("setting password for user: " + user.getId());
+        logger.debug("setting password for user: " + user.getId());
         keycloakUserInstance.realm(keycloakBrokerRealm).users().get(user.getId()).resetPassword(cred);
-        System.out.println("created user");
+        logger.debug("created user");
     }
 
 
@@ -303,7 +308,7 @@ public class KeycloakAdminUtil {
     public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) throws IOException {
         List<UserRepresentation> userReps = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1);
         if (userReps.size() != 1) {
-            System.out.println("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
+            logger.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
         }
         UserRepresentation user = userReps.get(0);

@@ -49,6 +49,9 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 @RestController
 @RequestMapping(value={"oidc", "x509"})
 public class VesselController {
@@ -57,6 +60,8 @@ public class VesselController {
     private OrganizationService organizationService;
 
     private CertificateService certificateService;
+
+    private static final Logger logger = LoggerFactory.getLogger(VesselController.class);
 
     @Autowired
     public void setCertificateService(CertificateService certificateService) {
@@ -261,7 +266,7 @@ public class VesselController {
                             attrs.put(CertificateUtil.MC_OID_MRN, attr.getAttributeValue());
                             break;
                         default:
-                            System.out.println("Unexpected attribute value: " + attrName);
+                            logger.debug("Unexpected attribute value: " + attrName);
                         }
                     }
                     String o = org.getShortName() + ";" + org.getName();

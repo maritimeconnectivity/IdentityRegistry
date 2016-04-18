@@ -29,6 +29,8 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.util.JsonSerialization;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.Resource;
@@ -74,8 +76,8 @@ public class KeycloakServiceAccountUtil {
     private String realm;
     private Keycloak keycloakInstance;
 
-    
-    
+    private static final Logger logger = LoggerFactory.getLogger(KeycloakServiceAccountUtil.class);
+
     /**
      * Constructor, loads KeycloakDeployment.
      */
@@ -180,7 +182,7 @@ public class KeycloakServiceAccountUtil {
             try {
                 HttpResponse response = client.execute(get);
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    System.out.println(response.getStatusLine().getStatusCode());
+                    logger.debug("" + response.getStatusLine().getStatusCode());
                     return null;
                 }
                 HttpEntity entity = response.getEntity();
@@ -309,7 +311,7 @@ public class KeycloakServiceAccountUtil {
                 if (token != null) {
                     post.addHeader("Authorization", "Bearer " + token);
                 }
-                System.out.println("idp creating json: " + JsonSerialization.writeValueAsString(idp));
+                logger.debug("idp creating json: " + JsonSerialization.writeValueAsString(idp));
                 StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(idp));
                 input.setContentType("application/json");
                 post.setEntity(input);
@@ -319,10 +321,10 @@ public class KeycloakServiceAccountUtil {
                 if (status != 201) {
                     String json = getContent(entity);
                     String error = "IDP creation failed. Bad status: " + status + " response: " + json;
-                    System.out.println(error);
+                    logger.debug(error);
                     //req.setAttribute(ERROR, error);
                 } else {
-                    System.out.println("IDP created! " + getContent(entity));
+                    logger.debug("IDP created! " + getContent(entity));
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -334,7 +336,7 @@ public class KeycloakServiceAccountUtil {
                 if (token != null) {
                     put.addHeader("Authorization", "Bearer " + token);
                 }
-                System.out.println("idp update json: " + JsonSerialization.writeValueAsString(idp));
+                logger.debug("idp update json: " + JsonSerialization.writeValueAsString(idp));
                 StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(idp));
                 input.setContentType("application/json");
                 put.setEntity(input);
@@ -344,10 +346,10 @@ public class KeycloakServiceAccountUtil {
                 if (status != 201) {
                     String json = getContent(entity);
                     String error = "IDP update failed. Bad status: " + status + " response: " + json;
-                    System.out.println(error);
+                    logger.debug(error);
                     //req.setAttribute(ERROR, error);
                 } else {
-                    System.out.println("IDP updated! " + getContent(entity));
+                    logger.debug("IDP updated! " + getContent(entity));
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
@@ -421,14 +423,14 @@ public class KeycloakServiceAccountUtil {
             if (status != 200) {
                 String json = getContent(entity);
                 String error = "Failed retrieve IDPs. Status: " + status;
-                System.out.println(error);
+                logger.debug(error);
                 //req.setAttribute(ERROR, error);
             } else if (entity == null) {
-                System.out.println("No entity");
+                logger.debug("No entity");
                 //req.setAttribute(ERROR, "No entity");
             } else {
                 String idps = getContent(entity);
-                System.out.println("IDPs: " + idps);
+                logger.debug("IDPs: " + idps);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -454,10 +456,10 @@ public class KeycloakServiceAccountUtil {
             if (status != 200 && status != 204) {
                 String json = getContent(entity);
                 String error = "Failed deleting IDP. Status: " + status + ", content: " + json;
-                System.out.println(error);
+                logger.debug(error);
                 //req.setAttribute(ERROR, error);
             } else {
-                System.out.println("Deleted IDP " + name);
+                logger.debug("Deleted IDP " + name);
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();
@@ -498,7 +500,7 @@ public class KeycloakServiceAccountUtil {
             if (token != null) {
                 post.addHeader("Authorization", "Bearer " + token);
             }
-            System.out.println("user creating json: " + JsonSerialization.writeValueAsString(user));
+            logger.debug("user creating json: " + JsonSerialization.writeValueAsString(user));
             StringEntity input = new StringEntity(JsonSerialization.writeValueAsString(user));
             input.setContentType("application/json");
             post.setEntity(input);
@@ -508,10 +510,10 @@ public class KeycloakServiceAccountUtil {
             if (status != 201) {
                 String json = getContent(entity);
                 String error = "IDP creation failed. Bad status: " + status + " response: " + json;
-                System.out.println(error);
+                logger.debug(error);
                 //req.setAttribute(ERROR, error);
             } else {
-                System.out.println("IDP created! " + getContent(entity));
+                logger.debug("IDP created! " + getContent(entity));
             }
         } catch (IOException ioe) {
             ioe.printStackTrace();

@@ -17,6 +17,8 @@ package net.maritimecloud.identityregistry.security;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -38,6 +40,8 @@ import net.maritimecloud.identityregistry.model.Organization;*/
 @Component
 public class MCAuthenticationProvider implements AuthenticationProvider {
 
+    private static final Logger logger = LoggerFactory.getLogger(MCAuthenticationProvider.class);
+
     /*
     private OrganizationService organizationService;
     
@@ -50,7 +54,7 @@ public class MCAuthenticationProvider implements AuthenticationProvider {
     public Authentication authenticate(Authentication authentication) throws AuthenticationException {
         String name = authentication.getName();
         String password = authentication.getCredentials().toString();
-        System.out.println("In authenticate");
+        logger.debug("In authenticate");
         // The login name is the org shortname
         // Organization org = this.organizationService.getOrganizationByShortName(name);
         // if an org was found, test the password
@@ -60,10 +64,10 @@ public class MCAuthenticationProvider implements AuthenticationProvider {
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_ADMIN"));
             grantedAuths.add(new SimpleGrantedAuthority("ROLE_USER"));
             Authentication auth = new UsernamePasswordAuthenticationToken(name, authentication.getCredentials(), grantedAuths);
-            System.out.println("Got authenticated: " + auth.isAuthenticated());
+            logger.debug("Got authenticated: " + auth.isAuthenticated());
             return auth;
         } else {
-            System.out.println("Didn't get authenticated");
+            logger.debug("Didn't get authenticated");
             throw new BadCredentialsException("Bad Credentials");
         }
     }
