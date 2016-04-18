@@ -87,6 +87,7 @@ public class Organization extends TimestampModel {
         org.setShortName(shortName);
         org.setEmail(email);
         org.setUrl(url);
+        org.setAddress(address);
         org.setCountry(country);
         org.setLogo(logo);
         org.setType(type);
@@ -104,6 +105,7 @@ public class Organization extends TimestampModel {
         org.setName(name);
         org.setEmail(email);
         org.setUrl(url);
+        org.setAddress(address);
         org.setCountry(country);
         org.setLogo(logo);
         org.setType(type);
