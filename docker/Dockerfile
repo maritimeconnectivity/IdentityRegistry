@@ -11,4 +11,4 @@ RUN wget "https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloud%20Id
 
 EXPOSE 8443
 
-CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mc-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml"]
+CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mc-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.config.file=/conf/keycloak.conf"]

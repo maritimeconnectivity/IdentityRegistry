@@ -4,6 +4,7 @@ spring:
 
 # logging
 #logging.level:
+#    net.maritimecloud.identityregistry: DEBUG
 #    org.springframework.web: DEBUG
 #    org.springframework.security: DEBUG
 #    org.keycloak.adapters: DEBUG

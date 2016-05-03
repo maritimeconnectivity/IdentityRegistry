@@ -27,11 +27,16 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 
+
 public class X509UserDetailsService implements UserDetailsService {
+
+    private static final Logger logger = LoggerFactory.getLogger(X509UserDetailsService.class);
 
     @Override
     public UserDetails loadUserByUsername(String certDN) throws UsernameNotFoundException {
@@ -52,6 +57,7 @@ public class X509UserDetailsService implements UserDetailsService {
         essence.setOu(getElement(x500name, BCStyle.OU));
         essence.setAuthorities(roles);
         essence.setDescription(certDN);
+        logger.debug("Parsed certificate, name: " + name);
         return essence.createUserDetails();
     }
 

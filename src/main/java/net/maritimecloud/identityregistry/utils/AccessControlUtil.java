@@ -35,6 +35,7 @@ public class AccessControlUtil {
     public static boolean hasAccessToOrg(String orgName, String orgShortName) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof KeycloakAuthenticationToken) {
+            logger.debug("OIDC authentication in process");
             // Keycloak authentication
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext)kat.getCredentials();
@@ -43,13 +44,8 @@ public class AccessControlUtil {
                     ((String)otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgShortName.toLowerCase())) {
                 return true;
             }
-        } else if (auth instanceof UsernamePasswordAuthenticationToken) {
-            // username / ADMIN interface authentication
-            UsernamePasswordAuthenticationToken upat = (UsernamePasswordAuthenticationToken) auth;
-            if (upat.getName().equals(orgShortName)) {
-                return true;
-            }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
+            logger.debug("Certificate authentication in process");
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
