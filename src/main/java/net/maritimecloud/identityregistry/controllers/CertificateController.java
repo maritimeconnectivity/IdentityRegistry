@@ -44,6 +44,9 @@ public class CertificateController {
         this.certificateService = certificateService;
     }
 
+    @Autowired
+    private CertificateUtil certUtil;
+
     /**
      * Returns info about the device identified by the given ID
      * 
@@ -56,7 +59,7 @@ public class CertificateController {
     @ResponseBody
     public ResponseEntity<?> getCRL(HttpServletRequest request) {
         List<Certificate> revokedCerts = this.certificateService.listRevokedCertificate();
-        X509CRL crl = CertificateUtil.generateCRL(revokedCerts);
+        X509CRL crl = certUtil.generateCRL(revokedCerts);
         String pemCrl = "";
         try {
             pemCrl = CertificateUtil.getPemFromEncoded("X509 CRL", crl.getEncoded());

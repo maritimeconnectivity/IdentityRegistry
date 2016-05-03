@@ -34,7 +34,7 @@ If you want to setup a realm yourself, follow the guide below, but if you have i
 
 See Keycloaks documentation for how to register a client. After setting it up get the "Keycloak JSON" from the clients installation tab and place it in `src/main/webapp/WEB-INF/keycloak.json`.
 
-Now a special user must be set up to allow the registration of Identity Providers in keycloak. Create the user in Keycloak, assign a non-temporary password and assign the "admin" role. Now put the info of the created user in `src/main/resources/application.properties` like this:
+Now a special user must be set up to allow the registration of Identity Providers in keycloak. Create the user in Keycloak, assign a non-temporary password and assign the "admin" role. Now put the info of the created user in `src/main/resources/application.yaml` like this:
 ```yaml
 net:
     maritimecloud:
@@ -47,7 +47,7 @@ net:
 ```
 The client `security-admin-console` is a standard Keycloak client that will be used when accessing the Keycloak API, but its settings needs to be changed first. So go to the configuration page of the client `security-admin-console` and enable "Direct Access Grants", which will allow the create user to login and access the keycloak API.
 
-Besides the Identity Providers we also need to be able to create users in Keycloak, to support OpenID Connect login of admin users, and users from an Organization without their own Identity Provider. This can be the same keycloak instance as used for Identity Providers, or a different one, or perhaps the same instance but a different realm. In this other instance/realm a user must be created in the same way as described above, and the info saved to `src/main/resources/application.properties`, like this:
+Besides the Identity Providers we also need to be able to create users in Keycloak, to support OpenID Connect login of admin users, and users from an Organization without their own Identity Provider. This can be the same keycloak instance as used for Identity Providers, or a different one, or perhaps the same instance but a different realm. In this other instance/realm a user must be created in the same way as described above, and the info saved to `src/main/resources/application.yaml`, like this:
 ```yaml
 net:
     maritimecloud:

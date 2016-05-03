@@ -70,23 +70,37 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
+@Component
 public class CertificateUtil {
 
     public static final String ROOT_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud, CN=MaritimeCloud Root Certificate, E=info@maritimecloud.net";
     public static final String MCIDREG_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud Identity Registry, CN=MaritimeCloud Identity Registry Certificate, E=info@maritimecloud.net";
-    public static final String ROOT_KEYSTORE_PATH = "mc-root-keystore.jks"; // /etc/ssl/certs/java/cacerts
-    public static final String INTERMEDIATE_KEYSTORE_PATH = "mc-it-keystore.jks";
-    public static final String KEYSTORE_PASSWORD = "changeit";
-    public static final String TRUSTSTORE_PATH = "mc-truststore.jks";
-    public static final String TRUSTSTORE_PASSWORD = "changeit";
     public static final String ROOT_CERT_ALIAS = "rootcert";
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
     public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
+
+    // Below values are loaded from application.yaml
+    @Value("${net.maritimecloud.idreg.certs.root-keystore}")
+    private String ROOT_KEYSTORE_PATH;
+
+    @Value("${net.maritimecloud.idreg.certs.it-keystore}")
+    private String INTERMEDIATE_KEYSTORE_PATH;
+
+    @Value("${net.maritimecloud.idreg.certs.keystore-password}")
+    private String KEYSTORE_PASSWORD;
+
+    @Value("${net.maritimecloud.idreg.certs.truststore}")
+    private String TRUSTSTORE_PATH;
+
+    @Value("${net.maritimecloud.idreg.certs.truststore-password}")
+    private String TRUSTSTORE_PASSWORD = "changeit";
 
     // OIDs used for the extra info stored in the SubjectAlternativeName extension
     // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
@@ -98,6 +112,9 @@ public class CertificateUtil {
     public static final String MC_OID_AIS_SHIPTYPE = "2.25.107857171638679641902842130101018412315";
     public static final String MC_OID_MRN          = "2.25.271477598449775373676560215839310464283";
     public static final String MC_OID_PERMISSIONS  = "2.25.174437629172304915481663724171734402331";
+
+    public CertificateUtil() {
+    }
 
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
@@ -175,7 +192,22 @@ public class CertificateUtil {
      * @param keystoreFilename
      * @param password
      */
-    public static void initCA() {
+    public void initCA() {
+        if (KEYSTORE_PASSWORD == null) {
+            KEYSTORE_PASSWORD = "changeit";
+        }
+        if (ROOT_KEYSTORE_PATH == null) {
+            ROOT_KEYSTORE_PATH = "mc-root-keystore.jks";
+        }
+        if (INTERMEDIATE_KEYSTORE_PATH == null) {
+            INTERMEDIATE_KEYSTORE_PATH = "mc-it-keystore.jks";
+        }
+        if (TRUSTSTORE_PASSWORD == null) {
+            TRUSTSTORE_PASSWORD = "changeit";
+        }
+        if (TRUSTSTORE_PATH == null) {
+            TRUSTSTORE_PATH = "mc-truststore.jks";
+        }
         KeyPair cakp = generateKeyPair(); 
         KeyPair imkp = generateKeyPair(); 
         KeyStore rootks;
@@ -285,7 +317,7 @@ public class CertificateUtil {
      *  
      * @return
      */
-    public static PrivateKeyEntry getSigningCertEntry() {
+    public PrivateKeyEntry getSigningCertEntry() {
         FileInputStream is;
         try {
             is = new FileInputStream(INTERMEDIATE_KEYSTORE_PATH);
@@ -320,8 +352,8 @@ public class CertificateUtil {
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public static X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey, Map<String, String> customAttr) {
-        PrivateKeyEntry signingCertEntry = CertificateUtil.getSigningCertEntry();
+    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey, Map<String, String> customAttr) {
+        PrivateKeyEntry signingCertEntry = getSigningCertEntry();
         java.security.cert.Certificate signingCert = signingCertEntry.getCertificate();
         X509Certificate signingX509Cert = (X509Certificate) signingCert;
         // Try to find the correct country code, else we just use the country name as code
@@ -357,7 +389,7 @@ public class CertificateUtil {
      * @param revokesSerialNumbers  List of the serialnumbers that should be revoked.
      * @return
      */
-    public static X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
+    public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
         Date now = new Date();
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
         crlBuilder.setNextUpdate(new Date(now.getTime() + 24 * 60 * 60 * 1000)); // The next CRL is tomorrow (dummy value)
@@ -460,7 +492,8 @@ public class CertificateUtil {
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
         System.out.println("Initializing CA");
-        CertificateUtil.initCA();
+        CertificateUtil certUtil = new CertificateUtil();
+        certUtil.initCA();
         System.out.println("Done initializing CA");
     }*/
 }

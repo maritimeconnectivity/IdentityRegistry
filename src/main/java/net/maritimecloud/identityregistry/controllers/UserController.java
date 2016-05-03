@@ -74,6 +74,9 @@ public class UserController {
     @Autowired
     private KeycloakAdminUtil keycloakAU;
 
+    @Autowired
+    private CertificateUtil certUtil;
+
     /**
      * Creates a new User
      * 
@@ -278,7 +281,7 @@ public class UserController {
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
                     String name = user.getFirstName() + " " + user.getLastName();
                     String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate userCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), null);
+                    X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");

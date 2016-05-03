@@ -64,6 +64,9 @@ public class VesselController {
     private static final Logger logger = LoggerFactory.getLogger(VesselController.class);
 
     @Autowired
+    private CertificateUtil certUtil;
+
+    @Autowired
     public void setCertificateService(CertificateService certificateService) {
         this.certificateService = certificateService;
     }
@@ -270,7 +273,7 @@ public class VesselController {
                         }
                     }
                     String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate vesselCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "vessel", vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
+                    X509Certificate vesselCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "vessel", vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded()).replace("\n", "\\n");

@@ -68,6 +68,9 @@ public class DeviceController {
         this.deviceService = organizationService;
     }
 
+    @Autowired
+    private CertificateUtil certUtil;
+
     /**
      * Creates a new Device
      * 
@@ -236,7 +239,7 @@ public class DeviceController {
                     // Generate keypair for device
                     KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
                     String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate deviceCert = CertificateUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "device", device.getName(), "", deviceKeyPair.getPublic(), null);
+                    X509Certificate deviceCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "device", device.getName(), "", deviceKeyPair.getPublic(), null);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded()).replace("\n", "\\n");

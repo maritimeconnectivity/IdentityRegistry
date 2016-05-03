@@ -3,8 +3,8 @@ spring:
     profiles.active: development
 
 # logging
-#logging.level:
-#    net.maritimecloud.identityregistry: DEBUG
+logging.level:
+    net.maritimecloud.identityregistry: DEBUG
 #    org.springframework.web: DEBUG
 #    org.springframework.security: DEBUG
 #    org.keycloak.adapters: DEBUG
@@ -16,7 +16,7 @@ server:
         enabled: true
         # Keystore
         # key-store: classpath:keystore.jks
-        key-store: mc-root-keystore.jks
+        key-store: mc-it-keystore.jks
         # key-store: /etc/ssl/certs/java/cacerts
         # key-alias: rootcert
         key-store-password: changeit
@@ -44,6 +44,15 @@ net:
             keycloak-project-users-base-url: http://localhost:9080/auth/
 
             auto-approve-organizations: true
+
+            # Certificate setup
+            certs:
+                root-keystore: mc-root-keystore.jks
+                it-keystore: mc-it-keystore.jks
+                keystore-password: changeit
+                truststore: mc-truststore.jks
+                truststore-password: changeit
+
 ---
 spring:
     profiles: development
