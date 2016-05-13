@@ -17,17 +17,30 @@ package net.maritimecloud.identityregistry.security;
 import java.security.Security;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+
+import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
+import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
+import net.maritimecloud.identityregistry.utils.CertificateUtil;
+
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -104,6 +117,28 @@ public class MultiSecurityConfig  {
     @Order(2)
     public static class X509WebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
 
+        @Value("${server.ssl.enabled:false}")
+        private boolean useStandardSSL;
+        private X509HeaderUserDetailsService userDetailsService;
+        private PreAuthenticatedAuthenticationProvider preAuthenticatedProvider;
+
+        public X509WebSecurityConfigurationAdapter() {
+            super();
+            if (!useStandardSSL) {
+                userDetailsService = new X509HeaderUserDetailsService();
+                UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken>(userDetailsService);
+                preAuthenticatedProvider = new PreAuthenticatedAuthenticationProvider();
+                preAuthenticatedProvider.setPreAuthenticatedUserDetailsService(wrapper);
+            }
+        }
+
+        @Override
+        protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
+            if (!useStandardSSL) {
+                authenticationManagerBuilder.authenticationProvider(preAuthenticatedProvider);
+            }
+        }
+
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             // We should probably place this somewhere else...
@@ -116,14 +151,36 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
-            .and()
-                .x509()
-                    .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?),"
-                    .userDetailsService(x509UserDetailsService())
-            ;
+                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated();
+
+            if (!useStandardSSL) {
+                // Create and setup the filter used to extract the client certificate from the header
+                RequestHeaderAuthenticationFilter certFilter = new RequestHeaderAuthenticationFilter();
+                certFilter.setAuthenticationManager(authenticationManager());
+                certFilter.setPrincipalRequestHeader("X-Client-Certificate");
+                
+                // Link up the CertificateUtil
+                userDetailsService.setCertUtil(certificateUtil());
+                http.addFilter(certFilter);
+            } else {
+                http
+                    .x509()
+                        .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
+                        .userDetailsService(x509UserDetailsService())
+                ;
+            }
         }
 
+        @Bean
+        public CertificateUtil certificateUtil() {
+            return new CertificateUtil();
+        }
+
+        @Bean
+        public X509HeaderUserDetailsService x509HeaderUserDetailsService() {
+            return userDetailsService;
+        }
+        
         @Bean
         public X509UserDetailsService x509UserDetailsService() {
             return new X509UserDetailsService();

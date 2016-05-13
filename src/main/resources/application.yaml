@@ -13,7 +13,7 @@ logging.level:
 server:
     port: 8443
     ssl:
-        enabled: true
+        enabled: false
         # Keystore
         # key-store: classpath:keystore.jks
         key-store: mc-it-keystore.jks
@@ -53,6 +53,7 @@ net:
                 truststore: mc-truststore.jks
                 truststore-password: changeit
 
+#keycloak.configurationFile: file:/conf/keycloak.json
 ---
 spring:
     profiles: development

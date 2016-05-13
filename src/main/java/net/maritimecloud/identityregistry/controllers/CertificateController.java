@@ -14,17 +14,24 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
+import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.cert.ocsp.OCSPReq;
+import org.bouncycastle.cert.ocsp.OCSPResp;
+import org.bouncycastle.cert.ocsp.Req;
+import org.bouncycastle.cert.ocsp.RevokedStatus;
+import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
@@ -70,4 +77,50 @@ public class CertificateController {
         }
         return new ResponseEntity<String>(pemCrl, HttpStatus.OK);
     }
+
+    @RequestMapping(
+            value = "/api/certificates/ocsp",
+            method = RequestMethod.POST,
+            produces = "application/ocsp-response")
+    @ResponseBody
+    public ResponseEntity<?> postOCSP(HttpServletRequest request, @RequestBody byte[] input) {
+        OCSPReq ocspreq;
+        try {
+            ocspreq = new OCSPReq(input);
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        if (ocspreq.isSigned()) {
+            // TODO: verify signature - needed?
+        }
+        BasicOCSPRespBuilder respBuilder = certUtil.initOCSPRespBuilder(ocspreq);
+        Req[] requests = ocspreq.getRequestList();
+        for (Req req : requests) {
+            BigInteger sn = req.getCertID().getSerialNumber();
+            Certificate cert = this.certificateService.getCertificateById(sn.longValue());
+            if (cert == null) {
+                // Throw exception?
+                continue;
+            }
+            // Check if certificate has been revoked
+            if (cert.getRevoked()) {
+                respBuilder.addResponse(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), certUtil.getCRLReasonFromString(cert.getRevokeReason())));
+            } else {
+                // Certificate is valid
+                respBuilder.addResponse(req.getCertID(), CertificateStatus.GOOD);
+            }
+        }
+        OCSPResp response = certUtil.generateOCSPResponse(respBuilder);
+        byte[] byteResponse = null;
+        try {
+            byteResponse = response.getEncoded();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return new ResponseEntity<byte[]>(byteResponse, HttpStatus.OK);
+    }
+
 }

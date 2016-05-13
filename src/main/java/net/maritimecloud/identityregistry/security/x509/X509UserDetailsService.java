@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.security;
+package net.maritimecloud.identityregistry.security.x509;
 
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -40,6 +40,7 @@ public class X509UserDetailsService implements UserDetailsService {
 
     @Override
     public UserDetails loadUserByUsername(String certDN) throws UsernameNotFoundException {
+        logger.debug("certDN: " + certDN);
         SimpleGrantedAuthority role = new SimpleGrantedAuthority("ROLE_USER");
         Collection<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
         roles.add(role);

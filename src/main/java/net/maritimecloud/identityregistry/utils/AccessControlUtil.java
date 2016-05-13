@@ -20,7 +20,6 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -49,7 +48,8 @@ public class AccessControlUtil {
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            String certOrg = ((InetOrgPerson)token.getPrincipal()).getO();
+            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal()); 
+            String certOrg = person.getO();
             if (orgName.equals(certOrg)) {
                 return true;
             }
