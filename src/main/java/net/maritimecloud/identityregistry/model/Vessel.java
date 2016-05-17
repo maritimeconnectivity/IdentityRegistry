@@ -60,7 +60,7 @@ public class Vessel extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "vessel", orphanRemoval=true)
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
     @OneToMany(mappedBy = "vessel", orphanRemoval=false)

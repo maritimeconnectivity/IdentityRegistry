@@ -60,6 +60,9 @@ net:
 spring.datasource:
     test-on-borrow: true
     validation-query: SELECT 1
+
+# Do not "leak" internal setup details in http X-Application-Context header
+management.add-application-context-header: false
 ---
 spring:
     profiles: development

@@ -25,7 +25,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 
 /**
- * Model object representing an organization
+ * Model object representing a vessel attribute
  */
 
 @Entity
@@ -55,6 +55,12 @@ public class VesselAttribute extends TimestampModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
+
+    @Override
+    @JsonIgnore
+    public Long getId() {
+        return id;
+    }
 
     public String getAttributeName() {
         return attributeName;
