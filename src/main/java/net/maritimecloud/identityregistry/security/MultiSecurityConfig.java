@@ -19,24 +19,21 @@ import java.security.Security;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
-import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
+import net.maritimecloud.identityregistry.security.x509.ClientCertRequestHeaderAuthenticationFilter;
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
@@ -87,7 +84,8 @@ public class MultiSecurityConfig  {
             .and()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/certificates/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
+                    .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
@@ -149,7 +147,8 @@ public class MultiSecurityConfig  {
                 .csrf().disable()
                 .authorizeRequests()
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509/api/certificates/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
+                    .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
@@ -157,7 +156,7 @@ public class MultiSecurityConfig  {
 
             if (!useStandardSSL) {
                 // Create and setup the filter used to extract the client certificate from the header
-                RequestHeaderAuthenticationFilter certFilter = new RequestHeaderAuthenticationFilter();
+                ClientCertRequestHeaderAuthenticationFilter certFilter = new ClientCertRequestHeaderAuthenticationFilter();
                 certFilter.setAuthenticationManager(authenticationManager());
                 certFilter.setPrincipalRequestHeader("X-Client-Certificate");
                 
