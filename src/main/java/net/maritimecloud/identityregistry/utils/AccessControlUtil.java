@@ -31,7 +31,7 @@ public class AccessControlUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
 
-    public static boolean hasAccessToOrg(String orgName, String orgShortName) {
+    public static boolean hasAccessToOrg(String orgShortName) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof KeycloakAuthenticationToken) {
             logger.debug("OIDC authentication in process");
@@ -48,9 +48,15 @@ public class AccessControlUtil {
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal()); 
+            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            // The O(rganization) value looks like this in the certificate: <org shortname>;<org fullname>
             String certOrg = person.getO();
-            if (orgName.equals(certOrg)) {
+            int idx = certOrg.indexOf(";");
+            if (idx < 1) {
+                return false;
+            }
+            certOrg = certOrg.substring(0, idx);
+            if (orgShortName.equals(certOrg)) {
                 return true;
             }
         } else {

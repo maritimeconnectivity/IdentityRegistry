@@ -16,10 +16,10 @@ package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
 import org.springframework.data.repository.CrudRepository;
-import net.maritimecloud.identityregistry.model.Device;
+import net.maritimecloud.identityregistry.model.Service;
 
-public interface DeviceRepository extends CrudRepository<Device, Long> {
-    List<Device> findByName(String lastName);
+public interface ServiceRepository extends CrudRepository<Service, Long> {
+    List<Service> findByName(String lastName);
 
-    List<Device> findByidOrganization(Long orgId);
+    List<Service> findByidOrganization(Long orgId);
 }

@@ -60,6 +60,9 @@ public class User extends TimestampModel {
     @Column(name = "email")
     private String email;
 
+    @Column(name = "mrn")
+    private String mrn;
+
     @Column(name = "permissions")
     private String permissions;
 
@@ -81,6 +84,7 @@ public class User extends TimestampModel {
         user.setLastName(lastName);
         user.setUserOrgId(userOrgId);
         user.setPermissions(permissions);
+        user.setMrn(mrn);
         user.getCertificates().clear();
         user.getCertificates().addAll(certificates);
         user.setChildIds();
@@ -95,6 +99,7 @@ public class User extends TimestampModel {
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setPermissions(permissions);
+        user.setMrn(mrn);
         user.setChildIds();
         return user;
     }
@@ -177,6 +182,14 @@ public class User extends TimestampModel {
 
     public void setPermissions(String permissions) {
         this.permissions = permissions;
+    }
+
+    public String getMrn() {
+        return mrn;
+    }
+
+    public void setMrn(String mrn) {
+        this.mrn = mrn;
     }
 
     public List<Certificate> getCertificates() {

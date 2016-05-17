@@ -14,13 +14,10 @@
  */
 package net.maritimecloud.identityregistry.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.TimeZone;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -34,22 +31,21 @@ import javax.persistence.Table;
 import org.hibernate.annotations.Where;
 
 /**
- * Model object representing a vessel
+ * Model object representing a service
  */
 
 @Entity
-@Table(name = "vessels")
-public class Vessel extends TimestampModel {
+@Table(name = "services")
+public class Service extends TimestampModel {
 
-    public Vessel() {
+    public Service() {
     }
 
-    @JsonIgnore
     @Column(name = "id_organization")
     private Long idOrganization;
 
-    @Column(name = "vessel_org_id")
-    private String vesselOrgId;
+    @Column(name = "service_org_id")
+    private String serviceOrgId;
 
     @Column(name = "name")
     private String name;
@@ -60,54 +56,42 @@ public class Vessel extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
-    @OneToMany(cascade = CascadeType.REMOVE, mappedBy = "vessel", orphanRemoval=true)
-    private List<VesselAttribute> attributes;
-
-    @OneToMany(mappedBy = "vessel", orphanRemoval=false)
+    @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    /** Copies this vessel into the other */
-    public Vessel copyTo(Vessel vessel) {
-        Objects.requireNonNull(vessel);
-        vessel.setId(id);
-        vessel.setIdOrganization(idOrganization);
-        vessel.setName(name);
-        vessel.setVesselOrgId(vesselOrgId);
-        vessel.setMrn(mrn);
-        vessel.setPermissions(permissions);
-        vessel.getAttributes().clear();
-        vessel.getAttributes().addAll(attributes);
-        vessel.getCertificates().clear();
-        vessel.getCertificates().addAll(certificates);
-        vessel.setChildIds();
-        return vessel;
+    /** Copies this organization into the other */
+    public Service copyTo(Service service) {
+        Objects.requireNonNull(service);
+        service.setId(id);
+        service.setIdOrganization(idOrganization);
+        service.setName(name);
+        service.setServiceOrgId(serviceOrgId);
+        service.setMrn(mrn);
+        service.setPermissions(permissions);
+        service.getCertificates().clear();
+        service.getCertificates().addAll(certificates);
+        service.setChildIds();
+        return service;
     }
 
-    /** Copies this vessel into the other
+    /** Copies this service into the other
      * Only update things that are allowed to change on update */
-    public Vessel selectiveCopyTo(Vessel vessel) {
-        vessel.setName(name);
-        vessel.setVesselOrgId(vesselOrgId);
-        vessel.setMrn(mrn);
-        vessel.setPermissions(permissions);
-        vessel.getAttributes().clear();
-        vessel.getAttributes().addAll(attributes);
-        vessel.setChildIds();
-        return vessel;
+    public Service selectiveCopyTo(Service service) {
+        service.setName(name);
+        service.setServiceOrgId(serviceOrgId);
+        service.setMrn(mrn);
+        service.setPermissions(permissions);
+        service.setChildIds();
+        return service;
     }
 
     @PostPersist
     @PostUpdate
     void setChildIds() {
-        if (this.attributes != null) {
-            for (VesselAttribute attr : this.attributes) {
-                attr.setVessel(this);
-            }
-        }
         if (this.certificates != null) {
             for (Certificate cert : this.certificates) {
-                cert.setVessel(this);
+                cert.setService(this);
             }
         }
     }
@@ -128,6 +112,7 @@ public class Vessel extends TimestampModel {
                 // Detach certificate from entity
                 cert.setVessel(null);
             }
+
         }
     }
 
@@ -142,12 +127,12 @@ public class Vessel extends TimestampModel {
         this.idOrganization = idOrganization;
     }
 
-    public String getVesselOrgId() {
-        return vesselOrgId;
+    public String getServiceOrgId() {
+        return serviceOrgId;
     }
 
-    public void setVesselOrgId(String vesselOrgId) {
-        this.vesselOrgId = vesselOrgId;
+    public void setServiceOrgId(String serviceOrgId) {
+        this.serviceOrgId = serviceOrgId;
     }
 
     public String getName() {
@@ -174,11 +159,8 @@ public class Vessel extends TimestampModel {
         this.permissions = permissions;
     }
 
-    public List<VesselAttribute> getAttributes() {
-        return attributes;
-    }
-
     public List<Certificate> getCertificates() {
         return certificates;
     }
 }
+

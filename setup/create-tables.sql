@@ -23,6 +23,8 @@ CREATE TABLE `vessels` (
   `id_organization` INT,
   `vessel_org_id` VARCHAR(512),
   `name` VARCHAR(255),
+  `permissions` VARCHAR(4000),
+  `mrn` VARCHAR(4000),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY  (`id`),
@@ -48,6 +50,7 @@ CREATE TABLE `users` (
   `user_org_id` VARCHAR(512),
   `email` VARCHAR(255),
   `permissions` VARCHAR(4000),
+  `mrn` VARCHAR(4000),
   `first_name` VARCHAR(255),
   `last_name` VARCHAR(255),
   `created_at` DATETIME,
@@ -61,6 +64,22 @@ CREATE TABLE `devices` (
   `id_organization` INT,
   `device_org_id` VARCHAR(512),
   `name` VARCHAR(255),
+  `permissions` VARCHAR(4000),
+  `mrn` VARCHAR(4000),
+  `id_keycloak` VARCHAR(255),
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
+);
+
+CREATE TABLE `services` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_organization` INT,
+  `service_org_id` VARCHAR(512),
+  `name` VARCHAR(255),
+  `permissions` VARCHAR(4000),
+  `mrn` VARCHAR(4000),
   `id_keycloak` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
@@ -73,6 +92,7 @@ CREATE TABLE `certificates` (
   `id_vessel` INT,
   `id_user` INT,
   `id_device` INT,
+  `id_service` INT,
   `certificate` MEDIUMTEXT,
   `start` DATETIME,
   `end` DATETIME,
@@ -85,4 +105,5 @@ CREATE TABLE `certificates` (
   FOREIGN KEY (`id_vessel`) REFERENCES vessels(`id`),
   FOREIGN KEY (`id_user`) REFERENCES users(`id`),
   FOREIGN KEY (`id_device`) REFERENCES devices(`id`)
+  FOREIGN KEY (`id_service`) REFERENCES services(`id`)
 );

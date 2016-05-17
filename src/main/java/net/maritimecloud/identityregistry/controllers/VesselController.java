@@ -96,7 +96,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 input.setIdOrganization(org.getId());
                 Vessel newVessel = this.vesselService.saveVessel(input);
                 return new ResponseEntity<Vessel>(newVessel, HttpStatus.OK);
@@ -122,7 +122,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
@@ -151,7 +151,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
@@ -182,7 +182,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
@@ -213,7 +213,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 List<Vessel> vessels = this.vesselService.listOrgVessels(org.getId());
                 return new ResponseEntity<List<Vessel>>(vessels, HttpStatus.OK);
             }
@@ -237,7 +237,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
@@ -249,7 +249,15 @@ public class VesselController {
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for vessel
                     KeyPair vesselKeyPair = CertificateUtil.generateKeyPair();
+                    // Find special MC attributes to put in the certificate
                     HashMap<String, String> attrs = new HashMap<String, String>();
+                    if (vessel.getMrn() != null) {
+                        attrs.put(CertificateUtil.MC_OID_MRN, vessel.getMrn());
+                    }
+                    if (vessel.getPermissions() != null) {
+                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, vessel.getPermissions());
+                    }
+                    // Look in the vessel attributes too
                     for (VesselAttribute attr : vessel.getAttributes()) {
                         String attrName = attr.getAttributeName().toLowerCase();
                         switch(attrName) {
@@ -264,9 +272,6 @@ public class VesselController {
                             break;
                         case "flagstate":
                             attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
-                            break;
-                        case "mrn":
-                            attrs.put(CertificateUtil.MC_OID_MRN, attr.getAttributeValue());
                             break;
                         default:
                             logger.debug("Unexpected attribute value: " + attrName);
@@ -314,7 +319,7 @@ public class VesselController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the vessel has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 Vessel vessel = this.vesselService.getVesselById(vesselId);
                 if (vessel == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());

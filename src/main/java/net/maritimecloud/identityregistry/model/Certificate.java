@@ -80,6 +80,11 @@ public class Certificate extends TimestampModel {
     @JoinColumn(name = "id_device")
     private Device device;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_service")
+    private Service service;
+
     /******************************/
     /** Getters and setters      **/
     /******************************/
@@ -154,5 +159,13 @@ public class Certificate extends TimestampModel {
 
     public void setDevice(Device device) {
         this.device = device;
+    }
+
+    public Service getService() {
+        return service;
+    }
+
+    public void setService(Service service) {
+        this.service = service;
     }
 }

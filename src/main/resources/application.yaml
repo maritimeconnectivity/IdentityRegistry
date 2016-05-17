@@ -53,7 +53,13 @@ net:
                 truststore: mc-truststore.jks
                 truststore-password: changeit
 
+# Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
+
+# Test db-connection before use to avoid connection timeout errors
+spring.datasource:
+    test-on-borrow: true
+    validation-query: SELECT 1
 ---
 spring:
     profiles: development

@@ -21,10 +21,10 @@ import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.model.PemCertificate;
-import net.maritimecloud.identityregistry.model.Device;
+import net.maritimecloud.identityregistry.model.Service;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.services.DeviceService;
+import net.maritimecloud.identityregistry.services.ServiceService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
@@ -50,8 +50,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
-public class DeviceController {
-    private DeviceService deviceService;
+public class ServiceController {
+    private ServiceService serviceService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
 
@@ -65,32 +65,32 @@ public class DeviceController {
         this.organizationService = organizationService;
     }
     @Autowired
-    public void setDeviceService(DeviceService organizationService) {
-        this.deviceService = organizationService;
+    public void setServiceService(ServiceService organizationService) {
+        this.serviceService = organizationService;
     }
 
     @Autowired
     private CertificateUtil certUtil;
 
     /**
-     * Creates a new Device
+     * Creates a new Service
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */ 
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device",
+            value = "/api/org/{orgShortName}/service",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Device input) throws McBasicRestException {
+    public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Service input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 input.setIdOrganization(org.getId());
-                Device newDevice = this.deviceService.saveDevice(input);
-                return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
+                Service newService = this.serviceService.saveService(input);
+                return new ResponseEntity<Service>(newService, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -99,27 +99,27 @@ public class DeviceController {
     }
 
     /**
-     * Returns info about the device identified by the given ID
+     * Returns info about the service identified by the given ID
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgShortName}/service/{serviceId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
+    public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Device device = this.deviceService.getDeviceById(deviceId);
-                if (device == null) {
+                Service service = this.serviceService.getServiceById(serviceId);
+                if (service == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
-                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    return new ResponseEntity<Device>(device, HttpStatus.OK);
+                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                    return new ResponseEntity<Service>(service, HttpStatus.OK);
                 }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -129,27 +129,27 @@ public class DeviceController {
     }
 
     /**
-     * Updates a Device
+     * Updates a Service
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgShortName}/service/{serviceId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) throws McBasicRestException {
+    public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @RequestBody Service input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Device device = this.deviceService.getDeviceById(deviceId);
-                if (device == null) {
+                Service service = this.serviceService.getServiceById(serviceId);
+                if (service == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
-                if (device.getId().compareTo(input.getId()) == 0 && device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.selectiveCopyTo(device);
-                    this.deviceService.saveDevice(device);
+                if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
+                    input.selectiveCopyTo(service);
+                    this.serviceService.saveService(service);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -160,26 +160,26 @@ public class DeviceController {
     }
 
     /**
-     * Deletes a Device
+     * Deletes a Service
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgShortName}/service/{serviceId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
+    public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Device device = this.deviceService.getDeviceById(deviceId);
-                if (device == null) {
+                Service service = this.serviceService.getServiceById(serviceId);
+                if (service == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
-                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    this.deviceService.deleteDevice(deviceId);
+                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                    this.serviceService.deleteService(serviceId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
@@ -190,22 +190,22 @@ public class DeviceController {
     }
 
     /**
-     * Returns a list of devices owned by the organization identified by the given ID
+     * Returns a list of services owned by the organization identified by the given ID
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/devices",
+            value = "/api/org/{orgShortName}/services",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<List<Device>> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+    public ResponseEntity<List<Service>> getOrganizationServices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                List<Device> devices = this.deviceService.listOrgDevices(org.getId());
-                return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
+                List<Service> services = this.serviceService.listOrgServices(org.getId());
+                return new ResponseEntity<List<Service>>(services, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -214,58 +214,58 @@ public class DeviceController {
     }
 
     /**
-     * Returns new certificate for the device identified by the given ID
+     * Returns new certificate for the service identified by the given ID
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}/generatecertificate",
+            value = "/api/org/{orgShortName}/service/{serviceId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
+    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Device device = this.deviceService.getDeviceById(deviceId);
-                if (device == null) {
+                Service service = this.serviceService.getServiceById(serviceId);
+                if (service == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
-                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
+                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
                     Certificate newMCCert = new Certificate();
-                    newMCCert.setDevice(device);
+                    newMCCert.setService(service);
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
-                    // Generate keypair for device
-                    KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
+                    // Generate keypair for service
+                    KeyPair serviceKeyPair = CertificateUtil.generateKeyPair();
                     // Find special MC attributes to put in the certificate
                     HashMap<String, String> attrs = new HashMap<String, String>();
-                    if (device.getMrn() != null) {
-                        attrs.put(CertificateUtil.MC_OID_MRN, device.getMrn());
+                    if (service.getMrn() != null) {
+                        attrs.put(CertificateUtil.MC_OID_MRN, service.getMrn());
                     }
-                    if (device.getPermissions() != null) {
-                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, device.getPermissions());
+                    if (service.getPermissions() != null) {
+                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, service.getPermissions());
                     }
                     String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate deviceCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "device", device.getName(), "", deviceKeyPair.getPublic(), attrs);
+                    X509Certificate serviceCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "service", service.getName(), "", serviceKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded()).replace("\n", "\\n");
+                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", serviceCert.getEncoded()).replace("\n", "\\n");
                     } catch (CertificateEncodingException e) {
                         // TODO Auto-generated catch block
                         e.printStackTrace();
                     }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
+                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", serviceKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", serviceKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
                     PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
                     newMCCert.setCertificate(pemCertificate);
                     // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
                     Calendar cal = Calendar.getInstance();
                     long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-                    newMCCert.setStart(new Date(deviceCert.getNotBefore().getTime() - offset));
-                    newMCCert.setEnd(new Date(deviceCert.getNotAfter().getTime() - offset));
-                    newMCCert.setDevice(device);
+                    newMCCert.setStart(new Date(serviceCert.getNotBefore().getTime() - offset));
+                    newMCCert.setEnd(new Date(serviceCert.getNotAfter().getTime() - offset));
+                    newMCCert.setService(service);
                     this.certificateService.saveCertificate(newMCCert);
                     return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
                 }
@@ -277,28 +277,28 @@ public class DeviceController {
     }
 
     /**
-     * Revokes certificate for the device identified by the given ID
+     * Revokes certificate for the service identified by the given ID
      * 
      * @return a reply...
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}/certificates/{certId}/revoke",
+            value = "/api/org/{orgShortName}/service/{serviceId}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the device has the needed rights
+            // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Device device = this.deviceService.getDeviceById(deviceId);
-                if (device == null) {
+                Service service = this.serviceService.getServiceById(serviceId);
+                if (service == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
-                if (device.getIdOrganization().compareTo(org.getId()) == 0) {
+                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                     Certificate cert = this.certificateService.getCertificateById(certId);
-                    Device certDevice = cert.getDevice();
-                    if (certDevice != null && certDevice.getId().compareTo(device.getId()) == 0) {
+                    Service certService = cert.getService();
+                    if (certService != null && certService.getId().compareTo(service.getId()) == 0) {
                         if (!input.validateReason()) {
                             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
                         }

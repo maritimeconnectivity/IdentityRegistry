@@ -37,6 +37,7 @@ import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -92,7 +93,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 String password = null;
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
@@ -133,7 +134,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -163,7 +164,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -207,7 +208,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -243,7 +244,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 List<User> users = this.userService.listOrgUsers(org.getId());
                 return new ResponseEntity<List<User>>(users, HttpStatus.OK);
             }
@@ -267,7 +268,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -279,9 +280,17 @@ public class UserController {
                     newMCCert = this.certificateService.saveCertificate(newMCCert);
                     // Generate keypair for user
                     KeyPair userKeyPair = CertificateUtil.generateKeyPair();
+                    // Find special MC attributes to put in the certificate
+                    HashMap<String, String> attrs = new HashMap<String, String>();
+                    if (user.getMrn() != null) {
+                        attrs.put(CertificateUtil.MC_OID_MRN, user.getMrn());
+                    }
+                    if (user.getPermissions() != null) {
+                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, user.getPermissions());
+                    }
                     String name = user.getFirstName() + " " + user.getLastName();
                     String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), null);
+                    X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), attrs);
                     String pemCertificate = "";
                     try {
                         pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
@@ -323,7 +332,7 @@ public class UserController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), orgShortName)) {
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 User user = this.userService.getUserById(userId);
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());

@@ -50,6 +50,12 @@ public class Device extends TimestampModel {
     @Column(name = "name")
     private String name;
 
+    @Column(name = "mrn")
+    private String mrn;
+
+    @Column(name = "permissions")
+    private String permissions;
+
     @OneToMany(mappedBy = "device")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
@@ -61,6 +67,8 @@ public class Device extends TimestampModel {
         device.setIdOrganization(idOrganization);
         device.setName(name);
         device.setDeviceOrgId(deviceOrgId);
+        device.setMrn(mrn);
+        device.setPermissions(permissions);
         device.getCertificates().clear();
         device.getCertificates().addAll(certificates);
         device.setChildIds();
@@ -72,6 +80,8 @@ public class Device extends TimestampModel {
     public Device selectiveCopyTo(Device device) {
         device.setName(name);
         device.setDeviceOrgId(deviceOrgId);
+        device.setMrn(mrn);
+        device.setPermissions(permissions);
         device.setChildIds();
         return device;
     }
@@ -131,6 +141,22 @@ public class Device extends TimestampModel {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public String getMrn() {
+        return mrn;
+    }
+
+    public void setMrn(String mrn) {
+        this.mrn = mrn;
+    }
+
+    public String getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
     }
 
     public List<Certificate> getCertificates() {

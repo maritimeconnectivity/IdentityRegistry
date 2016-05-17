@@ -12,14 +12,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.repositories;
+package net.maritimecloud.identityregistry.services;
 
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
-import net.maritimecloud.identityregistry.model.Device;
 
-public interface DeviceRepository extends CrudRepository<Device, Long> {
-    List<Device> findByName(String lastName);
+import net.maritimecloud.identityregistry.model.Service;
 
-    List<Device> findByidOrganization(Long orgId);
+public interface ServiceService {
+    Service getServiceById(Long id);
+
+    Service saveService(Service device);
+
+    void deleteService(Long id);
+
+    Iterable<Service> listAllServices();
+
+    List<Service> listOrgServices(Long id);
 }

@@ -182,7 +182,7 @@ public class OrganizationController {
                 throw new McBasicRestException(HttpStatus.BAD_GATEWAY, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(org.getName(), shortName)) {
+            if (AccessControlUtil.hasAccessToOrg(shortName)) {
                 // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
                 if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
                         && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
