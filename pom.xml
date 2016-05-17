@@ -78,17 +78,17 @@
 		<dependency>
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-spring-security-adapter</artifactId>
-			<version>1.9.3.Final</version>
+			<version>1.9.4.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-client-registration-api</artifactId>
-			<version>1.9.3.Final</version>
+			<version>1.9.4.Final</version>
 		</dependency>
 		<dependency>
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-admin-client</artifactId>
-			<version>1.9.3.Final</version>
+			<version>1.9.4.Final</version>
 		</dependency>
 		<!-- Needed by keycloak-admin-client, see https://issues.jboss.org/browse/KEYCLOAK-2009 -->
 		<dependency>
