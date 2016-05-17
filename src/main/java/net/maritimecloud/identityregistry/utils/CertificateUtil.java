@@ -51,7 +51,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.TimeZone;
 import java.security.spec.ECGenParameterSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -66,13 +65,18 @@ import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.bouncycastle.asn1.x500.style.IETFUtils;
+import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
+import org.bouncycastle.asn1.x509.CRLDistPoint;
 import org.bouncycastle.asn1.x509.CRLReason;
+import org.bouncycastle.asn1.x509.DistributionPoint;
+import org.bouncycastle.asn1.x509.DistributionPointName;
 import org.bouncycastle.asn1.x509.Extension;
 import org.bouncycastle.asn1.x509.Extensions;
 import org.bouncycastle.asn1.x509.GeneralName;
 import org.bouncycastle.asn1.x509.GeneralNames;
 import org.bouncycastle.asn1.x509.SubjectPublicKeyInfo;
+import org.bouncycastle.asn1.x509.X509ObjectIdentifiers;
 import org.bouncycastle.cert.CertException;
 import org.bouncycastle.cert.X509CRLHolder;
 import org.bouncycastle.cert.X509CertificateHolder;
@@ -103,7 +107,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Component;
 import org.bouncycastle.jce.X509KeyUsage;
@@ -121,6 +124,9 @@ public class CertificateUtil {
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
     public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
+
+    public static final String CRL_URL = "https://api.maritimecloud.net/x509/api/certificates/crl";
+    public static final String OCSP_URL = "https://api.maritimecloud.net/x509/api/certificates/ocsp";
 
     // Below values are loaded from application.yaml
     @Value("${net.maritimecloud.idreg.certs.root-keystore}")
@@ -194,6 +200,9 @@ public class CertificateUtil {
                                    .addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
                                    .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
         } else {
+            // Basic extension setup
+            certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
             // Subject Alternative Name
             GeneralName[] genNames = null;
             if (customAttrs != null && !customAttrs.isEmpty()) {
@@ -209,11 +218,18 @@ public class CertificateUtil {
                     idx++;
                 }
             }
-            certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
             if (genNames != null) {
                 certV3Bldr = certV3Bldr.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
             }
+            // CRL Distribution Points
+            DistributionPointName distPointOne = new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, CRL_URL)));
+            DistributionPoint[] distPoints = new DistributionPoint[1];
+            distPoints[0] = new DistributionPoint(distPointOne, null, null);
+            certV3Bldr.addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distPoints));
+            // OCSP endpoint
+            GeneralName ocspName = new GeneralName(GeneralName.uniformResourceIdentifier, OCSP_URL);
+            AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspName);
+            certV3Bldr.addExtension(Extension.authorityInfoAccess, false, authorityInformationAccess);
         }
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
         builder.setProvider(BC_PROVIDER_NAME);
