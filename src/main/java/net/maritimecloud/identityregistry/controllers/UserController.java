@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import org.springframework.web.bind.annotation.RestController;
 
+import io.swagger.annotations.ApiOperation;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.Certificate;
 import net.maritimecloud.identityregistry.model.CertificateRevocation;
@@ -43,6 +44,7 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -54,6 +56,9 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping(value={"oidc", "x509"})
 public class UserController {
+    @Value("${net.maritimecloud.idreg.user-sync-dn}")
+    private String userSyncDN;
+
     private UserService userService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
@@ -98,10 +103,9 @@ public class UserController {
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     password = PasswordUtil.generatePassword();
-                    String keycloakUsername = orgShortName.toLowerCase() + "." + input.getUserOrgId();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                     try {
-                        keycloakAU.createUser(keycloakUsername, password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
                     } catch (IOException e) {
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                     }
@@ -175,10 +179,9 @@ public class UserController {
                 if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
                     // Update user in keycloak if created there.
                     if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                        String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                         try {
-                            keycloakAU.updateUser(keycloakUsername, user.getFirstName(), user.getLastName(), user.getEmail(), true);
+                            keycloakAU.updateUser(user.getUserOrgId(), user.getFirstName(), user.getLastName(), user.getEmail(), true);
                         } catch (IOException e) {
                             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                         }
@@ -217,9 +220,8 @@ public class UserController {
                     this.userService.deleteUser(userId);
                     // Remove user from keycloak if created there.
                     if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                        String keycloakUsername = orgShortName.toLowerCase() + "." + user.getUserOrgId();
                         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                        keycloakAU.deleteUser(keycloakUsername);
+                        keycloakAU.deleteUser(user.getUserOrgId());
                     }
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
@@ -368,12 +370,16 @@ public class UserController {
      * @return a reply...
      * @throws McBasicRestException 
      */ 
+    @ApiOperation(hidden=true, value = "Sync user from keycloak")
     @RequestMapping(
             value = "/api/org/{orgShortName}/user-sync/",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) throws McBasicRestException {
+        if (!AccessControlUtil.isUserSync(this.userSyncDN)) {
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        }
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             String userOrgId = input.getUserOrgId();

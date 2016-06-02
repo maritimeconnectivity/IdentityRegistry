@@ -64,7 +64,22 @@ public class AccessControlUtil {
                 logger.debug("Unknown authentication method: " + auth.getClass());
             }
         }
-        
         return false;
     }
+
+    public static boolean isUserSync(String userSyncDN) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof PreAuthenticatedAuthenticationToken) {
+            logger.debug("Certificate authentication of user sync'er in process");
+            // Certificate authentication
+            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
+            // Check that the Organization name of the accessed organization and the organization in the certificate is equal
+            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            if (userSyncDN.equals(person.getDn())) {
+                return true;
+            }
+        }
+        return false;
+    }
+
 }

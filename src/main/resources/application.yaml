@@ -13,6 +13,9 @@ logging.level:
 server:
     port: 8443
     ssl:
+        # Should be false as default since the api will be placed behind a
+        # nginx reversed proxy, and the code for extracting info from client
+        # certificates rely in this setup.
         enabled: false
         # Keystore
         # key-store: classpath:keystore.jks
@@ -44,6 +47,9 @@ net:
             keycloak-project-users-base-url: http://localhost:9080/auth/
 
             auto-approve-organizations: true
+
+            # The DN of the certificate used to sync users from keycloak
+            user-sync-dn: C=DK, O=DMA;Danish Maritime Authority, OU=device, CN=User sync
 
             # Certificate setup
             certs:
