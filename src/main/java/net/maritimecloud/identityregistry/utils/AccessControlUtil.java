@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import java.util.Collection;
 import java.util.Map;
 
 import org.keycloak.KeycloakSecurityContext;
@@ -21,6 +22,8 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
@@ -28,6 +31,7 @@ import org.springframework.security.ldap.userdetails.InetOrgPerson;
 public class AccessControlUtil {
 
     public static final String ORG_PROPERTY_NAME = "org";
+    public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
     private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
 
@@ -77,6 +81,47 @@ public class AccessControlUtil {
             InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
             if (userSyncDN.equals(person.getDn())) {
                 return true;
+            }
+        }
+        return false;
+    }
+
+    public static boolean hasPermission(String permission) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof KeycloakAuthenticationToken) {
+            logger.debug("OIDC permission lookup");
+            // Keycloak authentication
+            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
+            KeycloakSecurityContext ksc = (KeycloakSecurityContext)kat.getCredentials();
+            Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
+            if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
+                String usersPermissions = (String)otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
+                String[] permissionList = usersPermissions.split(",");
+                for (String per : permissionList) {
+                    if (per.equalsIgnoreCase(permission)) {
+                        return true;
+                    }
+                }
+            }
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
+            logger.debug("Certificate permission lookup");
+            // Certificate authentication
+            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
+            // Check that the permission is granted to this user
+            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            Collection<GrantedAuthority> authorities = person.getAuthorities();
+            for (GrantedAuthority authority : authorities) {
+                String usersPermissions = authority.getAuthority();
+                String[] permissionList = usersPermissions.split(",");
+                for (String per : permissionList) {
+                    if (per.equalsIgnoreCase(permission)) {
+                        return true;
+                    }
+                }
+            }
+        } else {
+            if (auth != null) {
+                logger.debug("Unknown authentication method: " + auth.getClass());
             }
         }
         return false;

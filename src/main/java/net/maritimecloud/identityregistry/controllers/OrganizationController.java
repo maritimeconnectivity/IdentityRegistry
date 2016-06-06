@@ -54,6 +54,12 @@ public class OrganizationController {
     @Value("${net.maritimecloud.idreg.auto-approve-organizations}")
     private boolean autoApprove;
 
+    @Value("${net.maritimecloud.idreg.admin-org}")
+    private String adminOrg;
+
+    @Value("${net.maritimecloud.idreg.admin-permission}")
+    private String adminPermission;
+
     /**
      * Receives an application for a new organization and root-user
      * 
@@ -97,7 +103,10 @@ public class OrganizationController {
             value = "/api/org/{shortName}/approve",
             method = RequestMethod.GET)
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
-        // TODO: Admin Authentication!!!!
+        // Admin Authentication
+        if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        }
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

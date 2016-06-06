@@ -47,6 +47,8 @@ net:
             keycloak-project-users-base-url: http://localhost:9080/auth/
 
             auto-approve-organizations: true
+            admin-org: DMA
+            admin-permission: admin
 
             # The DN of the certificate used to sync users from keycloak
             user-sync-dn: C=DK, O=DMA;Danish Maritime Authority, OU=device, CN=User sync
