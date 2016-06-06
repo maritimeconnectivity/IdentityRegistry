@@ -30,6 +30,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -143,7 +144,7 @@ public class KeycloakAdminUtil {
         idp.setStoreToken(false);
         idp.setAddReadTokenRoleOnCreate(false);
         idp.setAuthenticateByDefault(false);
-        idp.setFirstBrokerLoginFlowAlias("first broker login");
+        idp.setFirstBrokerLoginFlowAlias("Auto first broker login");
         Map<String, String> IDPConf = new HashMap<String, String>();
         IDPConf.put("userInfoUrl", userInfoEndpoint);
         IDPConf.put("validateSignature", "true");
@@ -187,28 +188,53 @@ public class KeycloakAdminUtil {
         } else {
             keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().create(idp);
         }
-        /* The admin client does not yet support creating mappers, but it is planned to be added "soon"...
-         * 
-        // Create mapper for hardcoded org value
-        IdentityProviderMapperRepresentation orgMapper = new IdentityProviderMapperRepresentation();
-        orgMapper.setIdentityProviderAlias(name);
-        orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
-        orgMapper.setName(name + " org mapper");
-        Map<String, String> orgMapperConf = new HashMap<String, String>();
-        orgMapperConf.put("attribute.value", name);
-        orgMapperConf.put("attribute", "org");
-        orgMapper.setConfig(orgMapperConf);
 
-        // Create mapper for permissions attribute
-        IdentityProviderMapperRepresentation permissionsMapper = new IdentityProviderMapperRepresentation();
-        permissionsMapper.setIdentityProviderAlias(name);
-        permissionsMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
-        permissionsMapper.setName(name + " org mapper");
-        Map<String, String> permissionsMapperConf = new HashMap<String, String>();
-        permissionsMapperConf.put("claim", "permissions");
-        permissionsMapperConf.put("user.attribute", "permissions");
-        permissionsMapper.setConfig(permissionsMapperConf);
-        */
+        IdentityProviderResource newIdpRes = keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().get(name);
+        // Create mappers - if they don't already exists
+        ArrayList<String> mappers = new ArrayList<String>();
+        for (IdentityProviderMapperRepresentation mapper : newIdpRes.getMappers()) {
+            mappers.add(mapper.getName());
+        }
+        String orgMapperName = name + " org mapper";
+        if (!mappers.contains(orgMapperName)) {
+            // Create mapper for hardcoded org value
+            IdentityProviderMapperRepresentation orgMapper = new IdentityProviderMapperRepresentation();
+            orgMapper.setIdentityProviderAlias(name);
+            orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
+            orgMapper.setName(orgMapperName);
+            Map<String, String> orgMapperConf = new HashMap<String, String>();
+            orgMapperConf.put("attribute.value", name);
+            orgMapperConf.put("attribute", "org");
+            orgMapper.setConfig(orgMapperConf);
+            newIdpRes.addMapper(orgMapper);
+        }
+
+        String permissionMapperName = name + " permission mapper";
+        if (!mappers.contains(permissionMapperName)) {
+            // Create mapper for permissions attribute
+            IdentityProviderMapperRepresentation permissionsMapper = new IdentityProviderMapperRepresentation();
+            permissionsMapper.setIdentityProviderAlias(name);
+            permissionsMapper.setIdentityProviderMapper("oidc-user-attribute-idp-mapper");
+            permissionsMapper.setName(permissionMapperName);
+            Map<String, String> permissionsMapperConf = new HashMap<String, String>();
+            permissionsMapperConf.put("claim", "permissions");
+            permissionsMapperConf.put("user.attribute", "permissions");
+            permissionsMapper.setConfig(permissionsMapperConf);
+            newIdpRes.addMapper(permissionsMapper);
+        }
+
+        String usernameMapperName = name + " username mapper";
+        if (!mappers.contains(usernameMapperName)) {
+            // Create mapper/template for username
+            IdentityProviderMapperRepresentation usernameMapper = new IdentityProviderMapperRepresentation();
+            usernameMapper.setIdentityProviderAlias(name);
+            usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
+            usernameMapper.setName(usernameMapperName);
+            Map<String, String> usernameMapperConf = new HashMap<String, String>();
+            usernameMapperConf.put("template", "${ALIAS}.${CLAIM.preferred_username}");
+            usernameMapper.setConfig(usernameMapperConf);
+            newIdpRes.addMapper(usernameMapper);
+        }
     }
     
     /**
