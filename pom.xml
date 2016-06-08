@@ -102,6 +102,12 @@
 		   <artifactId>resteasy-jackson2-provider</artifactId>
 		   <version>3.0.17.Final</version>
 		</dependency>
+		<!-- Needed by keycloak-admin-client, see https://issues.jboss.org/browse/KEYCLOAK-2009 -->
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-multipart-provider</artifactId>
+			<version>3.0.17.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-ext-jdk15on</artifactId>
