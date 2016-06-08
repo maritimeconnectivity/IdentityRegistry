@@ -104,6 +104,6 @@ CREATE TABLE `certificates` (
   PRIMARY KEY (`id`),
   FOREIGN KEY (`id_vessel`) REFERENCES vessels(`id`),
   FOREIGN KEY (`id_user`) REFERENCES users(`id`),
-  FOREIGN KEY (`id_device`) REFERENCES devices(`id`)
+  FOREIGN KEY (`id_device`) REFERENCES devices(`id`),
   FOREIGN KEY (`id_service`) REFERENCES services(`id`)
 );
