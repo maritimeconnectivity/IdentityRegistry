@@ -30,6 +30,7 @@ import org.springframework.security.core.userdetails.UserDetailsByNameServiceWra
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
@@ -156,9 +157,10 @@ public class MultiSecurityConfig  {
 
             if (!useStandardSSL) {
                 // Create and setup the filter used to extract the client certificate from the header
-                ClientCertRequestHeaderAuthenticationFilter certFilter = new ClientCertRequestHeaderAuthenticationFilter();
+                RequestHeaderAuthenticationFilter certFilter = new RequestHeaderAuthenticationFilter();
                 certFilter.setAuthenticationManager(authenticationManager());
                 certFilter.setPrincipalRequestHeader("X-Client-Certificate");
+                certFilter.setExceptionIfHeaderMissing(false);
                 
                 // Link up the CertificateUtil
                 userDetailsService.setCertUtil(certificateUtil());
