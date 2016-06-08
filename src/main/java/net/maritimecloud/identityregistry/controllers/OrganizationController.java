@@ -198,7 +198,7 @@ public class OrganizationController {
                         && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     // If client ids are different we delete the old IDP in keycloak
-                    if (!org.getOidcClientName().equals(input.getOidcClientName())) {
+                    if (org.getOidcClientName() != null && !input.getOidcClientName().equals(org.getOidcClientName())) {
                         keycloakAU.deleteIdentityProvider(input.getShortName());
                     }
                     try {
