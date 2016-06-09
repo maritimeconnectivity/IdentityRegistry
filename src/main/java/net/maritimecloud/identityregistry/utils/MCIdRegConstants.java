@@ -16,4 +16,5 @@ public class MCIdRegConstants {
     public static final String ERROR_UPDATING_ADMIN_KC_USER = "An error occured while trying to update the admin user of the Organization!";
     public static final String ERROR_CREATING_KC_USER = "An error occured while trying to create the admin user of the Organization!";
     public static final String ERROR_UPDATING_KC_USER = "An error occured while trying to update the admin user of the Organization!";
+    public static final String ENTITY_ORG_ID_MISSING = "The organizational id of the entity is missing!";
 }

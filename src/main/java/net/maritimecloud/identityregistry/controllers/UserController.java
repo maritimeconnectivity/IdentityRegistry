@@ -99,13 +99,18 @@ public class UserController {
         if (org != null) {
             // Check that the user has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                // Check for missing input
+                if (input.getUserOrgId() == null || input.getUserOrgId().trim().isEmpty()) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
+                }
                 String password = null;
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     password = PasswordUtil.generatePassword();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                    String username = orgShortName + "." + input.getUserOrgId();
                     try {
-                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                        keycloakAU.createUser(username, password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
                     } catch (IOException e) {
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                     }
@@ -173,23 +178,22 @@ public class UserController {
                 if (user == null) {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
-                if (user.getUserOrgId() != input.getUserOrgId()) {
+                if (user.getUserOrgId() != input.getUserOrgId() || user.getIdOrganization().compareTo(org.getId()) != 0) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
                 }
-                if (user.getId().compareTo(input.getId()) == 0 && user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Update user in keycloak if created there.
-                    if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                        try {
-                            keycloakAU.updateUser(user.getUserOrgId(), user.getFirstName(), user.getLastName(), user.getEmail(), true);
-                        } catch (IOException e) {
-                            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
-                        }
+                // Update user in keycloak if created there.
+                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                    String username = orgShortName + "." + input.getUserOrgId();
+                    try {
+                        keycloakAU.updateUser(username, user.getFirstName(), user.getLastName(), user.getEmail(), true);
+                    } catch (IOException e) {
+                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                     }
-                    input.selectiveCopyTo(user);
-                    this.userService.saveUser(user);
-                    return new ResponseEntity<>(HttpStatus.OK);
                 }
+                input.selectiveCopyTo(user);
+                this.userService.saveUser(user);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
