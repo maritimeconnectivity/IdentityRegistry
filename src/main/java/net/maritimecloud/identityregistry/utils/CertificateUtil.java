@@ -169,18 +169,18 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, String issuer, String subject,
+    public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, X500Name issuer, X500Name subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
         // Dates are converted to GMT/UTC inside the cert builder 
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
         cal.add(Calendar.YEAR, 1);
         Date nextYear = cal.getTime();
-        X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(new X500Name(issuer),
+        X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(issuer,
                                                                                 BigInteger.valueOf(serialNumber),
                                                                                 now, // Valid from now 
                                                                                 nextYear, // Valid for a year
-                                                                                new X500Name(subject),
+                                                                                subject,
                                                                                 subjectPublicKey);
         JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
         // Create certificate extensions
@@ -281,7 +281,7 @@ public class CertificateUtil {
             X509Certificate cacert;
             try {
                 cacert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
-                                                        ROOT_CERT_X500_NAME, ROOT_CERT_X500_NAME, null, "ROOTCA");
+                                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(ROOT_CERT_X500_NAME), null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -290,7 +290,7 @@ public class CertificateUtil {
             X509Certificate imcert;
             try {
                 imcert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
-                                                        ROOT_CERT_X500_NAME, MCIDREG_CERT_X500_NAME, null, "INTERMEDIATE");
+                                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(MCIDREG_CERT_X500_NAME), null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -430,8 +430,7 @@ public class CertificateUtil {
         X509Certificate orgCert = null;
         try {
             orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(),
-                                                       publickey, signingX509Cert.getSubjectX500Principal().getName(), orgSubjectDn,
-                                                       customAttr, "ENTITY");
+                                                       publickey, new JcaX509CertificateHolder(signingX509Cert).getSubject(), new X500Name(orgSubjectDn), customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
