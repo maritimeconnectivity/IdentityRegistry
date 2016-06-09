@@ -190,13 +190,15 @@ public class CertificateUtil {
                                                                                             X509KeyUsage.nonRepudiation   |
                                                                                             X509KeyUsage.keyEncipherment  |
                                                                                             X509KeyUsage.keyCertSign      |
-                                                                                            X509KeyUsage.dataEncipherment));
+                                                                                            X509KeyUsage.dataEncipherment |
+                                                                                            X509KeyUsage.cRLSign));
         } else if ("INTERMEDIATE".equals(type)) {
             certV3Bldr = certV3Bldr.addExtension(Extension.keyUsage, true, new X509KeyUsage(X509KeyUsage.digitalSignature |
                                                                                             X509KeyUsage.nonRepudiation   |
                                                                                             X509KeyUsage.keyEncipherment  |
                                                                                             X509KeyUsage.keyCertSign      |
-                                                                                            X509KeyUsage.dataEncipherment))
+                                                                                            X509KeyUsage.dataEncipherment | 
+                                                                                            X509KeyUsage.cRLSign))
                                    .addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
                                    .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
         } else {
@@ -427,7 +429,9 @@ public class CertificateUtil {
         }
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(), publickey, MCIDREG_CERT_X500_NAME, orgSubjectDn, customAttr, "ENTITY");
+            orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(),
+                                                       publickey, signingX509Cert.getSubjectX500Principal().getName(), orgSubjectDn,
+                                                       customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
