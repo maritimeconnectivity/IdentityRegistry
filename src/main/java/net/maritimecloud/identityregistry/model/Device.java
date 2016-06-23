@@ -110,7 +110,7 @@ public class Device extends TimestampModel {
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity
-                cert.setVessel(null);
+                cert.setDevice(null);
             }
 
         }

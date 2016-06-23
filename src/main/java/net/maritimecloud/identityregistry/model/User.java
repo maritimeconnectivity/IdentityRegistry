@@ -16,6 +16,8 @@ package net.maritimecloud.identityregistry.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
+import io.swagger.annotations.ApiModelProperty;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -45,9 +47,11 @@ public class User extends TimestampModel {
     }
 
     @JsonIgnore
+    @ApiModelProperty(required = true)
     @Column(name = "id_organization")
     private Long idOrganization;
 
+    @ApiModelProperty(required = true)
     @Column(name = "user_org_id")
     private String userOrgId;
 
@@ -128,7 +132,7 @@ public class User extends TimestampModel {
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity
-                cert.setVessel(null);
+                cert.setUser(null);
             }
         }
     }

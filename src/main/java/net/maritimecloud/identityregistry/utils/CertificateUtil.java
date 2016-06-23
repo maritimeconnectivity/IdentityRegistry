@@ -54,11 +54,14 @@ import java.util.Map;
 import java.security.spec.ECGenParameterSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
+import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
 import org.bouncycastle.asn1.ASN1ObjectIdentifier;
+import org.bouncycastle.asn1.ASN1String;
 import org.bouncycastle.asn1.DERSequence;
 import org.bouncycastle.asn1.DERTaggedObject;
 import org.bouncycastle.asn1.DERUTF8String;
+import org.bouncycastle.asn1.DERUniversalString;
 import org.bouncycastle.asn1.DLSequence;
 import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
@@ -99,6 +102,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
 import org.slf4j.Logger;
@@ -740,8 +744,7 @@ public class CertificateUtil {
         }
         return respBuilder;
     }
-    
-    
+
     public OCSPResp generateOCSPResponse(BasicOCSPRespBuilder respBuilder) {
         PrivateKeyEntry signingCert = getSigningCertEntry();
         try {
@@ -756,7 +759,7 @@ public class CertificateUtil {
             return null;
         }
     }
-    
+
     /**
      * Extract a value from the DN extracted from a certificate
      * 
@@ -764,10 +767,41 @@ public class CertificateUtil {
      * @param style
      * @return
      */
-    private String getElement(X500Name x500name, ASN1ObjectIdentifier style) {
+    public static String getElement(X500Name x500name, ASN1ObjectIdentifier style) {
         RDN cn = x500name.getRDNs(style)[0];
-        return IETFUtils.valueToString(cn.getFirst().getValue());
+        return valueToString(cn.getFirst().getValue());
     }
+
+    /**
+     * Simplified version of IETFUtils.valueToString where some "special" chars was escaped
+     * @param value
+     * @return
+     */
+    public static String valueToString(ASN1Encodable value)
+    {
+        StringBuffer vBuf = new StringBuffer();
+        if (value instanceof ASN1String && !(value instanceof DERUniversalString)) {
+            String v = ((ASN1String)value).getString();
+            vBuf.append(v);
+        } else {
+            try {
+                vBuf.append("#" + bytesToString(Hex.encode(value.toASN1Primitive().getEncoded(ASN1Encoding.DER))));
+            } catch (IOException e) {
+                throw new IllegalArgumentException("Other value has no encoded form");
+            }
+        }
+        logger.debug(vBuf.toString());
+        return vBuf.toString();
+    }
+    
+    private static String bytesToString(byte[] data) {
+        char[]  cs = new char[data.length];
+        for (int i = 0; i != cs.length; i++) {
+            cs[i] = (char)(data[i] & 0xff);
+        }
+        return new String(cs);
+    }
+
     /* 
      * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates
     public static void main(String[] args) {

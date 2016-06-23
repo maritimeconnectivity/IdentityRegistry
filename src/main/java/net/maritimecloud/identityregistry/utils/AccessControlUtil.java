@@ -63,6 +63,7 @@ public class AccessControlUtil {
             if (orgShortName.equals(certOrg)) {
                 return true;
             }
+            logger.debug("Entity with O="+ certOrg + " is not in " + orgShortName);
         } else {
             if (auth != null) {
                 logger.debug("Unknown authentication method: " + auth.getClass());
