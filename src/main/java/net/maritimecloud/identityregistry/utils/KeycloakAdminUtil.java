@@ -407,43 +407,6 @@ public class KeycloakAdminUtil {
             client.setBearerOnly(false);
             client.setPublicClient(false);
         }
-        /*ArrayList<ProtocolMapperRepresentation> protocolMappers = new ArrayList<ProtocolMapperRepresentation>();
-        // org mapper
-        ProtocolMapperRepresentation orgMapper = new ProtocolMapperRepresentation();
-        orgMapper.setConsentRequired(false);
-        orgMapper.setName("org mapper");
-        orgMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
-        Map<String, String> orgMapperConf = new HashMap<String, String>();
-        orgMapperConf.put("user.attribute", "org");
-        orgMapperConf.put("access.token.claim", "true");
-        orgMapperConf.put("claim.name", "org");
-        orgMapperConf.put("jsonType.label", "String");
-        orgMapper.setConfig(orgMapperConf);
-        protocolMappers.add(orgMapper);
-        // permissions mapper
-        ProtocolMapperRepresentation permissionsMapper = new ProtocolMapperRepresentation();
-        permissionsMapper.setConsentRequired(false);
-        permissionsMapper.setName("permissions mapper");
-        permissionsMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
-        Map<String, String> permissionsMapperConf = new HashMap<String, String>();
-        permissionsMapperConf.put("user.attribute", "permissions");
-        permissionsMapperConf.put("access.token.claim", "true");
-        permissionsMapperConf.put("claim.name", "permissions");
-        permissionsMapperConf.put("jsonType.label", "String");
-        permissionsMapper.setConfig(permissionsMapperConf);
-        // mrn mapper
-        ProtocolMapperRepresentation mrnMapper = new ProtocolMapperRepresentation();
-        mrnMapper.setConsentRequired(false);
-        mrnMapper.setName("mrn mapper");
-        mrnMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
-        Map<String, String> mrnMapperConf = new HashMap<String, String>();
-        mrnMapperConf.put("user.attribute", "mrn");
-        mrnMapperConf.put("access.token.claim", "true");
-        mrnMapperConf.put("claim.name", "mrn");
-        mrnMapperConf.put("jsonType.label", "String");
-        mrnMapper.setConfig(mrnMapperConf);
-        protocolMappers.add(mrnMapper);
-        client.setProtocolMappers(protocolMappers);*/
         // Create the client
         keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().create(client);
         if (!"public".equals(type)) {
