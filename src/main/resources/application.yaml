@@ -6,7 +6,7 @@ spring:
 logging.level:
     net.maritimecloud.identityregistry: DEBUG
 #    org.springframework.web: DEBUG
-#    org.springframework.security: DEBUG
+    org.springframework.security: DEBUG
 #    org.keycloak.adapters: DEBUG
 
 # SSL
@@ -46,12 +46,18 @@ net:
             keycloak-project-users-realm: MaritimeCloud
             keycloak-project-users-base-url: http://localhost:9080/auth/
 
+            keycloak-client-template: mc-client-template
+
             auto-approve-organizations: true
             admin-org: DMA
             admin-permission: admin
 
             # The DN of the certificate used to sync users from keycloak
-            user-sync-dn: C=DK, O=DMA;Danish Maritime Authority, OU=device, CN=User sync
+            user-sync:
+                c: DK
+                o: "DMA;Danish Maritime Authority"
+                ou: device
+                cn: User sync
 
             # Certificate setup
             certs:
@@ -60,6 +66,8 @@ net:
                 keystore-password: changeit
                 truststore: mc-truststore.jks
                 truststore-password: changeit
+                crl-url: http://localhost:8443/x509/api/certificates/crl
+                ocsp-url: http://localhost:8443/x509/api/certificates/ocsp
 
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json

@@ -56,6 +56,18 @@ public class Service extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
+    @Column(name = "oidc_access_type")
+    private String oidcAccessType;
+
+    @Column(name = "oidc_client_id")
+    private String oidcClientId;
+
+    @Column(name = "oidc_client_secret")
+    private String oidcClientSecret;
+
+    @Column(name = "oidc_redirect_uri")
+    private String oidcRedirectUri;
+
     @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
@@ -68,6 +80,10 @@ public class Service extends TimestampModel {
         service.setName(name);
         service.setServiceOrgId(serviceOrgId);
         service.setMrn(mrn);
+        service.setOidcAccessType(oidcAccessType);
+        service.setOidcClientId(oidcClientId);
+        service.setOidcClientSecret(oidcClientSecret);
+        service.setOidcRedirectUri(oidcRedirectUri);
         service.setPermissions(permissions);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
@@ -82,6 +98,8 @@ public class Service extends TimestampModel {
         service.setServiceOrgId(serviceOrgId);
         service.setMrn(mrn);
         service.setPermissions(permissions);
+        service.setOidcAccessType(oidcAccessType);
+        service.setOidcRedirectUri(oidcRedirectUri);
         service.setChildIds();
         return service;
     }
@@ -110,9 +128,8 @@ public class Service extends TimestampModel {
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity
-                cert.setVessel(null);
+                cert.setService(null);
             }
-
         }
     }
 
@@ -161,6 +178,42 @@ public class Service extends TimestampModel {
 
     public List<Certificate> getCertificates() {
         return certificates;
+    }
+
+    public String getOidcAccessType() {
+        return oidcAccessType;
+    }
+
+    public void setOidcAccessType(String oidcAccessType) {
+        this.oidcAccessType = oidcAccessType;
+    }
+
+    public String getOidcClientId() {
+        return oidcClientId;
+    }
+
+    public void setOidcClientId(String oidcClientId) {
+        this.oidcClientId = oidcClientId;
+    }
+
+    public String getOidcClientSecret() {
+        return oidcClientSecret;
+    }
+
+    public void setOidcClientSecret(String oidcClientSecret) {
+        this.oidcClientSecret = oidcClientSecret;
+    }
+
+    public String getOidcRedirectUri() {
+        return oidcRedirectUri;
+    }
+
+    public void setOidcRedirectUri(String oidcRedirectUri) {
+        this.oidcRedirectUri = oidcRedirectUri;
+    }
+
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
     }
 }
 

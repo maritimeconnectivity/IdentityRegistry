@@ -17,9 +17,11 @@ package net.maritimecloud.identityregistry.utils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
+import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
+import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,6 +69,10 @@ public class KeycloakAdminUtil {
     private String keycloakProjectUsersRealm;
     @Value("${net.maritimecloud.idreg.keycloak-project-users-base-url}")
     private String keycloakProjectUsersBaseUrl;
+
+    // Load client template name used when creating clients in keycloak
+    @Value("${net.maritimecloud.idreg.keycloak-client-template}")
+    private String keycloakClientTemplate;
 
     // Type of user
     public static final int NORMAL_USER = 0;
@@ -300,7 +306,7 @@ public class KeycloakAdminUtil {
             attr.put("permissions",  Arrays.asList("MCUSER"));
         }
         user.setAttributes(attr);
-        Response ret = keycloakUserInstance.realm(keycloakBrokerRealm).users().create(user);
+        Response ret = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().create(user);
         if (ret.getStatus() != 201) {
             logger.debug("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
             throw new IOException("User creation failed: " + ret.readEntity(String.class));
@@ -314,10 +320,10 @@ public class KeycloakAdminUtil {
         cred.setValue(password);
         cred.setTemporary(false);
         // Find the user by searching for the username
-        user = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1).get(0);
+        user = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().search(username, null, null, null, -1, -1).get(0);
         user.setCredentials(Arrays.asList(cred));
         logger.debug("setting password for user: " + user.getId());
-        keycloakUserInstance.realm(keycloakBrokerRealm).users().get(user.getId()).resetPassword(cred);
+        keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(user.getId()).resetPassword(cred);
         logger.debug("created user");
     }
 
@@ -353,10 +359,9 @@ public class KeycloakAdminUtil {
             updated = true;
         }
         if (updated) {
-            keycloakUserInstance.realm(keycloakBrokerRealm).users().get(user.getId()).update(user);
+            keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(user.getId()).update(user);
         }
     }
-
 
     /**
      * Delete a user from Keycloak
@@ -368,7 +373,119 @@ public class KeycloakAdminUtil {
         List<UserRepresentation> users = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
-            keycloakUserInstance.realm(keycloakBrokerRealm).users().get(users.get(0).getId()).remove();
+            keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(users.get(0).getId()).remove();
         }
     }
+
+    /**
+     * Creates an OpenId Connect client in keycloak
+     *
+     * @param clientId       The client id
+     * @param type           The client type, can be public, bearer-only or confidential
+     * @param redirectUri    The redirect uri
+     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     * @throws IOException
+     */
+    public String createClient(String clientId, String type, String redirectUri) throws IOException {
+        ClientRepresentation client = new ClientRepresentation();
+        client.setClientId(clientId);
+        client.setClientAuthenticatorType("client-secret");
+        client.setRedirectUris(Arrays.asList(redirectUri));
+        client.setDirectAccessGrantsEnabled(false);
+        client.setProtocol("openid-connect");
+        client.setEnabled(true);
+        client.setConsentRequired(false);
+        client.setClientTemplate(keycloakClientTemplate); // the template includes the mappers needed
+        if ("public".equals(type)) {
+            client.setBearerOnly(false);
+            client.setPublicClient(true);
+        } else if ("bearer-only".equals(type)) {
+            client.setBearerOnly(true);
+            client.setPublicClient(false);
+        } else {
+            // Fallback to "confidential"
+            client.setBearerOnly(false);
+            client.setPublicClient(false);
+        }
+        /*ArrayList<ProtocolMapperRepresentation> protocolMappers = new ArrayList<ProtocolMapperRepresentation>();
+        // org mapper
+        ProtocolMapperRepresentation orgMapper = new ProtocolMapperRepresentation();
+        orgMapper.setConsentRequired(false);
+        orgMapper.setName("org mapper");
+        orgMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
+        Map<String, String> orgMapperConf = new HashMap<String, String>();
+        orgMapperConf.put("user.attribute", "org");
+        orgMapperConf.put("access.token.claim", "true");
+        orgMapperConf.put("claim.name", "org");
+        orgMapperConf.put("jsonType.label", "String");
+        orgMapper.setConfig(orgMapperConf);
+        protocolMappers.add(orgMapper);
+        // permissions mapper
+        ProtocolMapperRepresentation permissionsMapper = new ProtocolMapperRepresentation();
+        permissionsMapper.setConsentRequired(false);
+        permissionsMapper.setName("permissions mapper");
+        permissionsMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
+        Map<String, String> permissionsMapperConf = new HashMap<String, String>();
+        permissionsMapperConf.put("user.attribute", "permissions");
+        permissionsMapperConf.put("access.token.claim", "true");
+        permissionsMapperConf.put("claim.name", "permissions");
+        permissionsMapperConf.put("jsonType.label", "String");
+        permissionsMapper.setConfig(permissionsMapperConf);
+        // mrn mapper
+        ProtocolMapperRepresentation mrnMapper = new ProtocolMapperRepresentation();
+        mrnMapper.setConsentRequired(false);
+        mrnMapper.setName("mrn mapper");
+        mrnMapper.setProtocolMapper("oidc-usermodel-attribute-mapper");
+        Map<String, String> mrnMapperConf = new HashMap<String, String>();
+        mrnMapperConf.put("user.attribute", "mrn");
+        mrnMapperConf.put("access.token.claim", "true");
+        mrnMapperConf.put("claim.name", "mrn");
+        mrnMapperConf.put("jsonType.label", "String");
+        mrnMapper.setConfig(mrnMapperConf);
+        protocolMappers.add(mrnMapper);
+        client.setProtocolMappers(protocolMappers);*/
+        // Create the client
+        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().create(client);
+        if (!"public".equals(type)) {
+            // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
+            ClientRepresentation createdClient = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
+            String secret = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(createdClient.getId()).getSecret().getValue();
+            return secret;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Updates an OpenId Connect client in keycloak
+     *
+     * @param clientId
+     * @param type
+     * @param redirectUri
+     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     */
+    public String updateClient(String clientId, String type, String redirectUri) {
+        ClientRepresentation client = keycloakUserInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
+        client.setClientAuthenticatorType(type);
+        client.setRedirectUris(Arrays.asList(redirectUri));
+        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).update(client);
+        if (!type.equals("public")) {
+            // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
+            String secret = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).getSecret().getValue();
+            return secret;
+        } else {
+            return "";
+        }
+    }
+
+    /**
+     * Deletes an OpenId Connect client in keycloak
+     *
+     * @param clientId
+     */
+    public void deleteClient(String clientId) {
+        ClientRepresentation client = keycloakUserInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
+        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).remove();
+    }
+
 }

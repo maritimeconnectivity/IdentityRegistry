@@ -56,8 +56,15 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RestController
 @RequestMapping(value={"oidc", "x509"})
 public class UserController {
-    @Value("${net.maritimecloud.idreg.user-sync-dn}")
-    private String userSyncDN;
+    // Data that identifies the User sync'er
+    @Value("${net.maritimecloud.idreg.user-sync.c}")
+    private String userSyncC;
+    @Value("${net.maritimecloud.idreg.user-sync.o}")
+    private String userSyncO;
+    @Value("${net.maritimecloud.idreg.user-sync.ou}")
+    private String userSyncOU;
+    @Value("${net.maritimecloud.idreg.user-sync.cn}")
+    private String userSyncCN;
 
     private UserService userService;
     private OrganizationService organizationService;
@@ -381,7 +388,7 @@ public class UserController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) throws McBasicRestException {
-        if (!AccessControlUtil.isUserSync(this.userSyncDN)) {
+        if (!AccessControlUtil.isUserSync(this.userSyncCN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);

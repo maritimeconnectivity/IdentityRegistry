@@ -67,7 +67,6 @@ import org.bouncycastle.asn1.ocsp.OCSPObjectIdentifiers;
 import org.bouncycastle.asn1.x500.RDN;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.bouncycastle.asn1.x500.style.IETFUtils;
 import org.bouncycastle.asn1.x509.AuthorityInformationAccess;
 import org.bouncycastle.asn1.x509.BasicConstraints;
 import org.bouncycastle.asn1.x509.CRLDistPoint;
@@ -129,10 +128,13 @@ public class CertificateUtil {
     public static final String KEYSTORE_TYPE = "jks";
     public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
 
-    public static final String CRL_URL = "https://api.maritimecloud.net/x509/api/certificates/crl";
-    public static final String OCSP_URL = "https://api.maritimecloud.net/x509/api/certificates/ocsp";
+    // Values below are loaded from application.yaml
+    @Value("${net.maritimecloud.idreg.certs.crl-url}")
+    private String CRL_URL;
 
-    // Below values are loaded from application.yaml
+    @Value("${net.maritimecloud.idreg.certs.ocsp-url}")
+    private String OCSP_URL;
+
     @Value("${net.maritimecloud.idreg.certs.root-keystore}")
     private String ROOT_KEYSTORE_PATH;
 
@@ -173,7 +175,7 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public static X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, X500Name issuer, X500Name subject,
+    public X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, X500Name issuer, X500Name subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
         // Dates are converted to GMT/UTC inside the cert builder 
         Calendar cal = Calendar.getInstance();
@@ -246,9 +248,6 @@ public class CertificateUtil {
     /**
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
      * Should only be used to init the CA.
-     * 
-     * @param keystoreFilename
-     * @param password
      */
     public void initCA() {
         if (KEYSTORE_PASSWORD == null) {
@@ -284,8 +283,8 @@ public class CertificateUtil {
             itfos = new FileOutputStream(INTERMEDIATE_KEYSTORE_PATH);
             X509Certificate cacert;
             try {
-                cacert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
-                                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(ROOT_CERT_X500_NAME), null, "ROOTCA");
+                cacert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
+                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(ROOT_CERT_X500_NAME), null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -293,8 +292,8 @@ public class CertificateUtil {
             }
             X509Certificate imcert;
             try {
-                imcert = CertificateUtil.buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
-                                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(MCIDREG_CERT_X500_NAME), null, "INTERMEDIATE");
+                imcert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
+                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(MCIDREG_CERT_X500_NAME), null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -433,8 +432,8 @@ public class CertificateUtil {
         }
         X509Certificate orgCert = null;
         try {
-            orgCert = CertificateUtil.buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(),
-                                                       publickey, new JcaX509CertificateHolder(signingX509Cert).getSubject(), new X500Name(orgSubjectDn), customAttr, "ENTITY");
+            orgCert = buildAndSignCert(serialNumber, signingCertEntry.getPrivateKey(), signingX509Cert.getPublicKey(),
+                                       publickey, new JcaX509CertificateHolder(signingX509Cert).getSubject(), new X500Name(orgSubjectDn), customAttr, "ENTITY");
         } catch (Exception e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -471,7 +470,7 @@ public class CertificateUtil {
     /**
      * Creates a Certificate Revocation List (CRL) for the certificate serialnumbers given.
      * 
-     * @param revokesSerialNumbers  List of the serialnumbers that should be revoked.
+     * @param revokedCerts  List of the serialnumbers that should be revoked.
      * @return
      */
     public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
@@ -591,6 +590,8 @@ public class CertificateUtil {
         essence.setO(getElement(x500name, BCStyle.O));
         essence.setOu(getElement(x500name, BCStyle.OU));
         essence.setDescription(certDN);
+        // Hack alert! There is no country property in this type, so we misuse PostalAddress...
+        essence.setPostalAddress(getElement(x500name, BCStyle.C));
         logger.debug("Parsed certificate, name: " + name);
 
         // Extract info from Subject Alternative Name extension

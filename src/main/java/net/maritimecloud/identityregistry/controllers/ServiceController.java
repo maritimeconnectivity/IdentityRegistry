@@ -27,8 +27,10 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.ServiceService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 
+import java.io.IOException;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -54,6 +56,9 @@ public class ServiceController {
     private ServiceService serviceService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
+
+    @Autowired
+    private KeycloakAdminUtil keycloakAU;
 
     @Autowired
     public void setCertificateService(CertificateService certificateService) {
@@ -89,6 +94,24 @@ public class ServiceController {
             // Check that the service has the needed rights
             if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
                 input.setIdOrganization(org.getId());
+                // Setup a keycloak client for the service if needed
+                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
+                        && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String serviceClientId = (org.getShortName() + "_" + input.getName()).replace(" ", "_");
+                    input.setOidcClientId(serviceClientId);
+                    try {
+                        String clientSecret = keycloakAU.createClient(serviceClientId, input.getOidcAccessType(), input.getOidcRedirectUri());
+                        input.setOidcClientSecret(clientSecret);
+                    } catch(IOException e) {
+                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
+                    }
+                } else {
+                    input.setOidcAccessType(null);
+                    input.setOidcClientId(null);
+                    input.setOidcClientSecret(null);
+                    input.setOidcRedirectUri(null);
+                }
                 Service newService = this.serviceService.saveService(input);
                 return new ResponseEntity<Service>(newService, HttpStatus.OK);
             }
@@ -318,7 +341,6 @@ public class ServiceController {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
-
 
 }
 
