@@ -51,9 +51,6 @@ public class OrganizationController {
         this.organizationService = organizationService;
     }
 
-    @Value("${net.maritimecloud.idreg.auto-approve-organizations}")
-    private boolean autoApprove;
-
     @Value("${net.maritimecloud.idreg.admin-org}")
     private String adminOrg;
 
@@ -71,25 +68,12 @@ public class OrganizationController {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) throws McBasicRestException {
-        // Create password to be returned
-        String newPassword = PasswordUtil.generatePassword();
-        input.setPassword(newPassword);
         // Make sure all shortnames are uppercase
         input.setShortName(input.getShortName().trim().toUpperCase());
-        if (this.autoApprove) {
-            input.setApproved(true);
-        } else {
-            input.setApproved(false);
-        }
-        // Create admin user in the keycloak instance handling users
-        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        try {
-            keycloakAU.createUser(input.getShortName(), newPassword, input.getShortName(), input.getShortName(), input.getEmail(), input.getShortName(), this.autoApprove, KeycloakAdminUtil.ADMIN_USER);
-        } catch (IOException e) {
-            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
-        }
+        input.setApproved(false);
         Organization newOrg = this.organizationService.saveOrganization(input);
-        // TODO: Send email to organization
+        // TODO: Send email to organization saying that the application is awaiting approval
+        // TODO: Send email to admin saying that an Organization is awaiting approval
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
 
@@ -136,8 +120,18 @@ public class OrganizationController {
         }
         // Enabled the organization and save it
         org.setApproved(true);
+        // Create password to be send to admin
+        String newPassword = PasswordUtil.generatePassword();
+        org.setPassword(newPassword);
+        // Create admin user in the keycloak instance handling users
+        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+        try {
+            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), org.getShortName(), org.getEmail(), org.getShortName(), false, KeycloakAdminUtil.ADMIN_USER);
+        } catch (IOException e) {
+            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
+        }
         this.organizationService.saveOrganization(org);
-        // TODO: send email to organization
+        // TODO: send email to organization with the happy news and the admin password
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
