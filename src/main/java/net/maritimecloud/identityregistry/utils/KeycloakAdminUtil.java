@@ -370,7 +370,7 @@ public class KeycloakAdminUtil {
      */
     public void deleteUser(String username) {
         // Find the user by searching for the username
-        List<UserRepresentation> users = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1);
+        List<UserRepresentation> users = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().search(username, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
             keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(users.get(0).getId()).remove();

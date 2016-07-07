@@ -110,14 +110,17 @@ public class UserController {
                 if (input.getUserOrgId() == null || input.getUserOrgId().trim().isEmpty()) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
+                // Check that the userOrgId has the right format
+                if (!input.getUserOrgId().equals(input.getUserOrgId().toLowerCase()) || !input.getUserOrgId().startsWith(orgShortName.toLowerCase())) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.WRONG_ENTITY_ORG_ID_FORMAT, request.getServletPath());
+                }
                 String password = null;
                 // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     password = PasswordUtil.generatePassword();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    String username = orgShortName + "." + input.getUserOrgId();
                     try {
-                        keycloakAU.createUser(username, password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
                     } catch (IOException e) {
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                     }

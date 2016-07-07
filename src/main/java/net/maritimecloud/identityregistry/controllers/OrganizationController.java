@@ -126,7 +126,7 @@ public class OrganizationController {
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
         try {
-            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), org.getShortName(), org.getEmail(), org.getShortName(), false, KeycloakAdminUtil.ADMIN_USER);
+            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), false, KeycloakAdminUtil.ADMIN_USER);
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
