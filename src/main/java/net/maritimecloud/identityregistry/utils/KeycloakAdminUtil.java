@@ -315,7 +315,12 @@ public class KeycloakAdminUtil {
             attr.put("permissions",  Arrays.asList("MCUSER"));
         }
         user.setAttributes(attr);
-        Response ret = getProjectUserRealm().users().create(user);
+        Response ret;
+        if (userType == ADMIN_USER) {
+            ret = getBrokerRealm().users().create(user);
+        } else {
+            ret = getProjectUserRealm().users().create(user);
+        }
         if (ret.getStatus() != 201) {
             logger.debug("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
             throw new IOException("User creation failed: " + ret.readEntity(String.class));
@@ -329,10 +334,18 @@ public class KeycloakAdminUtil {
         cred.setValue(password);
         cred.setTemporary(false);
         // Find the user by searching for the username
-        user = getProjectUserRealm().users().search(username, null, null, null, -1, -1).get(0);
+        if (userType == ADMIN_USER) {
+            user = getBrokerRealm().users().search(username, null, null, null, -1, -1).get(0);
+        } else {
+            user = getProjectUserRealm().users().search(username, null, null, null, -1, -1).get(0);
+        }
         user.setCredentials(Arrays.asList(cred));
         logger.debug("setting password for user: " + user.getId());
-        getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
+        if (userType == ADMIN_USER) {
+            getBrokerRealm().users().get(user.getId()).resetPassword(cred);
+        } else {
+            getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
+        }
         logger.debug("created user");
     }
 
