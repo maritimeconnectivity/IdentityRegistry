@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.utils;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
+import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
@@ -108,6 +109,14 @@ public class KeycloakAdminUtil {
         }
     }
     
+    private RealmResource getBrokerRealm() {
+        return keycloakBrokerInstance.realm(keycloakBrokerRealm);
+    }
+
+    private RealmResource getProjectUserRealm() {
+        return keycloakUserInstance.realm(keycloakProjectUsersRealm);
+    }
+
     /**
      * Get IDP info by parsing info from wellKnownUrl json
      * 
@@ -183,19 +192,19 @@ public class KeycloakAdminUtil {
         idp.setConfig(IDPConf);
         
         // Check if the IDP already exists
-        IdentityProviderResource oldIdpRes = keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().get(name);
+        IdentityProviderResource oldIdpRes = getBrokerRealm().identityProviders().get(name);
         IdentityProviderRepresentation oldIdp = null;
         try {
             oldIdp = oldIdpRes.toRepresentation();
         } catch(NotFoundException nfe) {
         }
         if (oldIdp != null) {
-            keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().get(name).update(idp);
+            getBrokerRealm().identityProviders().get(name).update(idp);
         } else {
-            keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().create(idp);
+            getBrokerRealm().identityProviders().create(idp);
         }
 
-        IdentityProviderResource newIdpRes = keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().get(name);
+        IdentityProviderResource newIdpRes = getBrokerRealm().identityProviders().get(name);
         // Create mappers - if they don't already exists
         ArrayList<String> mappers = new ArrayList<String>();
         for (IdentityProviderMapperRepresentation mapper : newIdpRes.getMappers()) {
@@ -249,11 +258,11 @@ public class KeycloakAdminUtil {
      * @param alias  Alias of the IDP to delete.
      */
     public void deleteIdentityProvider(String alias) {
-        keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders().get(alias).remove();
+        getBrokerRealm().identityProviders().get(alias).remove();
     }
     
     private void getIDPs2() {
-        IdentityProvidersResource idps2 =  keycloakBrokerInstance.realm(keycloakBrokerRealm).identityProviders();
+        IdentityProvidersResource idps2 =  getBrokerRealm().identityProviders();
         try {
             IdentityProviderRepresentation idp2 = idps2.get("toidp-asdfgh").toRepresentation();
             logger.debug(idp2.getAlias());
@@ -306,7 +315,7 @@ public class KeycloakAdminUtil {
             attr.put("permissions",  Arrays.asList("MCUSER"));
         }
         user.setAttributes(attr);
-        Response ret = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().create(user);
+        Response ret = getProjectUserRealm().users().create(user);
         if (ret.getStatus() != 201) {
             logger.debug("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
             throw new IOException("User creation failed: " + ret.readEntity(String.class));
@@ -320,10 +329,10 @@ public class KeycloakAdminUtil {
         cred.setValue(password);
         cred.setTemporary(false);
         // Find the user by searching for the username
-        user = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().search(username, null, null, null, -1, -1).get(0);
+        user = getProjectUserRealm().users().search(username, null, null, null, -1, -1).get(0);
         user.setCredentials(Arrays.asList(cred));
         logger.debug("setting password for user: " + user.getId());
-        keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(user.getId()).resetPassword(cred);
+        getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
         logger.debug("created user");
     }
 
@@ -338,7 +347,7 @@ public class KeycloakAdminUtil {
      * @throws IOException 
      */
     public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) throws IOException {
-        List<UserRepresentation> userReps = keycloakUserInstance.realm(keycloakBrokerRealm).users().search(username, null, null, null, -1, -1);
+        List<UserRepresentation> userReps = getProjectUserRealm().users().search(username, null, null, null, -1, -1);
         if (userReps.size() != 1) {
             logger.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
@@ -359,7 +368,7 @@ public class KeycloakAdminUtil {
             updated = true;
         }
         if (updated) {
-            keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(user.getId()).update(user);
+            getProjectUserRealm().users().get(user.getId()).update(user);
         }
     }
 
@@ -370,10 +379,10 @@ public class KeycloakAdminUtil {
      */
     public void deleteUser(String username) {
         // Find the user by searching for the username
-        List<UserRepresentation> users = keycloakUserInstance.realm(keycloakProjectUsersRealm).users().search(username, null, null, null, -1, -1);
+        List<UserRepresentation> users = getProjectUserRealm().users().search(username, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
-            keycloakUserInstance.realm(keycloakProjectUsersRealm).users().get(users.get(0).getId()).remove();
+            getProjectUserRealm().users().get(users.get(0).getId()).remove();
         }
     }
 
@@ -408,11 +417,11 @@ public class KeycloakAdminUtil {
             client.setPublicClient(false);
         }
         // Create the client
-        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().create(client);
+        getBrokerRealm().clients().create(client);
         if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
-            ClientRepresentation createdClient = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
-            String secret = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(createdClient.getId()).getSecret().getValue();
+            ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).get(0);
+            String secret = getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
             return secret;
         } else {
             return "";
@@ -428,13 +437,13 @@ public class KeycloakAdminUtil {
      * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
      */
     public String updateClient(String clientId, String type, String redirectUri) {
-        ClientRepresentation client = keycloakUserInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
         client.setClientAuthenticatorType(type);
         client.setRedirectUris(Arrays.asList(redirectUri));
-        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).update(client);
+        getBrokerRealm().clients().get(client.getId()).update(client);
         if (!type.equals("public")) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
-            String secret = keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).getSecret().getValue();
+            String secret = getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
             return secret;
         } else {
             return "";
@@ -447,8 +456,8 @@ public class KeycloakAdminUtil {
      * @param clientId
      */
     public void deleteClient(String clientId) {
-        ClientRepresentation client = keycloakUserInstance.realm(keycloakBrokerRealm).clients().findByClientId(clientId).get(0);
-        keycloakBrokerInstance.realm(keycloakBrokerRealm).clients().get(client.getId()).remove();
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+        getBrokerRealm().clients().get(client.getId()).remove();
     }
 
 }

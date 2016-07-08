@@ -85,7 +85,8 @@ public class OrganizationController {
      */
     @RequestMapping(
             value = "/api/org/{shortName}/approve",
-            method = RequestMethod.GET)
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         // Admin Authentication
         if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
@@ -111,28 +112,21 @@ public class OrganizationController {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
             }
         }
-        // Enable admin user in the keycloak instance handling users
-        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-        try {
-            keycloakAU.updateUser(org.getShortName(), org.getShortName(), org.getShortName(), org.getEmail(), true);
-        } catch (IOException e) {
-            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_ADMIN_KC_USER, request.getServletPath());
-        }
         // Enabled the organization and save it
         org.setApproved(true);
         // Create password to be send to admin
         String newPassword = PasswordUtil.generatePassword();
-        org.setPassword(newPassword);
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
         try {
-            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), false, KeycloakAdminUtil.ADMIN_USER);
+            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), true, KeycloakAdminUtil.ADMIN_USER);
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
-        this.organizationService.saveOrganization(org);
+        Organization approvedOrg =  this.organizationService.saveOrganization(org);
         // TODO: send email to organization with the happy news and the admin password
-        return new ResponseEntity<>(HttpStatus.OK);
+        approvedOrg.setPassword(newPassword);
+        return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
     }
 
 
