@@ -117,7 +117,7 @@ public class OrganizationController {
         // Create password to be send to admin
         String newPassword = PasswordUtil.generatePassword();
         // Create admin user in the keycloak instance handling users
-        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
         try {
             keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), true, KeycloakAdminUtil.ADMIN_USER);
         } catch (IOException e) {
