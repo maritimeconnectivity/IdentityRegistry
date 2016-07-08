@@ -111,7 +111,7 @@ public class UserController {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
                 // Check that the userOrgId has the right format
-                if (!input.getUserOrgId().equals(input.getUserOrgId().toLowerCase()) || !input.getUserOrgId().startsWith(orgShortName.toLowerCase())) {
+                if (!input.getUserOrgId().equals(input.getUserOrgId().toLowerCase()) || !input.getUserOrgId().startsWith(orgShortName.toLowerCase() + ".")) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.WRONG_ENTITY_ORG_ID_FORMAT, request.getServletPath());
                 }
                 String password = null;
@@ -120,7 +120,7 @@ public class UserController {
                     password = PasswordUtil.generatePassword();
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                     try {
-                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, true, KeycloakAdminUtil.NORMAL_USER);
+                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, input.getPermissions(), true, KeycloakAdminUtil.NORMAL_USER);
                     } catch (IOException e) {
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                     }

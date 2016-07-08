@@ -290,7 +290,7 @@ public class KeycloakAdminUtil {
      * @param userType      type of user, determines rights.
      * @throws IOException 
      */
-    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, boolean enabled, int userType) throws IOException {
+    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, String permissions, boolean enabled, int userType) throws IOException {
         logger.debug("creating user: " + username);
 
         UserRepresentation user = new UserRepresentation();
@@ -310,9 +310,9 @@ public class KeycloakAdminUtil {
         Map<String, Object> attr = new HashMap<String,Object>();
         attr.put("org", Arrays.asList(orgShortName));
         if (userType == ADMIN_USER) {
-            attr.put("permissions", Arrays.asList("MCADMIN,MCUSER"));
+            attr.put("permissions", Arrays.asList(permissions));
         } else if (userType == NORMAL_USER) {
-            attr.put("permissions",  Arrays.asList("MCUSER"));
+            attr.put("permissions",  Arrays.asList(permissions));
         }
         user.setAttributes(attr);
         Response ret;
@@ -359,7 +359,7 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @throws IOException 
      */
-    public void updateUser(String username,  String firstName, String lastName, String email, boolean enabled) throws IOException {
+    public void updateUser(String username,  String firstName, String lastName, String email, String newPermissions, boolean enabled) throws IOException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(username, null, null, null, -1, -1);
         if (userReps.size() != 1) {
             logger.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
@@ -379,6 +379,24 @@ public class KeycloakAdminUtil {
         if (lastName != null && !lastName.trim().isEmpty()) {
             user.setLastName(lastName);
             updated = true;
+        }
+        Map<String, Object> attr = user.getAttributes();
+        if (attr.containsKey("permissions")) {
+            List<String> oldPermissions = (List<String>) attr.get("permissions");
+            if (oldPermissions != null && !oldPermissions.isEmpty()) {
+                String permission = oldPermissions.get(0);
+                if (permission == null || !permission.equals(newPermissions)) {
+                    attr.put("permissions", Arrays.asList(newPermissions));
+                    user.setAttributes(attr);
+                    updated = true;
+                }
+            }
+        } else {
+            if (newPermissions != null) {
+                attr.put("permissions", Arrays.asList(newPermissions));
+                user.setAttributes(attr);
+                updated = true;
+            }
         }
         if (updated) {
             getProjectUserRealm().users().get(user.getId()).update(user);
