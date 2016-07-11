@@ -18,7 +18,7 @@ CREATE TABLE `organizations` (
   UNIQUE (`short_name`)
 );
 
-CREATE TABLE `roles` {
+CREATE TABLE `roles` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
   `role_name` VARCHAR(512),
@@ -27,7 +27,7 @@ CREATE TABLE `roles` {
   `updated_at` DATETIME,
   PRIMARY KEY  (`id`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
-}
+);
 
 CREATE TABLE `vessels` (
   `id` INT NOT NULL AUTO_INCREMENT,

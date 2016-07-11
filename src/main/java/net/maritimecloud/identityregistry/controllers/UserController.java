@@ -194,9 +194,8 @@ public class UserController {
                 // Update user in keycloak if created there.
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    String username = orgShortName + "." + input.getUserOrgId();
                     try {
-                        keycloakAU.updateUser(username, user.getFirstName(), user.getLastName(), user.getEmail(), true);
+                        keycloakAU.updateUser(input.getUserOrgId(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
                     } catch (IOException e) {
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                     }
