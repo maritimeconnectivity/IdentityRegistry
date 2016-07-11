@@ -172,6 +172,13 @@ public class ServiceController {
                 }
                 if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
                     input.selectiveCopyTo(service);
+                    // Update the keycloak client for the service if needed
+                    if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                            && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                        String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                        keycloakAU.updateClient(serviceClientId, service.getOidcAccessType(), service.getOidcRedirectUri());
+                    }
                     this.serviceService.saveService(service);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
@@ -202,6 +209,13 @@ public class ServiceController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
                 if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                    // Delete the keycloak client for the service if needed
+                    if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                            && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                        String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                        keycloakAU.deleteClient(serviceClientId);
+                    }
                     this.serviceService.deleteService(serviceId);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }

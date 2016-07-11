@@ -22,7 +22,6 @@ import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
-import org.keycloak.representations.idm.ProtocolMapperRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Value;
@@ -471,6 +470,17 @@ public class KeycloakAdminUtil {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
         client.setClientAuthenticatorType(type);
         client.setRedirectUris(Arrays.asList(redirectUri));
+        if ("public".equals(type)) {
+            client.setBearerOnly(false);
+            client.setPublicClient(true);
+        } else if ("bearer-only".equals(type)) {
+            client.setBearerOnly(true);
+            client.setPublicClient(false);
+        } else {
+            // Fallback to "confidential"
+            client.setBearerOnly(false);
+            client.setPublicClient(false);
+        }
         getBrokerRealm().clients().get(client.getId()).update(client);
         if (!type.equals("public")) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource

@@ -66,8 +66,8 @@ net:
                 keystore-password: changeit
                 truststore: mc-truststore.jks
                 truststore-password: changeit
-                crl-url: http://localhost:8443/x509/api/certificates/crl
-                ocsp-url: http://localhost:8443/x509/api/certificates/ocsp
+                crl-url: https://localhost/x509/api/certificates/crl
+                ocsp-url: https://localhost/x509/api/certificates/ocsp
 
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
