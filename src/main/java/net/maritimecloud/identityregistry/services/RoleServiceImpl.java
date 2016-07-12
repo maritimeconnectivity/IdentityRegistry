@@ -54,5 +54,10 @@ public class RoleServiceImpl implements RoleService {
     public List<Role> listOrgRoles(Long orgId) {
         return RoleRepository.findByidOrganization(orgId);
     }
+
+    @Override
+    public Role getRoleByIdOrganizationAndPermission(Long idOrganization, String permission) {
+        return RoleRepository.findByIdOrganizationAndPermission(idOrganization, permission);
+    };
 }
 

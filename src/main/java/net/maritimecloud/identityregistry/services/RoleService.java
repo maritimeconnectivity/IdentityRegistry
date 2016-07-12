@@ -29,4 +29,6 @@ public interface RoleService {
     Iterable<Role> listAllRoles();
 
     List<Role> listOrgRoles(Long id);
+
+    Role getRoleByIdOrganizationAndPermission(Long idOrganization, String permissions);
 }

@@ -14,18 +14,35 @@
  */
 package net.maritimecloud.identityregistry.security.x509;
 
+import net.maritimecloud.identityregistry.model.Organization;
+import net.maritimecloud.identityregistry.model.Role;
+import net.maritimecloud.identityregistry.services.OrganizationService;
+import net.maritimecloud.identityregistry.services.RoleService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Collection;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.stereotype.Service;
 
+@Service("userDetailsService")
 public class X509HeaderUserDetailsService implements UserDetailsService {
+
+    @Autowired
+    private OrganizationService organizationService;
+    @Autowired
+    private RoleService roleService;
 
     private CertificateUtil certUtil;
 
@@ -47,12 +64,41 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         if (!certUtil.verifyCertificate(userCertificate)) {
             throw new UsernameNotFoundException("Not authenticated");
         }
+        // Get user details from the certificate
         UserDetails user = certUtil.getUserFromCert(userCertificate);
         if (user == null) {
             logger.error("Extraction of data from the certificate failed");
             throw new UsernameNotFoundException("Extraction of data from the certificate failed");
         }
-        return user;
+        // Convert the permissions extracted from the certificate to authorities in this API
+        InetOrgPerson person = ((InetOrgPerson)user);
+        String certOrg = person.getO();
+        int idx = certOrg.indexOf(";");
+        if (idx < 1) {
+            throw new UsernameNotFoundException("Invalid Organization Name Format");
+        }
+        certOrg = certOrg.substring(0, idx);
+        Organization org = organizationService.getOrganizationByShortName(certOrg);
+        if (org == null) {
+            throw new UsernameNotFoundException("Invalid Organization Name");
+        }
+        Collection<GrantedAuthority> newRoles = new ArrayList<GrantedAuthority>();
+        logger.debug("Looking up roles");
+        for (GrantedAuthority role : user.getAuthorities()) {
+            logger.debug("Looking up roles");
+            String auth = role.getAuthority();
+            String[] auths = auth.split(",");
+            for (String auth2 : auths) {
+                logger.debug("Looking up role: " + auth2);
+                Role newRole = roleService.getRoleByIdOrganizationAndPermission(org.getId(), auth2);
+                if (newRole != null) {
+                    newRoles.add(new SimpleGrantedAuthority(newRole.getRoleName()));
+                }
+            }
+        }
+        InetOrgPerson.Essence essence = new InetOrgPerson.Essence((InetOrgPerson) user);
+        essence.setAuthorities(newRoles);
+        return essence.createUserDetails();
     }
 
     public void setCertUtil(CertificateUtil certUtil) {

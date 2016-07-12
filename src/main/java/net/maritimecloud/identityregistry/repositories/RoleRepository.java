@@ -20,4 +20,6 @@ import net.maritimecloud.identityregistry.model.Role;
 
 public interface RoleRepository extends CrudRepository<Role, Long> {
     List<Role> findByidOrganization(Long orgId);
+
+    Role findByIdOrganizationAndPermission(Long idOrganization, String permission);
 }

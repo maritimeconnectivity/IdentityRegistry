@@ -22,12 +22,18 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
+import org.springframework.security.access.expression.SecurityExpressionHandler;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.access.vote.RoleHierarchyVoter;
+import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
+import org.springframework.security.web.FilterInvocation;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
+import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
@@ -58,9 +64,13 @@ public class MultiSecurityConfig  {
          */
         @Autowired
         public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
-            auth.authenticationProvider(keycloakAuthenticationProvider());
+            auth.authenticationProvider(mcKeycloakAuthenticationProvider());
         }
 
+        @Bean
+        protected MCKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
+            return new MCKeycloakAuthenticationProvider();
+        }
         /**
          * Defines the session authentication strategy.
          */
@@ -147,6 +157,7 @@ public class MultiSecurityConfig  {
             http
                 .csrf().disable()
                 .authorizeRequests()
+                    .expressionHandler(webExpressionHandler())
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
@@ -187,6 +198,24 @@ public class MultiSecurityConfig  {
         @Bean
         public X509UserDetailsService x509UserDetailsService() {
             return new X509UserDetailsService();
+        }
+
+        @Bean
+        public RoleHierarchyImpl roleHierarchy() {
+            RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORGADMIN > ROLE_USER");
+            return roleHierarchy;
+        }
+
+        @Bean
+        public RoleVoter roleVoter() {
+            return new RoleHierarchyVoter(roleHierarchy());
+        }
+
+        private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {
+            DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
+            defaultWebSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
+            return defaultWebSecurityExpressionHandler;
         }
     }
 }
