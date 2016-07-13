@@ -14,21 +14,16 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing a device
@@ -36,7 +31,7 @@ import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 @Entity
 @Table(name = "devices")
-public class Device extends TimestampModel {
+public class Device extends CertificateModel {
 
     public Device() {
     }
@@ -86,34 +81,8 @@ public class Device extends TimestampModel {
         return device;
     }
 
-    @PostPersist
-    @PostUpdate
-    void setChildIds() {
-        if (this.certificates != null) {
-            for (Certificate cert : this.certificates) {
-                cert.setDevice(this);
-            }
-        }
-    }
-
-    @PreRemove
-    public void preRemove() {
-        if (this.certificates != null) {
-            // Dates are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            Date now = new Date(cal.getTimeInMillis() - offset);
-            for (Certificate cert : this.certificates) {
-                // Revoke certificates
-                cert.setRevokedAt(now);
-                cert.setEnd(now);
-                cert.setRevokeReason("cessationofoperation");
-                cert.setRevoked(true);
-                // Detach certificate from entity
-                cert.setDevice(null);
-            }
-
-        }
+    protected void assignToCert(Certificate cert){
+        cert.setDevice(this);
     }
 
     /******************************/

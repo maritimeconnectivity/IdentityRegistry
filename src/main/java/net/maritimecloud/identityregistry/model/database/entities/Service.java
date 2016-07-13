@@ -14,21 +14,16 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing a service
@@ -36,7 +31,7 @@ import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 @Entity
 @Table(name = "services")
-public class Service extends TimestampModel {
+public class Service extends CertificateModel {
 
     public Service() {
     }
@@ -104,33 +99,8 @@ public class Service extends TimestampModel {
         return service;
     }
 
-    @PostPersist
-    @PostUpdate
-    void setChildIds() {
-        if (this.certificates != null) {
-            for (Certificate cert : this.certificates) {
-                cert.setService(this);
-            }
-        }
-    }
-
-    @PreRemove
-    public void preRemove() {
-        if (this.certificates != null) {
-            // Dates are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            Date now = new Date(cal.getTimeInMillis() - offset);
-            for (Certificate cert : this.certificates) {
-                // Revoke certificates
-                cert.setRevokedAt(now);
-                cert.setEnd(now);
-                cert.setRevokeReason("cessationofoperation");
-                cert.setRevoked(true);
-                // Detach certificate from entity
-                cert.setService(null);
-            }
-        }
+    protected void assignToCert(Certificate cert){
+        cert.setService(this);
     }
 
     /******************************/
@@ -210,10 +180,6 @@ public class Service extends TimestampModel {
 
     public void setOidcRedirectUri(String oidcRedirectUri) {
         this.oidcRedirectUri = oidcRedirectUri;
-    }
-
-    public void setCertificates(List<Certificate> certificates) {
-        this.certificates = certificates;
     }
 }
 

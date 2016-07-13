@@ -18,22 +18,17 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import io.swagger.annotations.ApiModelProperty;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.PreRemove;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing an user
@@ -41,7 +36,7 @@ import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 @Entity
 @Table(name = "users")
-public class User extends TimestampModel {
+public class User extends CertificateModel {
 
     public User() {
     }
@@ -108,33 +103,8 @@ public class User extends TimestampModel {
         return user;
     }
 
-    @PostPersist
-    @PostUpdate
-    void setChildIds() {
-        if (this.certificates != null) {
-            for (Certificate cert : this.certificates) {
-                cert.setUser(this);
-            }
-        }
-    }
-
-    @PreRemove
-    public void preRemove() {
-        if (this.certificates != null) {
-            // Dates are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            Date now = new Date(cal.getTimeInMillis() - offset);
-            for (Certificate cert : this.certificates) {
-                // Revoke certificates
-                cert.setRevokedAt(now);
-                cert.setEnd(now);
-                cert.setRevokeReason("cessationofoperation");
-                cert.setRevoked(true);
-                // Detach certificate from entity
-                cert.setUser(null);
-            }
-        }
+    protected void assignToCert(Certificate cert){
+        cert.setUser(this);
     }
 
     /******************************/

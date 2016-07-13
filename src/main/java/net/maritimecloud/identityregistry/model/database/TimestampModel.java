@@ -28,7 +28,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
 
 @MappedSuperclass
-public class TimestampModel implements JsonSerializable {
+public abstract class TimestampModel implements JsonSerializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
     @Column(name = "id")

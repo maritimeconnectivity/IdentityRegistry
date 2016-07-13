@@ -17,8 +17,6 @@ package net.maritimecloud.identityregistry.model.database;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-import java.util.Calendar;
-import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
@@ -30,7 +28,7 @@ import javax.persistence.*;
 
 @Entity
 @Table(name = "organizations")
-public class Organization extends TimestampModel {
+public class Organization extends CertificateModel {
 
     @Column(name = "name")
     private String name;
@@ -129,34 +127,10 @@ public class Organization extends TimestampModel {
         return org;
     }
 
-    @PostPersist
-    @PostUpdate
-    void setChildIds() {
-        if (this.certificates != null) {
-            for (Certificate cert : this.certificates) {
-                cert.setOrganization(this);
-            }
-        }
+    protected void assignToCert(Certificate cert){
+        cert.setOrganization(this);
     }
 
-    @PreRemove
-    public void preRemove() {
-        if (this.certificates != null) {
-            // Dates are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            Date now = new Date(cal.getTimeInMillis() - offset);
-            for (Certificate cert : this.certificates) {
-                // Revoke certificates
-                cert.setRevokedAt(now);
-                cert.setEnd(now);
-                cert.setRevokeReason("cessationofoperation");
-                cert.setRevoked(true);
-                // Detach certificate from entity
-                cert.setOrganization(null);
-            }
-        }
-    }
 
     /** Creates a copy of this organization */
     public Organization copy() {
