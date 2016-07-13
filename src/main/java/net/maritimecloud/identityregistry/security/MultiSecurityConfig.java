@@ -60,7 +60,7 @@ public class MultiSecurityConfig  {
     public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
     {
         /**
-         * Registers the KeycloakAuthenticationProvider with the authentication manager.
+         * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
         @Autowired
         public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
@@ -94,12 +94,13 @@ public class MultiSecurityConfig  {
                     .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
             .and()
                 .authorizeRequests()
+                    .expressionHandler(webExpressionHandler())
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ORG_ADMIN")
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ORG_ADMIN")
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
                     .anyRequest().permitAll()
             ;
@@ -119,6 +120,24 @@ public class MultiSecurityConfig  {
             FilterRegistrationBean registrationBean = new FilterRegistrationBean(filter);
             registrationBean.setEnabled(false);
             return registrationBean;
+        }
+
+        @Bean
+        public RoleHierarchyImpl roleHierarchy() {
+            RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
+            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORGADMIN > ROLE_USER");
+            return roleHierarchy;
+        }
+
+        @Bean
+        public RoleVoter roleVoter() {
+            return new RoleHierarchyVoter(roleHierarchy());
+        }
+
+        private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {
+            DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
+            defaultWebSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
+            return defaultWebSecurityExpressionHandler;
         }
     }
 
@@ -161,9 +180,9 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.POST, "/x509/api/**").hasRole("ORG_ADMIN")
+                    .antMatchers(HttpMethod.PUT, "/x509/api/**").hasRole("ORG_ADMIN")
+                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated();
 
             if (!useStandardSSL) {
