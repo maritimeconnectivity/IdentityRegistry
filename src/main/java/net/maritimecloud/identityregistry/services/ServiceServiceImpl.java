@@ -19,7 +19,7 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.stereotype.Service;
 
-import net.maritimecloud.identityregistry.model.Service;
+import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.repositories.ServiceRepository;
 
 @org.springframework.stereotype.Service

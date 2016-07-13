@@ -16,7 +16,7 @@ package net.maritimecloud.identityregistry.services;
 
 import java.util.List;
 
-import net.maritimecloud.identityregistry.model.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 
 public interface VesselService {
     Vessel getVesselById(Long id);

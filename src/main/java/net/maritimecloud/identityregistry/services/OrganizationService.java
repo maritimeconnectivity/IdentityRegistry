@@ -14,7 +14,7 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import net.maritimecloud.identityregistry.model.Organization;
+import net.maritimecloud.identityregistry.model.database.Organization;
 
 public interface OrganizationService {
     Organization getOrganizationById(Long id);

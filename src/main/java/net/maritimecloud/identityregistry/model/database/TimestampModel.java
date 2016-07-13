@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model;
+package net.maritimecloud.identityregistry.model.database;
 
 import java.util.Date;
 
@@ -25,6 +25,7 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import net.maritimecloud.identityregistry.model.JsonSerializable;
 
 @MappedSuperclass
 public class TimestampModel implements JsonSerializable {

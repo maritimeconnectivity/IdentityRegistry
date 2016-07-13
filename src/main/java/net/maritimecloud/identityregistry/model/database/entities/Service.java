@@ -12,14 +12,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model;
+package net.maritimecloud.identityregistry.model.database.entities;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -28,24 +27,25 @@ import javax.persistence.PostUpdate;
 import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Where;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 /**
- * Model object representing a device
+ * Model object representing a service
  */
 
 @Entity
-@Table(name = "devices")
-public class Device extends TimestampModel {
+@Table(name = "services")
+public class Service extends TimestampModel {
 
-    public Device() {
+    public Service() {
     }
 
     @Column(name = "id_organization")
     private Long idOrganization;
 
-    @Column(name = "device_org_id")
-    private String deviceOrgId;
+    @Column(name = "service_org_id")
+    private String serviceOrgId;
 
     @Column(name = "name")
     private String name;
@@ -56,34 +56,52 @@ public class Device extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
-    @OneToMany(mappedBy = "device")
+    @Column(name = "oidc_access_type")
+    private String oidcAccessType;
+
+    @Column(name = "oidc_client_id")
+    private String oidcClientId;
+
+    @Column(name = "oidc_client_secret")
+    private String oidcClientSecret;
+
+    @Column(name = "oidc_redirect_uri")
+    private String oidcRedirectUri;
+
+    @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
     /** Copies this organization into the other */
-    public Device copyTo(Device device) {
-        Objects.requireNonNull(device);
-        device.setId(id);
-        device.setIdOrganization(idOrganization);
-        device.setName(name);
-        device.setDeviceOrgId(deviceOrgId);
-        device.setMrn(mrn);
-        device.setPermissions(permissions);
-        device.getCertificates().clear();
-        device.getCertificates().addAll(certificates);
-        device.setChildIds();
-        return device;
+    public Service copyTo(Service service) {
+        Objects.requireNonNull(service);
+        service.setId(id);
+        service.setIdOrganization(idOrganization);
+        service.setName(name);
+        service.setServiceOrgId(serviceOrgId);
+        service.setMrn(mrn);
+        service.setOidcAccessType(oidcAccessType);
+        service.setOidcClientId(oidcClientId);
+        service.setOidcClientSecret(oidcClientSecret);
+        service.setOidcRedirectUri(oidcRedirectUri);
+        service.setPermissions(permissions);
+        service.getCertificates().clear();
+        service.getCertificates().addAll(certificates);
+        service.setChildIds();
+        return service;
     }
 
-    /** Copies this device into the other
+    /** Copies this service into the other
      * Only update things that are allowed to change on update */
-    public Device selectiveCopyTo(Device device) {
-        device.setName(name);
-        device.setDeviceOrgId(deviceOrgId);
-        device.setMrn(mrn);
-        device.setPermissions(permissions);
-        device.setChildIds();
-        return device;
+    public Service selectiveCopyTo(Service service) {
+        service.setName(name);
+        service.setServiceOrgId(serviceOrgId);
+        service.setMrn(mrn);
+        service.setPermissions(permissions);
+        service.setOidcAccessType(oidcAccessType);
+        service.setOidcRedirectUri(oidcRedirectUri);
+        service.setChildIds();
+        return service;
     }
 
     @PostPersist
@@ -91,7 +109,7 @@ public class Device extends TimestampModel {
     void setChildIds() {
         if (this.certificates != null) {
             for (Certificate cert : this.certificates) {
-                cert.setDevice(this);
+                cert.setService(this);
             }
         }
     }
@@ -110,9 +128,8 @@ public class Device extends TimestampModel {
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity
-                cert.setDevice(null);
+                cert.setService(null);
             }
-
         }
     }
 
@@ -127,12 +144,12 @@ public class Device extends TimestampModel {
         this.idOrganization = idOrganization;
     }
 
-    public String getDeviceOrgId() {
-        return deviceOrgId;
+    public String getServiceOrgId() {
+        return serviceOrgId;
     }
 
-    public void setDeviceOrgId(String deviceOrgId) {
-        this.deviceOrgId = deviceOrgId;
+    public void setServiceOrgId(String serviceOrgId) {
+        this.serviceOrgId = serviceOrgId;
     }
 
     public String getName() {
@@ -161,6 +178,42 @@ public class Device extends TimestampModel {
 
     public List<Certificate> getCertificates() {
         return certificates;
+    }
+
+    public String getOidcAccessType() {
+        return oidcAccessType;
+    }
+
+    public void setOidcAccessType(String oidcAccessType) {
+        this.oidcAccessType = oidcAccessType;
+    }
+
+    public String getOidcClientId() {
+        return oidcClientId;
+    }
+
+    public void setOidcClientId(String oidcClientId) {
+        this.oidcClientId = oidcClientId;
+    }
+
+    public String getOidcClientSecret() {
+        return oidcClientSecret;
+    }
+
+    public void setOidcClientSecret(String oidcClientSecret) {
+        this.oidcClientSecret = oidcClientSecret;
+    }
+
+    public String getOidcRedirectUri() {
+        return oidcRedirectUri;
+    }
+
+    public void setOidcRedirectUri(String oidcRedirectUri) {
+        this.oidcRedirectUri = oidcRedirectUri;
+    }
+
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
     }
 }
 

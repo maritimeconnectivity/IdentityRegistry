@@ -14,7 +14,10 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
-import net.maritimecloud.identityregistry.model.*;
+import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;

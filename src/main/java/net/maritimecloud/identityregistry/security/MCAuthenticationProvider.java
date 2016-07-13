@@ -31,7 +31,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
 /*import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.model.Organization;*/
+import net.maritimecloud.identityregistry.model.database.Organization;*/
 
 /*
  * NOT USED!!!

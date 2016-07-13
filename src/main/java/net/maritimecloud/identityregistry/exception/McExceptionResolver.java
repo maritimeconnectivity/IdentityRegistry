@@ -14,13 +14,11 @@
  */
 package net.maritimecloud.identityregistry.exception;
 
-import java.util.HashMap;
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
-import net.maritimecloud.identityregistry.model.ExceptionModel;
+import net.maritimecloud.identityregistry.model.data.ExceptionModel;
 
 @ControllerAdvice
 public class McExceptionResolver {

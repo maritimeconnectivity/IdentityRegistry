@@ -33,7 +33,6 @@ import java.security.NoSuchProviderException;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.security.SecureRandom;
-import java.security.Security;
 import java.security.UnrecoverableEntryException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
@@ -113,7 +112,6 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Component;
 import org.bouncycastle.jce.X509KeyUsage;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 
 @Component
 public class CertificateUtil {
@@ -473,11 +471,11 @@ public class CertificateUtil {
      * @param revokedCerts  List of the serialnumbers that should be revoked.
      * @return
      */
-    public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.Certificate> revokedCerts) {
+    public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.database.Certificate> revokedCerts) {
         Date now = new Date();
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
         crlBuilder.setNextUpdate(new Date(now.getTime() + 24 * 60 * 60 * 1000)); // The next CRL is tomorrow (dummy value)
-        for (net.maritimecloud.identityregistry.model.Certificate cert : revokedCerts) {
+        for (net.maritimecloud.identityregistry.model.database.Certificate cert : revokedCerts) {
             String certReason = cert.getRevokeReason().toLowerCase();
             int reason = getCRLReasonFromString(certReason);
             crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId()), now, reason);

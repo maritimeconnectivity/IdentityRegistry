@@ -14,7 +14,7 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import net.maritimecloud.identityregistry.model.Role;
+import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

@@ -19,10 +19,10 @@ import java.util.List;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
-import net.maritimecloud.identityregistry.model.Certificate;
-import net.maritimecloud.identityregistry.model.Device;
-import net.maritimecloud.identityregistry.model.Vessel;
-import net.maritimecloud.identityregistry.model.User;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.entities.Device;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.repositories.CertificateRepository;
 
 @Service

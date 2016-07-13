@@ -12,18 +12,13 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
-import io.swagger.annotations.ApiModelProperty;
+package net.maritimecloud.identityregistry.model.database.entities;
 
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
@@ -31,38 +26,29 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.PreRemove;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
-import org.hibernate.annotations.Where;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 /**
- * Model object representing an user
+ * Model object representing a device
  */
 
 @Entity
-@Table(name = "users")
-public class User extends TimestampModel {
+@Table(name = "devices")
+public class Device extends TimestampModel {
 
-    public User() {
+    public Device() {
     }
 
-    @JsonIgnore
-    @ApiModelProperty(required = true)
     @Column(name = "id_organization")
     private Long idOrganization;
 
-    @ApiModelProperty(required = true)
-    @Column(name = "user_org_id")
-    private String userOrgId;
+    @Column(name = "device_org_id")
+    private String deviceOrgId;
 
-    @Column(name = "first_name")
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "email")
-    private String email;
+    @Column(name = "name")
+    private String name;
 
     @Column(name = "mrn")
     private String mrn;
@@ -70,42 +56,34 @@ public class User extends TimestampModel {
     @Column(name = "permissions")
     private String permissions;
 
-    @OneToMany(mappedBy = "user")
+    @OneToMany(mappedBy = "device")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    // Only used when a user is first created to return a password.
-    @Transient
-    private String password;
-
-    /** Copies this user into the other */
-    public User copyTo(User user) {
-        Objects.requireNonNull(user);
-        user.setId(id);
-        user.setIdOrganization(idOrganization);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setUserOrgId(userOrgId);
-        user.setPermissions(permissions);
-        user.setMrn(mrn);
-        user.getCertificates().clear();
-        user.getCertificates().addAll(certificates);
-        user.setChildIds();
-        return user;
+    /** Copies this organization into the other */
+    public Device copyTo(Device device) {
+        Objects.requireNonNull(device);
+        device.setId(id);
+        device.setIdOrganization(idOrganization);
+        device.setName(name);
+        device.setDeviceOrgId(deviceOrgId);
+        device.setMrn(mrn);
+        device.setPermissions(permissions);
+        device.getCertificates().clear();
+        device.getCertificates().addAll(certificates);
+        device.setChildIds();
+        return device;
     }
 
-    /** Copies this user into the other
+    /** Copies this device into the other
      * Only update things that are allowed to change on update */
-    public User selectiveCopyTo(User user) {
-        Objects.requireNonNull(user);
-        user.setEmail(email);
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
-        user.setPermissions(permissions);
-        user.setMrn(mrn);
-        user.setChildIds();
-        return user;
+    public Device selectiveCopyTo(Device device) {
+        device.setName(name);
+        device.setDeviceOrgId(deviceOrgId);
+        device.setMrn(mrn);
+        device.setPermissions(permissions);
+        device.setChildIds();
+        return device;
     }
 
     @PostPersist
@@ -113,7 +91,7 @@ public class User extends TimestampModel {
     void setChildIds() {
         if (this.certificates != null) {
             for (Certificate cert : this.certificates) {
-                cert.setUser(this);
+                cert.setDevice(this);
             }
         }
     }
@@ -132,8 +110,9 @@ public class User extends TimestampModel {
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity
-                cert.setUser(null);
+                cert.setDevice(null);
             }
+
         }
     }
 
@@ -148,44 +127,20 @@ public class User extends TimestampModel {
         this.idOrganization = idOrganization;
     }
 
-    public String getUserOrgId() {
-        return userOrgId;
+    public String getDeviceOrgId() {
+        return deviceOrgId;
     }
 
-    public void setUserOrgId(String userOrgId) {
-        this.userOrgId = userOrgId;
+    public void setDeviceOrgId(String deviceOrgId) {
+        this.deviceOrgId = deviceOrgId;
     }
 
-    public String getFirstName() {
-        return firstName;
+    public String getName() {
+        return name;
     }
 
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
+    public void setName(String name) {
+        this.name = name;
     }
 
     public String getMrn() {
@@ -196,19 +151,16 @@ public class User extends TimestampModel {
         this.mrn = mrn;
     }
 
+    public String getPermissions() {
+        return permissions;
+    }
+
+    public void setPermissions(String permissions) {
+        this.permissions = permissions;
+    }
+
     public List<Certificate> getCertificates() {
         return certificates;
     }
-
-    // Only used when a user is first created to return a password.
-    public String getPassword() {
-        return password;
-    }
-
-    // Only used when a user is first created to return a password.
-    public void setPassword(String password) {
-        this.password = password;
-    }
-
 }
 

@@ -14,8 +14,7 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import net.maritimecloud.identityregistry.model.Device;
-import net.maritimecloud.identityregistry.model.Role;
+import net.maritimecloud.identityregistry.model.database.Role;
 
 import java.util.List;
 

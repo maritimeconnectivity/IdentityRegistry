@@ -37,7 +37,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import net.maritimecloud.identityregistry.model.Certificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 

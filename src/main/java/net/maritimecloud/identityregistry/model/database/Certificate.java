@@ -12,9 +12,15 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model;
+package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.model.database.entities.Device;
+import net.maritimecloud.identityregistry.model.database.entities.Service;
+import net.maritimecloud.identityregistry.model.database.entities.User;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 
 import java.util.Date;
 

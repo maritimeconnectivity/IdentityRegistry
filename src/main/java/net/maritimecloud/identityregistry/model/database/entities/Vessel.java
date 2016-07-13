@@ -12,7 +12,7 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model;
+package net.maritimecloud.identityregistry.model.database.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 
@@ -20,7 +20,6 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
-import java.util.TimeZone;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -31,7 +30,8 @@ import javax.persistence.PostUpdate;
 import javax.persistence.PreRemove;
 import javax.persistence.Table;
 
-import org.hibernate.annotations.Where;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 /**
  * Model object representing a vessel

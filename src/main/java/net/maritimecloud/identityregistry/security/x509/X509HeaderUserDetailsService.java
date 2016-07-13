@@ -14,8 +14,8 @@
  */
 package net.maritimecloud.identityregistry.security.x509;
 
-import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.Role;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;

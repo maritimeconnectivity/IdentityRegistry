@@ -17,12 +17,12 @@ package net.maritimecloud.identityregistry.controllers;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.Certificate;
-import net.maritimecloud.identityregistry.model.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.PemCertificate;
-import net.maritimecloud.identityregistry.model.Vessel;
-import net.maritimecloud.identityregistry.model.VesselAttribute;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.VesselService;

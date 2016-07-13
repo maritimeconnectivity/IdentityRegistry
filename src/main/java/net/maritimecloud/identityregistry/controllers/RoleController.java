@@ -15,8 +15,8 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.Organization;
-import net.maritimecloud.identityregistry.model.Role;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;

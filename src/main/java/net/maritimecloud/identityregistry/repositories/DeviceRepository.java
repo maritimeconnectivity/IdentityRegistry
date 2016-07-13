@@ -16,7 +16,7 @@ package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
 import org.springframework.data.repository.CrudRepository;
-import net.maritimecloud.identityregistry.model.Device;
+import net.maritimecloud.identityregistry.model.database.entities.Device;
 
 public interface DeviceRepository extends CrudRepository<Device, Long> {
     List<Device> findByName(String lastName);

@@ -16,7 +16,7 @@ package net.maritimecloud.identityregistry.services;
 
 import java.util.List;
 
-import net.maritimecloud.identityregistry.model.Device;
+import net.maritimecloud.identityregistry.model.database.entities.Device;
 
 public interface DeviceService {
     Device getDeviceById(Long id);

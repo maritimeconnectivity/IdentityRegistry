@@ -16,7 +16,7 @@ package net.maritimecloud.identityregistry.services;
 
 import java.util.List;
 
-import net.maritimecloud.identityregistry.model.Service;
+import net.maritimecloud.identityregistry.model.database.entities.Service;
 
 public interface ServiceService {
     Service getServiceById(Long id);
