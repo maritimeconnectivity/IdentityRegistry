@@ -14,10 +14,7 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -28,7 +25,6 @@ import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing a vessel
@@ -36,26 +32,13 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 @Entity
 @Table(name = "vessels")
-public class Vessel extends CertificateModel {
+public class Vessel extends NonHumanEntityModel {
 
     public Vessel() {
     }
 
-    @JsonIgnore
-    @Column(name = "id_organization")
-    private Long idOrganization;
-
     @Column(name = "vessel_org_id")
     private String vesselOrgId;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "mrn")
-    private String mrn;
-
-    @Column(name = "permissions")
-    private String permissions;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
@@ -66,13 +49,8 @@ public class Vessel extends CertificateModel {
 
     /** Copies this vessel into the other */
     public Vessel copyTo(Vessel vessel) {
-        Objects.requireNonNull(vessel);
-        vessel.setId(id);
-        vessel.setIdOrganization(idOrganization);
-        vessel.setName(name);
+        vessel = (Vessel) super.copyTo(vessel);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.setMrn(mrn);
-        vessel.setPermissions(permissions);
         vessel.getAttributes().clear();
         vessel.getAttributes().addAll(attributes);
         vessel.getCertificates().clear();
@@ -84,10 +62,8 @@ public class Vessel extends CertificateModel {
     /** Copies this vessel into the other
      * Only update things that are allowed to change on update */
     public Vessel selectiveCopyTo(Vessel vessel) {
-        vessel.setName(name);
+        vessel = (Vessel) super.selectiveCopyTo(vessel);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.setMrn(mrn);
-        vessel.setPermissions(permissions);
         vessel.getAttributes().clear();
         vessel.getAttributes().addAll(attributes);
         vessel.setChildIds();
@@ -112,44 +88,12 @@ public class Vessel extends CertificateModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
-    }
-
     public String getVesselOrgId() {
         return vesselOrgId;
     }
 
     public void setVesselOrgId(String vesselOrgId) {
         this.vesselOrgId = vesselOrgId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
     }
 
     public List<VesselAttribute> getAttributes() {

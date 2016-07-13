@@ -15,7 +15,6 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,7 +22,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing a service
@@ -31,25 +29,13 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 @Entity
 @Table(name = "services")
-public class Service extends CertificateModel {
+public class Service extends NonHumanEntityModel {
 
     public Service() {
     }
 
-    @Column(name = "id_organization")
-    private Long idOrganization;
-
     @Column(name = "service_org_id")
     private String serviceOrgId;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "mrn")
-    private String mrn;
-
-    @Column(name = "permissions")
-    private String permissions;
 
     @Column(name = "oidc_access_type")
     private String oidcAccessType;
@@ -67,19 +53,14 @@ public class Service extends CertificateModel {
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    /** Copies this organization into the other */
+    /** Copies this service into the other */
     public Service copyTo(Service service) {
-        Objects.requireNonNull(service);
-        service.setId(id);
-        service.setIdOrganization(idOrganization);
-        service.setName(name);
+        service = (Service) super.copyTo(service);
         service.setServiceOrgId(serviceOrgId);
-        service.setMrn(mrn);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcClientId(oidcClientId);
         service.setOidcClientSecret(oidcClientSecret);
         service.setOidcRedirectUri(oidcRedirectUri);
-        service.setPermissions(permissions);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
         service.setChildIds();
@@ -89,10 +70,8 @@ public class Service extends CertificateModel {
     /** Copies this service into the other
      * Only update things that are allowed to change on update */
     public Service selectiveCopyTo(Service service) {
-        service.setName(name);
+        service = (Service) super.selectiveCopyTo(service);
         service.setServiceOrgId(serviceOrgId);
-        service.setMrn(mrn);
-        service.setPermissions(permissions);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setChildIds();
@@ -106,44 +85,12 @@ public class Service extends CertificateModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
-    }
-
     public String getServiceOrgId() {
         return serviceOrgId;
     }
 
     public void setServiceOrgId(String serviceOrgId) {
         this.serviceOrgId = serviceOrgId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
     }
 
     public List<Certificate> getCertificates() {

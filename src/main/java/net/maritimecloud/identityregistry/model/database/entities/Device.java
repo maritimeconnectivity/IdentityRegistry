@@ -15,7 +15,6 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -23,7 +22,6 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing a device
@@ -31,39 +29,22 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 @Entity
 @Table(name = "devices")
-public class Device extends CertificateModel {
+public class Device extends NonHumanEntityModel {
 
     public Device() {
     }
 
-    @Column(name = "id_organization")
-    private Long idOrganization;
-
     @Column(name = "device_org_id")
     private String deviceOrgId;
-
-    @Column(name = "name")
-    private String name;
-
-    @Column(name = "mrn")
-    private String mrn;
-
-    @Column(name = "permissions")
-    private String permissions;
 
     @OneToMany(mappedBy = "device")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    /** Copies this organization into the other */
+    /** Copies this device into the other */
     public Device copyTo(Device device) {
-        Objects.requireNonNull(device);
-        device.setId(id);
-        device.setIdOrganization(idOrganization);
-        device.setName(name);
+        device = (Device) super.copyTo(device);
         device.setDeviceOrgId(deviceOrgId);
-        device.setMrn(mrn);
-        device.setPermissions(permissions);
         device.getCertificates().clear();
         device.getCertificates().addAll(certificates);
         device.setChildIds();
@@ -73,10 +54,8 @@ public class Device extends CertificateModel {
     /** Copies this device into the other
      * Only update things that are allowed to change on update */
     public Device selectiveCopyTo(Device device) {
-        device.setName(name);
+        device = (Device) super.selectiveCopyTo(device);
         device.setDeviceOrgId(deviceOrgId);
-        device.setMrn(mrn);
-        device.setPermissions(permissions);
         device.setChildIds();
         return device;
     }
@@ -88,44 +67,12 @@ public class Device extends CertificateModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
-    }
-
     public String getDeviceOrgId() {
         return deviceOrgId;
     }
 
     public void setDeviceOrgId(String deviceOrgId) {
         this.deviceOrgId = deviceOrgId;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
     }
 
     public List<Certificate> getCertificates() {

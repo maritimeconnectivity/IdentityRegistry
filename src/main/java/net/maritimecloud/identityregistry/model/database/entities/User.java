@@ -19,7 +19,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -28,7 +27,6 @@ import javax.persistence.Table;
 import javax.persistence.Transient;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 /**
  * Model object representing an user
@@ -36,15 +34,10 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 @Entity
 @Table(name = "users")
-public class User extends CertificateModel {
+public class User extends EntityModel {
 
     public User() {
     }
-
-    @JsonIgnore
-    @ApiModelProperty(required = true)
-    @Column(name = "id_organization")
-    private Long idOrganization;
 
     @ApiModelProperty(required = true)
     @Column(name = "user_org_id")
@@ -59,12 +52,6 @@ public class User extends CertificateModel {
     @Column(name = "email")
     private String email;
 
-    @Column(name = "mrn")
-    private String mrn;
-
-    @Column(name = "permissions")
-    private String permissions;
-
     @OneToMany(mappedBy = "user")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
@@ -75,15 +62,11 @@ public class User extends CertificateModel {
 
     /** Copies this user into the other */
     public User copyTo(User user) {
-        Objects.requireNonNull(user);
-        user.setId(id);
-        user.setIdOrganization(idOrganization);
+        user = (User) super.copyTo(user);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
         user.setUserOrgId(userOrgId);
-        user.setPermissions(permissions);
-        user.setMrn(mrn);
         user.getCertificates().clear();
         user.getCertificates().addAll(certificates);
         user.setChildIds();
@@ -93,12 +76,10 @@ public class User extends CertificateModel {
     /** Copies this user into the other
      * Only update things that are allowed to change on update */
     public User selectiveCopyTo(User user) {
-        Objects.requireNonNull(user);
+        user = (User) super.selectiveCopyTo(user);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setPermissions(permissions);
-        user.setMrn(mrn);
         user.setChildIds();
         return user;
     }
@@ -110,14 +91,6 @@ public class User extends CertificateModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
-    }
-
     public String getUserOrgId() {
         return userOrgId;
     }
@@ -148,22 +121,6 @@ public class User extends CertificateModel {
 
     public void setEmail(String email) {
         this.email = email;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
-    }
-
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
     }
 
     public List<Certificate> getCertificates() {
