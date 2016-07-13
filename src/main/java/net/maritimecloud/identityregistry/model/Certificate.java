@@ -85,6 +85,11 @@ public class Certificate extends TimestampModel {
     @JoinColumn(name = "id_service")
     private Service service;
 
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_organization")
+    private Organization organization;
+
     /******************************/
     /** Getters and setters      **/
     /******************************/
@@ -168,4 +173,13 @@ public class Certificate extends TimestampModel {
     public void setService(Service service) {
         this.service = service;
     }
+
+    public Organization getOrganization() {
+        return organization;
+    }
+
+    public void setOrganization(Organization organization) {
+        this.organization = organization;
+    }
+
 }

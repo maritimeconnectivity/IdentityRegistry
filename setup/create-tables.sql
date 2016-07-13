@@ -108,6 +108,7 @@ CREATE TABLE `certificates` (
   `id_user` INT,
   `id_device` INT,
   `id_service` INT,
+  `id_organization` INT,
   `certificate` MEDIUMTEXT,
   `start` DATETIME,
   `end` DATETIME,
@@ -121,4 +122,5 @@ CREATE TABLE `certificates` (
   FOREIGN KEY (`id_user`) REFERENCES users(`id`),
   FOREIGN KEY (`id_device`) REFERENCES devices(`id`),
   FOREIGN KEY (`id_service`) REFERENCES services(`id`)
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );

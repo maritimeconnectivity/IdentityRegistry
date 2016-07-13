@@ -14,18 +14,24 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.model.*;
+import net.maritimecloud.identityregistry.services.CertificateService;
+import net.maritimecloud.identityregistry.utils.*;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.Organization;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
-import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
-import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.security.KeyPair;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.X509Certificate;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.HashMap;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -45,6 +51,19 @@ public class OrganizationController {
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
+
+    private CertificateService certificateService;
+
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationController.class);
+
+    @Autowired
+    private CertificateUtil certUtil;
+
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
 
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
@@ -201,6 +220,95 @@ public class OrganizationController {
                 input.selectiveCopyTo(org);
                 this.organizationService.saveOrganization(org);
                 return new ResponseEntity<>(HttpStatus.OK);
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+
+    /**
+     * Returns new certificate for the user identified by the given ID
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/generatecertificate",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
+                Certificate newMCCert = new Certificate();
+                newMCCert.setOrganization(org);
+                newMCCert = this.certificateService.saveCertificate(newMCCert);
+                // Generate keypair for user
+                KeyPair userKeyPair = CertificateUtil.generateKeyPair();
+                // Find special MC attributes to put in the certificate
+                HashMap<String, String> attrs = new HashMap<String, String>();
+                String o = org.getShortName() + ";" + org.getName();
+                X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "organization", org.getName(), org.getEmail(), userKeyPair.getPublic(), attrs);
+                String pemCertificate = "";
+                try {
+                    pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
+                } catch (CertificateEncodingException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+                String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+                String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
+                PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
+                newMCCert.setCertificate(pemCertificate);
+                // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
+                Calendar cal = Calendar.getInstance();
+                long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+                newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
+                newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
+                newMCCert.setOrganization(org);
+                this.certificateService.saveCertificate(newMCCert);
+                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Revokes certificate for the user identified by the given ID
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/certificates/{certId}/revoke",
+            method = RequestMethod.POST,
+            produces = "application/json;charset=UTF-8")
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            // Check that the user has the needed rights
+            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
+                Certificate cert = this.certificateService.getCertificateById(certId);
+                Organization certOrg = cert.getOrganization();
+                if (certOrg != null && certOrg.getId().compareTo(org.getId()) == 0) {
+                    if (!input.validateReason()) {
+                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
+                    }
+                    if (input.getRevokedAt() == null) {
+                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
+                    }
+                    cert.setRevokedAt(input.getRevokedAt());
+                    cert.setRevokeReason(input.getRevokationReason());
+                    cert.setRevoked(true);
+                    this.certificateService.saveCertificate(cert);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

@@ -17,12 +17,12 @@ package net.maritimecloud.identityregistry.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
 import java.util.Objects;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
-import javax.persistence.Transient;
+import javax.persistence.*;
 
 /**
  * Model object representing an organization
@@ -77,6 +77,10 @@ public class Organization extends TimestampModel {
     @Column(name = "approved")
     private boolean approved;
 
+    @OneToMany(mappedBy = "organization")
+    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
+    private List<Certificate> certificates;
+
     public Organization() {
     }
 
@@ -95,6 +99,9 @@ public class Organization extends TimestampModel {
         org.setOidcClientSecret(oidcClientSecret);
         org.setOidcWellKnownUrl(oidcWellKnownUrl);
         org.setApproved(approved);
+        org.getCertificates().clear();
+        org.getCertificates().addAll(certificates);
+        org.setChildIds();
         return org;
     }
 
@@ -118,7 +125,37 @@ public class Organization extends TimestampModel {
         if (oidcWellKnownUrl != null) {
             org.setOidcWellKnownUrl(oidcWellKnownUrl);
         }
+        org.setChildIds();
         return org;
+    }
+
+    @PostPersist
+    @PostUpdate
+    void setChildIds() {
+        if (this.certificates != null) {
+            for (Certificate cert : this.certificates) {
+                cert.setOrganization(this);
+            }
+        }
+    }
+
+    @PreRemove
+    public void preRemove() {
+        if (this.certificates != null) {
+            // Dates are converted to UTC before saving into the DB
+            Calendar cal = Calendar.getInstance();
+            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+            Date now = new Date(cal.getTimeInMillis() - offset);
+            for (Certificate cert : this.certificates) {
+                // Revoke certificates
+                cert.setRevokedAt(now);
+                cert.setEnd(now);
+                cert.setRevokeReason("cessationofoperation");
+                cert.setRevoked(true);
+                // Detach certificate from entity
+                cert.setOrganization(null);
+            }
+        }
     }
 
     /** Creates a copy of this organization */
@@ -251,6 +288,14 @@ public class Organization extends TimestampModel {
 
     public void setApproved(boolean approved) {
         this.approved = approved;
+    }
+
+    public List<Certificate> getCertificates() {
+        return certificates;
+    }
+
+    public void setCertificates(List<Certificate> certificates) {
+        this.certificates = certificates;
     }
 
 }
