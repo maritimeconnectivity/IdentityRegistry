@@ -14,6 +14,8 @@
  */
 package net.maritimecloud.identityregistry.model.database;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
@@ -57,5 +59,6 @@ public abstract class CertificateModel extends TimestampModel {
     }
     public abstract List<Certificate> getCertificates();
 
-    protected abstract void assignToCert(Certificate cert); // Do something like cert.set<ModelName>(this)
+    @JsonIgnore
+    public abstract void assignToCert(Certificate cert); // Do something like cert.set<ModelName>(this)
 }

@@ -60,7 +60,7 @@ public class Device extends NonHumanEntityModel {
         return device;
     }
 
-    protected void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert){
         cert.setDevice(this);
     }
 

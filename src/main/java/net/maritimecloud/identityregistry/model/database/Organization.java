@@ -127,7 +127,7 @@ public class Organization extends CertificateModel {
         return org;
     }
 
-    protected void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert){
         cert.setOrganization(this);
     }
 

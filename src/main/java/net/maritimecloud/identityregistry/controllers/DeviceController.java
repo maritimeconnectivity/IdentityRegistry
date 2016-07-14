@@ -49,8 +49,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
-public class DeviceController {
+public class DeviceController extends BaseControllerWithCertificate {
     private DeviceService deviceService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
@@ -233,40 +232,7 @@ public class DeviceController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
                 }
                 if (device.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
-                    Certificate newMCCert = new Certificate();
-                    newMCCert.setDevice(device);
-                    newMCCert = this.certificateService.saveCertificate(newMCCert);
-                    // Generate keypair for device
-                    KeyPair deviceKeyPair = CertificateUtil.generateKeyPair();
-                    // Find special MC attributes to put in the certificate
-                    HashMap<String, String> attrs = new HashMap<String, String>();
-                    if (device.getMrn() != null) {
-                        attrs.put(CertificateUtil.MC_OID_MRN, device.getMrn());
-                    }
-                    if (device.getPermissions() != null) {
-                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, device.getPermissions());
-                    }
-                    String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate deviceCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "device", device.getName(), "", deviceKeyPair.getPublic(), attrs);
-                    String pemCertificate = "";
-                    try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", deviceCert.getEncoded()).replace("\n", "\\n");
-                    } catch (CertificateEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", deviceKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", deviceKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
-                    PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
-                    newMCCert.setCertificate(pemCertificate);
-                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-                    Calendar cal = Calendar.getInstance();
-                    long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-                    newMCCert.setStart(new Date(deviceCert.getNotBefore().getTime() - offset));
-                    newMCCert.setEnd(new Date(deviceCert.getNotAfter().getTime() - offset));
-                    newMCCert.setDevice(device);
-                    this.certificateService.saveCertificate(newMCCert);
+                    PemCertificate ret = this.issueCertificate(device, org, "device");
                     return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
                 }
             }

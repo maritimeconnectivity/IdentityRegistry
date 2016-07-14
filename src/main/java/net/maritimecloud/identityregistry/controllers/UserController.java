@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.ApiOperation;
@@ -33,12 +34,6 @@ import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
 import java.io.IOException;
-import java.security.KeyPair;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,8 +49,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
-public class UserController {
+public class UserController extends  BaseControllerWithCertificate {
     // Data that identifies the User sync'er
     @Value("${net.maritimecloud.idreg.user-sync.c}")
     private String userSyncC;
@@ -289,41 +283,7 @@ public class UserController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
                 }
                 if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
-                    Certificate newMCCert = new Certificate();
-                    newMCCert.setUser(user);
-                    newMCCert = this.certificateService.saveCertificate(newMCCert);
-                    // Generate keypair for user
-                    KeyPair userKeyPair = CertificateUtil.generateKeyPair();
-                    // Find special MC attributes to put in the certificate
-                    HashMap<String, String> attrs = new HashMap<String, String>();
-                    if (user.getMrn() != null) {
-                        attrs.put(CertificateUtil.MC_OID_MRN, user.getMrn());
-                    }
-                    if (user.getPermissions() != null) {
-                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, user.getPermissions());
-                    }
-                    String name = user.getFirstName() + " " + user.getLastName();
-                    String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "user", name, user.getEmail(), userKeyPair.getPublic(), attrs);
-                    String pemCertificate = "";
-                    try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
-                    } catch (CertificateEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
-                    PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
-                    newMCCert.setCertificate(pemCertificate);
-                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-                    Calendar cal = Calendar.getInstance();
-                    long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-                    newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
-                    newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
-                    newMCCert.setUser(user);
-                    this.certificateService.saveCertificate(newMCCert);
+                    PemCertificate ret = this.issueCertificate(user, org, "user");
                     return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
                 }
             }
@@ -356,16 +316,7 @@ public class UserController {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     User certUser = cert.getUser();
                     if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
-                        if (!input.validateReason()) {
-                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
-                        }
-                        if (input.getRevokedAt() == null) {
-                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
-                        }
-                        cert.setRevokedAt(input.getRevokedAt());
-                        cert.setRevokeReason(input.getRevokationReason());
-                        cert.setRevoked(true);
-                        this.certificateService.saveCertificate(cert);
+                        this.revokeCertificate(certId, input, request);
                         return new ResponseEntity<>(HttpStatus.OK);
                     }
                 }
@@ -413,6 +364,14 @@ public class UserController {
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
+    }
+
+    protected String getName(CertificateModel certOwner) {
+        return ((User)certOwner).getFirstName() + " " + ((User)certOwner).getLastName();
+    }
+
+    protected String getEmail(CertificateModel certOwner) {
+        return ((User)certOwner).getEmail();
     }
 
 }

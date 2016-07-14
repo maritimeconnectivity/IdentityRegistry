@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -30,11 +31,6 @@ import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 
-import java.security.KeyPair;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 
@@ -53,8 +49,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
-public class VesselController {
+public class VesselController extends  BaseControllerWithCertificate{
     private VesselService vesselService;
 
     private OrganizationService organizationService;
@@ -243,59 +238,7 @@ public class VesselController {
                     throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
                 }
                 if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
-                    Certificate newMCCert = new Certificate();
-                    newMCCert.setVessel(vessel);
-                    newMCCert = this.certificateService.saveCertificate(newMCCert);
-                    // Generate keypair for vessel
-                    KeyPair vesselKeyPair = CertificateUtil.generateKeyPair();
-                    // Find special MC attributes to put in the certificate
-                    HashMap<String, String> attrs = new HashMap<String, String>();
-                    if (vessel.getMrn() != null) {
-                        attrs.put(CertificateUtil.MC_OID_MRN, vessel.getMrn());
-                    }
-                    if (vessel.getPermissions() != null) {
-                        attrs.put(CertificateUtil.MC_OID_PERMISSIONS, vessel.getPermissions());
-                    }
-                    // Look in the vessel attributes too
-                    for (VesselAttribute attr : vessel.getAttributes()) {
-                        String attrName = attr.getAttributeName().toLowerCase();
-                        switch(attrName) {
-                        case "callsign":
-                            attrs.put(CertificateUtil.MC_OID_CALLSIGN, attr.getAttributeValue());
-                            break;
-                        case "imo number":
-                            attrs.put(CertificateUtil.MC_OID_IMO_NUMBER, attr.getAttributeValue());
-                            break;
-                        case "mmsi number":
-                            attrs.put(CertificateUtil.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
-                            break;
-                        case "flagstate":
-                            attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
-                            break;
-                        default:
-                            logger.debug("Unexpected attribute value: " + attrName);
-                        }
-                    }
-                    String o = org.getShortName() + ";" + org.getName();
-                    X509Certificate vesselCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, "vessel", vessel.getName(), "", vesselKeyPair.getPublic(), attrs);
-                    String pemCertificate = "";
-                    try {
-                        pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", vesselCert.getEncoded()).replace("\n", "\\n");
-                    } catch (CertificateEncodingException e) {
-                        // TODO Auto-generated catch block
-                        e.printStackTrace();
-                    }
-                    String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", vesselKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-                    String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", vesselKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
-                    PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
-                    newMCCert.setCertificate(pemCertificate);
-                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-                    Calendar cal = Calendar.getInstance();
-                    long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-                    newMCCert.setStart(new Date(vesselCert.getNotBefore().getTime() - offset));
-                    newMCCert.setEnd(new Date(vesselCert.getNotAfter().getTime() - offset));
-                    this.certificateService.saveCertificate(newMCCert);
+                    PemCertificate ret = this.issueCertificate(vessel, org, "vessel");
                     return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
                 }
             }
@@ -328,16 +271,7 @@ public class VesselController {
                     Certificate cert = this.certificateService.getCertificateById(certId);
                     Vessel certVessel = cert.getVessel();
                     if (certVessel != null && certVessel.getId().compareTo(vessel.getId()) == 0) {
-                        if (!input.validateReason()) {
-                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
-                        }
-                        if (input.getRevokedAt() == null) {
-                            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
-                        }
-                        cert.setRevokedAt(input.getRevokedAt());
-                        cert.setRevokeReason(input.getRevokationReason());
-                        cert.setRevoked(true);
-                        this.certificateService.saveCertificate(cert);
+                        this.revokeCertificate(certId, input, request);
                         return new ResponseEntity<>(HttpStatus.OK);
                     }
                 }
@@ -348,4 +282,30 @@ public class VesselController {
         }
     }
 
+    protected HashMap<String, String> getAttr(CertificateModel certOwner) {
+        HashMap<String, String> attrs = super.getAttr(certOwner);
+        // Find special MC attributes to put in the certificate
+        Vessel vessel = (Vessel) certOwner;
+        // Look in the vessel attributes too
+        for (VesselAttribute attr : vessel.getAttributes()) {
+            String attrName = attr.getAttributeName().toLowerCase();
+            switch(attrName) {
+                case "callsign":
+                    attrs.put(CertificateUtil.MC_OID_CALLSIGN, attr.getAttributeValue());
+                    break;
+                case "imo number":
+                    attrs.put(CertificateUtil.MC_OID_IMO_NUMBER, attr.getAttributeValue());
+                    break;
+                case "mmsi number":
+                    attrs.put(CertificateUtil.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
+                    break;
+                case "flagstate":
+                    attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
+                    break;
+                default:
+                    logger.debug("Unexpected attribute value: " + attrName);
+            }
+        }
+        return attrs;
+    }
 }

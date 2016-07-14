@@ -81,7 +81,7 @@ public class Vessel extends NonHumanEntityModel {
         }
     }
 
-    protected void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert){
         cert.setVessel(this);
     }
 

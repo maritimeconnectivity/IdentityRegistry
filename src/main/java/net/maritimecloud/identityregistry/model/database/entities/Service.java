@@ -78,7 +78,7 @@ public class Service extends NonHumanEntityModel {
         return service;
     }
 
-    protected void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert){
         cert.setService(this);
     }
 

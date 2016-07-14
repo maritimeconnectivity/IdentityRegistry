@@ -84,7 +84,7 @@ public class User extends EntityModel {
         return user;
     }
 
-    protected void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert){
         cert.setUser(this);
     }
 
