@@ -19,6 +19,7 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -168,4 +169,19 @@ public class RoleController {
         }
     }
 
+    /**
+     * Returns the roles of the current user
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/role/myroles",
+            method = RequestMethod.GET,
+            produces = "text/plain;charset=UTF-8")
+    @ResponseBody
+    public ResponseEntity<String> getMyRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+        String roles = AccessControlUtil.getMyRoles();
+        return new ResponseEntity<>(roles, HttpStatus.OK);
+    }
 }

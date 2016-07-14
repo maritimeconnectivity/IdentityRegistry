@@ -45,10 +45,10 @@ public class AccessControlUtil {
             logger.debug("OIDC authentication in process");
             // Keycloak authentication
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
-            KeycloakSecurityContext ksc = (KeycloakSecurityContext)kat.getCredentials();
+            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
-                    ((String)otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgShortName.toLowerCase())) {
+                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgShortName.toLowerCase())) {
                 return true;
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
@@ -56,7 +56,7 @@ public class AccessControlUtil {
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             // The O(rganization) value looks like this in the certificate: <org shortname>;<org fullname>
             String certOrg = person.getO();
             int idx = certOrg.indexOf(";");
@@ -67,7 +67,7 @@ public class AccessControlUtil {
             if (orgShortName.equals(certOrg)) {
                 return true;
             }
-            logger.debug("Entity with O="+ certOrg + " is not in " + orgShortName);
+            logger.debug("Entity with O=" + certOrg + " is not in " + orgShortName);
         } else {
             if (auth != null) {
                 logger.debug("Unknown authentication method: " + auth.getClass());
@@ -83,7 +83,7 @@ public class AccessControlUtil {
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             if (userSyncCN.equals(person.getCn()[0]) && userSyncO.equals(person.getO())
                     // Hack alert! There is no country property in this type, so we misuse PostalAddress...
                     && userSyncOU.equals(person.getOu()) && userSyncC.equals(person.getPostalAddress())) {
@@ -91,7 +91,7 @@ public class AccessControlUtil {
                 return true;
             }
             logger.debug("This was not the user-sync'er! " + userSyncCN + "~" + person.getCn()[0] + ", " + userSyncO + "~"
-                    + person.getO()  + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
+                    + person.getO() + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
         }
         return false;
     }
@@ -102,10 +102,10 @@ public class AccessControlUtil {
             logger.debug("OIDC permission lookup");
             // Keycloak authentication
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
-            KeycloakSecurityContext ksc = (KeycloakSecurityContext)kat.getCredentials();
+            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
-                String usersPermissions = (String)otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
+                String usersPermissions = (String) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
                 String[] permissionList = usersPermissions.split(",");
                 for (String per : permissionList) {
                     if (per.equalsIgnoreCase(permission)) {
@@ -118,7 +118,7 @@ public class AccessControlUtil {
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the permission is granted to this user
-            InetOrgPerson person = ((InetOrgPerson)token.getPrincipal());
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             Collection<GrantedAuthority> authorities = person.getAuthorities();
             for (GrantedAuthority authority : authorities) {
                 String usersPermissions = authority.getAuthority();
@@ -137,4 +137,17 @@ public class AccessControlUtil {
         return false;
     }
 
+    public static String getMyRoles() {
+        logger.debug("Role lookup");
+        String roles = "";
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        for (GrantedAuthority authority : auth.getAuthorities()) {
+            String role = authority.getAuthority();
+            if (!roles.isEmpty()) {
+                roles += ",";
+            }
+            roles += role;
+        }
+        return roles;
+    }
 }
