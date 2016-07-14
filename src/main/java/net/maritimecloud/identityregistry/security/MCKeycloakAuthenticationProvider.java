@@ -66,22 +66,26 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
             logger.debug("Found org short name: " + orgShortName);
             org = organizationService.getOrganizationByShortName(orgShortName);
 
-            if (org != null && otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
-                String usersPermissions = (String) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
-                String[] permissionList = usersPermissions.split(",");
-                for (String permission : permissionList) {
-                    String[] auths = permission.split(",");
-                    for (String auth : auths) {
-                        logger.debug("Looking up role: " + auth);
-                        Role newRole = roleService.getRoleByIdOrganizationAndPermission(org.getId(), auth);
-                        if (newRole != null) {
-                            logger.debug("Replacing role " + auth + ", with: " + newRole.getRoleName());
-                            grantedAuthorities.add(new KeycloakRole(newRole.getRoleName()));
+            if (org != null) {
+                if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
+                    String usersPermissions = (String) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
+                    String[] permissionList = usersPermissions.split(",");
+                    for (String permission : permissionList) {
+                        String[] auths = permission.split(",");
+                        for (String auth : auths) {
+                            logger.debug("Looking up role: " + auth);
+                            Role newRole = roleService.getRoleByIdOrganizationAndPermission(org.getId(), auth);
+                            if (newRole != null) {
+                                logger.debug("Replacing role " + auth + ", with: " + newRole.getRoleName());
+                                grantedAuthorities.add(new KeycloakRole(newRole.getRoleName()));
+                            }
                         }
                     }
                 }
+                if (grantedAuthorities.isEmpty()) {
+                    grantedAuthorities.add(new KeycloakRole("ROLE_USER"));
+                }
             }
-
         }
         return new KeycloakAuthenticationToken(token.getAccount(), mapAuthorities(grantedAuthorities));
     }

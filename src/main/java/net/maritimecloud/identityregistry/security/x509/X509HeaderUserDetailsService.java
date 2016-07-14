@@ -96,6 +96,9 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
                 }
             }
         }
+        if (newRoles.isEmpty()) {
+            newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence((InetOrgPerson) user);
         essence.setAuthorities(newRoles);
         return essence.createUserDetails();
