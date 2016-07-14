@@ -27,7 +27,11 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
+
+@Component("accessControlUtil")
 public class AccessControlUtil {
 
     public static final String ORG_PROPERTY_NAME = "org";

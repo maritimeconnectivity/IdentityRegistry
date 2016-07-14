@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.ApiOperation;
@@ -28,7 +29,6 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.UserService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
@@ -81,9 +81,6 @@ public class UserController extends  BaseControllerWithCertificate {
     @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
-    private CertificateUtil certUtil;
-
     /**
      * Creates a new User
      * 
@@ -95,38 +92,35 @@ public class UserController extends  BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                // Check for missing input
-                if (input.getUserOrgId() == null || input.getUserOrgId().trim().isEmpty()) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
-                }
-                // Check that the userOrgId has the right format
-                if (!input.getUserOrgId().equals(input.getUserOrgId().toLowerCase()) || !input.getUserOrgId().startsWith(orgShortName.toLowerCase() + ".")) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.WRONG_ENTITY_ORG_ID_FORMAT, request.getServletPath());
-                }
-                String password = null;
-                // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
-                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                    password = PasswordUtil.generatePassword();
-                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    try {
-                        keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, input.getPermissions(), true, KeycloakAdminUtil.NORMAL_USER);
-                    } catch (IOException e) {
-                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
-                    }
-                }
-                input.setIdOrganization(org.getId());
-                User newUser = this.userService.saveUser(input);
-                if (password != null) {
-                    newUser.setPassword(password);
-                }
-                return new ResponseEntity<User>(newUser, HttpStatus.OK);
+            // Check for missing input
+            if (input.getUserOrgId() == null || input.getUserOrgId().trim().isEmpty()) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            // Check that the userOrgId has the right format
+            if (!input.getUserOrgId().equals(input.getUserOrgId().toLowerCase()) || !input.getUserOrgId().startsWith(orgShortName.toLowerCase() + ".")) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.WRONG_ENTITY_ORG_ID_FORMAT, request.getServletPath());
+            }
+            String password = null;
+            // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
+            if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+                password = PasswordUtil.generatePassword();
+                keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                try {
+                    keycloakAU.createUser(input.getUserOrgId(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgShortName, input.getPermissions(), true, KeycloakAdminUtil.NORMAL_USER);
+                } catch (IOException e) {
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+                }
+            }
+            input.setIdOrganization(org.getId());
+            User newUser = this.userService.saveUser(input);
+            if (password != null) {
+                newUser.setPassword(password);
+            }
+            return new ResponseEntity<User>(newUser, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -143,18 +137,16 @@ public class UserController extends  BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    return new ResponseEntity<User>(user, HttpStatus.OK);
-                }
+            User user = this.userService.getUserById(userId);
+            if (user == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
+                return new ResponseEntity<User>(user, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -173,32 +165,29 @@ public class UserController extends  BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.PUT)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (user.getUserOrgId() != input.getUserOrgId() || user.getIdOrganization().compareTo(org.getId()) != 0) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
-                }
-                // Update user in keycloak if created there.
-                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    try {
-                        keycloakAU.updateUser(input.getUserOrgId(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
-                    } catch (IOException e) {
-                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
-                    }
-                }
-                input.selectiveCopyTo(user);
-                this.userService.saveUser(user);
-                return new ResponseEntity<>(HttpStatus.OK);
+            User user = this.userService.getUserById(userId);
+            if (user == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            if (user.getUserOrgId() != input.getUserOrgId() || user.getIdOrganization().compareTo(org.getId()) != 0) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+            }
+            // Update user in keycloak if created there.
+            if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+                keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                try {
+                    keycloakAU.updateUser(input.getUserOrgId(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
+                } catch (IOException e) {
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
+                }
+            }
+            input.selectiveCopyTo(user);
+            this.userService.saveUser(user);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -214,24 +203,22 @@ public class UserController extends  BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/user/{userId}",
             method = RequestMethod.DELETE)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            User user = this.userService.getUserById(userId);
+            if (user == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
+                this.userService.deleteUser(userId);
+                // Remove user from keycloak if created there.
+                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                    keycloakAU.deleteUser(user.getUserOrgId());
                 }
-                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    this.userService.deleteUser(userId);
-                    // Remove user from keycloak if created there.
-                    if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
-                        keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                        keycloakAU.deleteUser(user.getUserOrgId());
-                    }
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -249,15 +236,12 @@ public class UserController extends  BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/users",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<List<User>> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                List<User> users = this.userService.listOrgUsers(org.getId());
-                return new ResponseEntity<List<User>>(users, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            List<User> users = this.userService.listOrgUsers(org.getId());
+            return new ResponseEntity<List<User>>(users, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -273,19 +257,17 @@ public class UserController extends  BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/user/{userId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<PemCertificate> newUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    PemCertificate ret = this.issueCertificate(user, org, "user");
-                    return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
-                }
+            User user = this.userService.getUserById(userId);
+            if (user == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
+                PemCertificate ret = this.issueCertificate(user, org, "user");
+                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -303,22 +285,20 @@ public class UserController extends  BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/user/{userId}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                User user = this.userService.getUserById(userId);
-                if (user == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                    Certificate cert = this.certificateService.getCertificateById(certId);
-                    User certUser = cert.getUser();
-                    if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
-                        this.revokeCertificate(certId, input, request);
-                        return new ResponseEntity<>(HttpStatus.OK);
-                    }
+            User user = this.userService.getUserById(userId);
+            if (user == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
+                Certificate cert = this.certificateService.getCertificateById(certId);
+                User certUser = cert.getUser();
+                if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
+                    this.revokeCertificate(certId, input, request);
+                    return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -373,6 +353,5 @@ public class UserController extends  BaseControllerWithCertificate {
     protected String getEmail(CertificateModel certOwner) {
         return ((User)certOwner).getEmail();
     }
-
 }
 

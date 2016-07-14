@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -81,34 +82,31 @@ public class ServiceController extends BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Service input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                input.setIdOrganization(org.getId());
-                // Setup a keycloak client for the service if needed
-                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
-                        && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
-                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String serviceClientId = (org.getShortName() + "_" + input.getName()).replace(" ", "_");
-                    input.setOidcClientId(serviceClientId);
-                    try {
-                        String clientSecret = keycloakAU.createClient(serviceClientId, input.getOidcAccessType(), input.getOidcRedirectUri());
-                        input.setOidcClientSecret(clientSecret);
-                    } catch(IOException e) {
-                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
-                    }
-                } else {
-                    input.setOidcAccessType(null);
-                    input.setOidcClientId(null);
-                    input.setOidcClientSecret(null);
-                    input.setOidcRedirectUri(null);
+            input.setIdOrganization(org.getId());
+            // Setup a keycloak client for the service if needed
+            if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
+                    && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
+                keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                String serviceClientId = (org.getShortName() + "_" + input.getName()).replace(" ", "_");
+                input.setOidcClientId(serviceClientId);
+                try {
+                    String clientSecret = keycloakAU.createClient(serviceClientId, input.getOidcAccessType(), input.getOidcRedirectUri());
+                    input.setOidcClientSecret(clientSecret);
+                } catch(IOException e) {
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
                 }
-                Service newService = this.serviceService.saveService(input);
-                return new ResponseEntity<Service>(newService, HttpStatus.OK);
+            } else {
+                input.setOidcAccessType(null);
+                input.setOidcClientId(null);
+                input.setOidcClientSecret(null);
+                input.setOidcRedirectUri(null);
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            Service newService = this.serviceService.saveService(input);
+            return new ResponseEntity<Service>(newService, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -125,18 +123,16 @@ public class ServiceController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Service service = this.serviceService.getServiceById(serviceId);
-                if (service == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-                }
-                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                    return new ResponseEntity<Service>(service, HttpStatus.OK);
-                }
+            Service service = this.serviceService.getServiceById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                return new ResponseEntity<Service>(service, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -154,27 +150,25 @@ public class ServiceController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/service/{serviceId}",
             method = RequestMethod.PUT)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @RequestBody Service input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Service service = this.serviceService.getServiceById(serviceId);
-                if (service == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            Service service = this.serviceService.getServiceById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
+                input.selectiveCopyTo(service);
+                // Update the keycloak client for the service if needed
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                    keycloakAU.updateClient(serviceClientId, service.getOidcAccessType(), service.getOidcRedirectUri());
                 }
-                if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
-                    input.selectiveCopyTo(service);
-                    // Update the keycloak client for the service if needed
-                    if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                            && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
-                        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                        String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
-                        keycloakAU.updateClient(serviceClientId, service.getOidcAccessType(), service.getOidcRedirectUri());
-                    }
-                    this.serviceService.saveService(service);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
+                this.serviceService.saveService(service);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -192,26 +186,24 @@ public class ServiceController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/service/{serviceId}",
             method = RequestMethod.DELETE)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Service service = this.serviceService.getServiceById(serviceId);
-                if (service == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            Service service = this.serviceService.getServiceById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                // Delete the keycloak client for the service if needed
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                    keycloakAU.deleteClient(serviceClientId);
                 }
-                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                    // Delete the keycloak client for the service if needed
-                    if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                            && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
-                        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                        String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
-                        keycloakAU.deleteClient(serviceClientId);
-                    }
-                    this.serviceService.deleteService(serviceId);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
+                this.serviceService.deleteService(serviceId);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -229,15 +221,12 @@ public class ServiceController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/services",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<List<Service>> getOrganizationServices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                List<Service> services = this.serviceService.listOrgServices(org.getId());
-                return new ResponseEntity<List<Service>>(services, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            List<Service> services = this.serviceService.listOrgServices(org.getId());
+            return new ResponseEntity<List<Service>>(services, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -253,19 +242,17 @@ public class ServiceController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/service/{serviceId}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Service service = this.serviceService.getServiceById(serviceId);
-                if (service == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-                }
-                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                    PemCertificate ret = this.issueCertificate(service, org, "service");
-                    return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
-                }
+            Service service = this.serviceService.getServiceById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                PemCertificate ret = this.issueCertificate(service, org, "service");
+                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -283,22 +270,20 @@ public class ServiceController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/service/{serviceId}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the service has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Service service = this.serviceService.getServiceById(serviceId);
-                if (service == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-                }
-                if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                    Certificate cert = this.certificateService.getCertificateById(certId);
-                    Service certService = cert.getService();
-                    if (certService != null && certService.getId().compareTo(service.getId()) == 0) {
-                        this.revokeCertificate(certId, input, request);
-                        return new ResponseEntity<>(HttpStatus.OK);
-                    }
+            Service service = this.serviceService.getServiceById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                Certificate cert = this.certificateService.getCertificateById(certId);
+                Service certService = cert.getService();
+                if (certService != null && certService.getId().compareTo(service.getId()) == 0) {
+                    this.revokeCertificate(certId, input, request);
+                    return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());

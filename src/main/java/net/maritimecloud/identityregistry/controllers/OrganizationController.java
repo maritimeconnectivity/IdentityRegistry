@@ -23,6 +23,7 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -102,6 +103,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{shortName}/approve",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         // Admin Authentication
         if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
@@ -186,6 +188,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @RequestMapping(
             value = "/api/org/{shortName}",
             method = RequestMethod.PUT)
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String shortName,
             @RequestBody Organization input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
@@ -193,31 +196,27 @@ public class OrganizationController extends BaseControllerWithCertificate {
             if (!shortName.equals(input.getShortName())) {
                 throw new McBasicRestException(HttpStatus.BAD_GATEWAY, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(shortName)) {
-                // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
-                if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
-                        && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
-                        && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
-                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    // If client ids are different we delete the old IDP in keycloak
-                    if (org.getOidcClientName() != null && !input.getOidcClientName().equals(org.getOidcClientName())) {
-                        keycloakAU.deleteIdentityProvider(input.getShortName());
-                    }
-                    try {
-                        keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
-                    } catch (MalformedURLException e) {
-                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
-                    } catch (IOException e) {
-                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
-                    }
+            // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
+            if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
+                    && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
+                    && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
+                keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                // If client ids are different we delete the old IDP in keycloak
+                if (org.getOidcClientName() != null && !input.getOidcClientName().equals(org.getOidcClientName())) {
+                    keycloakAU.deleteIdentityProvider(input.getShortName());
                 }
-                // TODO: Remove old IDP if new input doesn't contain IDP info
-                input.selectiveCopyTo(org);
-                this.organizationService.saveOrganization(org);
-                return new ResponseEntity<>(HttpStatus.OK);
+                try {
+                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
+                } catch (MalformedURLException e) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
+                } catch (IOException e) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+                }
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            // TODO: Remove old IDP if new input doesn't contain IDP info
+            input.selectiveCopyTo(org);
+            this.organizationService.saveOrganization(org);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -234,15 +233,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                PemCertificate ret = this.issueCertificate(org, org, "organization");
-                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            PemCertificate ret = this.issueCertificate(org, org, "organization");
+            return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -258,17 +254,15 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Certificate cert = this.certificateService.getCertificateById(certId);
-                Organization certOrg = cert.getOrganization();
-                if (certOrg != null && certOrg.getId().compareTo(org.getId()) == 0) {
-                    this.revokeCertificate(certId, input, request);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
+            Certificate cert = this.certificateService.getCertificateById(certId);
+            Organization certOrg = cert.getOrganization();
+            if (certOrg != null && certOrg.getId().compareTo(org.getId()) == 0) {
+                this.revokeCertificate(certId, input, request);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

@@ -17,8 +17,10 @@ package net.maritimecloud.identityregistry.services;
 import java.util.List;
 
 import net.maritimecloud.identityregistry.model.database.entities.Device;
+import org.springframework.security.access.prepost.PreAuthorize;
 
 public interface DeviceService {
+
     Device getDeviceById(Long id);
 
     Device saveDevice(Device device);

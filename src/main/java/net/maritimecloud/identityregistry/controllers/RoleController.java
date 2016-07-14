@@ -19,11 +19,11 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -54,15 +54,12 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<List<Role>> getCRL(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                List<Role> roles = this.roleService.listOrgRoles(org.getId());
-                return new ResponseEntity<List<Role>>(roles, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            List<Role> roles = this.roleService.listOrgRoles(org.getId());
+            return new ResponseEntity<List<Role>>(roles, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -73,16 +70,13 @@ public class RoleController {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Role input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                input.setIdOrganization(org.getId());
-                Role newRole = this.roleService.saveRole(input);
-                return new ResponseEntity<Role>(newRole, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            input.setIdOrganization(org.getId());
+            Role newRole = this.roleService.saveRole(input);
+            return new ResponseEntity<Role>(newRole, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -99,18 +93,16 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Role role = this.roleService.getRoleById(roleId);
-                if (role == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (role.getIdOrganization().compareTo(org.getId()) == 0) {
-                    return new ResponseEntity<Role>(role, HttpStatus.OK);
-                }
+            Role role = this.roleService.getRoleById(roleId);
+            if (role == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (role.getIdOrganization().compareTo(org.getId()) == 0) {
+                return new ResponseEntity<Role>(role, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -129,23 +121,20 @@ public class RoleController {
             value = "/api/org/{orgShortName}/role/{roleId}",
             method = RequestMethod.PUT)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId, @RequestBody Role input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Role role = this.roleService.getRoleById(roleId);
-                if (role == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (role.getIdOrganization().compareTo(org.getId()) != 0) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
-                }
-                input.copyTo(role);
-                this.roleService.saveRole(role);
-                return new ResponseEntity<>(HttpStatus.OK);
+            Role role = this.roleService.getRoleById(roleId);
+            if (role == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            if (role.getIdOrganization().compareTo(org.getId()) != 0) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+            }
+            input.copyTo(role);
+            this.roleService.saveRole(role);
+            return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -161,25 +150,22 @@ public class RoleController {
             value = "/api/org/{orgShortName}/role/{roleId}",
             method = RequestMethod.DELETE)
     @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            // Check that the user has the needed rights
-            if (AccessControlUtil.hasAccessToOrg(orgShortName)) {
-                Role role = this.roleService.getRoleById(roleId);
-                if (role == null) {
-                    throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-                }
-                if (role.getIdOrganization().compareTo(org.getId()) == 0) {
-                    this.roleService.deleteRole(roleId);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
+            Role role = this.roleService.getRoleById(roleId);
+            if (role == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+            }
+            if (role.getIdOrganization().compareTo(org.getId()) == 0) {
+                this.roleService.deleteRole(roleId);
+                return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
-
 
 }

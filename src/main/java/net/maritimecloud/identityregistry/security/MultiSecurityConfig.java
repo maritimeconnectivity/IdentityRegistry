@@ -27,6 +27,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.access.vote.RoleHierarchyVoter;
 import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
+import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -40,7 +41,6 @@ import org.springframework.security.web.authentication.preauth.RequestHeaderAuth
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 
-import net.maritimecloud.identityregistry.security.x509.ClientCertRequestHeaderAuthenticationFilter;
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
@@ -53,6 +53,7 @@ import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 
 @Configuration
 @EnableWebSecurity
+@EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MultiSecurityConfig  {
 
     @Configuration
@@ -71,6 +72,7 @@ public class MultiSecurityConfig  {
         protected MCKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
             return new MCKeycloakAuthenticationProvider();
         }
+
         /**
          * Defines the session authentication strategy.
          */
@@ -98,6 +100,7 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
+                    // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ORG_ADMIN")
@@ -125,7 +128,7 @@ public class MultiSecurityConfig  {
         @Bean
         public RoleHierarchyImpl roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORGADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORG_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 
@@ -180,6 +183,7 @@ public class MultiSecurityConfig  {
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
+                    // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/x509/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").hasRole("ORG_ADMIN")
@@ -222,7 +226,7 @@ public class MultiSecurityConfig  {
         @Bean
         public RoleHierarchyImpl roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORGADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORG_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 
