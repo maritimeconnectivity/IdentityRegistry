@@ -29,5 +29,5 @@ public interface RoleService {
 
     List<Role> listOrgRoles(Long id);
 
-    Role getRoleByIdOrganizationAndPermission(Long idOrganization, String permissions);
+    List<Role> getRolesByIdOrganizationAndPermission(Long idOrganization, String permissions);
 }

@@ -74,10 +74,12 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
                         String[] auths = permission.split(",");
                         for (String auth : auths) {
                             logger.debug("Looking up role: " + auth);
-                            Role newRole = roleService.getRoleByIdOrganizationAndPermission(org.getId(), auth);
-                            if (newRole != null) {
-                                logger.debug("Replacing role " + auth + ", with: " + newRole.getRoleName());
-                                grantedAuthorities.add(new KeycloakRole(newRole.getRoleName()));
+                            List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth);
+                            if (foundRoles != null) {
+                                for (Role foundRole : foundRoles) {
+                                    logger.debug("Replacing role " + auth + ", with: " + foundRole.getRoleName());
+                                    grantedAuthorities.add(new KeycloakRole(foundRole.getRoleName()));
+                                }
                             }
                         }
                     }

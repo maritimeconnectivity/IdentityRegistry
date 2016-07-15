@@ -28,6 +28,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -90,9 +91,11 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             String[] auths = auth.split(",");
             for (String auth2 : auths) {
                 logger.debug("Looking up role: " + auth2);
-                Role newRole = roleService.getRoleByIdOrganizationAndPermission(org.getId(), auth2);
-                if (newRole != null) {
-                    newRoles.add(new SimpleGrantedAuthority(newRole.getRoleName()));
+                List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth2);
+                if (foundRoles != null) {
+                    for (Role foundRole : foundRoles) {
+                        newRoles.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
+                    }
                 }
             }
         }
