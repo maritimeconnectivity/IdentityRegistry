@@ -36,8 +36,8 @@ public class DeviceServiceImpl extends BaseServiceImpl<Device> implements Entity
     public List<Device> listFromOrg(Long orgId) {
         return deviceRepository.findByidOrganization(orgId);
     }
-    @Override
 
+    @Override
     public DeviceRepository getRepository() {
         return this.deviceRepository;
     }

@@ -14,14 +14,11 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.repositories.OrganizationRepository;
-
-import java.util.List;
 
 @Service
 public class OrganizationServiceImpl extends BaseServiceImpl<Organization> implements OrganizationService {
@@ -30,28 +27,6 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     @Autowired
     public void setOrganizationRepository(OrganizationRepository OrganizationRepository) {
         this.organizationRepository = OrganizationRepository;
-    }
-
-    @Override
-    public List<Organization> listAll() {
-        List<Organization> ret = Lists.newArrayList(organizationRepository.findAll());
-        return this.filterResult(ret);
-    }
-
-    @Override
-    public Organization getById(Long id) {
-        Organization ret = organizationRepository.findOne(id);
-        return this.filterResult(ret);
-    }
-
-    @Override
-    public Organization save(Organization Organization) {
-        return organizationRepository.save(Organization);
-    }
-
-    @Override
-    public void delete(Long id) {
-        organizationRepository.delete(id);
     }
 
     @Override
