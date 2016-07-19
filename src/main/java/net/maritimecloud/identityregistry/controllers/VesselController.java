@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.services.EntityService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -27,7 +28,6 @@ import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.services.VesselService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 
@@ -49,8 +49,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @RestController
-public class VesselController extends  BaseControllerWithCertificate{
-    private VesselService vesselService;
+public class VesselController extends BaseControllerWithCertificate{
+    private EntityService<Vessel> vesselService;
 
     private OrganizationService organizationService;
 
@@ -69,8 +69,8 @@ public class VesselController extends  BaseControllerWithCertificate{
     }
 
     @Autowired
-    public void setVesselService(VesselService organizationService) {
-        this.vesselService = organizationService;
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.vesselService = vesselService;
     }
 
     /**
@@ -89,7 +89,7 @@ public class VesselController extends  BaseControllerWithCertificate{
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             input.setIdOrganization(org.getId());
-            Vessel newVessel = this.vesselService.saveVessel(input);
+            Vessel newVessel = this.vesselService.save(input);
             return new ResponseEntity<Vessel>(newVessel, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -111,7 +111,7 @@ public class VesselController extends  BaseControllerWithCertificate{
     public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Vessel vessel = this.vesselService.getVesselById(vesselId);
+            Vessel vessel = this.vesselService.getById(vesselId);
             if (vessel == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
@@ -138,13 +138,13 @@ public class VesselController extends  BaseControllerWithCertificate{
     public ResponseEntity<?> updateVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @RequestBody Vessel input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Vessel vessel = this.vesselService.getVesselById(vesselId);
+            Vessel vessel = this.vesselService.getById(vesselId);
             if (vessel == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
             if (vessel.getId().compareTo(input.getId()) == 0 && vessel.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(vessel);
-                this.vesselService.saveVessel(vessel);
+                this.vesselService.save(vessel);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -167,12 +167,12 @@ public class VesselController extends  BaseControllerWithCertificate{
     public ResponseEntity<?> deleteVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Vessel vessel = this.vesselService.getVesselById(vesselId);
+            Vessel vessel = this.vesselService.getById(vesselId);
             if (vessel == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
             if (vessel.getIdOrganization().compareTo(org.getId()) == 0) {
-                this.vesselService.deleteVessel(vesselId);
+                this.vesselService.delete(vesselId);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -196,7 +196,7 @@ public class VesselController extends  BaseControllerWithCertificate{
         // Enable filters on certificates to filter out revoked and outdated certificates
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            List<Vessel> vessels = this.vesselService.listOrgVessels(org.getId());
+            List<Vessel> vessels = this.vesselService.listFromOrg(org.getId());
             return new ResponseEntity<List<Vessel>>(vessels, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -217,7 +217,7 @@ public class VesselController extends  BaseControllerWithCertificate{
     public ResponseEntity<PemCertificate> newVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Vessel vessel = this.vesselService.getVesselById(vesselId);
+            Vessel vessel = this.vesselService.getById(vesselId);
             if (vessel == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
@@ -245,7 +245,7 @@ public class VesselController extends  BaseControllerWithCertificate{
     public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Vessel vessel = this.vesselService.getVesselById(vesselId);
+            Vessel vessel = this.vesselService.getById(vesselId);
             if (vessel == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }

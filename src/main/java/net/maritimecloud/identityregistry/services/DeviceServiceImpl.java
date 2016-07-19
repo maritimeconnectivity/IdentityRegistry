@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.services;
 
 import java.util.List;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,37 +24,23 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.repositories.DeviceRepository;
 
 @Service
-public class DeviceServiceImpl implements DeviceService {
-    private DeviceRepository DeviceRepository;
+public class DeviceServiceImpl extends BaseServiceImpl<Device> implements EntityService<Device> {
+    private DeviceRepository deviceRepository;
 
     @Autowired
-    public void setDeviceRepository(DeviceRepository DeviceRepository) {
-        this.DeviceRepository = DeviceRepository;
+    public void setDeviceRepository(DeviceRepository deviceRepository) {
+        this.deviceRepository = deviceRepository;
     }
 
     @Override
-    public Iterable<Device> listAllDevices() {
-        return DeviceRepository.findAll();
+    public List<Device> listFromOrg(Long orgId) {
+        return deviceRepository.findByidOrganization(orgId);
+    }
+    @Override
+
+    public DeviceRepository getRepository() {
+        return this.deviceRepository;
     }
 
-    @Override
-    public Device getDeviceById(Long id) {
-        return DeviceRepository.findOne(id);
-    }
-
-    @Override
-    public Device saveDevice(Device device) {
-        return DeviceRepository.save(device);
-    }
-
-    @Override
-    public void deleteDevice(Long id) {
-        DeviceRepository.delete(id);
-    }
-
-    @Override
-    public List<Device> listOrgDevices(Long orgId) {
-        return DeviceRepository.findByidOrganization(orgId);
-    }
 }
 

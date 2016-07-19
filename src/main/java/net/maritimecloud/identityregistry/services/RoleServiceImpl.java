@@ -22,42 +22,27 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class RoleServiceImpl implements RoleService {
-    private RoleRepository RoleRepository;
+public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleService {
+    private RoleRepository roleRepository;
 
     @Autowired
     public void setRoleRepository(RoleRepository RoleRepository) {
-        this.RoleRepository = RoleRepository;
+        this.roleRepository = RoleRepository;
     }
 
     @Override
-    public Iterable<Role> listAllRoles() {
-        return RoleRepository.findAll();
-    }
-
-    @Override
-    public Role getRoleById(Long id) {
-        return RoleRepository.findOne(id);
-    }
-
-    @Override
-    public Role saveRole(Role role) {
-        return RoleRepository.save(role);
-    }
-
-    @Override
-    public void deleteRole(Long id) {
-        RoleRepository.delete(id);
-    }
-
-    @Override
-    public List<Role> listOrgRoles(Long orgId) {
-        return RoleRepository.findByidOrganization(orgId);
+    public List<Role> listFromOrg(Long orgId) {
+        return roleRepository.findByidOrganization(orgId);
     }
 
     @Override
     public List<Role> getRolesByIdOrganizationAndPermission(Long idOrganization, String permission) {
-        return RoleRepository.findByIdOrganizationAndPermission(idOrganization, permission);
+        return roleRepository.findByIdOrganizationAndPermission(idOrganization, permission);
     };
+
+    @Override
+    public RoleRepository getRepository() {
+        return this.roleRepository;
+    }
 }
 

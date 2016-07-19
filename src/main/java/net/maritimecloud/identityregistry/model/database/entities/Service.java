@@ -82,6 +82,17 @@ public class Service extends NonHumanEntityModel {
         cert.setService(this);
     }
 
+    public boolean hasSensitiveFields() {
+        return true;
+    }
+
+    public void clearSensitiveFields() {
+        this.setOidcAccessType(null);
+        this.setOidcClientId(null);
+        this.setOidcClientSecret(null);
+        this.setOidcRedirectUri(null);
+    }
+
     /******************************/
     /** Getters and setters      **/
     /******************************/

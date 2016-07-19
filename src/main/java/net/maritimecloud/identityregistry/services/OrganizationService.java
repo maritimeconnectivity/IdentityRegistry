@@ -16,14 +16,6 @@ package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
 
-public interface OrganizationService {
-    Organization getOrganizationById(Long id);
-
-    Organization saveOrganization(Organization product);
-
-    void deleteOrganization(Long id);
-
-    Iterable<Organization> listAllOrganizations();
-
+public interface OrganizationService extends BaseService<Organization>{
     Organization getOrganizationByShortName(String shortname);
 }

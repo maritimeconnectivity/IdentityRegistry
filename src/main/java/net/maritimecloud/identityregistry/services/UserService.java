@@ -18,16 +18,6 @@ import java.util.List;
 
 import net.maritimecloud.identityregistry.model.database.entities.User;
 
-public interface UserService {
-    User getUserById(Long id);
-
+public interface UserService extends EntityService<User>{
     User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId);
-
-    User saveUser(User user);
-
-    void deleteUser(Long id);
-
-    Iterable<User> listAllUsers();
-
-    List<User> listOrgUsers(Long id);
 }

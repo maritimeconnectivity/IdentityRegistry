@@ -59,7 +59,7 @@ public class RoleController {
     public ResponseEntity<List<Role>> getCRL(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            List<Role> roles = this.roleService.listOrgRoles(org.getId());
+            List<Role> roles = this.roleService.listFromOrg(org.getId());
             return new ResponseEntity<List<Role>>(roles, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -76,7 +76,7 @@ public class RoleController {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             input.setIdOrganization(org.getId());
-            Role newRole = this.roleService.saveRole(input);
+            Role newRole = this.roleService.save(input);
             return new ResponseEntity<Role>(newRole, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -98,7 +98,7 @@ public class RoleController {
     public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Role role = this.roleService.getRoleById(roleId);
+            Role role = this.roleService.getById(roleId);
             if (role == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
@@ -122,11 +122,11 @@ public class RoleController {
             value = "/api/org/{orgShortName}/role/{roleId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
+    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId, @RequestBody Role input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Role role = this.roleService.getRoleById(roleId);
+            Role role = this.roleService.getById(roleId);
             if (role == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
@@ -134,7 +134,7 @@ public class RoleController {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             input.copyTo(role);
-            this.roleService.saveRole(role);
+            this.roleService.save(role);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -155,12 +155,12 @@ public class RoleController {
     public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Role role = this.roleService.getRoleById(roleId);
+            Role role = this.roleService.getById(roleId);
             if (role == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             if (role.getIdOrganization().compareTo(org.getId()) == 0) {
-                this.roleService.deleteRole(roleId);
+                this.roleService.delete(roleId);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());

@@ -14,46 +14,33 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.repositories.ServiceRepository;
 
+import java.util.List;
+
 @org.springframework.stereotype.Service
-public class ServiceServiceImpl implements ServiceService {
-    private ServiceRepository ServiceRepository;
+public class ServiceServiceImpl extends BaseServiceImpl<Service> implements EntityService<Service> {
+    private ServiceRepository serviceRepository;
 
     @Autowired
     public void setServiceRepository(ServiceRepository ServiceRepository) {
-        this.ServiceRepository = ServiceRepository;
+        this.serviceRepository = ServiceRepository;
     }
 
     @Override
-    public Iterable<Service> listAllServices() {
-        return ServiceRepository.findAll();
+    public List<Service> listFromOrg(Long orgId) {
+        List<Service> ret = serviceRepository.findByidOrganization(orgId);
+        ret = this.filterResult(ret);
+        return ret;
     }
 
     @Override
-    public Service getServiceById(Long id) {
-        return ServiceRepository.findOne(id);
-    }
-
-    @Override
-    public Service saveService(Service device) {
-        return ServiceRepository.save(device);
-    }
-
-    @Override
-    public void deleteService(Long id) {
-        ServiceRepository.delete(id);
-    }
-
-    @Override
-    public List<Service> listOrgServices(Long orgId) {
-        return ServiceRepository.findByidOrganization(orgId);
+    public ServiceRepository getRepository() {
+        return this.serviceRepository;
     }
 }
 

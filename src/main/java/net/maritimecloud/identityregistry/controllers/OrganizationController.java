@@ -87,7 +87,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Make sure all shortnames are uppercase
         input.setShortName(input.getShortName().trim().toUpperCase());
         input.setApproved(false);
-        Organization newOrg = this.organizationService.saveOrganization(input);
+        Organization newOrg = this.organizationService.save(input);
         // TODO: Send email to organization saying that the application is awaiting approval
         // TODO: Send email to admin saying that an Organization is awaiting approval
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
@@ -140,7 +140,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
-        Organization approvedOrg =  this.organizationService.saveOrganization(org);
+        Organization approvedOrg =  this.organizationService.save(org);
         // TODO: send email to organization with the happy news and the admin password
         approvedOrg.setPassword(newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
@@ -175,7 +175,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<Iterable<Organization>> getOrganization(HttpServletRequest request) {
-        Iterable<Organization> orgs = this.organizationService.listAllOrganizations();
+        Iterable<Organization> orgs = this.organizationService.listAll();
         return new ResponseEntity<Iterable<Organization>>(orgs, HttpStatus.OK);
     }
 
@@ -215,7 +215,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             }
             // TODO: Remove old IDP if new input doesn't contain IDP info
             input.selectiveCopyTo(org);
-            this.organizationService.saveOrganization(org);
+            this.organizationService.save(org);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

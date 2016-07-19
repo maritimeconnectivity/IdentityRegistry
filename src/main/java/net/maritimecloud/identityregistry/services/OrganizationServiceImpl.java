@@ -14,44 +14,53 @@
  */
 package net.maritimecloud.identityregistry.services;
 
+import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.repositories.OrganizationRepository;
 
+import java.util.List;
+
 @Service
-public class OrganizationServiceImpl implements OrganizationService {
-    private OrganizationRepository OrganizationRepository;
+public class OrganizationServiceImpl extends BaseServiceImpl<Organization> implements OrganizationService {
+    private OrganizationRepository organizationRepository;
 
     @Autowired
     public void setOrganizationRepository(OrganizationRepository OrganizationRepository) {
-        this.OrganizationRepository = OrganizationRepository;
+        this.organizationRepository = OrganizationRepository;
     }
 
     @Override
-    public Iterable<Organization> listAllOrganizations() {
-        return OrganizationRepository.findAll();
+    public List<Organization> listAll() {
+        List<Organization> ret = Lists.newArrayList(organizationRepository.findAll());
+        return this.filterResult(ret);
     }
 
     @Override
-    public Organization getOrganizationById(Long id) {
-        return OrganizationRepository.findOne(id);
+    public Organization getById(Long id) {
+        Organization ret = organizationRepository.findOne(id);
+        return this.filterResult(ret);
     }
 
     @Override
-    public Organization saveOrganization(Organization Organization) {
-        return OrganizationRepository.save(Organization);
+    public Organization save(Organization Organization) {
+        return organizationRepository.save(Organization);
     }
 
     @Override
-    public void deleteOrganization(Long id) {
-        OrganizationRepository.delete(id);
+    public void delete(Long id) {
+        organizationRepository.delete(id);
     }
 
     @Override
     public Organization getOrganizationByShortName(String shortname) {
-        return OrganizationRepository.findByShortName(shortname);
+        return organizationRepository.findByShortName(shortname);
     }
 
+    @Override
+    public OrganizationRepository getRepository() {
+        return this.organizationRepository;
+    }
 }

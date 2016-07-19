@@ -23,42 +23,26 @@ import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.repositories.UserRepository;
 
 @Service
-public class UserServiceImpl implements UserService {
-    private UserRepository UserRepository;
+public class UserServiceImpl extends BaseServiceImpl<User> implements UserService {
+
+    private UserRepository userRepository;
 
     @Autowired
-    public void setUserRepository(UserRepository UserRepository) {
-        this.UserRepository = UserRepository;
-    }
-
-    @Override
-    public Iterable<User> listAllUsers() {
-        return UserRepository.findAll();
-    }
-
-    @Override
-    public User getUserById(Long id) {
-        return UserRepository.findOne(id);
+    public void setUserRepository(UserRepository userRepository) {
+        this.userRepository = userRepository;
     }
 
     @Override
     public User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId) {
-        return UserRepository.findByUserOrgIdAndIdOrganization(userOrgId, orgId);
+        return userRepository.findByUserOrgIdAndIdOrganization(userOrgId, orgId);
     }
 
     @Override
-    public User saveUser(User user) {
-        return UserRepository.save(user);
+    public List<User> listFromOrg(Long orgId) {
+        return userRepository.findByIdOrganization(orgId);
     }
 
-    @Override
-    public void deleteUser(Long id) {
-        UserRepository.delete(id);
-    }
-
-    @Override
-    public List<User> listOrgUsers(Long orgId) {
-        return UserRepository.findByIdOrganization(orgId);
+    public UserRepository getRepository() {
+        return this.userRepository;
     }
 }
-

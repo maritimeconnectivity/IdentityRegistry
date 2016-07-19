@@ -67,4 +67,14 @@ public abstract class TimestampModel implements JsonSerializable {
     public Date getUpdatedAt() {
         return updatedAt;
     }
+
+    // Override if needed - use to detect if blanking of sensitive fields are needed
+    public boolean hasSensitiveFields() {
+        return false;
+    }
+
+    // Override if needed - use when blanking sensitive fields so that users without privileges
+    // can see object with non-sensitive data.
+    public void clearSensitiveFields() {
+    }
 }

@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.services.EntityService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -25,17 +26,9 @@ import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.services.DeviceService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 
-import java.security.KeyPair;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.X509Certificate;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -51,7 +44,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 public class DeviceController extends BaseControllerWithCertificate {
-    private DeviceService deviceService;
+    private EntityService<Device> deviceService;
     private OrganizationService organizationService;
     private CertificateService certificateService;
 
@@ -65,8 +58,8 @@ public class DeviceController extends BaseControllerWithCertificate {
         this.organizationService = organizationService;
     }
     @Autowired
-    public void setDeviceService(DeviceService organizationService) {
-        this.deviceService = organizationService;
+    public void setDeviceService(EntityService<Device> deviceService) {
+        this.deviceService = deviceService;
     }
 
     @Autowired
@@ -88,7 +81,7 @@ public class DeviceController extends BaseControllerWithCertificate {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
             input.setIdOrganization(org.getId());
-            Device newDevice = this.deviceService.saveDevice(input);
+            Device newDevice = this.deviceService.save(input);
             return new ResponseEntity<Device>(newDevice, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -110,7 +103,7 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Device device = this.deviceService.getDeviceById(deviceId);
+            Device device = this.deviceService.getById(deviceId);
             if (device == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
             }
@@ -137,13 +130,13 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Device device = this.deviceService.getDeviceById(deviceId);
+            Device device = this.deviceService.getById(deviceId);
             if (device == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
             if (device.getId().compareTo(input.getId()) == 0 && device.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(device);
-                this.deviceService.saveDevice(device);
+                this.deviceService.save(device);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -166,12 +159,12 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Device device = this.deviceService.getDeviceById(deviceId);
+            Device device = this.deviceService.getById(deviceId);
             if (device == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
             if (device.getIdOrganization().compareTo(org.getId()) == 0) {
-                this.deviceService.deleteDevice(deviceId);
+                this.deviceService.delete(deviceId);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -194,7 +187,7 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<List<Device>> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            List<Device> devices = this.deviceService.listOrgDevices(org.getId());
+            List<Device> devices = this.deviceService.listFromOrg(org.getId());
             return new ResponseEntity<List<Device>>(devices, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -215,7 +208,7 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<PemCertificate> newDeviceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Device device = this.deviceService.getDeviceById(deviceId);
+            Device device = this.deviceService.getById(deviceId);
             if (device == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
             }
@@ -243,7 +236,7 @@ public class DeviceController extends BaseControllerWithCertificate {
     public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Device device = this.deviceService.getDeviceById(deviceId);
+            Device device = this.deviceService.getById(deviceId);
             if (device == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
             }

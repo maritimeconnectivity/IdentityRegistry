@@ -22,4 +22,5 @@ public interface OrganizationRepository extends CrudRepository<Organization, Lon
     List<Organization> findByName(String lastName);
 
     Organization findByShortName(String shortname);
+
 }

@@ -14,18 +14,19 @@
  */
 package net.maritimecloud.identityregistry.services;
 
+import org.springframework.data.repository.CrudRepository;
+
 import java.util.List;
 
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+public interface BaseService<T> {
+    T getById(Long id);
 
-public interface VesselService {
-    Vessel getVesselById(Long id);
+    T save(T entity);
 
-    Vessel saveVessel(Vessel vessel);
+    void delete(Long id);
 
-    void deleteVessel(Long id);
+    List<T> listAll();
 
-    Iterable<Vessel> listAllVessels();
+    CrudRepository<T, Long> getRepository();
 
-    List<Vessel> listOrgVessels(Long id);
-} 
+}

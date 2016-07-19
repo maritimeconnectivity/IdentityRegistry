@@ -14,9 +14,10 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import java.util.List;
 import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
+
+import java.util.List;
 
 public interface ServiceRepository extends CrudRepository<Service, Long> {
     List<Service> findByName(String lastName);

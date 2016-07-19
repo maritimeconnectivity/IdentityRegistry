@@ -137,6 +137,16 @@ public class Organization extends CertificateModel {
         return copyTo(new Organization());
     }
 
+    public boolean hasSensitiveFields() {
+        return true;
+    }
+
+    public void clearSensitiveFields() {
+        this.setOidcClientSecret(null);
+        this.setOidcClientName(null);
+        this.setOidcWellKnownUrl(null);
+    }
+
     /******************************/
     /** Getters and setters      **/
     /******************************/

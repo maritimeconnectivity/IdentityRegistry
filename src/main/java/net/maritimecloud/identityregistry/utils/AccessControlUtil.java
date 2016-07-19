@@ -41,6 +41,14 @@ public class AccessControlUtil {
 
     public static boolean hasAccessToOrg(String orgShortName) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        // First check if the user is a SITE_ADMIN, in which case he gets access.
+        for (GrantedAuthority authority : auth.getAuthorities()) {
+            String role = authority.getAuthority();
+            if ("ROLE_SITE_ADMIN".equals(role)) {
+                return true;
+            }
+        }
+        // Check if the user is part of the organization
         if (auth instanceof KeycloakAuthenticationToken) {
             logger.debug("OIDC authentication in process");
             // Keycloak authentication
