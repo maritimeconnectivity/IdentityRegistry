@@ -24,8 +24,6 @@ import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.access.vote.RoleHierarchyVoter;
-import org.springframework.security.access.vote.RoleVoter;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -43,7 +41,6 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
 
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
@@ -97,15 +94,14 @@ public class MultiSecurityConfig  {
             .and()
                 .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
+                    // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
-                    // Some general filters for access, more specific ones are set at each method
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ORG_ADMIN")
+                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
-                    .anyRequest().permitAll()
             ;
         }
 
@@ -128,13 +124,8 @@ public class MultiSecurityConfig  {
         @Bean
         public RoleHierarchyImpl roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORG_ADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN    ROLE_ORG_ADMIN > ROLE_USER");
             return roleHierarchy;
-        }
-
-        @Bean
-        public RoleVoter roleVoter() {
-            return new RoleHierarchyVoter(roleHierarchy());
         }
 
         private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {
@@ -180,14 +171,15 @@ public class MultiSecurityConfig  {
                 .csrf().disable()
                 .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
+                    // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
-                    // Some general filters for access, more specific ones are set at each method
-                    .antMatchers(HttpMethod.POST, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.PUT, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated();
+                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
+            ;
 
             if (!useStandardSSL) {
                 // Create and setup the filter used to extract the client certificate from the header
@@ -195,22 +187,16 @@ public class MultiSecurityConfig  {
                 certFilter.setAuthenticationManager(authenticationManager());
                 certFilter.setPrincipalRequestHeader("X-Client-Certificate");
                 certFilter.setExceptionIfHeaderMissing(false);
-                
-                // Link up the CertificateUtil
-                userDetailsService.setCertUtil(certificateUtil());
                 http.addFilter(certFilter);
             } else {
+                // Using this approach is not recommended since we don't extract all the information from
+                // the certificate, as done in the approach above.
                 http
                     .x509()
                         .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
                         .userDetailsService(x509UserDetailsService())
                 ;
             }
-        }
-
-        @Bean
-        public CertificateUtil certificateUtil() {
-            return new CertificateUtil();
         }
 
         @Bean
@@ -226,13 +212,8 @@ public class MultiSecurityConfig  {
         @Bean
         public RoleHierarchyImpl roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITEADMIN > ROLE_ORG_ADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN    ROLE_ORG_ADMIN > ROLE_USER");
             return roleHierarchy;
-        }
-
-        @Bean
-        public RoleVoter roleVoter() {
-            return new RoleHierarchyVoter(roleHierarchy());
         }
 
         private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {

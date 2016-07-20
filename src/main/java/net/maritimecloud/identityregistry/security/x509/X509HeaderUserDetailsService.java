@@ -44,7 +44,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private OrganizationService organizationService;
     @Autowired
     private RoleService roleService;
-
+    @Autowired
     private CertificateUtil certUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
@@ -99,6 +99,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
                 }
             }
         }
+        // Add ROLE_USER as standard for authenticated users with no other role.
         if (newRoles.isEmpty()) {
             newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
@@ -106,9 +107,4 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         essence.setAuthorities(newRoles);
         return essence.createUserDetails();
     }
-
-    public void setCertUtil(CertificateUtil certUtil) {
-        this.certUtil = certUtil;
-    }
-    
 }
