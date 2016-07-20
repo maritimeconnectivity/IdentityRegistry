@@ -23,8 +23,6 @@ import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
-import net.maritimecloud.identityregistry.services.CertificateService;
-import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
@@ -44,26 +42,13 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-public class ServiceController extends BaseControllerWithCertificate {
-    private EntityService<Service> serviceService;
-    private OrganizationService organizationService;
-    private CertificateService certificateService;
-
+public class ServiceController extends EntityController<Service> {
     @Autowired
     private KeycloakAdminUtil keycloakAU;
 
     @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-    @Autowired
-    public void setServiceService(EntityService<Service> serviceService) {
-        this.serviceService = serviceService;
+    public void setEntityService(EntityService<Service> entityService) {
+        this.entityService = entityService;
     }
 
     /**
@@ -100,7 +85,7 @@ public class ServiceController extends BaseControllerWithCertificate {
                 input.setOidcClientSecret(null);
                 input.setOidcRedirectUri(null);
             }
-            Service newService = this.serviceService.save(input);
+            Service newService = this.entityService.save(input);
             return new ResponseEntity<Service>(newService, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -120,19 +105,7 @@ public class ServiceController extends BaseControllerWithCertificate {
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            Service service = this.serviceService.getById(serviceId);
-            if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                return new ResponseEntity<Service>(service, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.getEntity(request, orgShortName, serviceId);
     }
 
     /**
@@ -149,7 +122,7 @@ public class ServiceController extends BaseControllerWithCertificate {
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @RequestBody Service input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Service service = this.serviceService.getById(serviceId);
+            Service service = this.entityService.getById(serviceId);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
@@ -162,7 +135,7 @@ public class ServiceController extends BaseControllerWithCertificate {
                     String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
                     keycloakAU.updateClient(serviceClientId, service.getOidcAccessType(), service.getOidcRedirectUri());
                 }
-                this.serviceService.save(service);
+                this.entityService.save(service);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -185,7 +158,7 @@ public class ServiceController extends BaseControllerWithCertificate {
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            Service service = this.serviceService.getById(serviceId);
+            Service service = this.entityService.getById(serviceId);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
             }
@@ -197,7 +170,7 @@ public class ServiceController extends BaseControllerWithCertificate {
                     String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
                     keycloakAU.deleteClient(serviceClientId);
                 }
-                this.serviceService.delete(serviceId);
+                this.entityService.delete(serviceId);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -218,13 +191,7 @@ public class ServiceController extends BaseControllerWithCertificate {
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<List<Service>> getOrganizationServices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            List<Service> services = this.serviceService.listFromOrg(org.getId());
-            return new ResponseEntity<List<Service>>(services, HttpStatus.OK);
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.getOrganizationEntities(request, orgShortName);
     }
 
     /**
@@ -238,21 +205,8 @@ public class ServiceController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            Service service = this.serviceService.getById(serviceId);
-            if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                PemCertificate ret = this.issueCertificate(service, org, "service");
-                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+    public ResponseEntity<PemCertificate> newServiceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
+        return this.newEntityCert(request, orgShortName, serviceId, "service");
     }
 
     /**
@@ -266,25 +220,13 @@ public class ServiceController extends BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            Service service = this.serviceService.getById(serviceId);
-            if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                Certificate cert = this.certificateService.getCertificateById(certId);
-                Service certService = cert.getService();
-                if (certService != null && certService.getId().compareTo(service.getId()) == 0) {
-                    this.revokeCertificate(certId, input, request);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+        return this.revokeEntityCert(request, orgShortName, serviceId, certId, input);
+    }
+
+    @Override
+    protected Service getCertEntity(Certificate cert) {
+        return cert.getService();
     }
 
 }

@@ -14,8 +14,6 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import java.util.List;
-
 import net.maritimecloud.identityregistry.model.database.entities.User;
 
 public interface UserService extends EntityService<User>{

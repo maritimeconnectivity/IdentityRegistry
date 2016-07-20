@@ -49,7 +49,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
-public class UserController extends  BaseControllerWithCertificate {
+public class UserController extends EntityController<User> {
     // Data that identifies the User sync'er
     @Value("${net.maritimecloud.idreg.user-sync.c}")
     private String userSyncC;
@@ -60,22 +60,9 @@ public class UserController extends  BaseControllerWithCertificate {
     @Value("${net.maritimecloud.idreg.user-sync.cn}")
     private String userSyncCN;
 
-    private UserService userService;
-    private OrganizationService organizationService;
-    private CertificateService certificateService;
-
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
     @Autowired
     public void setUserService(UserService organizationService) {
-        this.userService = organizationService;
+        this.entityService = organizationService;
     }
 
     @Autowired
@@ -116,7 +103,7 @@ public class UserController extends  BaseControllerWithCertificate {
                 }
             }
             input.setIdOrganization(org.getId());
-            User newUser = this.userService.save(input);
+            User newUser = this.entityService.save(input);
             if (password != null) {
                 newUser.setPassword(password);
             }
@@ -139,20 +126,7 @@ public class UserController extends  BaseControllerWithCertificate {
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            User user = this.userService.getById(userId);
-            if (user == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-            }
-            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                return new ResponseEntity<User>(user, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
-                
+        return this.getEntity(request, orgShortName, userId);
     }
 
     /**
@@ -169,7 +143,7 @@ public class UserController extends  BaseControllerWithCertificate {
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @RequestBody User input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            User user = this.userService.getById(userId);
+            User user = this.entityService.getById(userId);
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
@@ -186,7 +160,7 @@ public class UserController extends  BaseControllerWithCertificate {
                 }
             }
             input.selectiveCopyTo(user);
-            this.userService.save(user);
+            this.entityService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -207,12 +181,12 @@ public class UserController extends  BaseControllerWithCertificate {
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            User user = this.userService.getById(userId);
+            User user = this.entityService.getById(userId);
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                this.userService.delete(userId);
+                this.entityService.delete(userId);
                 // Remove user from keycloak if created there.
                 if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
@@ -238,13 +212,7 @@ public class UserController extends  BaseControllerWithCertificate {
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<List<User>> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            List<User> users = this.userService.listFromOrg(org.getId());
-            return new ResponseEntity<List<User>>(users, HttpStatus.OK);
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.getOrganizationEntities(request, orgShortName);
     }
 
     /**
@@ -259,20 +227,7 @@ public class UserController extends  BaseControllerWithCertificate {
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<PemCertificate> newUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            User user = this.userService.getById(userId);
-            if (user == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-            }
-            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                PemCertificate ret = this.issueCertificate(user, org, "user");
-                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.newEntityCert(request, orgShortName, userId, "user");
     }
 
     /**
@@ -287,24 +242,7 @@ public class UserController extends  BaseControllerWithCertificate {
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
     public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long userId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
-        if (org != null) {
-            User user = this.userService.getById(userId);
-            if (user == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
-            }
-            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
-                Certificate cert = this.certificateService.getCertificateById(certId);
-                User certUser = cert.getUser();
-                if (certUser != null && certUser.getId().compareTo(user.getId()) == 0) {
-                    this.revokeCertificate(certId, input, request);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                }
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.revokeEntityCert(request, orgShortName, userId, certId, input);
     }
 
     /**
@@ -330,15 +268,15 @@ public class UserController extends  BaseControllerWithCertificate {
             if (userOrgId == null || userOrgId.isEmpty()) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            User oldUser = this.userService.getUserByUserOrgIdAndIdOrganization(userOrgId, org.getId());
+            User oldUser = ((UserService)this.entityService).getUserByUserOrgIdAndIdOrganization(userOrgId, org.getId());
             // If user does not exists, we create him
             if (oldUser == null) {
                 input.setIdOrganization(org.getId());
-                this.userService.save(input);
+                this.entityService.save(input);
             } else {
                 // Update the existing user and save
                 oldUser = input.selectiveCopyTo(oldUser);
-                this.userService.save(oldUser);
+                this.entityService.save(oldUser);
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
@@ -352,6 +290,11 @@ public class UserController extends  BaseControllerWithCertificate {
 
     protected String getEmail(CertificateModel certOwner) {
         return ((User)certOwner).getEmail();
+    }
+
+    @Override
+    protected User getCertEntity(Certificate cert) {
+        return cert.getUser();
     }
 }
 
