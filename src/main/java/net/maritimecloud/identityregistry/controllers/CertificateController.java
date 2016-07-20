@@ -28,14 +28,11 @@ import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.Req;
 import org.bouncycastle.cert.ocsp.RevokedStatus;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
+import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.services.CertificateService;
@@ -81,17 +78,40 @@ public class CertificateController {
     @RequestMapping(
             value = "/api/certificates/ocsp",
             method = RequestMethod.POST,
+            consumes = "application/ocsp-request",
             produces = "application/ocsp-response")
     @ResponseBody
     public ResponseEntity<?> postOCSP(HttpServletRequest request, @RequestBody byte[] input) {
-        OCSPReq ocspreq;
+        byte[] byteResponse = null;
         try {
-            ocspreq = new OCSPReq(input);
+            byteResponse = handleOCSP(input);
         } catch (IOException e1) {
             // TODO Auto-generated catch block
             e1.printStackTrace();
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
+        return new ResponseEntity<byte[]>(byteResponse, HttpStatus.OK);
+    }
+
+    @RequestMapping(
+            value = "/api/certificates/ocsp/{encodedOCSP}",
+            method = RequestMethod.GET,
+            produces = "application/ocsp-response")
+    @ResponseBody
+    public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String encodedOCSP) {
+        byte[] byteResponse = null;
+        try {
+            byteResponse = handleOCSP(Base64.decode(encodedOCSP));
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        return new ResponseEntity<byte[]>(byteResponse, HttpStatus.OK);
+    }
+
+    private byte[] handleOCSP(byte[] input) throws IOException {
+        OCSPReq ocspreq = new OCSPReq(input);
         if (ocspreq.isSigned()) {
             // TODO: verify signature - needed?
         }
@@ -113,14 +133,7 @@ public class CertificateController {
             }
         }
         OCSPResp response = certUtil.generateOCSPResponse(respBuilder);
-        byte[] byteResponse = null;
-        try {
-            byteResponse = response.getEncoded();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return new ResponseEntity<byte[]>(byteResponse, HttpStatus.OK);
+        byte[] byteResponse = response.getEncoded();
+        return byteResponse;
     }
-
 }

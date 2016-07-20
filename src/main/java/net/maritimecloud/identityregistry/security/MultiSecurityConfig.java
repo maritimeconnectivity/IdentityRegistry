@@ -97,6 +97,7 @@ public class MultiSecurityConfig  {
                     // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
@@ -174,6 +175,7 @@ public class MultiSecurityConfig  {
                     // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
+                    .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
