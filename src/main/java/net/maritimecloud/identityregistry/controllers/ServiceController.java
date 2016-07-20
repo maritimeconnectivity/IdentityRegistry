@@ -124,7 +124,7 @@ public class ServiceController extends EntityController<Service> {
         if (org != null) {
             Service service = this.entityService.getById(serviceId);
             if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(service);
@@ -160,7 +160,7 @@ public class ServiceController extends EntityController<Service> {
         if (org != null) {
             Service service = this.entityService.getById(serviceId);
             if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Delete the keycloak client for the service if needed

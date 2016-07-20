@@ -83,7 +83,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (org != null) {
             T entity = this.entityService.getById(entityId);
             if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 return new ResponseEntity<T>(entity, HttpStatus.OK);
@@ -105,7 +105,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (org != null) {
             T entity = this.entityService.getById(entityId);
             if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getId().compareTo(input.getId()) == 0 && entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(entity);
@@ -129,7 +129,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (org != null) {
             T entity = this.entityService.getById(entityId);
             if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 this.entityService.delete(entityId);
@@ -169,7 +169,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (org != null) {
             T entity = this.entityService.getById(entityId);
             if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 PemCertificate ret = this.issueCertificate(entity, org, type);
@@ -192,7 +192,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (org != null) {
             T entity = this.entityService.getById(entityId);
             if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.DEVICE_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 Certificate cert = this.certificateService.getCertificateById(certId);

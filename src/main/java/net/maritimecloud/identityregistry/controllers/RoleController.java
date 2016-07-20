@@ -100,7 +100,7 @@ public class RoleController {
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             if (role.getIdOrganization().compareTo(org.getId()) == 0) {
                 return new ResponseEntity<Role>(role, HttpStatus.OK);
@@ -128,7 +128,7 @@ public class RoleController {
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             if (role.getIdOrganization().compareTo(org.getId()) != 0) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
@@ -157,7 +157,7 @@ public class RoleController {
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             if (role.getIdOrganization().compareTo(org.getId()) == 0) {
                 this.roleService.delete(roleId);
