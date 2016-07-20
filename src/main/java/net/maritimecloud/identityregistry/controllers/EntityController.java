@@ -198,16 +198,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 Certificate cert = this.certificateService.getCertificateById(certId);
                 T certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().compareTo(entity.getId()) == 0) {
-                    if (!input.validateReason()) {
-                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
-                    }
-                    if (input.getRevokedAt() == null) {
-                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
-                    }
-                    cert.setRevokedAt(input.getRevokedAt());
-                    cert.setRevokeReason(input.getRevokationReason());
-                    cert.setRevoked(true);
-                    this.certificateService.saveCertificate(cert);
+                    this.revokeCertificate(cert.getId(), input, request);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }
