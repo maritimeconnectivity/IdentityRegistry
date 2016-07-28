@@ -51,15 +51,12 @@ public class Organization extends CertificateModel {
     @Column(name = "type")
     private String type;
 
-    @JsonIgnore
     @Column(name = "oidc_well_known_url")
     private String oidcWellKnownUrl;
 
-    @JsonIgnore
     @Column(name = "oidc_client_name")
     private String oidcClientName;
 
-    @JsonIgnore
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
@@ -137,10 +134,12 @@ public class Organization extends CertificateModel {
         return copyTo(new Organization());
     }
 
+    @Override
     public boolean hasSensitiveFields() {
         return true;
     }
 
+    @Override
     public void clearSensitiveFields() {
         this.setOidcClientSecret(null);
         this.setOidcClientName(null);
@@ -236,32 +235,26 @@ public class Organization extends CertificateModel {
         this.password = password;
     }
 
-    @JsonIgnore
     public String getOidcWellKnownUrl() {
         return oidcWellKnownUrl;
     }
 
-    @JsonProperty
     public void setOidcWellKnownUrl(String oidcWellKnownUrl) {
         this.oidcWellKnownUrl = oidcWellKnownUrl;
     }
 
-    @JsonIgnore
     public String getOidcClientName() {
         return oidcClientName;
     }
 
-    @JsonProperty
     public void setOidcClientName(String oidcClientName) {
         this.oidcClientName = oidcClientName;
     }
 
-    @JsonIgnore
     public String getOidcClientSecret() {
         return oidcClientSecret;
     }
 
-    @JsonProperty
     public void setOidcClientSecret(String oidcClientSecret) {
         this.oidcClientSecret = oidcClientSecret;
     }

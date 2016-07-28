@@ -15,25 +15,27 @@
 package net.maritimecloud.identityregistry.utils;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
 
 @Component("accessControlUtil")
 public class AccessControlUtil {
 
+    @Autowired
+    private HasRoleUtil hasRoleUtil;
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
@@ -57,8 +59,10 @@ public class AccessControlUtil {
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
                     ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgShortName.toLowerCase())) {
+                logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgShortName);
                 return true;
             }
+            logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgShortName);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
             logger.debug("Certificate authentication in process");
             // Certificate authentication
@@ -73,6 +77,7 @@ public class AccessControlUtil {
             }
             certOrg = certOrg.substring(0, idx);
             if (orgShortName.equals(certOrg)) {
+                logger.debug("Entity with O=" + certOrg + " is in " + orgShortName);
                 return true;
             }
             logger.debug("Entity with O=" + certOrg + " is not in " + orgShortName);
@@ -149,13 +154,37 @@ public class AccessControlUtil {
         logger.debug("Role lookup");
         String roles = "";
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        for (GrantedAuthority authority : auth.getAuthorities()) {
-            String role = authority.getAuthority();
-            if (!roles.isEmpty()) {
-                roles += ",";
+        if (auth != null) {
+            for (GrantedAuthority authority : auth.getAuthorities()) {
+                String role = authority.getAuthority();
+                if (!roles.isEmpty()) {
+                    roles += ",";
+                }
+                roles += role;
             }
-            roles += role;
         }
         return roles;
+    }
+
+    public boolean hasAnyRoles(List<String> roles) {
+        for (String lookingForRole : roles) {
+            if (lookingForRole != null && this.hasRole(lookingForRole)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    public boolean hasRole(String role) {
+        try {
+            // If the user does not have the role (or a role that is above it in the role hierarchy)
+            // an exception will be thrown by Spring Security.
+            hasRoleUtil.testRole(role);
+            logger.debug("user has role " + role);
+            return true;
+        } catch (Exception ade) {
+            logger.debug("user does not have role " + role);
+            return false;
+        }
     }
 }

@@ -16,28 +16,31 @@ package net.maritimecloud.identityregistry.services;
 
 import com.google.common.collect.Lists;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
-import org.springframework.data.repository.CrudRepository;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 
+import java.util.Arrays;
 import java.util.List;
 
 public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseService<T> {
+    private static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
+
+    protected final List<String> authorizedRoles =  Arrays.asList("ORG_ADMIN", "SITE_ADMIN");
+
+    @Autowired
+    protected AccessControlUtil accessControlUtil;
+
+    protected boolean isAuthorized() {
+        return accessControlUtil.hasAnyRoles(authorizedRoles);
+    }
 
     protected T filterResult(T data) {
         if (data != null && data.hasSensitiveFields()) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            boolean authorized = false;
-            for (GrantedAuthority authority : auth.getAuthorities()) {
-                String role = authority.getAuthority();
-                if ("ROLE_SITE_ADMIN".equals(role) || "ROLE_ORG_ADMIN".equals(role)) {
-                    authorized = true;
-                    break;
-                }
-            }
             // If not authorized to see all we clean the object for sensitive data.
-            if (!authorized) {
+            if (!isAuthorized()) {
+                logger.debug("Clearing Sensitive Fields");
                 data.clearSensitiveFields();
             }
         }
@@ -46,17 +49,9 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     protected List<T> filterResult(List<T> data) {
         if (data != null && !data.isEmpty() && data.get(0).hasSensitiveFields()) {
-            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-            boolean authorized = false;
-            for (GrantedAuthority authority : auth.getAuthorities()) {
-                String role = authority.getAuthority();
-                if ("ROLE_SITE_ADMIN".equals(role) || "ROLE_ORG_ADMIN".equals(role)) {
-                    authorized = true;
-                    break;
-                }
-            }
             // If not authorized to see all we clean the object for sensitive data.
-            if (!authorized) {
+            if (!isAuthorized()) {
+                logger.debug("Clearing Sensitive Fields");
                 for (T entity : data) {
                     entity.clearSensitiveFields();
                 }
@@ -71,7 +66,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     public T getById(Long id) {
         T ret = getRepository().findOne(id);
-        ret = this.filterResult(ret);
+        ret = filterResult(ret);
         return ret;
     }
 

@@ -55,9 +55,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
     private static final Logger logger = LoggerFactory.getLogger(OrganizationController.class);
 
     @Autowired
-    private CertificateUtil certUtil;
-
-    @Autowired
     public void setCertificateService(CertificateService certificateService) {
         this.certificateService = certificateService;
     }

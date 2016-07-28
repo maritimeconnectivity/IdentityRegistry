@@ -15,7 +15,6 @@
 package net.maritimecloud.identityregistry.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
-//import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.repositories.ServiceRepository;

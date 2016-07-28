@@ -18,4 +18,6 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 
 public interface OrganizationService extends BaseService<Organization>{
     Organization getOrganizationByShortName(String shortname);
+    /* Does not filter sensitive data from the result! */
+    Organization getOrganizationByShortNameNoFilter(String shortname);
 }

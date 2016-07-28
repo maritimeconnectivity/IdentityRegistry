@@ -28,5 +28,4 @@ public interface BaseService<T> {
     List<T> listAll();
 
     CrudRepository<T, Long> getRepository();
-
 }

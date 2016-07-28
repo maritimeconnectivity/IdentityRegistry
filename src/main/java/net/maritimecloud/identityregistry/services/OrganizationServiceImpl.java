@@ -14,14 +14,22 @@
  */
 package net.maritimecloud.identityregistry.services;
 
+import com.google.common.collect.Lists;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.repositories.OrganizationRepository;
 
+import java.util.List;
+
 @Service
 public class OrganizationServiceImpl extends BaseServiceImpl<Organization> implements OrganizationService {
+    private static final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
+
     private OrganizationRepository organizationRepository;
 
     @Autowired
@@ -31,11 +39,48 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     public Organization getOrganizationByShortName(String shortname) {
+        return this.filterResult(organizationRepository.findByShortName(shortname));
+    }
+
+    /* Does not filter sensitive data from the result! */
+    public Organization getOrganizationByShortNameNoFilter(String shortname) {
         return organizationRepository.findByShortName(shortname);
+    }
+
+    @Override
+    public List<Organization> listAll() {
+        return this.filterResult(Lists.newArrayList(getRepository().findAll()));
     }
 
     @Override
     public OrganizationRepository getRepository() {
         return this.organizationRepository;
+    }
+
+    @Override
+    protected Organization filterResult(Organization data) {
+        if (data != null && data.hasSensitiveFields()) {
+            // If not authorized to see all we clean the object for sensitive data.
+            if (!isAuthorized() || !AccessControlUtil.hasAccessToOrg(data.getShortName())) {
+                logger.debug("Clearing Sensitive Fields");
+                data.clearSensitiveFields();
+            }
+        }
+        return data;
+    }
+
+    @Override
+    protected List<Organization> filterResult(List<Organization> data) {
+        if (data != null && !data.isEmpty() && data.get(0).hasSensitiveFields() && !accessControlUtil.hasRole("SITE_ADMIN")) {
+            // If not authorized to see all we clean the object for sensitive data.
+            boolean isAuthorized = isAuthorized();
+            for (Organization org : data) {
+                if (!isAuthorized || !AccessControlUtil.hasAccessToOrg(org.getShortName())) {
+                    logger.debug("Clearing Sensitive Fields");
+                    org.clearSensitiveFields();
+                }
+            }
+        }
+        return data;
     }
 }
