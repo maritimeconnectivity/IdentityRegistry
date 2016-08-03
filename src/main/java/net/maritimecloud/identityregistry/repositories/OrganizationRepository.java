@@ -21,6 +21,8 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 public interface OrganizationRepository extends CrudRepository<Organization, Long> {
     List<Organization> findByName(String lastName);
 
-    Organization findByShortName(String shortname);
+    Organization findByShortNameAndApprovedTrue(String shortname);
+
+    List<Organization> findByApprovedFalse();
 
 }

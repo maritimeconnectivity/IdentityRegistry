@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
@@ -32,6 +33,7 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -119,77 +121,85 @@ public class KeycloakAdminUtil {
     /**
      * Get IDP info by parsing info from wellKnownUrl json
      * 
-     * @param wellKnownUrl The url to parse
+     * @param infoUrl The url to parse
+     * @param providerId The provider type, can be "keycloak-oidc","oidc" or "saml"
      * @return  The IDP
-     * @throws MalformedURLException
-     * @throws IOException 
+     * @throws IOException
      */
-    private IdentityProviderRepresentation getIdpFromWellKnownUrl(String wellKnownUrl) throws MalformedURLException, IOException {
-        // Get IDP info by parsing info from wellKnownUrl json
-        URL url;
-        try {
-            url = new URL(wellKnownUrl);
-        } catch (MalformedURLException e1) {
-            e1.printStackTrace();
-            throw e1;
+    private Map<String, String> getIdpSetupUrl(String infoUrl, String providerId) throws IOException {
+        // Get IDP info by using keycloaks builtin parser
+        Map<String, Object> importFromUrl = new HashMap<String, Object>();
+        importFromUrl.put("fromUrl", infoUrl);
+        importFromUrl.put("providerId", providerId); // providerId can be either "keycloak-oidc", "oidc" or "saml"
+        Map<String, String> importConf = getBrokerRealm().identityProviders().importFrom(importFromUrl);
+        // Do some checks to validate the returned
+        if (importConf == null || importConf.isEmpty()) {
+            throw new IOException("Could not find needed information using the provided URL!");
         }
-        HttpURLConnection request;
-        Map<String,Object> idpData;
-        try {
-            request = (HttpURLConnection) url.openConnection();
-            request.connect();
-            idpData = JsonSerialization.readValue((InputStream) request.getContent(), Map.class);
-        } catch (IOException e1) {
-            e1.printStackTrace();
-            throw e1;
-        }
-        // Extract the endpoints from the json
-        String authEndpoint = (String) idpData.get("authorization_endpoint");
-        String tokenEndpoint = (String) idpData.get("token_endpoint");
-        String userInfoEndpoint = (String) idpData.get("userinfo_endpoint");
-        String endSessionEndpoint = (String) idpData.get("end_session_endpoint");
-        String issuer = (String) idpData.get("issuer");
-        
-        // Insert data into IDP data structure
-        IdentityProviderRepresentation idp = new IdentityProviderRepresentation();
-        idp.setEnabled(true);
-        idp.setProviderId("keycloak-oidc"); // can be "keycloak-oidc","oidc" or "saml"
-        idp.setTrustEmail(false);
-        idp.setStoreToken(false);
-        idp.setAddReadTokenRoleOnCreate(false);
-        idp.setAuthenticateByDefault(false);
-        idp.setFirstBrokerLoginFlowAlias("Auto first broker login");
-        Map<String, String> IDPConf = new HashMap<String, String>();
-        IDPConf.put("userInfoUrl", userInfoEndpoint);
-        IDPConf.put("validateSignature", "true");
-        IDPConf.put("tokenUrl", tokenEndpoint);
-        IDPConf.put("authorizationUrl", authEndpoint);
-        IDPConf.put("logoutUrl", endSessionEndpoint);
-        IDPConf.put("issuer", issuer);
-        idp.setConfig(IDPConf);
-        return idp;
+        return importConf;
     }
-    
+
+    private Map<String, String> idpAttributes2Map(List<IdentityProviderAttribute> input) {
+        logger.debug("In idpAttributes2Map, number of attrs: " + input.size());
+        Map<String, String> ret = new HashMap<>();
+        for (IdentityProviderAttribute atr : input) {
+            ret.put(atr.getAttributeName(), atr.getAttributeValue());
+            logger.debug("idp attr name: " + atr.getAttributeName()+ ", value: " + atr.getAttributeValue());
+        }
+        return ret;
+    }
+
     /**
      * Creates or updates an IDP.
      * 
      * @param name          name of the IDP
-     * @param wellKnownUrl  the url where info on the IDP can be obtained
-     * @param clientId      the id used for the MC in the IDP
-     * @param clientSecret  the secret used for the MC in the IDP
-     * @throws IOException 
-     * @throws MalformedURLException 
+     * @param input         map containing data about the IDP
+     * @throws IOException
      */
-    public void createIdentityProvider(String name, String wellKnownUrl, String clientId, String clientSecret) throws MalformedURLException, IOException {
-        // Get IDP info by parsing info from wellKnownUrl json
-        IdentityProviderRepresentation idp = getIdpFromWellKnownUrl(wellKnownUrl);
+    public void createIdentityProvider(String name, List<IdentityProviderAttribute> input) throws IOException {
+        Map<String, String> idpAtrMap = idpAttributes2Map(input);
+        // Check for valid input
+        String providerType = idpAtrMap.get("providerType");
+        if (providerType == null || providerType.isEmpty()) {
+            throw new IllegalArgumentException("Missing providerType");
+        }
+        if (!"oidc".equals(providerType) && !"saml".equals(providerType)) {
+            throw new IllegalArgumentException("Illegal providerType, must be \"oidc\" or \"saml\"");
+        }
+        // Get data from URL if supplied
+        Map<String, String> importConf;
+        if (idpAtrMap.containsKey("importUrl")) {
+            importConf = getIdpSetupUrl(idpAtrMap.get("importUrl"), idpAtrMap.get("providerType"));
+        } else {
+            importConf = new HashMap<String, String>(idpAtrMap);
+            importConf.remove("providerType");
+        }
+        if ("oidc".equals(providerType)) {
+            // Check for valid input
+            String clientId = idpAtrMap.get("clientId");
+            String clientSecret = idpAtrMap.get("clientSecret");
+            if (clientId == null || clientId.isEmpty()) {
+                throw new IllegalArgumentException("Missing clientId");
+            }
+            if (clientSecret == null || clientSecret.isEmpty()) {
+                throw new IllegalArgumentException("Missing clientSecret");
+            }
+
+            importConf.put("clientId", clientId);
+            importConf.put("clientSecret", clientSecret);
+        }
         // Insert data into IDP data structure
+        IdentityProviderRepresentation idp = new IdentityProviderRepresentation();
         idp.setAlias(name);
-        Map<String, String> IDPConf = idp.getConfig();
-        IDPConf.put("clientId", clientId);
-        IDPConf.put("clientSecret", clientSecret);
-        idp.setConfig(IDPConf);
-        
+        idp.setEnabled(true);
+        idp.setProviderId(providerType); // can be "keycloak-oidc","oidc" or "saml"
+        idp.setTrustEmail(true);
+        idp.setStoreToken(false);
+        idp.setAddReadTokenRoleOnCreate(false);
+        idp.setAuthenticateByDefault(false);
+        idp.setFirstBrokerLoginFlowAlias("Auto first broker login");
+        idp.setConfig(importConf);
+
         // Check if the IDP already exists
         IdentityProviderResource oldIdpRes = getBrokerRealm().identityProviders().get(name);
         IdentityProviderRepresentation oldIdp = null;
@@ -200,7 +210,11 @@ public class KeycloakAdminUtil {
         if (oldIdp != null) {
             getBrokerRealm().identityProviders().get(name).update(idp);
         } else {
-            getBrokerRealm().identityProviders().create(idp);
+            Response ret = getBrokerRealm().identityProviders().create(idp);
+            logger.debug("Returned status from creating IDP: " + ret.getStatus());
+            if (ret.getStatus() != 201) {
+                throw new IOException("Could not create IDP");
+            }
         }
 
         IdentityProviderResource newIdpRes = getBrokerRealm().identityProviders().get(name);

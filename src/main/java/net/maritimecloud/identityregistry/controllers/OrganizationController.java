@@ -31,8 +31,10 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.ws.rs.InternalServerErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -91,6 +93,21 @@ public class OrganizationController extends BaseControllerWithCertificate {
     }
 
     /**
+     * Returns list of all unapproved organizations
+     *
+     * @return a reply...
+     */
+    @RequestMapping(
+            value = "/api/unapprovedorgs",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    @PreAuthorize("hasRole('SITE_ADMIN')")
+    public ResponseEntity<List<Organization>> getUnapprovedOrganization(HttpServletRequest request) {
+        List<Organization> orgs = this.organizationService.getUnapprovedOrganizations();
+        return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
+    }
+
+    /**
      * Approves the organization identified by the given ID
      * 
      * @return a reply...
@@ -114,12 +131,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
         }
         // Create the Identity Provider for the org
-        if (org.getOidcWellKnownUrl() != null && !org.getOidcWellKnownUrl().isEmpty()
-                && org.getOidcClientName() != null && !org.getOidcClientName().isEmpty()
-                && org.getOidcClientSecret() != null && !org.getOidcClientSecret().isEmpty()) {
+        if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
             keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
             try {
-                keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getOidcWellKnownUrl(), org.getOidcClientName(), org.getOidcClientSecret());
+                keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getIdentityProviderAttributes());
             } catch (MalformedURLException e) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
             } catch (IOException e) {
@@ -171,9 +186,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/orgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Iterable<Organization>> getOrganization(HttpServletRequest request) {
-        Iterable<Organization> orgs = this.organizationService.listAll();
-        return new ResponseEntity<Iterable<Organization>>(orgs, HttpStatus.OK);
+    public ResponseEntity<List<Organization>> getOrganization(HttpServletRequest request) {
+        List<Organization> orgs = this.organizationService.listAll();
+        return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
     }
 
     /**
@@ -185,7 +200,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @RequestMapping(
             value = "/api/org/{shortName}",
             method = RequestMethod.PUT)
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#shortName)")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String shortName,
             @RequestBody Organization input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
@@ -194,23 +209,25 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 throw new McBasicRestException(HttpStatus.BAD_GATEWAY, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
-            if (input.getOidcWellKnownUrl() != null && !input.getOidcWellKnownUrl().isEmpty()
-                    && input.getOidcClientName() != null && !input.getOidcClientName().isEmpty()
-                    && input.getOidcClientSecret() != null && !input.getOidcClientSecret().isEmpty()) {
+            if (input.getIdentityProviderAttributes() != null && !input.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                // If client ids are different we delete the old IDP in keycloak
-                if (org.getOidcClientName() != null && !input.getOidcClientName().equals(org.getOidcClientName())) {
+                // If the IDP setup is different we delete the old IDP in keycloak
+                if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()
+                        && !input.getIdentityProviderAttributes().containsAll(org.getIdentityProviderAttributes())) {
                     keycloakAU.deleteIdentityProvider(input.getShortName());
                 }
                 try {
-                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getOidcWellKnownUrl(), input.getOidcClientName(), input.getOidcClientSecret());
-                } catch (MalformedURLException e) {
+                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getIdentityProviderAttributes());
+                } catch (InternalServerErrorException e) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
                 }
+            } else if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
+                // Remove old IDP if new input doesn't contain IDP info
+                keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                keycloakAU.deleteIdentityProvider(input.getShortName());
             }
-            // TODO: Remove old IDP if new input doesn't contain IDP info
             input.selectiveCopyTo(org);
             this.organizationService.save(org);
             return new ResponseEntity<>(HttpStatus.OK);

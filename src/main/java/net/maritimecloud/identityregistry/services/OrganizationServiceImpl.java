@@ -39,12 +39,12 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     public Organization getOrganizationByShortName(String shortname) {
-        return this.filterResult(organizationRepository.findByShortName(shortname));
+        return this.filterResult(organizationRepository.findByShortNameAndApprovedTrue(shortname));
     }
 
     /* Does not filter sensitive data from the result! */
     public Organization getOrganizationByShortNameNoFilter(String shortname) {
-        return organizationRepository.findByShortName(shortname);
+        return organizationRepository.findByShortNameAndApprovedTrue(shortname);
     }
 
     @Override
@@ -82,5 +82,9 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
             }
         }
         return data;
+    }
+
+    public List<Organization> getUnapprovedOrganizations() {
+        return getRepository().findByApprovedFalse();
     }
 }

@@ -18,6 +18,17 @@ CREATE TABLE `organizations` (
   UNIQUE (`short_name`)
 );
 
+CREATE TABLE `identity_provider_attributes` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `id_organization` INT,
+  `attribute_name` VARCHAR(512),
+  `attribute_value` VARCHAR(2048),
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  PRIMARY KEY (`id`),
+  FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
+);
+
 CREATE TABLE `roles` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,

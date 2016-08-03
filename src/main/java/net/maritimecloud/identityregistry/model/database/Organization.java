@@ -51,15 +51,6 @@ public class Organization extends CertificateModel {
     @Column(name = "type")
     private String type;
 
-    @Column(name = "oidc_well_known_url")
-    private String oidcWellKnownUrl;
-
-    @Column(name = "oidc_client_name")
-    private String oidcClientName;
-
-    @Column(name = "oidc_client_secret")
-    private String oidcClientSecret;
-
     // Only used when a organization is first created to return a password.
     @Transient
     private String password;
@@ -76,6 +67,9 @@ public class Organization extends CertificateModel {
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
+    @OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
+    private List<IdentityProviderAttribute> identityProviderAttributes;
+
     public Organization() {
     }
 
@@ -90,18 +84,15 @@ public class Organization extends CertificateModel {
         org.setCountry(country);
         org.setLogo(logo);
         org.setType(type);
-        org.setOidcClientName(oidcClientName);
-        org.setOidcClientSecret(oidcClientSecret);
-        org.setOidcWellKnownUrl(oidcWellKnownUrl);
         org.setApproved(approved);
-        org.getCertificates().clear();
-        org.getCertificates().addAll(certificates);
+        org.setCertificates(certificates);
+        org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setChildIds();
         return org;
     }
 
     /** Copies this organization into the other.
-     * Only updates OIDC if non-null content is given, skips approved and shortname */
+     * Skips certificates, approved and shortname */
     public Organization selectiveCopyTo(Organization org) {
         Objects.requireNonNull(org);
         org.setName(name);
@@ -111,17 +102,20 @@ public class Organization extends CertificateModel {
         org.setCountry(country);
         org.setLogo(logo);
         org.setType(type);
-        if (oidcClientName != null) {
-            org.setOidcClientName(oidcClientName);
-        }
-        if (oidcClientSecret != null) {
-            org.setOidcClientSecret(oidcClientSecret);
-        }
-        if (oidcWellKnownUrl != null) {
-            org.setOidcWellKnownUrl(oidcWellKnownUrl);
-        }
+        org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setChildIds();
         return org;
+    }
+
+    @PostPersist
+    @PostUpdate
+    public void setChildIds() {
+        super.setChildIds();
+        if (this.identityProviderAttributes != null) {
+            for (IdentityProviderAttribute attr : this.identityProviderAttributes) {
+                attr.setOrganization(this);
+            }
+        }
     }
 
     public void assignToCert(Certificate cert){
@@ -141,9 +135,7 @@ public class Organization extends CertificateModel {
 
     @Override
     public void clearSensitiveFields() {
-        this.setOidcClientSecret(null);
-        this.setOidcClientName(null);
-        this.setOidcWellKnownUrl(null);
+        this.identityProviderAttributes.clear();
     }
 
     /******************************/
@@ -235,30 +227,6 @@ public class Organization extends CertificateModel {
         this.password = password;
     }
 
-    public String getOidcWellKnownUrl() {
-        return oidcWellKnownUrl;
-    }
-
-    public void setOidcWellKnownUrl(String oidcWellKnownUrl) {
-        this.oidcWellKnownUrl = oidcWellKnownUrl;
-    }
-
-    public String getOidcClientName() {
-        return oidcClientName;
-    }
-
-    public void setOidcClientName(String oidcClientName) {
-        this.oidcClientName = oidcClientName;
-    }
-
-    public String getOidcClientSecret() {
-        return oidcClientSecret;
-    }
-
-    public void setOidcClientSecret(String oidcClientSecret) {
-        this.oidcClientSecret = oidcClientSecret;
-    }
-
     public boolean getApproved() {
         return approved;
     }
@@ -272,7 +240,17 @@ public class Organization extends CertificateModel {
     }
 
     public void setCertificates(List<Certificate> certificates) {
-        this.certificates = certificates;
+        this.certificates.clear();
+        this.certificates.addAll(certificates);
+    }
+
+    public List<IdentityProviderAttribute> getIdentityProviderAttributes() {
+        return identityProviderAttributes;
+    }
+
+    public void setIdentityProviderAttributes(List<IdentityProviderAttribute> identityProviderAttributes) {
+        this.identityProviderAttributes.clear();
+        this.identityProviderAttributes.addAll(identityProviderAttributes);
     }
 
 }

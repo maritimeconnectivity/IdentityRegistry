@@ -51,8 +51,7 @@ public class Vessel extends NonHumanEntityModel {
     public Vessel copyTo(Vessel vessel) {
         vessel = (Vessel) super.copyTo(vessel);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.getAttributes().clear();
-        vessel.getAttributes().addAll(attributes);
+        vessel.setAttributes(attributes);
         vessel.getCertificates().clear();
         vessel.getCertificates().addAll(certificates);
         vessel.setChildIds();
@@ -64,8 +63,7 @@ public class Vessel extends NonHumanEntityModel {
     public Vessel selectiveCopyTo(Vessel vessel) {
         vessel = (Vessel) super.selectiveCopyTo(vessel);
         vessel.setVesselOrgId(vesselOrgId);
-        vessel.getAttributes().clear();
-        vessel.getAttributes().addAll(attributes);
+        vessel.setAttributes(attributes);
         vessel.setChildIds();
         return vessel;
     }
@@ -96,6 +94,10 @@ public class Vessel extends NonHumanEntityModel {
         this.vesselOrgId = vesselOrgId;
     }
 
+    public void setAttributes(List<VesselAttribute> attributes) {
+        this.attributes.clear();
+        this.attributes.addAll(attributes);
+    }
     public List<VesselAttribute> getAttributes() {
         return attributes;
     }

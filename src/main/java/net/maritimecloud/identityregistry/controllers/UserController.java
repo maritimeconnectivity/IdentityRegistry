@@ -25,8 +25,6 @@ import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.entities.User;
-import net.maritimecloud.identityregistry.services.CertificateService;
-import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.UserService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
@@ -93,7 +91,7 @@ public class UserController extends EntityController<User> {
             }
             String password = null;
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
-            if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+            if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                 password = PasswordUtil.generatePassword();
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
@@ -151,7 +149,7 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Update user in keycloak if created there.
-            if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+            if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.updateUser(input.getUserOrgId(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
@@ -188,7 +186,7 @@ public class UserController extends EntityController<User> {
             if (user.getIdOrganization().compareTo(org.getId()) == 0) {
                 this.entityService.delete(userId);
                 // Remove user from keycloak if created there.
-                if (org.getOidcClientName() == null || org.getOidcClientName().trim().isEmpty()) {
+                if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                     keycloakAU.deleteUser(user.getUserOrgId());
                 }

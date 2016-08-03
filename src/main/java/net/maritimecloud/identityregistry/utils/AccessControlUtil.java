@@ -42,6 +42,10 @@ public class AccessControlUtil {
     private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
 
     public static boolean hasAccessToOrg(String orgShortName) {
+        if (orgShortName == null || orgShortName.trim().isEmpty()) {
+            logger.debug("The orgShortName was empty!");
+            return false;
+        }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // First check if the user is a SITE_ADMIN, in which case he gets access.
         for (GrantedAuthority authority : auth.getAuthorities()) {
