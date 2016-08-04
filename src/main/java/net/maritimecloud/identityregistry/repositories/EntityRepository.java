@@ -12,12 +12,16 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.services;
+package net.maritimecloud.identityregistry.repositories;
+
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.NoRepositoryBean;
 
 import java.util.List;
 
-public interface EntityService<T> extends BaseService<T> {
-    List<T> listFromOrg(Long id);
+@NoRepositoryBean
+public interface EntityRepository<T> extends CrudRepository<T, Long> {
+    List<T> findByidOrganization(Long orgId);
 
-    void deleteByOrg(Long id);
+    void deleteByidOrganization(Long orgId);
 }

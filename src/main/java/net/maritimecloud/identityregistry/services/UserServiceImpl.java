@@ -23,26 +23,15 @@ import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.repositories.UserRepository;
 
 @Service
-public class UserServiceImpl extends BaseServiceImpl<User> implements UserService {
-
-    private UserRepository userRepository;
+public class UserServiceImpl extends EntityServiceImpl<User> implements UserService {
 
     @Autowired
     public void setUserRepository(UserRepository userRepository) {
-        this.userRepository = userRepository;
+        this.repository = userRepository;
     }
 
     @Override
     public User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId) {
-        return userRepository.findByUserOrgIdAndIdOrganization(userOrgId, orgId);
-    }
-
-    @Override
-    public List<User> listFromOrg(Long orgId) {
-        return userRepository.findByIdOrganization(orgId);
-    }
-
-    public UserRepository getRepository() {
-        return this.userRepository;
+        return ((UserRepository)repository).findByUserOrgIdAndIdOrganization(userOrgId, orgId);
     }
 }

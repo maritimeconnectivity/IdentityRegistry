@@ -14,12 +14,8 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import java.util.List;
-import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 
-public interface UserRepository extends CrudRepository<User, Long> {
+public interface UserRepository extends EntityRepository<User> {
     User findByUserOrgIdAndIdOrganization(String userOrgId, Long idOrganization);
-
-    List<User> findByIdOrganization(Long orgId);
 }

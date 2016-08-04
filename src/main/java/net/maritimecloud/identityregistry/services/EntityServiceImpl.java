@@ -14,10 +14,25 @@
  */
 package net.maritimecloud.identityregistry.services;
 
+import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.repositories.EntityRepository;
+
 import java.util.List;
 
-public interface EntityService<T> extends BaseService<T> {
-    List<T> listFromOrg(Long id);
+public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseServiceImpl<T> implements EntityService<T> {
 
-    void deleteByOrg(Long id);
+    protected EntityRepository<T> repository;
+
+    public List<T> listFromOrg(Long id) {
+        return this.getRepository().findByidOrganization(id);
+    }
+
+    public void deleteByOrg(Long id) {
+        this.deleteByOrg(id);
+    }
+
+    public EntityRepository<T> getRepository() {
+        return this.repository;
+    }
+
 }

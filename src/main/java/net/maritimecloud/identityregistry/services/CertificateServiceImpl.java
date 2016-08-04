@@ -46,7 +46,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public void deleteCertificate(Long id) {
-        CertificateRepository.delete(id);
+        throw new UnsupportedOperationException("Deletion of certificates is not supported, please revoke them");
     }
 
     @Override

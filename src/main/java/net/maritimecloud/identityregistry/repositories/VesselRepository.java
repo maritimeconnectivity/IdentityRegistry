@@ -15,11 +15,8 @@
 package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 
-public interface VesselRepository extends CrudRepository<Vessel, Long> {
+public interface VesselRepository extends EntityRepository<Vessel> {
     List<Vessel> findByName(String lastName);
-
-    List<Vessel> findByidOrganization(Long orgId);
 }

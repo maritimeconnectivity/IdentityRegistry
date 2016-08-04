@@ -22,24 +22,18 @@ import net.maritimecloud.identityregistry.repositories.ServiceRepository;
 import java.util.List;
 
 @org.springframework.stereotype.Service
-public class ServiceServiceImpl extends BaseServiceImpl<Service> implements EntityService<Service> {
-    private ServiceRepository serviceRepository;
+public class ServiceServiceImpl extends EntityServiceImpl<Service> implements EntityService<Service> {
 
     @Autowired
     public void setServiceRepository(ServiceRepository ServiceRepository) {
-        this.serviceRepository = ServiceRepository;
+        this.repository = ServiceRepository;
     }
 
     @Override
     public List<Service> listFromOrg(Long orgId) {
-        List<Service> ret = serviceRepository.findByidOrganization(orgId);
+        List<Service> ret = repository.findByidOrganization(orgId);
         ret = this.filterResult(ret);
         return ret;
-    }
-
-    @Override
-    public ServiceRepository getRepository() {
-        return this.serviceRepository;
     }
 }
 

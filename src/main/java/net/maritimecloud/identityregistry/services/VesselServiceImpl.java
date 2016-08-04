@@ -23,21 +23,10 @@ import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.repositories.VesselRepository;
 
 @Service
-public class VesselServiceImpl extends BaseServiceImpl<Vessel> implements EntityService<Vessel> {
-    private VesselRepository vesselRepository;
-
+public class VesselServiceImpl extends EntityServiceImpl<Vessel> implements EntityService<Vessel> {
     @Autowired
     public void setVesselRepository(VesselRepository VesselRepository) {
-        this.vesselRepository = VesselRepository;
+        this.repository = VesselRepository;
     }
 
-    @Override
-    public List<Vessel> listFromOrg(Long orgId) {
-        return vesselRepository.findByidOrganization(orgId);
-    }
-
-    @Override
-    public VesselRepository getRepository() {
-        return this.vesselRepository;
-    }
 }

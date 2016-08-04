@@ -19,7 +19,13 @@ import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.Role;
+import net.maritimecloud.identityregistry.model.database.entities.Device;
+import net.maritimecloud.identityregistry.model.database.entities.Service;
+import net.maritimecloud.identityregistry.model.database.entities.User;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.services.CertificateService;
+import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,6 +53,18 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
+    // These 4 services are used when deleting an organization
+    @Autowired
+    private EntityService<Device> deviceService;
+    @Autowired
+    private EntityService<Service> serviceService;
+    @Autowired
+    private EntityService<User> userService;
+    @Autowired
+    private EntityService<Vessel> vesselService;
+    @Autowired
+    private EntityService<Role> roleService;
+
     private OrganizationService organizationService;
 
     @Autowired
@@ -236,6 +254,35 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
     }
 
+    /**
+     * Deletes an Organization
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}",
+            method = RequestMethod.DELETE)
+    @PreAuthorize("hasRole('SITE_ADMIN')")
+    public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            //  TODO: we need to do some sync'ing with the Service Registry.
+            if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
+                keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                keycloakAU.deleteIdentityProvider(org.getShortName());
+            }
+            this.deviceService.deleteByOrg(org.getId());
+            this.serviceService.deleteByOrg(org.getId());
+            this.userService.deleteByOrg(org.getId());
+            this.vesselService.deleteByOrg(org.getId());
+            this.roleService.deleteByOrg(org.getId());
+            this.organizationService.delete(org.getId());
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
 
     /**
      * Returns new certificate for the user identified by the given ID

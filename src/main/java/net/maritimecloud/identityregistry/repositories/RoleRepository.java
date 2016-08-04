@@ -15,11 +15,8 @@
 package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.Role;
 
-public interface RoleRepository extends CrudRepository<Role, Long> {
-    List<Role> findByidOrganization(Long orgId);
-
+public interface RoleRepository extends EntityRepository<Role> {
     List<Role> findByIdOrganizationAndPermission(Long idOrganization, String permission);
 }

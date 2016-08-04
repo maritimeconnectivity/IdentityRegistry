@@ -14,9 +14,6 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import java.util.List;
-
-import com.google.common.collect.Lists;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,22 +21,10 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.repositories.DeviceRepository;
 
 @Service
-public class DeviceServiceImpl extends BaseServiceImpl<Device> implements EntityService<Device> {
-    private DeviceRepository deviceRepository;
-
+public class DeviceServiceImpl extends EntityServiceImpl<Device> implements EntityService<Device> {
     @Autowired
     public void setDeviceRepository(DeviceRepository deviceRepository) {
-        this.deviceRepository = deviceRepository;
-    }
-
-    @Override
-    public List<Device> listFromOrg(Long orgId) {
-        return deviceRepository.findByidOrganization(orgId);
-    }
-
-    @Override
-    public DeviceRepository getRepository() {
-        return this.deviceRepository;
+        this.repository = deviceRepository;
     }
 
 }
