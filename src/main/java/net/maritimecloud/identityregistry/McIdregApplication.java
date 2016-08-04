@@ -14,14 +14,21 @@
  */
 package net.maritimecloud.identityregistry;
 
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+
+import java.security.Security;
 
 
 @SpringBootApplication
 public class McIdregApplication {
 
     public static void main(String[] args) {
+        // Set awt to be headless to avoid issues when scaling images (logos)
+        System.setProperty("java.awt.headless", "true");
+        // Set Bouncy Castle as Provider, used for Certificates.
+        Security.addProvider(new BouncyCastleProvider());
         SpringApplication.run(McIdregApplication.class, args);
     }
 }

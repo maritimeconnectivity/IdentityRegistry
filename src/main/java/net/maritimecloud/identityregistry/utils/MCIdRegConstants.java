@@ -20,4 +20,5 @@ public class MCIdRegConstants {
     public static final String ERROR_UPDATING_KC_USER = "An error occured while trying to update the admin user of the Organization!";
     public static final String ENTITY_ORG_ID_MISSING = "The organizational id of the entity is missing!";
     public static final String WRONG_ENTITY_ORG_ID_FORMAT = "The organizational id of the entity must be in lowercase and prefixed with the lowercase organization shortname follow by a dot!";
+    public static final String INVALID_IMAGE = "Could not read the image format!";
 }

@@ -7,15 +7,21 @@ CREATE TABLE `organizations` (
   `country` VARCHAR(64),
   `type` VARCHAR(64),
   `url` VARCHAR(512),
-  `oidc_well_known_url` VARCHAR(512),
-  `oidc_client_name`VARCHAR(512),
-  `oidc_client_secret`VARCHAR(512),
-  `logo` BLOB,
+  `id_logo` INT,
   `approved` BOOLEAN,
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
-  UNIQUE (`short_name`)
+  UNIQUE (`short_name`),
+  FOREIGN KEY (`id_logo`) REFERENCES logos(`id`)
+);
+
+CREATE TABLE `logos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `image` MEDIUMBLOB,
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `identity_provider_attributes` (

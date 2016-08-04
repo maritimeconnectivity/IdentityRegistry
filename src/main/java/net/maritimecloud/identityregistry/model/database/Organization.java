@@ -56,18 +56,19 @@ public class Organization extends CertificateModel {
     private String password;
 
     @JsonIgnore
-    @Column(name = "logo")
-    private byte[] logo;
-
-    @JsonIgnore
     @Column(name = "approved")
     private boolean approved;
+
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL)
+    @JoinColumn(name="id_logo")
+    private Logo logo;
 
     @OneToMany(mappedBy = "organization")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
     private List<IdentityProviderAttribute> identityProviderAttributes;
 
     public Organization() {
@@ -92,7 +93,7 @@ public class Organization extends CertificateModel {
     }
 
     /** Copies this organization into the other.
-     * Skips certificates, approved and shortname */
+     * Skips certificates, approved, logo and shortname */
     public Organization selectiveCopyTo(Organization org) {
         Objects.requireNonNull(org);
         org.setName(name);
@@ -100,7 +101,6 @@ public class Organization extends CertificateModel {
         org.setUrl(url);
         org.setAddress(address);
         org.setCountry(country);
-        org.setLogo(logo);
         org.setType(type);
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setChildIds();
@@ -135,7 +135,7 @@ public class Organization extends CertificateModel {
 
     @Override
     public void clearSensitiveFields() {
-        this.identityProviderAttributes.clear();
+        this.identityProviderAttributes = null;
     }
 
     /******************************/
@@ -193,14 +193,6 @@ public class Organization extends CertificateModel {
         this.country = country;
     }
 
-    public byte[] getLogo() {
-        return logo;
-    }
-
-    public void setLogo(byte[] logo) {
-        this.logo = logo;
-    }
-
     public String getShortName() {
         return shortName;
     }
@@ -253,4 +245,11 @@ public class Organization extends CertificateModel {
         this.identityProviderAttributes.addAll(identityProviderAttributes);
     }
 
+    public Logo getLogo() {
+        return logo;
+    }
+
+    public void setLogo(Logo logo) {
+        this.logo = logo;
+    }
 }

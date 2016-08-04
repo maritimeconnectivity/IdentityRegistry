@@ -102,7 +102,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SITE_ADMIN')")
-    public ResponseEntity<List<Organization>> getUnapprovedOrganization(HttpServletRequest request) {
+    public ResponseEntity<List<Organization>> getUnapprovedOrganizations(HttpServletRequest request) {
         List<Organization> orgs = this.organizationService.getUnapprovedOrganizations();
         return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
     }

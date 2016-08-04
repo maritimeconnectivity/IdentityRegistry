@@ -14,8 +14,6 @@
  */
 package net.maritimecloud.identityregistry.security;
 
-import java.security.Security;
-
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -49,7 +47,6 @@ import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsSer
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 
 import org.springframework.boot.context.embedded.FilterRegistrationBean;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
@@ -194,9 +191,6 @@ public class MultiSecurityConfig extends GlobalMethodSecurityConfiguration {
 
         @Override
         protected void configure(HttpSecurity http) throws Exception {
-            // We should probably place this somewhere else...
-            Security.addProvider(new BouncyCastleProvider());
-
             http
                 .csrf().disable()
                 .authorizeRequests()
