@@ -56,10 +56,6 @@ public class User extends EntityModel {
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
-    // Only used when a user is first created to return a password.
-    @Transient
-    private String password;
-
     /** Copies this user into the other */
     public User copyTo(User user) {
         user = (User) super.copyTo(user);
@@ -125,16 +121,6 @@ public class User extends EntityModel {
 
     public List<Certificate> getCertificates() {
         return certificates;
-    }
-
-    // Only used when a user is first created to return a password.
-    public String getPassword() {
-        return password;
-    }
-
-    // Only used when a user is first created to return a password.
-    public void setPassword(String password) {
-        this.password = password;
     }
 
 }

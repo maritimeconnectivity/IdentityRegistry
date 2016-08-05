@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.utils.*;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -26,10 +27,6 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.services.UserService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
-import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
-import net.maritimecloud.identityregistry.utils.PasswordUtil;
 
 import java.io.IOException;
 import java.util.List;
@@ -65,6 +62,8 @@ public class UserController extends EntityController<User> {
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
+    @Autowired
+    private EmailUtil emailUtil;
 
     /**
      * Creates a new User
@@ -99,12 +98,10 @@ public class UserController extends EntityController<User> {
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
+                emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getUserOrgId(), password);
             }
             input.setIdOrganization(org.getId());
             User newUser = this.entityService.save(input);
-            if (password != null) {
-                newUser.setPassword(password);
-            }
             return new ResponseEntity<User>(newUser, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

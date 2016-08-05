@@ -51,10 +51,6 @@ public class Organization extends CertificateModel {
     @Column(name = "type")
     private String type;
 
-    // Only used when a organization is first created to return a password.
-    @Transient
-    private String password;
-
     @JsonIgnore
     @Column(name = "approved")
     private boolean approved;
@@ -207,16 +203,6 @@ public class Organization extends CertificateModel {
 
     public void setAddress(String address) {
         this.address = address;
-    }
-
-    // Only used when a organization is first created to return a password.
-    public String getPassword() {
-        return password;
-    }
-
-    // Only used when a organization is first created to return a password.
-    public void setPassword(String password) {
-        this.password = password;
     }
 
     public boolean getApproved() {

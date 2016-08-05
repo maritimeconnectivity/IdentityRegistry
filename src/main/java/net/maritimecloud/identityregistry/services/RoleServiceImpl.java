@@ -34,4 +34,3 @@ public class RoleServiceImpl extends EntityServiceImpl<Role> implements RoleServ
         return ((RoleRepository)repository).findByIdOrganizationAndPermission(idOrganization, permission);
     };
 }
-

@@ -65,6 +65,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Autowired
     private EntityService<Role> roleService;
 
+    @Autowired
+    private EmailUtil emailUtil;
+
     private OrganizationService organizationService;
 
     @Autowired
@@ -171,8 +174,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
         Organization approvedOrg =  this.organizationService.save(org);
-        // TODO: send email to organization with the happy news and the admin password
-        approvedOrg.setPassword(newPassword);
+        emailUtil.sendOrgCreatedEmail(org.getEmail(), org.getName(), org.getShortName(), newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
     }
 

@@ -69,6 +69,37 @@ net:
                 crl-url: https://localhost/x509/api/certificates/crl
                 ocsp-url: https://localhost/x509/api/certificates/ocsp
 
+            email:
+                from: no-reply@maritimecloud.net
+                created-org-subject: "%s created as organization in Maritime Cloud"
+                created-user-subject: A login for the Maritime Cloud has been created for you
+                portal-url: https://portal.maritimecloud.net
+                project-IDP-name: ProjectTestUsers
+                created-org-text: |
+                    Welcome to the Maritime Cloud!
+                    
+                    It is with great pleasure that we can welcome you and the rest of %1$s to the Maritime Cloud!
+                    
+                    To manage %1$s in the Maritime Cloud please go to %4$s, click login, and on the login page shown enter the credentials below.
+                    The administrator credentials for %1$s is: %2$s / %3$s
+                    Please keep the credentials save!
+                    
+                    Best regards,
+                    The Maritime Cloud
+                created-user-text: |
+                    Dear %1$s,
+                    
+                    Welcome to the Maritime Cloud!
+                    It is with great pleasure that we can welcome you to the Maritime Cloud!
+                    
+                    To log in using the Maritime Cloud go to a webpage that supports Maritime Cloud login (for example the Maritime Cloud Management Portal: %4$s), click the Maritime Cloud logo which will redirect you to a new page. Here you must click the on the button reading "%5$s". This will redirect you to a new page where you can log in using the credentials below.
+                    
+                    The login credentials for %1$s is: %2$s / %3$s
+                    Please keep the credentials save!
+                    
+                    Best regards,
+                    The Maritime Cloud
+
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
 
@@ -76,6 +107,19 @@ net:
 spring.datasource:
     test-on-borrow: true
     validation-query: SELECT 1
+
+# Email setup
+spring.mail:
+    default-encoding: UTF-8
+    host: localhost
+    port: 1025
+    #username: 
+    #password: 
+    # Additional JavaMail session properties.
+    #properties.*= 
+    protocol: smtp
+    # Test that the mail server is available on startup.
+    test-connection: false
 
 # Do not "leak" internal setup details in http X-Application-Context header
 management.add-application-context-header: false
