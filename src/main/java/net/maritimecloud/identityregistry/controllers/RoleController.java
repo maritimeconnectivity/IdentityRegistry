@@ -178,10 +178,10 @@ public class RoleController {
     @RequestMapping(
             value = "/api/org/{orgShortName}/role/myroles",
             method = RequestMethod.GET,
-            produces = "text/plain;charset=UTF-8")
+            produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<String> getMyRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        String roles = AccessControlUtil.getMyRoles();
+    public ResponseEntity<List<String>> getMyRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+        List<String> roles = AccessControlUtil.getMyRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 }

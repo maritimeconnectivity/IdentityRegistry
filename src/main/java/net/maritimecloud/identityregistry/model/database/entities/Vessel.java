@@ -24,6 +24,7 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 
 /**
@@ -37,12 +38,14 @@ public class Vessel extends NonHumanEntityModel {
     public Vessel() {
     }
 
+    @ApiModelProperty(value = "The unique id inside its organization", required = true)
     @Column(name = "vessel_org_id")
     private String vesselOrgId;
 
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
+    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "vessel", orphanRemoval=false)
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;

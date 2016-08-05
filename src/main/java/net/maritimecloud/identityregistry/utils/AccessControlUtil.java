@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -154,17 +155,13 @@ public class AccessControlUtil {
         return false;
     }
 
-    public static String getMyRoles() {
+    public static List<String> getMyRoles() {
         logger.debug("Role lookup");
-        String roles = "";
+        List<String> roles = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
             for (GrantedAuthority authority : auth.getAuthorities()) {
-                String role = authority.getAuthority();
-                if (!roles.isEmpty()) {
-                    roles += ",";
-                }
-                roles += role;
+                roles.add(authority.getAuthority());
             }
         }
         return roles;

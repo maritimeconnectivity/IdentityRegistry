@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
 import java.util.Objects;
@@ -29,24 +30,31 @@ import javax.persistence.*;
 @Table(name = "organizations")
 public class Organization extends CertificateModel {
 
+    @ApiModelProperty(value = "The name of the organization", required = true)
     @Column(name = "name")
     private String name;
 
+    @ApiModelProperty(value = "The unique shortname of the organization, Max 10 chars.", required = true)
     @Column(name = "short_name")
     private String shortName;
 
     @Column(name = "email")
+    @ApiModelProperty(required = true)
     private String email;
 
     @Column(name = "url")
+    @ApiModelProperty(required = true)
     private String url;
 
     @Column(name = "address")
+    @ApiModelProperty(required = true)
     private String address;
 
     @Column(name = "country")
+    @ApiModelProperty(required = true)
     private String country;
 
+    @JsonIgnore
     @Column(name = "type")
     private String type;
 
@@ -59,6 +67,7 @@ public class Organization extends CertificateModel {
     @JoinColumn(name="id_logo")
     private Logo logo;
 
+    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "organization")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;

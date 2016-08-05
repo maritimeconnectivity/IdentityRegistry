@@ -34,9 +34,11 @@ public class Role extends TimestampModel {
     public Role() {
     }
 
+    @ApiModelProperty(required = true, value = "The role that should be mapped to the permission", allowableValues = "ROLE_ORG_ADMIN, ROLE_USER")
     @Column(name = "role_name")
     private String roleName;
 
+    @ApiModelProperty(required = true, value = "The permission that should be mapped to the role")
     @Column(name = "permission")
     private String permission;
 

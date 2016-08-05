@@ -36,19 +36,23 @@ public class User extends EntityModel {
     public User() {
     }
 
-    @ApiModelProperty(required = true)
+    @ApiModelProperty(required = true, value = "Must be in the format ORG_SHORTNAME.USER_ID")
     @Column(name = "user_org_id")
     private String userOrgId;
 
+    @ApiModelProperty(required = true)
     @Column(name = "first_name")
     private String firstName;
 
+    @ApiModelProperty(required = true)
     @Column(name = "last_name")
     private String lastName;
 
+    @ApiModelProperty(required = true)
     @Column(name = "email")
     private String email;
 
+    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "user")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;

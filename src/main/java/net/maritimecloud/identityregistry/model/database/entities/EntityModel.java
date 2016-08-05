@@ -14,6 +14,8 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 
 import javax.persistence.Column;
@@ -22,12 +24,17 @@ import java.util.Objects;
 
 @MappedSuperclass
 public abstract class EntityModel extends CertificateModel {
+
+
+    @JsonIgnore
     @Column(name = "id_organization")
     private Long idOrganization;
 
+    @ApiModelProperty(value = "The Maritime Resource Name")
     @Column(name = "mrn")
     private String mrn;
 
+    @ApiModelProperty(value = "Permissions as assigned from the organization")
     @Column(name = "permissions")
     private String permissions;
 

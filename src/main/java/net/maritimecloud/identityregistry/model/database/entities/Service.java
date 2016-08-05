@@ -21,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 
 /**
@@ -34,21 +35,27 @@ public class Service extends NonHumanEntityModel {
     public Service() {
     }
 
+    @ApiModelProperty(value = "The unique id inside its organization", required = true)
     @Column(name = "service_org_id")
     private String serviceOrgId;
 
+    @ApiModelProperty(value = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
     @Column(name = "oidc_access_type")
     private String oidcAccessType;
 
+    @ApiModelProperty(value = "The client id of the service in Maritime Cloud. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_id")
     private String oidcClientId;
 
+    @ApiModelProperty(value = "The client secret of the service in Maritime Cloud. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
+    @ApiModelProperty(value = "The OpenId Connect redirect uri of service.")
     @Column(name = "oidc_redirect_uri")
     private String oidcRedirectUri;
 
+    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
