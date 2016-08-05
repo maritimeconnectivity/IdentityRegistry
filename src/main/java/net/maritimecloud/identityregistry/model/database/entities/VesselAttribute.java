@@ -15,6 +15,7 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
 import java.util.Date;
@@ -36,9 +37,11 @@ public class VesselAttribute extends TimestampModel {
     public VesselAttribute() {
     }
 
+    @ApiModelProperty(value = "Vessel attribute name", required = true)
     @Column(name = "attribute_name")
     private String attributeName;
 
+    @ApiModelProperty(value = "Vessel attribute value", required = true)
     @Column(name = "attribute_value")
     private String attributeValue;
 

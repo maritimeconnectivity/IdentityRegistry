@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.model.database;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import io.swagger.annotations.ApiModelProperty;
 
 import javax.persistence.*;
 
@@ -23,9 +24,17 @@ import javax.persistence.*;
 @Table(name = "identity_provider_attributes")
 public class IdentityProviderAttribute extends TimestampModel {
 
+    @ApiModelProperty(
+            required = true,
+            value = "OpenId Connect or SAML2 attribute name",
+            allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
+                    "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, validateSignature, " +
+                    "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret"
+    )
     @Column(name = "attribute_name")
     private String attributeName;
 
+    @ApiModelProperty(value = "OpenId Connect or SAML2 attribute value", required = true)
     @Column(name = "attribute_value")
     private String attributeValue;
 
