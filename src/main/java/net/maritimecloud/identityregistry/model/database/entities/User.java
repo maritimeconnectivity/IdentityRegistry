@@ -14,8 +14,6 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import io.swagger.annotations.ApiModelProperty;
 
 import java.util.List;
@@ -24,7 +22,6 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Transient;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
 

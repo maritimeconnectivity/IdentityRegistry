@@ -108,8 +108,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
         input.setShortName(input.getShortName().trim().toUpperCase());
         input.setApproved(false);
         Organization newOrg = this.organizationService.save(input);
-        // TODO: Send email to organization saying that the application is awaiting approval
-        // TODO: Send email to admin saying that an Organization is awaiting approval
+        // Send email to organization saying that the application is awaiting approval
+        emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
+        // Send email to admin saying that an Organization is awaiting approval
+        emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName());
         return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
     }
 
@@ -174,7 +176,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
         Organization approvedOrg =  this.organizationService.save(org);
-        emailUtil.sendOrgCreatedEmail(org.getEmail(), org.getName(), org.getShortName(), newPassword);
+        // Send email to the organization that it has been approved
+        emailUtil.sendOrgApprovedEmail(org.getEmail(), org.getName(), org.getShortName(), newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
     }
 

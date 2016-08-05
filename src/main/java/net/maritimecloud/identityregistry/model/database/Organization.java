@@ -15,7 +15,6 @@
 package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 import java.util.List;
 import java.util.Objects;

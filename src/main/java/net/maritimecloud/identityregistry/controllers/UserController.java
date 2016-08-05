@@ -98,6 +98,7 @@ public class UserController extends EntityController<User> {
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
+                // Send email to user with credentials
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getUserOrgId(), password);
             }
             input.setIdOrganization(org.getId());

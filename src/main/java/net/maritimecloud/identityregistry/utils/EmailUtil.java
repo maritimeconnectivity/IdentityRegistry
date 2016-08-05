@@ -25,31 +25,70 @@ import org.springframework.stereotype.Component;
 public class EmailUtil {
     @Value("${net.maritimecloud.idreg.email.portal-url}")
     private String portalUrl;
+
     @Value("${net.maritimecloud.idreg.email.project-IDP-name}")
     private String projectIDPName;
+
     @Value("${net.maritimecloud.idreg.email.from}")
     private String from;
-    @Value("${net.maritimecloud.idreg.email.created-org-subject}")
-    private String createdOrgSubject;
-    @Value("${net.maritimecloud.idreg.email.created-org-text}")
-    private String createdOrgText;
+
+    @Value("${net.maritimecloud.idreg.email.admin-email}")
+    private String adminEmail;
+
+    @Value("${net.maritimecloud.idreg.email.org-awaiting-approval-subject}")
+    private String orgAwaitingApprovalSubject;
+
+    @Value("${net.maritimecloud.idreg.email.org-awaiting-approval-text}")
+    private String orgAwaitingApprovalText;
+
+    @Value("${net.maritimecloud.idreg.email.admin-org-awaiting-approval-text}")
+    private String adminOrgAwaitingApprovalText;
+
+    @Value("${net.maritimecloud.idreg.email.approved-org-subject}")
+    private String approvedOrgSubject;
+
+    @Value("${net.maritimecloud.idreg.email.approved-org-text}")
+    private String approvedOrgText;
+
     @Value("${net.maritimecloud.idreg.email.created-user-subject}")
     private String createdUserSubject;
+
     @Value("${net.maritimecloud.idreg.email.created-user-text}")
     private String createdUserText;
 
     @Autowired
     private MailSender mailSender;
 
-    public void sendOrgCreatedEmail(String sendTo, String orgName, String adminUser, String adminPassword) throws MailException {
+    public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) throws MailException {
         if (sendTo == null || sendTo.trim().isEmpty()) {
             throw new IllegalArgumentException("No email address!");
         }
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(sendTo);
         msg.setFrom(from);
-        msg.setSubject(String.format(createdOrgSubject, orgName));
-        msg.setText(String.format(createdOrgText, orgName, adminUser, adminPassword, portalUrl));
+        msg.setSubject(String.format(orgAwaitingApprovalSubject, orgName));
+        msg.setText(String.format(orgAwaitingApprovalText, orgName));
+        this.mailSender.send(msg);
+    }
+
+    public void sendAdminOrgAwaitingApprovalEmail(String orgName) throws MailException {
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(adminEmail);
+        msg.setFrom(from);
+        msg.setSubject(String.format(orgAwaitingApprovalSubject, orgName));
+        msg.setText(String.format(adminOrgAwaitingApprovalText, orgName));
+        this.mailSender.send(msg);
+    }
+
+    public void sendOrgApprovedEmail(String sendTo, String orgName, String adminUser, String adminPassword) throws MailException {
+        if (sendTo == null || sendTo.trim().isEmpty()) {
+            throw new IllegalArgumentException("No email address!");
+        }
+        SimpleMailMessage msg = new SimpleMailMessage();
+        msg.setTo(sendTo);
+        msg.setFrom(from);
+        msg.setSubject(String.format(approvedOrgSubject, orgName));
+        msg.setText(String.format(approvedOrgText, orgName, adminUser, adminPassword, portalUrl));
         this.mailSender.send(msg);
     }
 

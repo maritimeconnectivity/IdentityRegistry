@@ -71,11 +71,27 @@ net:
 
             email:
                 from: no-reply@maritimecloud.net
-                created-org-subject: "%s created as organization in Maritime Cloud"
+                admin-email: admin@maritimecloud.net
+                org-awaiting-approval-subject: "%s is awaiting approval for being added to the Maritime Cloud"
+                approved-org-subject: "%s created as organization in Maritime Cloud"
                 created-user-subject: A login for the Maritime Cloud has been created for you
                 portal-url: https://portal.maritimecloud.net
                 project-IDP-name: ProjectTestUsers
-                created-org-text: |
+                org-awaiting-approval-text: |
+                    Thank you for applying for %1$s to be added to the Maritime Cloud!
+                    
+                    The information you have provided will now be manually evaluated and you might get contacted if more information is needed.
+                    
+                    Best regards,
+                    The Maritime Cloud
+                admin-org-awaiting-approval-text: |
+                    Dear Maritime Cloud Administrator,
+                    
+                    %1$s has applied for membership in the Maritime Cloud. Please review the application as soon as possible!
+                    
+                    Best regards,
+                    The Maritime Cloud
+                approved-org-text: |
                     Welcome to the Maritime Cloud!
                     
                     It is with great pleasure that we can welcome you and the rest of %1$s to the Maritime Cloud!
