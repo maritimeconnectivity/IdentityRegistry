@@ -281,23 +281,6 @@ public class KeycloakAdminUtil {
         // Delete IDP
         getBrokerRealm().identityProviders().get(alias).remove();
     }
-    
-    private void getIDPs2() {
-        IdentityProvidersResource idps2 =  getBrokerRealm().identityProviders();
-        try {
-            IdentityProviderRepresentation idp2 = idps2.get("toidp-asdfgh").toRepresentation();
-            logger.debug(idp2.getAlias());
-        } catch(NotFoundException nfe) {
-        }
-        
-        List<IdentityProviderRepresentation> idps = idps2.findAll();
-        for (IdentityProviderRepresentation idp : idps) {
-            logger.debug(idp.getProviderId());
-        }
-        
-        logger.debug(keycloakBrokerAdminUser + ", "  + keycloakBrokerAdminPassword + ", " + keycloakBrokerAdminClient);
-    }
-
 
     /**
      * Creates a user in keycloak.
