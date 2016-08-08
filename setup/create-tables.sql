@@ -1,3 +1,11 @@
+CREATE TABLE `logos` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `image` MEDIUMBLOB,
+  `created_at` DATETIME,
+  `updated_at` DATETIME,
+  PRIMARY KEY (`id`)
+);
+
 CREATE TABLE `organizations` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255),
@@ -14,14 +22,6 @@ CREATE TABLE `organizations` (
   PRIMARY KEY (`id`),
   UNIQUE (`short_name`),
   FOREIGN KEY (`id_logo`) REFERENCES logos(`id`)
-);
-
-CREATE TABLE `logos` (
-  `id` INT NOT NULL AUTO_INCREMENT,
-  `image` MEDIUMBLOB,
-  `created_at` DATETIME,
-  `updated_at` DATETIME,
-  PRIMARY KEY (`id`)
 );
 
 CREATE TABLE `identity_provider_attributes` (
@@ -138,6 +138,6 @@ CREATE TABLE `certificates` (
   FOREIGN KEY (`id_vessel`) REFERENCES vessels(`id`),
   FOREIGN KEY (`id_user`) REFERENCES users(`id`),
   FOREIGN KEY (`id_device`) REFERENCES devices(`id`),
-  FOREIGN KEY (`id_service`) REFERENCES services(`id`)
+  FOREIGN KEY (`id_service`) REFERENCES services(`id`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );

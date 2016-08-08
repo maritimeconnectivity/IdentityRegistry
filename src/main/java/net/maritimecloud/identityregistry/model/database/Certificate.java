@@ -15,8 +15,7 @@
 package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import net.maritimecloud.identityregistry.model.database.Organization;
-import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
@@ -41,6 +40,7 @@ public class Certificate extends TimestampModel {
     public Certificate() {
     }
 
+    @ApiModelProperty(value = "The certificate on PEM format")
     @Column(name = "certificate", columnDefinition = "MEDIUMTEXT")
     private String certificate;
 

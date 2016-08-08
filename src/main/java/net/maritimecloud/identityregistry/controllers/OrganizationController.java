@@ -121,7 +121,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/unapprovedorgs",
+            value = "/api/org/unapprovedorgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SITE_ADMIN')")
