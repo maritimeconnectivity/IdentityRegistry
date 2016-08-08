@@ -90,8 +90,10 @@ public class Organization extends CertificateModel {
         org.setLogo(logo);
         org.setType(type);
         org.setApproved(approved);
-        org.setCertificates(certificates);
-        org.setIdentityProviderAttributes(identityProviderAttributes);
+        this.certificates.clear();
+        this.certificates.addAll(certificates);
+        this.identityProviderAttributes.clear();
+        this.identityProviderAttributes.addAll(identityProviderAttributes);
         org.setChildIds();
         return org;
     }
@@ -106,7 +108,8 @@ public class Organization extends CertificateModel {
         org.setAddress(address);
         org.setCountry(country);
         org.setType(type);
-        org.setIdentityProviderAttributes(identityProviderAttributes);
+        this.identityProviderAttributes.clear();
+        this.identityProviderAttributes.addAll(identityProviderAttributes);
         org.setChildIds();
         return org;
     }
@@ -225,18 +228,8 @@ public class Organization extends CertificateModel {
         return certificates;
     }
 
-    public void setCertificates(List<Certificate> certificates) {
-        this.certificates.clear();
-        this.certificates.addAll(certificates);
-    }
-
     public List<IdentityProviderAttribute> getIdentityProviderAttributes() {
         return identityProviderAttributes;
-    }
-
-    public void setIdentityProviderAttributes(List<IdentityProviderAttribute> identityProviderAttributes) {
-        this.identityProviderAttributes.clear();
-        this.identityProviderAttributes.addAll(identityProviderAttributes);
     }
 
     public Logo getLogo() {
