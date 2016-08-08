@@ -271,6 +271,14 @@ public class KeycloakAdminUtil {
      * @param alias  Alias of the IDP to delete.
      */
     public void deleteIdentityProvider(String alias) {
+        // First delete any users associated with the IDP
+        List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ alias + ".", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
+        for (UserRepresentation user : users) {
+            if (user.getUsername().startsWith(alias + ".")) {
+                getBrokerRealm().users().get(user.getId()).remove();
+            }
+        }
+        // Delete IDP
         getBrokerRealm().identityProviders().get(alias).remove();
     }
     

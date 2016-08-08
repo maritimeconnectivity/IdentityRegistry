@@ -171,11 +171,17 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
         try {
-            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), "MCADMIN,MCUSER", true, KeycloakAdminUtil.ADMIN_USER);
+            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), "MCADMIN", true, KeycloakAdminUtil.ADMIN_USER);
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
         Organization approvedOrg =  this.organizationService.save(org);
+        // Add a MCADMIN role mapper to actually give the admin user admin rights.
+        Role adminRole = new Role();
+        adminRole.setIdOrganization(approvedOrg.getId());
+        adminRole.setPermission("MCADMIN");
+        adminRole.setRoleName("ROLE_ORG_ADMIN");
+        roleService.save(adminRole);
         // Send email to the organization that it has been approved
         emailUtil.sendOrgApprovedEmail(org.getEmail(), org.getName(), org.getShortName(), newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
@@ -275,7 +281,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             //  TODO: we need to do some sync'ing with the Service Registry.
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(org.getShortName());
+                keycloakAU.deleteIdentityProvider(org.getShortName().toLowerCase());
             }
             this.deviceService.deleteByOrg(org.getId());
             this.serviceService.deleteByOrg(org.getId());
