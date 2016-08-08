@@ -3,7 +3,7 @@
    "name":"POUL LØWENØRN",
    "attributes":[
       {
-         "attributeName":"IMO number",
+         "attributeName":"IMO-number",
          "attributeValue":"9250969"
       },
       {
@@ -11,7 +11,7 @@
          "attributeValue":"OZZX"
       },
       {
-         "attributeName":"Port Of Register",
+         "attributeName":"Port-Of-Register",
          "attributeValue":"KØBENHAVN"
       }
    ]

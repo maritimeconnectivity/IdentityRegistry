@@ -18,6 +18,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
 
+import java.util.Arrays;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -37,7 +38,7 @@ public class VesselAttribute extends TimestampModel {
     public VesselAttribute() {
     }
 
-    @ApiModelProperty(value = "Vessel attribute name", required = true)
+    @ApiModelProperty(value = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
     @Column(name = "attribute_name")
     private String attributeName;
 
@@ -71,6 +72,10 @@ public class VesselAttribute extends TimestampModel {
     }
 
     public void setAttributeName(String attributeName) {
+        attributeName = attributeName.toLowerCase();
+        if (!Arrays.asList("imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register").contains(attributeName)) {
+            throw new IllegalArgumentException("Attribute name is invalid!");
+        }
         this.attributeName = attributeName;
     }
 

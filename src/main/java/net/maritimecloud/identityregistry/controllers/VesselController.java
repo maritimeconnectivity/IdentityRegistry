@@ -170,14 +170,20 @@ public class VesselController extends EntityController<Vessel> {
                 case "callsign":
                     attrs.put(CertificateUtil.MC_OID_CALLSIGN, attr.getAttributeValue());
                     break;
-                case "imo number":
+                case "imo-number":
                     attrs.put(CertificateUtil.MC_OID_IMO_NUMBER, attr.getAttributeValue());
                     break;
-                case "mmsi number":
+                case "mmsi-number":
                     attrs.put(CertificateUtil.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
                     break;
                 case "flagstate":
                     attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
+                    break;
+                case "ais-class":
+                    attrs.put(CertificateUtil.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
+                    break;
+                case "port-of-register":
+                    attrs.put(CertificateUtil.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
                     break;
                 default:
                     logger.debug("Unexpected attribute value: " + attrName);

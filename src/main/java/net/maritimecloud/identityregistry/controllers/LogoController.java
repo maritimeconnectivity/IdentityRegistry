@@ -64,7 +64,7 @@ public class LogoController {
                 e.printStackTrace();
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -115,7 +115,7 @@ public class LogoController {
                 e.printStackTrace();
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
-            return new ResponseEntity<>(HttpStatus.ACCEPTED);
+            return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

@@ -3,7 +3,7 @@
    "name":"JENS SØRENSEN",
    "attributes":[
       {
-         "attributeName":"IMO number",
+         "attributeName":"IMO-number",
          "attributeValue":"9080950"
       },
       {
@@ -13,10 +13,6 @@
       {
          "attributeName":"Flagstate",
          "attributeValue":"Denmark"
-      },
-      {
-         "attributeName":"mrn",
-         "attributeValue":"urn:mrn:imo:vessel:9080950"
       }
    ]
 }
