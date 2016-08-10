@@ -67,12 +67,3 @@ public class ServiceValidatorTests {
         assertTrue(violations.size() == 2);
     }
 }
-
-/*
-        java.util.Iterator<javax.validation.ConstraintViolation<net.maritimecloud.identityregistry.model.database.entities.Service>> it = violations.iterator();
-        while (it.hasNext()) {
-            javax.validation.ConstraintViolation<net.maritimecloud.identityregistry.model.database.entities.Service> violation  =it.next();
-            System.out.println(violation.getMessage());
-        }
-
- */

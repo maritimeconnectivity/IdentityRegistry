@@ -46,7 +46,7 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
 import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
