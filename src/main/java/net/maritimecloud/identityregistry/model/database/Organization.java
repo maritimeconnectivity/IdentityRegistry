@@ -16,11 +16,16 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
 
 import java.util.List;
 import java.util.Objects;
 
 import javax.persistence.*;
+import javax.validation.Valid;
 
 /**
  * Model object representing an organization
@@ -32,25 +37,32 @@ public class Organization extends CertificateModel {
 
     @ApiModelProperty(value = "The name of the organization", required = true)
     @Column(name = "name")
+    @NotBlank
     private String name;
 
     @ApiModelProperty(value = "The unique shortname of the organization, Max 10 chars.", required = true)
+    @Length(min=3, max=10)
     @Column(name = "short_name")
     private String shortName;
 
     @Column(name = "email")
+    @Email
     @ApiModelProperty(required = true)
     private String email;
 
     @Column(name = "url")
     @ApiModelProperty(required = true)
+    @NotBlank
+    @URL
     private String url;
 
     @Column(name = "address")
+    @NotBlank
     @ApiModelProperty(required = true)
     private String address;
 
     @Column(name = "country")
+    @NotBlank
     @ApiModelProperty(required = true)
     private String country;
 
@@ -72,6 +84,7 @@ public class Organization extends CertificateModel {
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
     private List<Certificate> certificates;
 
+    @Valid
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
     private List<IdentityProviderAttribute> identityProviderAttributes;
 
@@ -230,6 +243,10 @@ public class Organization extends CertificateModel {
 
     public List<IdentityProviderAttribute> getIdentityProviderAttributes() {
         return identityProviderAttributes;
+    }
+
+    public void setIdentityProviderAttributes(List<IdentityProviderAttribute> identityProviderAttributes) {
+        this.identityProviderAttributes = identityProviderAttributes;
     }
 
     public Logo getLogo() {

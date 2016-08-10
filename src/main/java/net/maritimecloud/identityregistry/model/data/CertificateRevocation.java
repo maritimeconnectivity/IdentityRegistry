@@ -16,6 +16,8 @@ package net.maritimecloud.identityregistry.model.data;
 
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
+import org.hibernate.validator.constraints.NotBlank;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,12 +26,17 @@ import java.util.Date;
 public class CertificateRevocation implements JsonSerializable {
 
     @ApiModelProperty(value = "The date the certificate revocation should be activated.", required = true)
+    @NotBlank
     private Date revokedAt;
 
     @ApiModelProperty(
             required = true,
             value = "The reason the certificates has been revoked",
-            allowableValues ="unspecified, keycompromise, cacompromise, affiliationchanged, superseded, cessationofoperation, certificatehold, removefromcrl, privilegewithdrawn, aacompromise"
+            allowableValues = "unspecified, keycompromise, cacompromise, affiliationchanged, superseded, cessationofoperation, certificatehold, removefromcrl, privilegewithdrawn, aacompromise"
+    )
+    @InPredefinedList(
+            acceptedValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",
+                    "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
     )
     private String revokationReason;
 

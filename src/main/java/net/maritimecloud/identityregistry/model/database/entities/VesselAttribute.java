@@ -72,9 +72,8 @@ public class VesselAttribute extends TimestampModel {
     }
 
     public void setAttributeName(String attributeName) {
-        attributeName = attributeName.toLowerCase();
-        if (!Arrays.asList("imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register").contains(attributeName)) {
-            throw new IllegalArgumentException("Attribute name is invalid!");
+        if (attributeName != null) {
+            attributeName = attributeName.toLowerCase();
         }
         this.attributeName = attributeName;
     }

@@ -17,6 +17,8 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
 
@@ -32,9 +34,16 @@ public class IdentityProviderAttribute extends TimestampModel {
                     "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret"
     )
     @Column(name = "attribute_name")
+    @NotBlank
+    @InPredefinedList(
+            acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
+                "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl", "validateSignature",
+                "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret"}
+    )
     private String attributeName;
 
     @ApiModelProperty(value = "OpenId Connect or SAML2 attribute value", required = true)
+    @NotBlank
     @Column(name = "attribute_value")
     private String attributeValue;
 

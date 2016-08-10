@@ -22,8 +22,11 @@ import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.Pattern;
 
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Model object representing an user
@@ -37,18 +40,24 @@ public class User extends EntityModel {
     }
 
     @ApiModelProperty(required = true, value = "Must be in the format ORG_SHORTNAME.USER_ID")
+    @NotBlank
+    @Pattern(regexp = "\\w+\\..+", message = "illegal username format")
     @Column(name = "user_org_id")
     private String userOrgId;
 
     @ApiModelProperty(required = true)
+    @NotBlank
     @Column(name = "first_name")
     private String firstName;
 
     @ApiModelProperty(required = true)
+    @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
     @ApiModelProperty(required = true)
+    @NotBlank
+    @Email
     @Column(name = "email")
     private String email;
 

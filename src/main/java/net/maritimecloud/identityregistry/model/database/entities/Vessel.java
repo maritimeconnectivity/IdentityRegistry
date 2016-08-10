@@ -103,6 +103,10 @@ public class Vessel extends NonHumanEntityModel {
         return attributes;
     }
 
+    public void setAttributes(List<VesselAttribute> attributes) {
+        this.attributes = attributes;
+    }
+
     public List<Certificate> getCertificates() {
         return certificates;
     }

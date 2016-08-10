@@ -23,6 +23,7 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import org.hibernate.validator.constraints.NotBlank;
 
 /**
  * Model object representing a device
@@ -36,6 +37,7 @@ public class Device extends NonHumanEntityModel {
     }
 
     @ApiModelProperty(value = "The unique id inside its organization", required = true)
+    @NotBlank
     @Column(name = "device_org_id")
     private String deviceOrgId;
 

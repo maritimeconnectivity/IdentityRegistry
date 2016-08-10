@@ -1,5 +1,5 @@
-# Maritime Cloud Identity Registry (test implementation)
-This is a test implementation of the Maritime Cloud Identity Registry. It is expected to be changed and rewritten a number of times before being useful to anyone. It is under the Apache 2.0 License.
+# Maritime Cloud Identity Registry
+This is the implementation of the Maritime Cloud Identity Registry. It is currently under active development changes that are not backward compatible should be expected. It is under the Apache 2.0 License.
 
 ## Setup Database
 A MySQL/MariaDB is used as datastore, it can be setup running this commands from the console:
@@ -17,7 +17,7 @@ $ ./setup/drop-db.sh
 ## Build
 Build using you favorite IDE or using the console:
 ```sh
-$ mvn install
+$ mvn clean install
 ```
 
 ## Run
@@ -28,7 +28,7 @@ $ java -jar target/mc-identityregistry-core-latest.war
 Change the version number as needed.
 
 ## Authentication using Openid Connect (Required!) 
-To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](http://keycloak.github.io/docs/userguide/keycloak-server/html/ch08.html#spring-security-adapter) is used for easy integration. Get a instance up and running by following the [Keycloak manual](http://keycloak.github.io/docs/userguide/keycloak-server/html/server-installation.html). Then create a new realm by importing the file `setup/maritimecloud-realm.json`. Make sure it is called "MaritimeCloud". If you want to use REST commands to input data into the Identity Registry create a client using `setup/setupclient.json`. In the various configuration files included with the source it is assumed that keycloak runs on port 9080 by using the option `-Djboss.socket.binding.port-offset=1000`. If this is not the case in your setup the configuration files must be adjusted accordingly.
+To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](https://keycloak.gitbooks.io/securing-client-applications-guide/content/v/latest/topics/oidc/java/spring-security-adapter.html) is used for easy integration. Get a instance up and running by following the [Keycloak manual](https://keycloak.gitbooks.io/server-installation-and-configuration/content/v/latest/index.html). Then create a new realm by importing the file `setup/maritimecloud-realm.json`. Make sure it is called "MaritimeCloud". If you want to use REST commands to input data into the Identity Registry create a client using `setup/setupclient.json`. In the various configuration files included with the source it is assumed that keycloak runs on port 9080 by using the option `-Djboss.socket.binding.port-offset=1000`. If this is not the case in your setup the configuration files must be adjusted accordingly.
 
 If you want to setup a realm yourself, follow the guide below, but if you have imported the realm as described above you can just skip this part.
 
@@ -124,5 +124,5 @@ $ curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" 
 
 Each command will (mostly) return an echo of the json posted to the api:
 ```json
-{"id":1,"createdAt":1448545611826,"updatedAt":1448545611826,"vesselOrgId":"dma1","name":"POUL LØWENØRN","attributes":[{"id":1,"createdAt":1448545611838,"updatedAt":1448545611838,"attributeName":"IMO number","attributeValue":"9250969"},{"id":2,"createdAt":1448545611840,"updatedAt":1448545611840,"attributeName":"callsign","attributeValue":"OZZX"},{"id":3,"createdAt":1448545611844,"updatedAt":1448545611844,"attributeName":"Port Of Register","attributeValue":"KØBENHAVN"}],"certificates":[]}
+{"id":1,"createdAt":1448545611826,"updatedAt":1448545611826,"vesselOrgId":"dma1","name":"POUL LØWENØRN","attributes":[{"id":1,"createdAt":1448545611838,"updatedAt":1448545611838,"attributeName":"imo-number","attributeValue":"9250969"},{"id":2,"createdAt":1448545611840,"updatedAt":1448545611840,"attributeName":"callsign","attributeValue":"OZZX"},{"id":3,"createdAt":1448545611844,"updatedAt":1448545611844,"attributeName":"port-of-register","attributeValue":"KØBENHAVN"}],"certificates":[]}
 ```

@@ -23,6 +23,9 @@ import javax.persistence.Table;
 
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
+import org.hibernate.validator.constraints.NotBlank;
+import org.hibernate.validator.constraints.URL;
 
 /**
  * Model object representing a service
@@ -36,11 +39,13 @@ public class Service extends NonHumanEntityModel {
     }
 
     @ApiModelProperty(value = "The unique id inside its organization", required = true)
+    @NotBlank
     @Column(name = "service_org_id")
     private String serviceOrgId;
 
     @ApiModelProperty(value = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
     @Column(name = "oidc_access_type")
+    @InPredefinedList(acceptedValues = {"public", "bearer-only", "confidential"})
     private String oidcAccessType;
 
     @ApiModelProperty(value = "The client id of the service in Maritime Cloud. Will be generated.", readOnly = true)
@@ -53,6 +58,7 @@ public class Service extends NonHumanEntityModel {
 
     @ApiModelProperty(value = "The OpenId Connect redirect uri of service.")
     @Column(name = "oidc_redirect_uri")
+    @URL
     private String oidcRedirectUri;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")

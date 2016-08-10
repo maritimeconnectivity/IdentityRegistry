@@ -1,9 +1,9 @@
 {
-   "shipOrgId":"dma2",
+   "vesselOrgId":"dma2",
    "name":"JENS SØRENSEN",
    "attributes":[
       {
-         "attributeName":"IMO-number",
+         "attributeName":"IMO number",
          "attributeValue":"9080950"
       },
       {
