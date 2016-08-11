@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/MaritimeCloud/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeCloud/IdentityRegistry)
+
 # Maritime Cloud Identity Registry
 This is the implementation of the Maritime Cloud Identity Registry. It is currently under active development changes that are not backward compatible should be expected. It is under the Apache 2.0 License.
 

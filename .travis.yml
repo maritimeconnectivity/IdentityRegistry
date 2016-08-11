@@ -12,12 +12,14 @@ services:
     # Enable docker service inside travis
     - docker
 
-before_install:  
+install:
+    # Build the spring boot app and copy the result to the docker folder
+    - mvn -U -Dspring.profiles.active=test clean install && cp target/mc-identityregistry-core-latest.war docker/
+
+before_script:  
     - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
-    # Build the spring boot app and copy the result to the docker folder
-    - mvn -U clean install && cp target/mc-identityregistry-core-latest.war docker/
     # Build the docker image
     - docker build --no-cache -t dmadk/mc-identity-registry-api docker
     # Push the image to the repository
