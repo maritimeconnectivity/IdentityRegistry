@@ -16,7 +16,7 @@ before_install:
 
 install:
     # Build the spring boot app inside docker
-    - docker run -v $(pwd):/root/build ubuntu /bin/sh -c "cd /root/build; apt -y install openjdk-8-jdk maven; mvn -U -Dspring.profiles.active=test clean install;"
+    - docker run -v $(pwd):/root/build ubuntu:16.04 /bin/sh -c "cd /root/build; apt-get update; apt-get -y install openjdk-8-jdk maven; mvn -U -Dspring.profiles.active=test clean install;"
     # Copy the result to the docker folder
     - test -f target/mc-identityregistry-core-latest.war && cp target/mc-identityregistry-core-latest.war docker/ 
 
