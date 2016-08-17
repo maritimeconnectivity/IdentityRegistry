@@ -346,6 +346,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
         return ((Organization)certOwner).getName();
     }
 
+    @Override
+    protected String getUid(CertificateModel certOwner) {
+        return ((Organization)certOwner).getShortName();
+    }
+
     protected String getEmail(CertificateModel certOwner) {
         return ((Organization)certOwner).getEmail();
     }

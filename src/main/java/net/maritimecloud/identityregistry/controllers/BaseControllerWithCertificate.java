@@ -61,7 +61,8 @@ public abstract class BaseControllerWithCertificate {
         String o = org.getShortName() + ";" + org.getName();
         String name = getName(certOwner);
         String email = getEmail(certOwner);
-        X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, userKeyPair.getPublic(), attrs);
+        String uid = getUid(certOwner);
+        X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, uid ,userKeyPair.getPublic(), attrs);
         String pemCertificate = "";
         try {
             pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
@@ -101,6 +102,9 @@ public abstract class BaseControllerWithCertificate {
     protected String getName(CertificateModel certOwner) {
         return ((NonHumanEntityModel)certOwner).getName();
     }
+
+    /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
+    protected abstract String getUid(CertificateModel certOwner);
 
     /* Override if the entity type of the controller has an email */
     protected String getEmail(CertificateModel certOwner) {

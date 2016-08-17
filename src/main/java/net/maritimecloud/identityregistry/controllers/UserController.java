@@ -284,6 +284,11 @@ public class UserController extends EntityController<User> {
         return ((User)certOwner).getFirstName() + " " + ((User)certOwner).getLastName();
     }
 
+    @Override
+    protected String getUid(CertificateModel certOwner) {
+        return ((User)certOwner).getUserOrgId();
+    }
+
     protected String getEmail(CertificateModel certOwner) {
         return ((User)certOwner).getEmail();
     }

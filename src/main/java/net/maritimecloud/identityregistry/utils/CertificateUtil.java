@@ -408,7 +408,7 @@ public class CertificateUtil {
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String orgUnitName, String callName, String email, PublicKey publickey, Map<String, String> customAttr) {
+    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String type, String callName, String email, String uid ,PublicKey publickey, Map<String, String> customAttr) {
         PrivateKeyEntry signingCertEntry = getSigningCertEntry();
         java.security.cert.Certificate signingCert = signingCertEntry.getCertificate();
         X509Certificate signingX509Cert = (X509Certificate) signingCert;
@@ -424,8 +424,9 @@ public class CertificateUtil {
         }
         String orgSubjectDn = "C=" + orgCountryCode + ", " +
                               "O=" + orgName + ", " +
-                              "OU=" + orgUnitName + ", " +
-                              "CN=" + callName;
+                              "OU=" + type + ", " +
+                              "CN=" + callName + ", " +
+                              "UID=" + uid;
         if (email != null && !email.isEmpty()) {
             orgSubjectDn += ", " + "E=" + email;
         }
@@ -642,6 +643,7 @@ public class CertificateUtil {
                     case MC_OID_IMO_NUMBER:
                     case MC_OID_MMSI_NUMBER:
                     case MC_OID_AIS_SHIPTYPE:
+                    case MC_OID_PORT_OF_REGISTER:
                         logger.debug("Ship specific OIDs are ignored");
                         break;
                     case MC_OID_MRN:

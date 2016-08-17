@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.RestController;
@@ -157,5 +158,9 @@ public class DeviceController extends EntityController<Device> {
     }
 
 
+    @Override
+    protected String getUid(CertificateModel certOwner) {
+        return ((Device)certOwner).getDeviceOrgId();
+    }
 }
 

@@ -169,6 +169,11 @@ public class VesselController extends EntityController<Vessel> {
         return this.revokeEntityCert(request, orgShortName, vesselId, certId, input);
     }
 
+    @Override
+    protected String getUid(CertificateModel certOwner) {
+        return ((Vessel)certOwner).getVesselOrgId();
+    }
+
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = super.getAttr(certOwner);
         // Find special MC attributes to put in the certificate
