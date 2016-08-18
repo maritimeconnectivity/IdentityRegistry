@@ -7,7 +7,7 @@
 FROM java:8
 
 RUN mkdir -p /conf
-ADD mc-identityregistry-core-latest.war .
+RUN wget "https://dma.ci.cloudbees.com/view/MaritimeCloud/job/MaritimeCloud%20Identity%20Registry%20API/lastSuccessfulBuild/artifact/target/mc-identityregistry-core-latest.war"
 
 EXPOSE 8443
 
