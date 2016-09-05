@@ -67,8 +67,8 @@ public class Service extends NonHumanEntityModel {
     private List<Certificate> certificates;
 
     /** Copies this service into the other */
-    public Service copyTo(Service service) {
-        service = (Service) super.copyTo(service);
+    public Service copyTo(EntityModel target) {
+        Service service = (Service) super.copyTo(target);
         service.setServiceOrgId(serviceOrgId);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcClientId(oidcClientId);
@@ -82,8 +82,8 @@ public class Service extends NonHumanEntityModel {
 
     /** Copies this service into the other
      * Only update things that are allowed to change on update */
-    public Service selectiveCopyTo(Service service) {
-        service = (Service) super.selectiveCopyTo(service);
+    public Service selectiveCopyTo(EntityModel target) {
+        Service service = (Service) super.selectiveCopyTo(target);
         service.setServiceOrgId(serviceOrgId);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);

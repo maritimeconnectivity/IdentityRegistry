@@ -47,8 +47,8 @@ public class Device extends NonHumanEntityModel {
     private List<Certificate> certificates;
 
     /** Copies this device into the other */
-    public Device copyTo(Device device) {
-        device = (Device) super.copyTo(device);
+    public Device copyTo(EntityModel target) {
+        Device device = (Device) super.copyTo(target);
         device.setDeviceOrgId(deviceOrgId);
         device.getCertificates().clear();
         device.getCertificates().addAll(certificates);
@@ -58,8 +58,8 @@ public class Device extends NonHumanEntityModel {
 
     /** Copies this device into the other
      * Only update things that are allowed to change on update */
-    public Device selectiveCopyTo(Device device) {
-        device = (Device) super.selectiveCopyTo(device);
+    public Device selectiveCopyTo(EntityModel target) {
+        Device device = (Device) super.selectiveCopyTo(target);
         device.setDeviceOrgId(deviceOrgId);
         device.setChildIds();
         return device;

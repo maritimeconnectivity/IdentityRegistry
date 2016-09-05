@@ -70,8 +70,9 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
         return ret;
     }
 
-    public T save(T service) {
-        return getRepository().save(service);
+    public T save(T entity) {
+        logger.debug("Just saved entity");
+        return getRepository().save(entity);
     }
 
     public void delete(Long id) {

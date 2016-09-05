@@ -51,11 +51,11 @@ public class Vessel extends NonHumanEntityModel {
     private List<Certificate> certificates;
 
     /** Copies this vessel into the other */
-    public Vessel copyTo(Vessel vessel) {
-        vessel = (Vessel) super.copyTo(vessel);
+    public Vessel copyTo(EntityModel target) {
+        Vessel vessel = (Vessel) super.copyTo(target);
         vessel.setVesselOrgId(vesselOrgId);
-        this.attributes.clear();
-        this.attributes.addAll(attributes);
+        vessel.getAttributes().clear();
+        vessel.getAttributes().addAll(attributes);
         vessel.getCertificates().clear();
         vessel.getCertificates().addAll(certificates);
         vessel.setChildIds();
@@ -64,11 +64,12 @@ public class Vessel extends NonHumanEntityModel {
 
     /** Copies this vessel into the other
      * Only update things that are allowed to change on update */
-    public Vessel selectiveCopyTo(Vessel vessel) {
-        vessel = (Vessel) super.selectiveCopyTo(vessel);
+    @Override
+    public Vessel selectiveCopyTo(EntityModel target) {
+        Vessel vessel = (Vessel) super.selectiveCopyTo(target);
         vessel.setVesselOrgId(vesselOrgId);
-        this.attributes.clear();
-        this.attributes.addAll(attributes);
+        vessel.getAttributes().clear();
+        vessel.getAttributes().addAll(attributes);
         vessel.setChildIds();
         return vessel;
     }

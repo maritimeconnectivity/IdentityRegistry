@@ -39,7 +39,7 @@ public class User extends EntityModel {
     public User() {
     }
 
-    @ApiModelProperty(required = true, value = "Must be in the format ORG_SHORTNAME.USER_ID")
+    @ApiModelProperty(required = true, value = "Must be in the format ORG_SHORTNAME.USER_ID, cannot be updated after creation!")
     @NotBlank
     @Pattern(regexp = "\\w+\\..+", message = "illegal username format")
     @Column(name = "user_org_id")
@@ -67,8 +67,8 @@ public class User extends EntityModel {
     private List<Certificate> certificates;
 
     /** Copies this user into the other */
-    public User copyTo(User user) {
-        user = (User) super.copyTo(user);
+    public User copyTo(EntityModel target) {
+        User user = (User) super.copyTo(target);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
@@ -81,8 +81,8 @@ public class User extends EntityModel {
 
     /** Copies this user into the other
      * Only update things that are allowed to change on update */
-    public User selectiveCopyTo(User user) {
-        user = (User) super.selectiveCopyTo(user);
+    public User selectiveCopyTo(EntityModel target) {
+        User user = (User) super.selectiveCopyTo(target);
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
