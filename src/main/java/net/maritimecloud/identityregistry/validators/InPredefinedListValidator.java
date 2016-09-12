@@ -34,7 +34,7 @@ public class InPredefinedListValidator implements ConstraintValidator<InPredefin
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        if(value == null || !valueList.contains(value.toLowerCase())) {
+        if (value != null && !valueList.contains(value.toLowerCase())) {
             return false;
         }
         return true;
