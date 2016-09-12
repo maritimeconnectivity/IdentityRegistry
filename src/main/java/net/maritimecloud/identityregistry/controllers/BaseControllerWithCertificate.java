@@ -48,7 +48,7 @@ public abstract class BaseControllerWithCertificate {
     @Autowired
     private CertificateUtil certUtil;
 
-    protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type) {
+    protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
         Certificate newMCCert = new Certificate();
         certOwner.assignToCert(newMCCert);
@@ -62,6 +62,9 @@ public abstract class BaseControllerWithCertificate {
         String name = getName(certOwner);
         String email = getEmail(certOwner);
         String uid = getUid(certOwner);
+        if (uid == null || uid.trim().isEmpty()) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
+        }
         X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, uid ,userKeyPair.getPublic(), attrs);
         String pemCertificate = "";
         try {
@@ -79,7 +82,6 @@ public abstract class BaseControllerWithCertificate {
         long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
         newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
         newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
-        newMCCert.setOrganization(org);
         this.certificateService.saveCertificate(newMCCert);
         return ret;
     }

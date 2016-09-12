@@ -23,6 +23,8 @@ public interface OrganizationRepository extends CrudRepository<Organization, Lon
 
     Organization findByShortNameAndApprovedTrue(String shortname);
 
+    Organization findByShortName(String shortname);
+
     List<Organization> findByApprovedFalse();
 
 }

@@ -42,6 +42,11 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
         return this.filterResult(organizationRepository.findByShortNameAndApprovedTrue(shortname));
     }
 
+    @Override
+    public Organization getOrganizationByShortNameDisregardApproved(String shortname) {
+        return this.filterResult(organizationRepository.findByShortName(shortname));
+    }
+
     /* Does not filter sensitive data from the result! */
     public Organization getOrganizationByShortNameNoFilter(String shortname) {
         return organizationRepository.findByShortNameAndApprovedTrue(shortname);

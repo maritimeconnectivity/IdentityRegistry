@@ -20,6 +20,8 @@ import java.util.List;
 
 public interface OrganizationService extends BaseService<Organization>{
     Organization getOrganizationByShortName(String shortname);
+
+    Organization getOrganizationByShortNameDisregardApproved(String shortname);
     /* Does not filter sensitive data from the result! */
     Organization getOrganizationByShortNameNoFilter(String shortname);
 

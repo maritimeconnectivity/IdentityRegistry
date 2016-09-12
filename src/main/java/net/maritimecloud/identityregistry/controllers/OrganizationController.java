@@ -16,10 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
-import net.maritimecloud.identityregistry.model.database.Organization;
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.database.Role;
+import net.maritimecloud.identityregistry.model.database.*;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
@@ -235,14 +232,14 @@ public class OrganizationController extends BaseControllerWithCertificate {
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org != null) {
             if (!shortName.equals(input.getShortName())) {
-                throw new McBasicRestException(HttpStatus.BAD_GATEWAY, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
             if (input.getIdentityProviderAttributes() != null && !input.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 // If the IDP setup is different we delete the old IDP in keycloak
                 if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()
-                        && !input.getIdentityProviderAttributes().containsAll(org.getIdentityProviderAttributes())) {
+                        && !IdentityProviderAttribute.listsEquals(org.getIdentityProviderAttributes(), input.getIdentityProviderAttributes())) {
                     keycloakAU.deleteIdentityProvider(input.getShortName());
                 }
                 try {
@@ -275,8 +272,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgShortName}",
             method = RequestMethod.DELETE)
     @PreAuthorize("hasRole('SITE_ADMIN')")
-    public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortNameDisregardApproved(orgShortName);
         if (org != null) {
             //  TODO: we need to do some sync'ing with the Service Registry.
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
@@ -309,7 +306,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
         if (org != null) {
-            PemCertificate ret = this.issueCertificate(org, org, "organization");
+            PemCertificate ret = this.issueCertificate(org, org, "organization", request);
             return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

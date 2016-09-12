@@ -172,7 +172,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                PemCertificate ret = this.issueCertificate(entity, org, type);
+                PemCertificate ret = this.issueCertificate(entity, org, type, request);
                 return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
