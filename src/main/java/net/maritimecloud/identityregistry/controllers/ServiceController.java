@@ -225,6 +225,76 @@ public class ServiceController extends EntityController<Service> {
         return this.revokeEntityCert(request, orgShortName, serviceId, certId, input);
     }
 
+    /**
+     * Returns keycloak.json the service identified by the given ID
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/service/{serviceId}/keycloakjson",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
+    public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            Service service = this.entityService.getById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                // Get the keycloak json for the client the service represents if it exists
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                    String keycloakJson = keycloakAU.getClientKeycloakJson(serviceClientId);
+                    return new ResponseEntity<String>(keycloakJson, HttpStatus.OK);
+                }
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Returns keycloak.json the service identified by the given ID
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgShortName}/service/{serviceId}/jbossxml",
+            method = RequestMethod.GET,
+            produces = "application/xml;charset=UTF-8")
+    @ResponseBody
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
+    public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long serviceId) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+        if (org != null) {
+            Service service = this.entityService.getById(serviceId);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                // Get the jboss xml for the client the service represents if it exists
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
+                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String serviceClientId = (org.getShortName() + "_" + service.getName()).replace(" ", "_");
+                    String jbossXml = keycloakAU.getClientJbossXml(serviceClientId);
+                    return new ResponseEntity<String>(jbossXml, HttpStatus.OK);
+                }
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
     @Override
     protected Service getCertEntity(Certificate cert) {
         return cert.getService();

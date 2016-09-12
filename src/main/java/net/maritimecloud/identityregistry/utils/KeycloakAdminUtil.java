@@ -15,6 +15,11 @@
 package net.maritimecloud.identityregistry.utils;
 
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
+import org.apache.http.HttpEntity;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
 import org.keycloak.admin.client.resource.IdentityProvidersResource;
@@ -28,6 +33,7 @@ import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
@@ -271,6 +277,7 @@ public class KeycloakAdminUtil {
      * @param alias  Alias of the IDP to delete.
      */
     public void deleteIdentityProvider(String alias) {
+        alias = alias.toLowerCase();
         // First delete any users associated with the IDP
         List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ alias + ".", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
         for (UserRepresentation user : users) {
@@ -435,6 +442,7 @@ public class KeycloakAdminUtil {
         client.setClientId(clientId);
         client.setClientAuthenticatorType("client-secret");
         client.setRedirectUris(Arrays.asList(redirectUri));
+        client.setWebOrigins(Arrays.asList("+"));
         client.setDirectAccessGrantsEnabled(false);
         client.setProtocol("openid-connect");
         client.setEnabled(true);
@@ -506,4 +514,83 @@ public class KeycloakAdminUtil {
         getBrokerRealm().clients().get(client.getId()).remove();
     }
 
+    /**
+     * Gets the keycloak.json for this client.
+     *
+     * @param clientId client id/name
+     * @return the keycloak json
+     */
+    public String getClientKeycloakJson(String clientId) {
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+        String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
+        String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-keycloak-json";
+        return getFromKeycloak(url, token);
+    }
+
+    /**
+     * Gets the keycloak.json for this client.
+     *
+     * @param clientId client id/name
+     * @return the keycloak json
+     */
+    public String getClientJbossXml(String clientId) {
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+        String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
+        String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-jboss-subsystem";
+        return getFromKeycloak(url, token);
+    }
+
+    private String getFromKeycloak(String url, String token) {
+        CloseableHttpClient client = HttpClientBuilder.create().build();
+        try {
+            logger.debug("get url: " + url);
+            HttpGet get = new HttpGet(url);
+            get.addHeader("Authorization", "Bearer " + token);
+            try {
+                HttpResponse response = client.execute(get);
+                if (response.getStatusLine().getStatusCode() != 200) {
+                    logger.debug("" + response.getStatusLine().getStatusCode());
+                    return null;
+                }
+                String content = getContent(response.getEntity());
+                return content;
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            }
+        } finally {
+            try {
+                client.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
+
+    /**
+     * Helper function to extract string from HttpEntity
+     *
+     * @param entity
+     * @return
+     * @throws IOException
+     */
+    private static String getContent(HttpEntity entity) throws IOException {
+        if (entity == null) return null;
+        InputStream is = entity.getContent();
+        try {
+            ByteArrayOutputStream os = new ByteArrayOutputStream();
+            int c;
+            while ((c = is.read()) != -1) {
+                os.write(c);
+            }
+            byte[] bytes = os.toByteArray();
+            String data = new String(bytes);
+            return data;
+        } finally {
+            try {
+                is.close();
+            } catch (IOException ignored) {
+            }
+        }
+    }
 }
