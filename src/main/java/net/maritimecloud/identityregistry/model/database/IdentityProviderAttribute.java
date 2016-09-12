@@ -21,6 +21,8 @@ import net.maritimecloud.identityregistry.validators.InPredefinedList;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 @Entity
 @Table(name = "identity_provider_attributes")
@@ -80,5 +82,73 @@ public class IdentityProviderAttribute extends TimestampModel {
 
     public void setOrganization(Organization organization) {
         this.organization = organization;
+    }
+
+    public int compareNameAndValueTo(IdentityProviderAttribute other) {
+        // Check if "other" is null
+        if (other == null) {
+            return -1;
+        }
+        // If all are null they are equal!
+        if (this.getAttributeName() == null && other.getAttributeName() == null
+                && this.getAttributeValue() == null && other.getAttributeValue() == null) {
+            return 0;
+        }
+        // Check for null values
+        if ((this.getAttributeName() != null && other.getAttributeName() == null)
+                || (this.getAttributeValue() != null && other.getAttributeValue() == null)) {
+            return -1;
+        }
+        if ((this.getAttributeName() == null && other.getAttributeName() != null)
+                || (this.getAttributeValue() == null && other.getAttributeValue() != null)) {
+            return 1;
+        }
+        int ret = 0;
+        // Check attributeName content
+        if (this.getAttributeName() != null && other.getAttributeName() != null
+                && !this.getAttributeName().equals(other.getAttributeName())) {
+            ret = 1;
+        }
+        // Check attributeValue content
+        if (this.getAttributeValue() != null && other.getAttributeValue() != null
+                && !this.getAttributeValue().equals(other.getAttributeValue())) {
+            ret = 1;
+        }
+        return ret;
+    }
+
+    public static boolean listsEquals(List<IdentityProviderAttribute> first, List<IdentityProviderAttribute> second) {
+        if (first == null && second != null || first != null && second == null) {
+            return false;
+        }
+        if (first == null && second == null) {
+            return true;
+        }
+        if (first.size() != second.size()) {
+            return false;
+        }
+        List<IdentityProviderAttribute> secondCopy = new ArrayList<>(second);
+        for (IdentityProviderAttribute attrInFirst : first) {
+            boolean foundMatch = false;
+            if (attrInFirst == null) {
+                int nullIdx = secondCopy.indexOf(null);
+                secondCopy.remove(nullIdx);
+                continue;
+            }
+            for (IdentityProviderAttribute attrInSecond : secondCopy) {
+                if (attrInFirst.compareNameAndValueTo(attrInSecond) == 0) {
+                    foundMatch = true;
+                    secondCopy.remove(attrInSecond);
+                    break;
+                }
+            }
+            if (!foundMatch) {
+                return false;
+            }
+        }
+        if (secondCopy.size() == 0) {
+            return true;
+        }
+        return false;
     }
 }
