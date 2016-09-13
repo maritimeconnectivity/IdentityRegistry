@@ -140,9 +140,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
         // Admin Authentication
-        if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
+        /*if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        }
+        }*/
         Organization org = this.organizationService.getOrganizationByShortName(shortName);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
