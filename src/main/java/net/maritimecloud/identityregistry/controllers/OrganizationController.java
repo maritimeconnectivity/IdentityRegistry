@@ -34,6 +34,7 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -139,11 +140,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
-        // Admin Authentication
-        /*if (!AccessControlUtil.hasAccessToOrg(this.adminOrg) || !AccessControlUtil.hasPermission(this.adminPermission)) {
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        }*/
-        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        Organization org = this.organizationService.getOrganizationByShortNameDisregardApproved(shortName);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -339,6 +336,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
     }
 
+    @Override
     protected String getName(CertificateModel certOwner) {
         return ((Organization)certOwner).getName();
     }
@@ -348,7 +346,13 @@ public class OrganizationController extends BaseControllerWithCertificate {
         return ((Organization)certOwner).getShortName();
     }
 
+    @Override
     protected String getEmail(CertificateModel certOwner) {
         return ((Organization)certOwner).getEmail();
+    }
+
+    @Override
+    protected HashMap<String, String> getAttr(CertificateModel certOwner) {
+        return null;
     }
 }
