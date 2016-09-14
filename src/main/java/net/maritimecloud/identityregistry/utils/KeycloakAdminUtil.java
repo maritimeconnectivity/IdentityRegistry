@@ -332,11 +332,12 @@ public class KeycloakAdminUtil {
         } else {
             ret = getProjectUserRealm().users().create(user);
         }
+        String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
-            logger.debug("creating user failed, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
-            throw new IOException("User creation failed: " + ret.readEntity(String.class));
+            logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+            throw new IOException("User creation failed: " + errMsg);
         }
-        logger.debug("created user, status: " + ret.getStatus() + ", " + ret.readEntity(String.class));
+        logger.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
         ret.close();
         
         // Set credentials
@@ -540,6 +541,13 @@ public class KeycloakAdminUtil {
         return getFromKeycloak(url, token);
     }
 
+    /**
+     * Helper function to GET from keycloak api that isn't supported by the client
+     *
+     * @param url The url to GET
+     * @param token The access_token to use for identification
+     * @return Returns a string representation of the result
+     */
     private String getFromKeycloak(String url, String token) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         try {
