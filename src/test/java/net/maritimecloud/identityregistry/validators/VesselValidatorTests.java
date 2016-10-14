@@ -29,6 +29,7 @@ import java.util.Arrays;
 
 import static junit.framework.TestCase.assertFalse;
 import static junit.framework.TestCase.assertTrue;
+import static junit.framework.TestCase.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -50,7 +51,7 @@ public class VesselValidatorTests {
     @Test
     public void validateInvalidVesselNoName() {
         Vessel invalidVessel = new Vessel();
-        invalidVessel.setVesselOrgId("Vessel1");
+        invalidVessel.setMrn("urn:mrn:mcl:org:test:vessel:invalid-vessel");
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
         assertTrue(errors.hasErrors());
@@ -59,7 +60,7 @@ public class VesselValidatorTests {
     @Test
     public void validateValidVesselNoAttributes() {
         Vessel validVessel = new Vessel();
-        validVessel.setVesselOrgId("Vessel1");
+        validVessel.setMrn("urn:mrn:mcl:org:test:vessel:valid-vessel");
         validVessel.setName("Test Vessel");
         Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
         this.vesselValidator.validate(validVessel, errors);
@@ -69,7 +70,7 @@ public class VesselValidatorTests {
     @Test
     public void validateValidVesselWithAttributes() {
         Vessel validVessel = new Vessel();
-        validVessel.setVesselOrgId("Vessel1");
+        validVessel.setMrn("urn:mrn:mcl:org:test:vessel:valid-vessel");
         validVessel.setName("Test Vessel");
         VesselAttribute va1 = new VesselAttribute();
         va1.setAttributeName("flagstate");
@@ -86,7 +87,7 @@ public class VesselValidatorTests {
     @Test
     public void validateInvalidVesselWithAttributes() {
         Vessel invalidVessel = new Vessel();
-        invalidVessel.setVesselOrgId("Vessel1");
+        invalidVessel.setMrn("urn:mrn:mcl:org:test:vessel:invalid-vessel");
         invalidVessel.setName("Test Vessel");
         VesselAttribute va1 = new VesselAttribute();
         // Invalid attribute: value must not be empty
@@ -100,7 +101,7 @@ public class VesselValidatorTests {
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
         assertTrue(errors.hasErrors());
-        assertTrue(errors.getErrorCount() == 2);
+        assertEquals(2, errors.getErrorCount());
     }
 
 }

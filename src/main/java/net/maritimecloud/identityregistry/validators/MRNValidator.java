@@ -12,19 +12,25 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.repositories;
+package net.maritimecloud.identityregistry.validators;
 
+
+import net.maritimecloud.identityregistry.utils.MrnUtils;
+
+import javax.validation.ConstraintValidator;
+import javax.validation.ConstraintValidatorContext;
+import java.util.ArrayList;
 import java.util.List;
-import org.springframework.data.repository.CrudRepository;
-import net.maritimecloud.identityregistry.model.database.Organization;
 
-public interface OrganizationRepository extends CrudRepository<Organization, Long> {
-    List<Organization> findByName(String lastName);
+public class MRNValidator implements ConstraintValidator<MRN, String> {
 
-    Organization findByMrnAndApprovedTrue(String mrn);
+    @Override
+    public void initialize(MRN constraintAnnotation) {
+    }
 
-    Organization findByMrn(String mrn);
-
-    List<Organization> findByApprovedFalse();
+    @Override
+    public boolean isValid(String value, ConstraintValidatorContext context) {
+        return MrnUtils.validateMrn(value);
+    }
 
 }

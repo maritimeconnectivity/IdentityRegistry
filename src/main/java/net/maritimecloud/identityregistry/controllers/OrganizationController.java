@@ -23,6 +23,7 @@ import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -61,7 +62,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Autowired
     private EntityService<Vessel> vesselService;
     @Autowired
-    private EntityService<Role> roleService;
+    private RoleService roleService;
 
     @Autowired
     private EmailUtil emailUtil;
@@ -85,12 +86,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
         this.organizationService = organizationService;
     }
 
-    @Value("${net.maritimecloud.idreg.admin-org}")
-    private String adminOrg;
-
-    @Value("${net.maritimecloud.idreg.admin-permission}")
-    private String adminPermission;
-
     /**
      * Receives an application for a new organization and root-user
      * 
@@ -102,8 +97,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) throws McBasicRestException {
-        // Make sure all shortnames are uppercase
-        input.setShortName(input.getShortName().trim().toUpperCase());
+        // Make sure all mrn are lowercase
+        input.setMrn(input.getMrn().trim().toLowerCase());
         input.setApproved(false);
         Organization newOrg = this.organizationService.save(input);
         // Send email to organization saying that the application is awaiting approval
@@ -135,12 +130,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{shortName}/approve",
+            value = "/api/org/{orgMrn}/approve",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SITE_ADMIN')")
-    public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortNameDisregardApproved(shortName);
+    public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -151,7 +146,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
             keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
             try {
-                keycloakAU.createIdentityProvider(org.getShortName().toLowerCase(), org.getIdentityProviderAttributes());
+                keycloakAU.createIdentityProvider(org.getMrn().toLowerCase(), org.getIdentityProviderAttributes());
             } catch (MalformedURLException e) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
             } catch (IOException e) {
@@ -165,7 +160,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Create admin user in the keycloak instance handling users
         keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
         try {
-            keycloakAU.createUser(org.getShortName(), newPassword, org.getShortName(), "ADMIN", org.getEmail(), org.getShortName(), "MCADMIN", true, KeycloakAdminUtil.ADMIN_USER);
+            keycloakAU.createUser(org.getMrn(), newPassword, MrnUtils.getOrgShortNameFromOrgMrn(org.getMrn()), "ADMIN", org.getEmail(), org.getMrn(), "MCADMIN", true, KeycloakAdminUtil.ADMIN_USER);
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
         }
@@ -177,7 +172,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         adminRole.setRoleName("ROLE_ORG_ADMIN");
         roleService.save(adminRole);
         // Send email to the organization that it has been approved
-        emailUtil.sendOrgApprovedEmail(org.getEmail(), org.getName(), org.getShortName(), newPassword);
+        emailUtil.sendOrgApprovedEmail(org.getEmail(), org.getName(), org.getMrn(), newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
     }
 
@@ -189,11 +184,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{shortName}",
+            value = "/api/org/{orgMrn}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String shortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+    public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -221,14 +216,14 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{shortName}",
+            value = "/api/org/{orgMrn}",
             method = RequestMethod.PUT)
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#shortName)")
-    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String shortName,
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
             @RequestBody Organization input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(shortName);
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            if (!shortName.equals(input.getShortName())) {
+            if (!orgMrn.equals(input.getMrn())) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
@@ -237,10 +232,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 // If the IDP setup is different we delete the old IDP in keycloak
                 if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()
                         && !IdentityProviderAttribute.listsEquals(org.getIdentityProviderAttributes(), input.getIdentityProviderAttributes())) {
-                    keycloakAU.deleteIdentityProvider(input.getShortName());
+                    keycloakAU.deleteIdentityProvider(input.getMrn());
                 }
                 try {
-                    keycloakAU.createIdentityProvider(input.getShortName().toLowerCase(), input.getIdentityProviderAttributes());
+                    keycloakAU.createIdentityProvider(input.getMrn().toLowerCase(), input.getIdentityProviderAttributes());
                 } catch (InternalServerErrorException e) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
                 } catch (IOException e) {
@@ -249,7 +244,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             } else if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 // Remove old IDP if new input doesn't contain IDP info
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(input.getShortName());
+                keycloakAU.deleteIdentityProvider(input.getMrn());
             }
             input.selectiveCopyTo(org);
             this.organizationService.save(org);
@@ -266,16 +261,16 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}",
+            value = "/api/org/{orgMrn}",
             method = RequestMethod.DELETE)
     @PreAuthorize("hasRole('SITE_ADMIN')")
-    public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortNameDisregardApproved(orgShortName);
+    public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
         if (org != null) {
             //  TODO: we need to do some sync'ing with the Service Registry.
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(org.getShortName().toLowerCase());
+                keycloakAU.deleteIdentityProvider(org.getMrn().toLowerCase());
             }
             this.deviceService.deleteByOrg(org.getId());
             this.serviceService.deleteByOrg(org.getId());
@@ -296,12 +291,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/generatecertificate",
+            value = "/api/org/{orgMrn}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<PemCertificate> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             PemCertificate ret = this.issueCertificate(org, org, "organization", request);
             return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
@@ -317,12 +312,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Certificate cert = this.certificateService.getCertificateById(certId);
             Organization certOrg = cert.getOrganization();
@@ -343,7 +338,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Override
     protected String getUid(CertificateModel certOwner) {
-        return ((Organization)certOwner).getShortName();
+        return ((Organization)certOwner).getMrn();
     }
 
     @Override

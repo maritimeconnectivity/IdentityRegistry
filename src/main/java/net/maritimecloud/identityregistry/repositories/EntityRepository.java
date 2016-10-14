@@ -24,4 +24,6 @@ public interface EntityRepository<T> extends CrudRepository<T, Long> {
     List<T> findByidOrganization(Long orgId);
 
     void deleteByidOrganization(Long orgId);
+
+    T getByMrn(String mrn);
 }

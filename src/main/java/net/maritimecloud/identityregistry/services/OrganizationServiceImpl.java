@@ -38,18 +38,18 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     }
 
     @Override
-    public Organization getOrganizationByShortName(String shortname) {
-        return this.filterResult(organizationRepository.findByShortNameAndApprovedTrue(shortname));
+    public Organization getOrganizationByMrn(String mrn) {
+        return this.filterResult(organizationRepository.findByMrnAndApprovedTrue(mrn));
     }
 
     @Override
-    public Organization getOrganizationByShortNameDisregardApproved(String shortname) {
-        return this.filterResult(organizationRepository.findByShortName(shortname));
+    public Organization getOrganizationByMrnDisregardApproved(String mrn) {
+        return this.filterResult(organizationRepository.findByMrn(mrn));
     }
 
     /* Does not filter sensitive data from the result! */
-    public Organization getOrganizationByShortNameNoFilter(String shortname) {
-        return organizationRepository.findByShortNameAndApprovedTrue(shortname);
+    public Organization getOrganizationByMrnNoFilter(String mrn) {
+        return organizationRepository.findByMrnAndApprovedTrue(mrn);
     }
 
     @Override
@@ -66,7 +66,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     protected Organization filterResult(Organization data) {
         if (data != null && data.hasSensitiveFields()) {
             // If not authorized to see all we clean the object for sensitive data.
-            if (!isAuthorized() || !AccessControlUtil.hasAccessToOrg(data.getShortName())) {
+            if (!isAuthorized() || !AccessControlUtil.hasAccessToOrg(data.getMrn())) {
                 logger.debug("Clearing Sensitive Fields");
                 data.clearSensitiveFields();
             }
@@ -80,7 +80,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
             // If not authorized to see all we clean the object for sensitive data.
             boolean isAuthorized = isAuthorized();
             for (Organization org : data) {
-                if (!isAuthorized || !AccessControlUtil.hasAccessToOrg(org.getShortName())) {
+                if (!isAuthorized || !AccessControlUtil.hasAccessToOrg(org.getMrn())) {
                     logger.debug("Clearing Sensitive Fields");
                     org.clearSensitiveFields();
                 }

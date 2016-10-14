@@ -35,7 +35,7 @@ public class VesselValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "vesselOrgId", "vesselOrgId.empty", "vesselOrgId  is required.");
+        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "mrn", "mrn.empty", "mrn  is required.");
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "name.empty", "name is required.");
         Vessel vessel = (Vessel) target;
         if (vessel.getAttributes() != null) {

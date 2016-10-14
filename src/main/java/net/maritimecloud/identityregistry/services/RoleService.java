@@ -18,7 +18,11 @@ import net.maritimecloud.identityregistry.model.database.Role;
 
 import java.util.List;
 
-public interface RoleService extends EntityService<Role> {
+public interface RoleService extends BaseService<Role> {
 
     List<Role> getRolesByIdOrganizationAndPermission(Long idOrganization, String permissions);
+
+    List<Role> listFromOrg(Long id);
+
+    void deleteByOrg(Long id);
 }

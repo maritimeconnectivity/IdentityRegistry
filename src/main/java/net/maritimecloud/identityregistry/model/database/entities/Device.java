@@ -36,11 +36,6 @@ public class Device extends NonHumanEntityModel {
     public Device() {
     }
 
-    @ApiModelProperty(value = "The unique id inside its organization", required = true)
-    @NotBlank
-    @Column(name = "device_org_id")
-    private String deviceOrgId;
-
     @OneToMany(mappedBy = "device")
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
@@ -49,7 +44,6 @@ public class Device extends NonHumanEntityModel {
     /** Copies this device into the other */
     public Device copyTo(EntityModel target) {
         Device device = (Device) super.copyTo(target);
-        device.setDeviceOrgId(deviceOrgId);
         device.getCertificates().clear();
         device.getCertificates().addAll(certificates);
         device.setChildIds();
@@ -60,7 +54,6 @@ public class Device extends NonHumanEntityModel {
      * Only update things that are allowed to change on update */
     public Device selectiveCopyTo(EntityModel target) {
         Device device = (Device) super.selectiveCopyTo(target);
-        device.setDeviceOrgId(deviceOrgId);
         device.setChildIds();
         return device;
     }
@@ -72,14 +65,6 @@ public class Device extends NonHumanEntityModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public String getDeviceOrgId() {
-        return deviceOrgId;
-    }
-
-    public void setDeviceOrgId(String deviceOrgId) {
-        this.deviceOrgId = deviceOrgId;
-    }
-
     public List<Certificate> getCertificates() {
         return certificates;
     }

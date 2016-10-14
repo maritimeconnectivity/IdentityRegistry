@@ -52,13 +52,13 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */ 
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device",
+            value = "/api/org/{orgMrn}/device",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Device input) throws McBasicRestException {
-        return this.createEntity(request, orgShortName, input);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody Device input) throws McBasicRestException {
+        return this.createEntity(request, orgMrn, input);
     }
 
     /**
@@ -68,13 +68,13 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
-        return this.getEntity(request, orgShortName, deviceId);
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McBasicRestException {
+        return this.getEntity(request, orgMrn, deviceMrn);
     }
 
     /**
@@ -84,12 +84,12 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}",
             method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @RequestBody Device input) throws McBasicRestException {
-        return this.updateEntity(request, orgShortName, deviceId, input);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody Device input) throws McBasicRestException {
+        return this.updateEntity(request, orgMrn, deviceMrn, input);
     }
 
     /**
@@ -99,12 +99,12 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
-        return this.deleteEntity(request, orgShortName, deviceId);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McBasicRestException {
+        return this.deleteEntity(request, orgMrn, deviceMrn);
     }
 
     /**
@@ -114,12 +114,12 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/devices",
+            value = "/api/org/{orgMrn}/devices",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<List<Device>> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        return this.getOrganizationEntities(request, orgShortName);
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<List<Device>> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        return this.getOrganizationEntities(request, orgMrn);
     }
 
     /**
@@ -129,12 +129,12 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}/generatecertificate",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<PemCertificate> newDeviceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId) throws McBasicRestException {
-        return this.newEntityCert(request, orgShortName, deviceId, "device");
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<PemCertificate> newDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McBasicRestException {
+        return this.newEntityCert(request, orgMrn, deviceMrn, "device");
     }
 
     /**
@@ -144,23 +144,17 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/device/{deviceId}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long deviceId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
-        return this.revokeEntityCert(request, orgShortName, deviceId, certId, input);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+        return this.revokeEntityCert(request, orgMrn, deviceMrn, certId, input);
     }
 
     @Override
     protected Device getCertEntity(Certificate cert) {
         return cert.getDevice();
-    }
-
-
-    @Override
-    protected String getUid(CertificateModel certOwner) {
-        return ((Device)certOwner).getDeviceOrgId();
     }
 }
 

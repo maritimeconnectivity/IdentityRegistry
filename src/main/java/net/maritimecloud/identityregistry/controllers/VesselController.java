@@ -67,14 +67,14 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel",
+            value = "/api/org/{orgMrn}/vessel",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Vessel> createVessel(HttpServletRequest request, @PathVariable String orgShortName, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Vessel> createVessel(HttpServletRequest request, @PathVariable String orgMrn, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        return this.createEntity(request, orgShortName, input);
+        return this.createEntity(request, orgMrn, input);
     }
 
     /**
@@ -84,13 +84,13 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
-        return this.getEntity(request, orgShortName, vesselId);
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+        return this.getEntity(request, orgMrn, vesselMrn);
     }
 
     /**
@@ -100,13 +100,13 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
             method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> updateVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> updateVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        return this.updateEntity(request, orgShortName, vesselId, input);
+        return this.updateEntity(request, orgMrn, vesselMrn, input);
     }
 
     /**
@@ -116,12 +116,12 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> deleteVessel(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
-        return this.deleteEntity(request, orgShortName, vesselId);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> deleteVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+        return this.deleteEntity(request, orgMrn, vesselMrn);
     }
 
     /**
@@ -131,12 +131,12 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessels",
+            value = "/api/org/{orgMrn}/vessels",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<List<Vessel>> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        return this.getOrganizationEntities(request, orgShortName);
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<List<Vessel>> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        return this.getOrganizationEntities(request, orgMrn);
     }
 
     /**
@@ -146,12 +146,12 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}/generatecertificate",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/generatecertificate",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<PemCertificate> newVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId) throws McBasicRestException {
-        return this.newEntityCert(request, orgShortName, vesselId, "vessel");
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<PemCertificate> newVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+        return this.newEntityCert(request, orgMrn, vesselMrn, "vessel");
     }
 
     /**
@@ -161,17 +161,12 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/vessel/{vesselId}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificates/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long vesselId, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
-        return this.revokeEntityCert(request, orgShortName, vesselId, certId, input);
-    }
-
-    @Override
-    protected String getUid(CertificateModel certOwner) {
-        return ((Vessel)certOwner).getVesselOrgId();
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+        return this.revokeEntityCert(request, orgMrn, vesselMrn, certId, input);
     }
 
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {

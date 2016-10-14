@@ -158,11 +158,12 @@ public class KeycloakAdminUtil {
     /**
      * Creates or updates an IDP.
      * 
-     * @param name          name of the IDP
+     * @param orgMrn        mrn of the IDP
      * @param input         map containing data about the IDP
      * @throws IOException
      */
-    public void createIdentityProvider(String name, List<IdentityProviderAttribute> input) throws IOException {
+    public void createIdentityProvider(String orgMrn, List<IdentityProviderAttribute> input) throws IOException {
+        String name = MrnUtils.getOrgShortNameFromOrgMrn(orgMrn);
         Map<String, String> idpAtrMap = idpAttributes2Map(input);
         // Check for valid input
         String providerType = idpAtrMap.get("providerType");
@@ -237,7 +238,7 @@ public class KeycloakAdminUtil {
             orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
             orgMapper.setName(orgMapperName);
             Map<String, String> orgMapperConf = new HashMap<String, String>();
-            orgMapperConf.put("attribute.value", name);
+            orgMapperConf.put("attribute.value", orgMrn);
             orgMapperConf.put("attribute", "org");
             orgMapper.setConfig(orgMapperConf);
             newIdpRes.addMapper(orgMapper);
@@ -251,7 +252,11 @@ public class KeycloakAdminUtil {
             permissionsMapper.setIdentityProviderMapper("oidc-user-attribute-idp-mapper");
             permissionsMapper.setName(permissionMapperName);
             Map<String, String> permissionsMapperConf = new HashMap<String, String>();
-            permissionsMapperConf.put("claim", "permissions");
+            if (idpAtrMap.containsKey("permissionsAttr")) {
+                permissionsMapperConf.put("claim", idpAtrMap.get("permissionsAttr"));
+            } else {
+                permissionsMapperConf.put("claim", "permissions");
+            }
             permissionsMapperConf.put("user.attribute", "permissions");
             permissionsMapper.setConfig(permissionsMapperConf);
             newIdpRes.addMapper(permissionsMapper);
@@ -265,7 +270,12 @@ public class KeycloakAdminUtil {
             usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
             usernameMapper.setName(usernameMapperName);
             Map<String, String> usernameMapperConf = new HashMap<String, String>();
-            usernameMapperConf.put("template", "${ALIAS}.${CLAIM.preferred_username}");
+            if (idpAtrMap.containsKey("usernameAttr")) {
+                usernameMapperConf.put("template", orgMrn + ":user:${CLAIM.preferred_username}");
+            } else {
+                usernameMapperConf.put("template", orgMrn + ":user:${CLAIM." + idpAtrMap.get("permissionsAttr") + "}");
+            }
+            usernameMapperConf.put("template", orgMrn + ":user:${CLAIM.preferred_username}");
             usernameMapper.setConfig(usernameMapperConf);
             newIdpRes.addMapper(usernameMapper);
         }
@@ -274,14 +284,14 @@ public class KeycloakAdminUtil {
     /**
      * Delete Identity Provider with the given alias
      * 
-     * @param alias  Alias of the IDP to delete.
+     * @param orgMrn  Alias of the IDP to delete.
      */
-    public void deleteIdentityProvider(String alias) {
-        alias = alias.toLowerCase();
+    public void deleteIdentityProvider(String orgMrn) {
+        String alias = MrnUtils.getOrgShortNameFromOrgMrn(orgMrn);
         // First delete any users associated with the IDP
-        List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ alias + ".", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
+        List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ orgMrn + ":user:", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
         for (UserRepresentation user : users) {
-            if (user.getUsername().startsWith(alias + ".")) {
+            if (user.getUsername().startsWith(orgMrn + ":user:")) {
                 getBrokerRealm().users().get(user.getId()).remove();
             }
         }
@@ -292,20 +302,20 @@ public class KeycloakAdminUtil {
     /**
      * Creates a user in keycloak.
      * 
-     * @param username      username in keycloak. prefix with the (lowercase) org short name, like: dma.tgc
+     * @param userMrn       MRN of the user
      * @param firstName     first name of user
      * @param lastName      last name of user
      * @param password      password of the user
      * @param email         email of the user
-     * @param orgShortName  shortname of the org
+     * @param orgMrn        MRN of the org
      * @param userType      type of user, determines rights.
      * @throws IOException 
      */
-    public void createUser(String username, String password, String firstName, String lastName, String email, String orgShortName, String permissions, boolean enabled, int userType) throws IOException {
-        logger.debug("creating user: " + username);
+    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled, int userType) throws IOException {
+        logger.debug("creating user: " + userMrn);
 
         UserRepresentation user = new UserRepresentation();
-        user.setUsername(username);
+        user.setUsername(email);
         user.setEnabled(enabled);
         if (email != null && !email.trim().isEmpty()) {
             user.setEmail(email);
@@ -319,7 +329,8 @@ public class KeycloakAdminUtil {
         }
         // Set attributes
         Map<String, Object> attr = new HashMap<String,Object>();
-        attr.put("org", Arrays.asList(orgShortName));
+        attr.put("org", Arrays.asList(orgMrn));
+        attr.put("mrn", userMrn);
         if (userType == ADMIN_USER) {
             attr.put("permissions", Arrays.asList(permissions));
         } else if (userType == NORMAL_USER) {
@@ -347,9 +358,9 @@ public class KeycloakAdminUtil {
         cred.setTemporary(false);
         // Find the user by searching for the username
         if (userType == ADMIN_USER) {
-            user = getBrokerRealm().users().search(username, null, null, null, -1, -1).get(0);
+            user = getBrokerRealm().users().search(email, null, null, null, -1, -1).get(0);
         } else {
-            user = getProjectUserRealm().users().search(username, null, null, null, -1, -1).get(0);
+            user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
         }
         user.setCredentials(Arrays.asList(cred));
         logger.debug("setting password for user: " + user.getId());
@@ -365,14 +376,14 @@ public class KeycloakAdminUtil {
     /**
      * Updates the user in keycloak
      * 
-     * @param username      username in keycloak. prefix with the (lowercase) org short name, like: dma.tgc
+     * @param userMrn       MRN of the user
      * @param firstName     first name of user
      * @param lastName      last name of user
      * @param email         email of the user
      * @throws IOException 
      */
-    public void updateUser(String username,  String firstName, String lastName, String email, String newPermissions, boolean enabled) throws IOException {
-        List<UserRepresentation> userReps = getProjectUserRealm().users().search(username, null, null, null, -1, -1);
+    public void updateUser(String userMrn,  String firstName, String lastName, String email, String newPermissions, boolean enabled) throws IOException {
+        List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         if (userReps.size() != 1) {
             logger.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
@@ -410,6 +421,21 @@ public class KeycloakAdminUtil {
                 updated = true;
             }
         }
+        if (attr.containsKey("mrn")) {
+            List<String> oldMrn = (List<String>) attr.get("mrn");
+            if (oldMrn != null && !oldMrn.isEmpty()) {
+                String mrn = oldMrn.get(0);
+                if (mrn == null || !mrn.equals(userMrn)) {
+                    attr.put("mrn", Arrays.asList(userMrn));
+                    user.setAttributes(attr);
+                    updated = true;
+                }
+            }
+        } else {
+            attr.put("mrn", Arrays.asList(userMrn));
+            user.setAttributes(attr);
+            updated = true;
+        }
         if (updated) {
             getProjectUserRealm().users().get(user.getId()).update(user);
         }
@@ -418,11 +444,11 @@ public class KeycloakAdminUtil {
     /**
      * Delete a user from Keycloak
      * 
-     * @param username  username of the user to delete
+     * @param email  email of the user to delete
      */
-    public void deleteUser(String username) {
+    public void deleteUser(String email) {
         // Find the user by searching for the username
-        List<UserRepresentation> users = getProjectUserRealm().users().search(username, null, null, null, -1, -1);
+        List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
             getProjectUserRealm().users().get(users.get(0).getId()).remove();

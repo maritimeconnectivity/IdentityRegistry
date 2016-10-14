@@ -22,7 +22,9 @@ import org.springframework.stereotype.Service;
 import java.util.List;
 
 @Service
-public class RoleServiceImpl extends EntityServiceImpl<Role> implements RoleService {
+public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleService {
+
+    protected RoleRepository repository;
 
     @Autowired
     public void setRoleRepository(RoleRepository RoleRepository) {
@@ -33,4 +35,17 @@ public class RoleServiceImpl extends EntityServiceImpl<Role> implements RoleServ
     public List<Role> getRolesByIdOrganizationAndPermission(Long idOrganization, String permission) {
         return ((RoleRepository)repository).findByIdOrganizationAndPermission(idOrganization, permission);
     };
+
+    public List<Role> listFromOrg(Long id) {
+        return this.getRepository().findByidOrganization(id);
+    }
+
+    public void deleteByOrg(Long id) {
+        this.deleteByOrg(id);
+    }
+
+    public RoleRepository getRepository() {
+        return this.repository;
+    }
+
 }

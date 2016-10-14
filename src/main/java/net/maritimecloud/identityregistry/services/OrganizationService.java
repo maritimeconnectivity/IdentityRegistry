@@ -19,11 +19,11 @@ import net.maritimecloud.identityregistry.model.database.Organization;
 import java.util.List;
 
 public interface OrganizationService extends BaseService<Organization>{
-    Organization getOrganizationByShortName(String shortname);
+    Organization getOrganizationByMrn(String mrn);
 
-    Organization getOrganizationByShortNameDisregardApproved(String shortname);
+    Organization getOrganizationByMrnDisregardApproved(String mrn);
     /* Does not filter sensitive data from the result! */
-    Organization getOrganizationByShortNameNoFilter(String shortname);
+    Organization getOrganizationByMrnNoFilter(String mrn);
 
     List<Organization> getUnapprovedOrganizations();
 }

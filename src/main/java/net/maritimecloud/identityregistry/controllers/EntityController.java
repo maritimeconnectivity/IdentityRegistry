@@ -14,6 +14,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.entities.EntityModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import org.springframework.web.bind.annotation.RestController;
@@ -61,8 +62,8 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<T> createEntity(HttpServletRequest request, String orgShortName, T input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<T> createEntity(HttpServletRequest request, String orgMrn, T input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             input.setIdOrganization(org.getId());
             T newEntity = this.entityService.save(input);
@@ -78,10 +79,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<T> getEntity(HttpServletRequest request, String orgShortName, Long entityId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<T> getEntity(HttpServletRequest request, String orgMrn, String entityMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            T entity = this.entityService.getById(entityId);
+            T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -100,10 +101,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<?> updateEntity(HttpServletRequest request, String orgShortName, Long entityId, T input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<?> updateEntity(HttpServletRequest request, String orgMrn, String entityMrn, T input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            T entity = this.entityService.getById(entityId);
+            T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -124,15 +125,15 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<?> deleteEntity(HttpServletRequest request, String orgShortName, Long entityId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<?> deleteEntity(HttpServletRequest request, String orgMrn, String entityMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            T entity = this.entityService.getById(entityId);
+            T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                this.entityService.delete(entityId);
+                this.entityService.delete(entity.getId());
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -147,8 +148,8 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<List<T>> getOrganizationEntities(HttpServletRequest request, String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<List<T>> getOrganizationEntities(HttpServletRequest request, String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             List<T> entities = this.entityService.listFromOrg(org.getId());
             return new ResponseEntity<List<T>>(entities, HttpStatus.OK);
@@ -164,10 +165,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<PemCertificate> newEntityCert(HttpServletRequest request, String orgShortName, Long entityId, String type) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<PemCertificate> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            T entity = this.entityService.getById(entityId);
+            T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -187,10 +188,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<?> revokeEntityCert(HttpServletRequest request, String orgShortName, Long entityId, Long certId, CertificateRevocation input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    protected ResponseEntity<?> revokeEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, Long certId, CertificateRevocation input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            T entity = this.entityService.getById(entityId);
+            T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -210,6 +211,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     protected T getCertEntity(Certificate cert) {
         throw new UnsupportedOperationException("EntityController implementation is missing getCertEntity method");
+    }
+
+    protected String getUid(CertificateModel certOwner) {
+        return ((EntityModel)certOwner).getMrn();
     }
 
 }

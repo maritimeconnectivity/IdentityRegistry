@@ -30,6 +30,7 @@ import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -46,7 +47,7 @@ public class DeviceValidatorTests {
     @Test
     public void validateValidDevice() {
         Device validDevice = new Device();
-        validDevice.setDeviceOrgId("Device1");
+        validDevice.setMrn("urn:mrn:mcl:org:test:device:test-device1");
         validDevice.setName("Test Device");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
@@ -56,12 +57,12 @@ public class DeviceValidatorTests {
     @Test
     public void validateInvalidDevice() {
         Device invalidDevice = new Device();
-        // Invalid deviceOrgId - must be set!
-        invalidDevice.setDeviceOrgId(null);
+        // Invalid mrn - must be set!
+        invalidDevice.setMrn(null);
         invalidDevice.setName("Test Device");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(invalidDevice);
-        assertTrue(violations.size() == 1);
+        assertEquals(violations.size(), 1);
     }
 
 }

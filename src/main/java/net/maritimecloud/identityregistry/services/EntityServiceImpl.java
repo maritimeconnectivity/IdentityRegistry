@@ -35,4 +35,8 @@ public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseSe
         return this.repository;
     }
 
+    public T getByMrn(String mrn) {
+        return this.getRepository().getByMrn(mrn);
+    }
+
 }

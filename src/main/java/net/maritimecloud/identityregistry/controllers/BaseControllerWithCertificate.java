@@ -58,14 +58,14 @@ public abstract class BaseControllerWithCertificate {
         // Find special MC attributes to put in the certificate
         HashMap<String, String> attrs = getAttr(certOwner);
 
-        String o = org.getShortName() + ";" + org.getName();
+        String o = org.getMrn();
         String name = getName(certOwner);
         String email = getEmail(certOwner);
         String uid = getUid(certOwner);
         if (uid == null || uid.trim().isEmpty()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
-        X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, uid ,userKeyPair.getPublic(), attrs);
+        X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs);
         String pemCertificate = "";
         try {
             pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");

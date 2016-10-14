@@ -79,7 +79,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Invalid Organization Name Format");
         }
         certOrg = certOrg.substring(0, idx);
-        Organization org = organizationService.getOrganizationByShortName(certOrg);
+        Organization org = organizationService.getOrganizationByMrn(certOrg);
         if (org == null) {
             throw new UsernameNotFoundException("Invalid Organization Name");
         }

@@ -39,12 +39,6 @@ public class User extends EntityModel {
     public User() {
     }
 
-    @ApiModelProperty(required = true, value = "Must be in the format ORG_SHORTNAME.USER_ID, cannot be updated after creation!")
-    @NotBlank
-    @Pattern(regexp = "\\w+\\..+", message = "illegal username format")
-    @Column(name = "user_org_id")
-    private String userOrgId;
-
     @ApiModelProperty(required = true)
     @NotBlank
     @Column(name = "first_name")
@@ -72,7 +66,6 @@ public class User extends EntityModel {
         user.setEmail(email);
         user.setFirstName(firstName);
         user.setLastName(lastName);
-        user.setUserOrgId(userOrgId);
         user.getCertificates().clear();
         user.getCertificates().addAll(certificates);
         user.setChildIds();
@@ -97,14 +90,6 @@ public class User extends EntityModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public String getUserOrgId() {
-        return userOrgId;
-    }
-
-    public void setUserOrgId(String userOrgId) {
-        this.userOrgId = userOrgId;
-    }
-
     public String getFirstName() {
         return firstName;
     }

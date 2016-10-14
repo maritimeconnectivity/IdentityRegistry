@@ -402,13 +402,13 @@ public class CertificateUtil {
      * 
      * @param country The country of org/entity
      * @param orgName The name of the organization the entity belongs to
-     * @param orgUnitName The name of the organizational unit the entity belongs to
+     * @param type The type of the  entity
      * @param callName The name of the entity
      * @param email The email of the entity
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String type, String callName, String email, String uid ,PublicKey publickey, Map<String, String> customAttr) {
+    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String type, String callName, String email, String uid, PublicKey publickey, Map<String, String> customAttr) {
         PrivateKeyEntry signingCertEntry = getSigningCertEntry();
         java.security.cert.Certificate signingCert = signingCertEntry.getCertificate();
         X509Certificate signingX509Cert = (X509Certificate) signingCert;
@@ -726,7 +726,7 @@ public class CertificateUtil {
             logger.error("Error when trying to validate signature", e);
             return false;
         }
-        return true;
+        return false;
     }
 
     public BasicOCSPRespBuilder initOCSPRespBuilder(OCSPReq request) {

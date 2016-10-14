@@ -29,6 +29,7 @@ import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -47,7 +48,7 @@ public class ServiceValidatorTests {
     public void validateValidService() {
         Service validService = new Service();
         validService.setName("Test service");
-        validService.setServiceOrgId("Service1");
+        validService.setMrn("urn:mrn:mcl:org:test:service:instance:test-service");
         validService.setOidcAccessType("bearer-only");
         validService.setOidcRedirectUri("http://test-redirect-url-to-service.net");
         Set<ConstraintViolation<Service>> violations = validator.validate(validService);
@@ -58,12 +59,12 @@ public class ServiceValidatorTests {
     public void validateInvalidService() {
         Service invalidService = new Service();
         invalidService.setName("Test service");
-        invalidService.setServiceOrgId("Service1");
+        invalidService.setMrn("urn:mrn:mcl:org:test:service:instance:test-service");
         // Invalid access type
         invalidService.setOidcAccessType("just rubish");
         // Invalid URL format
         invalidService.setOidcRedirectUri("test-redirect-url-to-service.net");
         Set<ConstraintViolation<Service>> violations = validator.validate(invalidService);
-        assertTrue(violations.size() == 2);
+        assertEquals(2, violations.size());
     }
 }

@@ -38,10 +38,6 @@ public class Vessel extends NonHumanEntityModel {
     public Vessel() {
     }
 
-    @ApiModelProperty(value = "The unique id inside its organization", required = true)
-    @Column(name = "vessel_org_id")
-    private String vesselOrgId;
-
     @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private List<VesselAttribute> attributes;
 
@@ -53,7 +49,6 @@ public class Vessel extends NonHumanEntityModel {
     /** Copies this vessel into the other */
     public Vessel copyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.copyTo(target);
-        vessel.setVesselOrgId(vesselOrgId);
         vessel.getAttributes().clear();
         vessel.getAttributes().addAll(attributes);
         vessel.getCertificates().clear();
@@ -67,7 +62,6 @@ public class Vessel extends NonHumanEntityModel {
     @Override
     public Vessel selectiveCopyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.selectiveCopyTo(target);
-        vessel.setVesselOrgId(vesselOrgId);
         vessel.getAttributes().clear();
         vessel.getAttributes().addAll(attributes);
         vessel.setChildIds();
@@ -92,14 +86,6 @@ public class Vessel extends NonHumanEntityModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public String getVesselOrgId() {
-        return vesselOrgId;
-    }
-
-    public void setVesselOrgId(String vesselOrgId) {
-        this.vesselOrgId = vesselOrgId;
-    }
-
     public List<VesselAttribute> getAttributes() {
         return attributes;
     }

@@ -21,8 +21,8 @@ import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
+
 import java.util.List;
-import java.util.Objects;
 
 import javax.persistence.*;
 import javax.validation.Valid;
@@ -40,10 +40,12 @@ public class Organization extends CertificateModel {
     @NotBlank
     private String name;
 
-    @ApiModelProperty(value = "The unique shortname of the organization, Max 10 chars.", required = true)
-    @Length(min=3, max=10)
-    @Column(name = "short_name")
-    private String shortName;
+    // Due to limitation in the X509, Organization MRN must not be longer than 64 characters
+    @Length(max = 64)
+    @NotBlank
+    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
+    @Column(name = "mrn")
+    private String mrn;
 
     @Column(name = "email")
     @Email
@@ -93,9 +95,7 @@ public class Organization extends CertificateModel {
 
     /** Copies this organization into the other */
     public Organization copyTo(Organization org) {
-        Objects.requireNonNull(org);
         org.setName(name);
-        org.setShortName(shortName);
         org.setEmail(email);
         org.setUrl(url);
         org.setAddress(address);
@@ -114,7 +114,6 @@ public class Organization extends CertificateModel {
     /** Copies this organization into the other.
      * Skips certificates, approved, logo and shortname */
     public Organization selectiveCopyTo(Organization org) {
-        Objects.requireNonNull(org);
         org.setName(name);
         org.setEmail(email);
         org.setUrl(url);
@@ -161,16 +160,12 @@ public class Organization extends CertificateModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    @JsonIgnore
-    @Override
-    public Long getId() {
-        return id;
+    public String getMrn() {
+        return mrn;
     }
 
-    @JsonIgnore
-    @Override
-    protected void setId(Long id) {
-        this.id = id;
+    public void setMrn(String mrn) {
+        this.mrn = mrn;
     }
 
     public String getType() {
@@ -211,14 +206,6 @@ public class Organization extends CertificateModel {
 
     public void setCountry(String country) {
         this.country = country;
-    }
-
-    public String getShortName() {
-        return shortName;
-    }
-
-    public void setShortName(String shortName) {
-        this.shortName = shortName;
     }
 
     public String getAddress() {

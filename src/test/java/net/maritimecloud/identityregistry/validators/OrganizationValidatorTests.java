@@ -32,6 +32,7 @@ import java.util.Arrays;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -50,7 +51,7 @@ public class OrganizationValidatorTests {
     public void validateValidOrg() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setShortName("TEST");
+        validOrg.setMrn("urn:mrn:mcl:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -64,7 +65,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrg1() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setShortName("TEST");
+        invalidOrg.setMrn("urn:mrn:mcl:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         // Invalid email!
@@ -73,15 +74,15 @@ public class OrganizationValidatorTests {
         invalidOrg.setUrl("http//test.org");
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(invalidOrg);
-        assertTrue(violations.size() == 2);
+        assertEquals(2, violations.size());
     }
 
     @Test
     public void validateInvalidOrg2() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        // Invalid shortname - only 10 chars
-        invalidOrg.setShortName("TESTTOOLONG");
+        // Invalid MRN - only 64 chars
+        invalidOrg.setMrn("urn:mrn:mcl:test:org:that:is:toooooooooooooooooooooooooooooooo:long");
         invalidOrg.setAddress("Test address");
         // Invalid country - must not be empty
         invalidOrg.setCountry(null);
@@ -89,14 +90,14 @@ public class OrganizationValidatorTests {
         invalidOrg.setUrl("http://test.org");
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(invalidOrg);
-        assertTrue(violations.size() == 2);
+        assertEquals(2, violations.size());
     }
 
     @Test
     public void validateValidOrgWithIDP() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setShortName("TEST");
+        validOrg.setMrn("urn:mrn:mcl:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -114,7 +115,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrgWithIDP() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setShortName("TEST");
+        invalidOrg.setMrn("urn:mrn:mcl:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         invalidOrg.setEmail("email@test.org");
@@ -131,7 +132,7 @@ public class OrganizationValidatorTests {
         invalidOrg.setIdentityProviderAttributes(Arrays.asList(attr1, attr2));
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(invalidOrg);
-        assertTrue(violations.size() == 2);
+        assertEquals(2, violations.size());
     }
 
 }

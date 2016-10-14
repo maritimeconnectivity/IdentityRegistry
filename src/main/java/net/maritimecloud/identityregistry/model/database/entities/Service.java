@@ -21,6 +21,7 @@ import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
@@ -37,11 +38,6 @@ public class Service extends NonHumanEntityModel {
 
     public Service() {
     }
-
-    @ApiModelProperty(value = "The unique id inside its organization", required = true)
-    @NotBlank
-    @Column(name = "service_org_id")
-    private String serviceOrgId;
 
     @ApiModelProperty(value = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
     @Column(name = "oidc_access_type")
@@ -61,6 +57,14 @@ public class Service extends NonHumanEntityModel {
     @URL
     private String oidcRedirectUri;
 
+    @ApiModelProperty(value = "The domain name the service will be available on. Used in the issued certificates for the service.")
+    @Column(name = "cert_domain_name")
+    private String certDomainName;
+
+    @JsonIgnore
+    @Column(name = "id_keycloak")
+    private String idKeycloak;
+
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
@@ -69,11 +73,12 @@ public class Service extends NonHumanEntityModel {
     /** Copies this service into the other */
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
-        service.setServiceOrgId(serviceOrgId);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcClientId(oidcClientId);
         service.setOidcClientSecret(oidcClientSecret);
         service.setOidcRedirectUri(oidcRedirectUri);
+        service.setCertDomainName(certDomainName);
+        service.setIdKeycloak(idKeycloak);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
         service.setChildIds();
@@ -84,9 +89,9 @@ public class Service extends NonHumanEntityModel {
      * Only update things that are allowed to change on update */
     public Service selectiveCopyTo(EntityModel target) {
         Service service = (Service) super.selectiveCopyTo(target);
-        service.setServiceOrgId(serviceOrgId);
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);
+        service.setCertDomainName(certDomainName);
         service.setChildIds();
         return service;
     }
@@ -109,14 +114,6 @@ public class Service extends NonHumanEntityModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public String getServiceOrgId() {
-        return serviceOrgId;
-    }
-
-    public void setServiceOrgId(String serviceOrgId) {
-        this.serviceOrgId = serviceOrgId;
-    }
-
     public List<Certificate> getCertificates() {
         return certificates;
     }
@@ -152,5 +149,22 @@ public class Service extends NonHumanEntityModel {
     public void setOidcRedirectUri(String oidcRedirectUri) {
         this.oidcRedirectUri = oidcRedirectUri;
     }
+
+    public String getCertDomainName() {
+        return certDomainName;
+    }
+
+    public void setCertDomainName(String certDomainName) {
+        this.certDomainName = certDomainName;
+    }
+
+    public String getIdKeycloak() {
+        return idKeycloak;
+    }
+
+    public void setIdKeycloak(String idKeycloak) {
+        this.idKeycloak = idKeycloak;
+    }
+
 }
 

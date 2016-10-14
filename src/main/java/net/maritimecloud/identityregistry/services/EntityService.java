@@ -20,4 +20,6 @@ public interface EntityService<T> extends BaseService<T> {
     List<T> listFromOrg(Long id);
 
     void deleteByOrg(Long id);
+
+    T getByMrn(String mrn);
 }

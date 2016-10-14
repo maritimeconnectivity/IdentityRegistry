@@ -29,6 +29,7 @@ import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.assertEquals;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -49,7 +50,7 @@ public class UserValidatorTests {
         validUser.setFirstName("Firstname");
         validUser.setLastName("Lastname");
         validUser.setEmail("user@test.org");
-        validUser.setUserOrgId("org.userId");
+        validUser.setMrn("urn:mrn:mcl:org:test:user:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(validUser);
         assertTrue(violations.isEmpty());
@@ -63,10 +64,10 @@ public class UserValidatorTests {
         invalidUser.setLastName(" ");
         // Invalid email
         invalidUser.setEmail("user-test.org");
-        invalidUser.setUserOrgId("org.userId");
+        invalidUser.setMrn("urn:mrn:mcl:org:test:user:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser);
-        assertTrue(violations.size() == 2);
+        assertEquals(2, violations.size());
     }
 
     @Test
@@ -75,11 +76,11 @@ public class UserValidatorTests {
         invalidUser.setFirstName("Firstname");
         invalidUser.setLastName("Lastname");
         invalidUser.setEmail("user@test.org");
-        // Invalid userOrgId, must be in the format ORG_SHORTNAME.USER_ID
-        invalidUser.setUserOrgId("org-userId");
+        // Invalid mrn, must be in the MRN format
+        invalidUser.setMrn("test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser);
-        assertTrue(violations.size() == 1);
+        assertEquals(1, violations.size());
     }
 
 }

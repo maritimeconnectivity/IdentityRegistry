@@ -33,14 +33,16 @@ public class IdentityProviderAttribute extends TimestampModel {
             value = "OpenId Connect or SAML2 attribute name",
             allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
                     "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, " +
-                    "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret"
+                    "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret," +
+                    "givenNameAttr, surNameAttr, emailAttr, usernameAttr, permissionsAttr, orgMrnAttr"
     )
     @Column(name = "attribute_name")
     @NotBlank
     @InPredefinedList(
             acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
                 "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
-                "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret"}
+                "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
+                "givenNameAttr", "surNameAttr", "emailAttr", "usernameAttr", "permissionsAttr", "orgMrnAttr"}
     )
     private String attributeName;
 

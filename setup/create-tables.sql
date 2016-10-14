@@ -9,7 +9,7 @@ CREATE TABLE `logos` (
 CREATE TABLE `organizations` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `name` VARCHAR(255),
-  `short_name` VARCHAR(10),
+  `mrn` VARCHAR(255),
   `email` VARCHAR(255),
   `address` VARCHAR(1000),
   `country` VARCHAR(64),
@@ -20,7 +20,7 @@ CREATE TABLE `organizations` (
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
-  UNIQUE (`short_name`),
+  UNIQUE (`mrn`),
   FOREIGN KEY (`id_logo`) REFERENCES logos(`id`)
 );
 
@@ -49,13 +49,13 @@ CREATE TABLE `roles` (
 CREATE TABLE `vessels` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
-  `vessel_org_id` VARCHAR(512),
   `name` VARCHAR(255),
   `permissions` VARCHAR(4000),
-  `mrn` VARCHAR(4000),
+  `mrn` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY  (`id`),
+  UNIQUE (`mrn`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
@@ -75,47 +75,46 @@ CREATE TABLE `vessel_attributes` (
 CREATE TABLE `users` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
-  `user_org_id` VARCHAR(512),
   `email` VARCHAR(255),
   `permissions` VARCHAR(4000),
-  `mrn` VARCHAR(4000),
+  `mrn` VARCHAR(255),
   `first_name` VARCHAR(255),
   `last_name` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
+  UNIQUE (`mrn`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
 CREATE TABLE `devices` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
-  `device_org_id` VARCHAR(512),
   `name` VARCHAR(255),
   `permissions` VARCHAR(4000),
-  `mrn` VARCHAR(4000),
-  `id_keycloak` VARCHAR(255),
+  `mrn` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
+  UNIQUE (`mrn`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
 CREATE TABLE `services` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
-  `service_org_id` VARCHAR(512),
   `name` VARCHAR(255),
   `permissions` VARCHAR(4000),
-  `mrn` VARCHAR(4000),
-  `id_keycloak` VARCHAR(255),
+  `mrn` VARCHAR(255),
   `oidc_access_type` VARCHAR(255),
   `oidc_client_id` VARCHAR(255),
   `oidc_client_secret` VARCHAR(255),
   `oidc_redirect_uri` VARCHAR(255),
+  `cert_domain_name` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
+  UNIQUE (`mrn`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 

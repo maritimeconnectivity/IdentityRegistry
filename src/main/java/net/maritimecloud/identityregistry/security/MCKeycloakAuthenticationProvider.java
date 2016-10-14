@@ -62,9 +62,9 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
 
         Organization org = null;
         if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME)) {
-            String orgShortName = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
-            logger.debug("Found org short name: " + orgShortName);
-            org = organizationService.getOrganizationByShortNameNoFilter(orgShortName);
+            String orgMrn = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
+            logger.debug("Found org mrn: " + orgMrn);
+            org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
 
             if (org != null) {
                 if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {

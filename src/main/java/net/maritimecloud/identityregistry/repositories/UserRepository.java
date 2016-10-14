@@ -17,5 +17,5 @@ package net.maritimecloud.identityregistry.repositories;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 
 public interface UserRepository extends EntityRepository<User> {
-    User findByUserOrgIdAndIdOrganization(String userOrgId, Long idOrganization);
+
 }

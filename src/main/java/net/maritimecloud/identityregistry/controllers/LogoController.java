@@ -44,18 +44,18 @@ public class LogoController {
     /**
      * Creates or updates a logo for an organization
      * @param request
-     * @param orgShortName
+     * @param orgMrn
      * @param logo
      * @return
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/logo",
+            value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.POST)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgShortName, @RequestParam("logo") MultipartFile logo) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             try {
                 this.saveLogo(org, logo.getInputStream());
@@ -77,12 +77,12 @@ public class LogoController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/logo",
+            value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.GET,
             produces = "image/png")
     @ResponseBody
-    public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null && org.getLogo() != null) {
             return new ResponseEntity<>(org.getLogo().getImage(), HttpStatus.OK);
         } else {
@@ -94,18 +94,18 @@ public class LogoController {
     /**
      * Creates or updates a logo for an organization
      * @param request
-     * @param orgShortName
+     * @param orgMrn
      * @param logo
      * @return
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/logo",
+            value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> createLogoPut(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody byte[] logo) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> createLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             try {
                 ByteArrayInputStream inputLogo = new ByteArrayInputStream(logo);
@@ -127,12 +127,12 @@ public class LogoController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/logo",
+            value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.DELETE)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (org.getLogo() != null) {
                 org.setLogo(null);

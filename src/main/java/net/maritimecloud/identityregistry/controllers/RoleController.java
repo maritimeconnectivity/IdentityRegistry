@@ -51,13 +51,13 @@ public class RoleController {
      * @return a reply...
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/roles",
+            value = "/api/org/{orgMrn}/roles",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<List<Role>> getCRL(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<List<Role>> getCRL(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             List<Role> roles = this.roleService.listFromOrg(org.getId());
             return new ResponseEntity<List<Role>>(roles, HttpStatus.OK);
@@ -67,13 +67,13 @@ public class RoleController {
     }
 
     @RequestMapping(
-            value = "/api/org/{orgShortName}/role",
+            value = "/api/org/{orgMrn}/role",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgShortName, @RequestBody Role input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody Role input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             input.setIdOrganization(org.getId());
             Role newRole = this.roleService.save(input);
@@ -90,13 +90,13 @@ public class RoleController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/role/{roleId}",
+            value = "/api/org/{orgMrn}/role/{roleId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
@@ -119,12 +119,12 @@ public class RoleController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/role/{roleId}",
+            value = "/api/org/{orgMrn}/role/{roleId}",
             method = RequestMethod.PUT)
     @ResponseBody
-    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
-    public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId, @RequestBody Role input) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
+    public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId, @RequestBody Role input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
@@ -148,12 +148,12 @@ public class RoleController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/role/{roleId}",
+            value = "/api/org/{orgMrn}/role/{roleId}",
             method = RequestMethod.DELETE)
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgShortName)")
-    public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgShortName, @PathVariable Long roleId) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByShortName(orgShortName);
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Role role = this.roleService.getById(roleId);
             if (role == null) {
@@ -176,11 +176,11 @@ public class RoleController {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgShortName}/role/myroles",
+            value = "/api/org/{orgMrn}/role/myroles",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<List<String>> getMyRole(HttpServletRequest request, @PathVariable String orgShortName) throws McBasicRestException {
+    public ResponseEntity<List<String>> getMyRole(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
         List<String> roles = AccessControlUtil.getMyRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }

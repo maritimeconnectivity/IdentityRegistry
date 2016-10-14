@@ -17,6 +17,8 @@ package net.maritimecloud.identityregistry.model.database.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.validators.MRN;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -30,7 +32,8 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "id_organization")
     private Long idOrganization;
 
-    @ApiModelProperty(value = "The Maritime Resource Name")
+    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
+    @MRN
     @Column(name = "mrn")
     private String mrn;
 
