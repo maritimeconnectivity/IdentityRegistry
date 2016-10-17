@@ -51,7 +51,7 @@ public class OrganizationValidatorTests {
     public void validateValidOrg() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setMrn("urn:mrn:mcl:test");
+        validOrg.setMrn("urn:mrn:mcl:org:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -65,7 +65,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrg1() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setMrn("urn:mrn:mcl:test");
+        invalidOrg.setMrn("urn:mrn:mcl:org:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         // Invalid email!
@@ -97,7 +97,7 @@ public class OrganizationValidatorTests {
     public void validateValidOrgWithIDP() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setMrn("urn:mrn:mcl:test");
+        validOrg.setMrn("urn:mrn:mcl:org:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -115,7 +115,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrgWithIDP() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setMrn("urn:mrn:mcl:test");
+        invalidOrg.setMrn("urn:mrn:mcl:org:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         invalidOrg.setEmail("email@test.org");

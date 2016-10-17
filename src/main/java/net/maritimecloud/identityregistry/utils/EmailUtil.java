@@ -44,12 +44,6 @@ public class EmailUtil {
     @Value("${net.maritimecloud.idreg.email.admin-org-awaiting-approval-text}")
     private String adminOrgAwaitingApprovalText;
 
-    @Value("${net.maritimecloud.idreg.email.approved-org-subject}")
-    private String approvedOrgSubject;
-
-    @Value("${net.maritimecloud.idreg.email.approved-org-text}")
-    private String approvedOrgText;
-
     @Value("${net.maritimecloud.idreg.email.created-user-subject}")
     private String createdUserSubject;
 
@@ -77,18 +71,6 @@ public class EmailUtil {
         msg.setFrom(from);
         msg.setSubject(String.format(orgAwaitingApprovalSubject, orgName));
         msg.setText(String.format(adminOrgAwaitingApprovalText, orgName));
-        this.mailSender.send(msg);
-    }
-
-    public void sendOrgApprovedEmail(String sendTo, String orgName, String adminUser, String adminPassword) throws MailException {
-        if (sendTo == null || sendTo.trim().isEmpty()) {
-            throw new IllegalArgumentException("No email address!");
-        }
-        SimpleMailMessage msg = new SimpleMailMessage();
-        msg.setTo(sendTo);
-        msg.setFrom(from);
-        msg.setSubject(String.format(approvedOrgSubject, orgName));
-        msg.setText(String.format(approvedOrgText, orgName, adminUser, adminPassword, portalUrl));
         this.mailSender.send(msg);
     }
 

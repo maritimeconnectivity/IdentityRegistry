@@ -308,10 +308,9 @@ public class KeycloakAdminUtil {
      * @param password      password of the user
      * @param email         email of the user
      * @param orgMrn        MRN of the org
-     * @param userType      type of user, determines rights.
-     * @throws IOException 
+     * @throws IOException
      */
-    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled, int userType) throws IOException {
+    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException {
         logger.debug("creating user: " + userMrn);
 
         UserRepresentation user = new UserRepresentation();
@@ -330,19 +329,11 @@ public class KeycloakAdminUtil {
         // Set attributes
         Map<String, Object> attr = new HashMap<String,Object>();
         attr.put("org", Arrays.asList(orgMrn));
-        attr.put("mrn", userMrn);
-        if (userType == ADMIN_USER) {
-            attr.put("permissions", Arrays.asList(permissions));
-        } else if (userType == NORMAL_USER) {
-            attr.put("permissions",  Arrays.asList(permissions));
-        }
+        attr.put("mrn", Arrays.asList(userMrn));
+        attr.put("permissions",  Arrays.asList(permissions));
         user.setAttributes(attr);
         Response ret;
-        if (userType == ADMIN_USER) {
-            ret = getBrokerRealm().users().create(user);
-        } else {
-            ret = getProjectUserRealm().users().create(user);
-        }
+        ret = getProjectUserRealm().users().create(user);
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
             logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
@@ -357,18 +348,10 @@ public class KeycloakAdminUtil {
         cred.setValue(password);
         cred.setTemporary(false);
         // Find the user by searching for the username
-        if (userType == ADMIN_USER) {
-            user = getBrokerRealm().users().search(email, null, null, null, -1, -1).get(0);
-        } else {
-            user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
-        }
+        user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
         user.setCredentials(Arrays.asList(cred));
         logger.debug("setting password for user: " + user.getId());
-        if (userType == ADMIN_USER) {
-            getBrokerRealm().users().get(user.getId()).resetPassword(cred);
-        } else {
-            getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
-        }
+        getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
         logger.debug("created user");
     }
 

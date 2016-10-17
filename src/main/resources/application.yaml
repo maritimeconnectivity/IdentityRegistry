@@ -40,10 +40,10 @@ net:
             keycloak-broker-base-url: http://localhost:9080/auth/
 
             # Login info for the keycloak used for project users
-            keycloak-project-users-admin-user: idreg-admin
-            keycloak-project-users-admin-password: idreg-admin
+            keycloak-project-users-admin-user: idreg-test-idp-admin
+            keycloak-project-users-admin-password: idreg-test-idp-admin
             keycloak-project-users-admin-client: security-admin-console
-            keycloak-project-users-realm: MaritimeCloud
+            keycloak-project-users-realm: ProjectTestUsers
             keycloak-project-users-base-url: http://localhost:9080/auth/
 
             keycloak-client-template: mc-client-template
@@ -73,7 +73,6 @@ net:
                 from: no-reply@maritimecloud.net
                 admin-email: admin@maritimecloud.net
                 org-awaiting-approval-subject: "%s is awaiting approval for being added to the Maritime Cloud"
-                approved-org-subject: "%s created as organization in Maritime Cloud"
                 created-user-subject: A login for the Maritime Cloud has been created for you
                 portal-url: https://portal.maritimecloud.net
                 project-IDP-name: ProjectTestUsers
@@ -88,17 +87,6 @@ net:
                     Dear Maritime Cloud Administrator,
                     
                     %1$s has applied for membership in the Maritime Cloud. Please review the application as soon as possible!
-                    
-                    Best regards,
-                    The Maritime Cloud
-                approved-org-text: |
-                    Welcome to the Maritime Cloud!
-                    
-                    It is with great pleasure that we can welcome you and the rest of %1$s to the Maritime Cloud!
-                    
-                    To manage %1$s in the Maritime Cloud please go to %4$s, click login, and on the login page shown enter the credentials below.
-                    The administrator credentials for %1$s is: %2$s / %3$s
-                    Please keep the credentials save!
                     
                     Best regards,
                     The Maritime Cloud

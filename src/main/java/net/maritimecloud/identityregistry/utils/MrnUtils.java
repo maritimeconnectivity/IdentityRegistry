@@ -21,13 +21,15 @@ import java.util.regex.Pattern;
  */
 public class MrnUtils {
 
-    public final static String MC_MRN_PREFIX = "urn:mrn:mcl";
-    public final static String MC_MRN_ORG_PREFIX = MC_MRN_PREFIX + ":org";
+    public final static String MC_MRN_PREFIX = "urn:mrn";
+    // TODO: "mcl" probably shouldn't be hardcoded...
+    public final static String MC_MRN_OWNER_PREFIX = MC_MRN_PREFIX + ":mcl";
+    public final static String MC_MRN_ORG_PREFIX = MC_MRN_OWNER_PREFIX + ":org";
     public final static Pattern URN_PATTERN = Pattern.compile("^urn:mrn:[a-z0-9][a-z0-9-]{0,31}:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
 
     public static String getOrgShortNameFromOrgMrn(String orgMrn) {
-        int idx = orgMrn.lastIndexOf(":");
+        int idx = orgMrn.lastIndexOf(":") + 1;
         return orgMrn.substring(idx);
     }
 
@@ -39,11 +41,14 @@ public class MrnUtils {
      */
     public static String getOrgValidatorFromOrgMrn(String orgMrn) {
         int idx = orgMrn.lastIndexOf(":");
-        if (idx == (MC_MRN_ORG_PREFIX.length() + 1)) {
-            return "mcl";
+        if (idx == (MC_MRN_ORG_PREFIX.length())) {
+            int endIdx = orgMrn.indexOf(":", MC_MRN_PREFIX.length() + 1);
+            return orgMrn.substring(MC_MRN_PREFIX.length() + 1, endIdx);
+        } else {
+            // This handles the nested validators
+            int endIdx = orgMrn.indexOf(":", MC_MRN_ORG_PREFIX.length() + 1);
+            return orgMrn.substring(MC_MRN_ORG_PREFIX.length() + 1, endIdx);
         }
-        int endIdx = orgMrn.indexOf(":", MC_MRN_ORG_PREFIX.length() + 1);
-        return orgMrn.substring(MC_MRN_ORG_PREFIX.length() + 1, endIdx);
     }
 
     public static String getOrgShortNameFromEntityMrn(String entityMrn) {
@@ -57,7 +62,7 @@ public class MrnUtils {
         if (endIdx < 0) {
             endIdx = entityMrn.indexOf(":service:");
         }
-        int startIdx = entityMrn.lastIndexOf(":", endIdx);
+        int startIdx = entityMrn.lastIndexOf(":", endIdx - 1) + 1;
         return entityMrn.substring(startIdx, endIdx);
     }
 
@@ -72,16 +77,18 @@ public class MrnUtils {
         if (endIdx < 0) {
             endIdx = entityMrn.indexOf(":service:");
         }
-        int startIdx = entityMrn.lastIndexOf(":", endIdx);
         return entityMrn.substring(0, endIdx);
     }
 
     public static String getEntityIdFromMrn(String entityMrn) {
-        int idx = entityMrn.lastIndexOf(":");
+        int idx = entityMrn.lastIndexOf(":") + 1;
         return entityMrn.substring(idx);
     }
 
     public static String getServiceTypeFromMrn(String serviceMrn) {
+        if (!serviceMrn.contains(":instance:") || !serviceMrn.contains(":service:")) {
+            throw new IllegalArgumentException("The MRN must belong to a service instance!");
+        }
         int startIdx = serviceMrn.indexOf(":service:") + 9;
         int endIdx = serviceMrn.indexOf(":", startIdx);
         return serviceMrn.substring(startIdx, endIdx);
@@ -103,11 +110,16 @@ public class MrnUtils {
     }
 
     public static boolean validateMrn(String mrn) {
-        // TODO: validating of mrn based on the entity type
         if (mrn == null || mrn.trim().isEmpty()) {
             return false;
         }
-        return URN_PATTERN.matcher(mrn).matches();
+        if (!URN_PATTERN.matcher(mrn).matches()) {
+            return false;
+        }
+        // TODO: validating mrn based on the entity type
+        if (mrn.contains(":service:") || !mrn.contains(":service:")) {
+            throw new IllegalArgumentException("The MRN must belong to a service instance!");
+        }
     }
 
     /**

@@ -155,24 +155,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
         // Enabled the organization and save it
         org.setApproved(true);
-        // Create password to be send to admin
-        String newPassword = PasswordUtil.generatePassword();
-        // Create admin user in the keycloak instance handling users
-        keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-        try {
-            keycloakAU.createUser(org.getMrn(), newPassword, MrnUtils.getOrgShortNameFromOrgMrn(org.getMrn()), "ADMIN", org.getEmail(), org.getMrn(), "MCADMIN", true, KeycloakAdminUtil.ADMIN_USER);
-        } catch (IOException e) {
-            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
-        }
         Organization approvedOrg =  this.organizationService.save(org);
-        // Add a MCADMIN role mapper to actually give the admin user admin rights.
-        Role adminRole = new Role();
-        adminRole.setIdOrganization(approvedOrg.getId());
-        adminRole.setPermission("MCADMIN");
-        adminRole.setRoleName("ROLE_ORG_ADMIN");
-        roleService.save(adminRole);
-        // Send email to the organization that it has been approved
-        emailUtil.sendOrgApprovedEmail(org.getEmail(), org.getName(), org.getMrn(), newPassword);
         return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
     }
 
