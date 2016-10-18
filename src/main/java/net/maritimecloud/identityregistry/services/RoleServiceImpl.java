@@ -18,6 +18,7 @@ import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -40,8 +41,9 @@ public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleServic
         return this.getRepository().findByidOrganization(id);
     }
 
+    @Transactional
     public void deleteByOrg(Long id) {
-        this.deleteByOrg(id);
+        this.getRepository().deleteByidOrganization(id);
     }
 
     public RoleRepository getRepository() {

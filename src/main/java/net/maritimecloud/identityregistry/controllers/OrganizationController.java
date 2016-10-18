@@ -254,6 +254,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 keycloakAU.deleteIdentityProvider(org.getMrn().toLowerCase());
+            } else {
+                // Remove any users from the shared project IDP
+                keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                for (User user : this.userService.listFromOrg(org.getId())) {
+                    keycloakAU.deleteUser(user.getEmail());
+                }
             }
             this.deviceService.deleteByOrg(org.getId());
             this.serviceService.deleteByOrg(org.getId());

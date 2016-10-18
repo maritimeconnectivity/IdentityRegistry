@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
 import net.maritimecloud.identityregistry.repositories.EntityRepository;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -27,8 +28,9 @@ public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseSe
         return this.getRepository().findByidOrganization(id);
     }
 
+    @Transactional
     public void deleteByOrg(Long id) {
-        this.deleteByOrg(id);
+        this.getRepository().deleteByidOrganization(id);
     }
 
     public EntityRepository<T> getRepository() {

@@ -43,7 +43,6 @@ public class Role extends TimestampModel {
     private String permission;
 
     @JsonIgnore
-    @ApiModelProperty(required = true)
     @Column(name = "id_organization")
     private Long idOrganization;
 

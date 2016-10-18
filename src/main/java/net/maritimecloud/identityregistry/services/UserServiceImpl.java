@@ -14,8 +14,6 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-//import java.util.List;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -24,8 +22,6 @@ import net.maritimecloud.identityregistry.repositories.UserRepository;
 
 @Service
 public class UserServiceImpl extends EntityServiceImpl<User> implements EntityService<User> {
-
-//public class UserServiceImpl extends EntityServiceImpl<User> implements UserService {
 
     @Autowired
     public void setUserRepository(UserRepository userRepository) {

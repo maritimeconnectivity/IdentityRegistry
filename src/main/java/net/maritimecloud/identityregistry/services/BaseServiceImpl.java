@@ -20,10 +20,12 @@ import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
 
+@Transactional(readOnly = true)
 public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseService<T> {
     private static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
 
@@ -70,11 +72,13 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
         return ret;
     }
 
+    @Transactional
     public T save(T entity) {
         logger.debug("Just saved entity");
         return getRepository().save(entity);
     }
 
+    @Transactional
     public void delete(Long id) {
         getRepository().delete(id);
     }
