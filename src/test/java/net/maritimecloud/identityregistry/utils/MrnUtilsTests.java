@@ -88,15 +88,15 @@ public class MrnUtilsTests {
 
     @Test
     public void extractOrgMRNFromVesselMRN1() {
-        String userMrn = "urn:mrn:mcl:org:dma:vessel:poul-loewenoern";
-        String ret = MrnUtils.getOrgMrnEntityMrn(userMrn);
+        String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-loewenoern";
+        String ret = MrnUtils.getOrgMrnEntityMrn(vesselMrn);
         assertEquals("Org shortname should be 'urn:mrn:mcl:org:dma'","urn:mrn:mcl:org:dma", ret);
     }
 
     @Test
     public void extractOrgMRNFromVesselMRN2() {
-        String userMrn = "urn:mrn:mcl:org:bimco:member:dfds:vessel:crown-seaways";
-        String ret = MrnUtils.getOrgMrnEntityMrn(userMrn);
+        String vesselMrn = "urn:mrn:mcl:org:bimco:member:dfds:vessel:crown-seaways";
+        String ret = MrnUtils.getOrgMrnEntityMrn(vesselMrn);
         assertEquals("Org shortname should be 'urn:mrn:mcl:org:bimco:member:dfds'","urn:mrn:mcl:org:bimco:member:dfds", ret);
     }
 
@@ -134,11 +134,24 @@ public class MrnUtilsTests {
         assertTrue("Org MRN should be valid", ret);
     }
 
-    @Test
+    @Test(expected=IllegalArgumentException.class)
     public void validatingOrgMRN2() {
         String orgMrn = "urn:x-mrn:mcl:org:dma";
         boolean ret = MrnUtils.validateMrn(orgMrn);
-        assertFalse("Org MRN should be invalid", ret);
+    }
+
+    @Test
+    public void validatingVesselMRN1() {
+        String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-loewenoern";
+        boolean ret = MrnUtils.validateMrn(vesselMrn);
+        assertTrue("Vessel MRN should be valid", ret);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void validatingVesselMRN2() {
+        // Invalid mrn - special characters like "ø" are not allowed
+        String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-løwenørn";
+        boolean ret = MrnUtils.validateMrn(vesselMrn);
     }
 
 }

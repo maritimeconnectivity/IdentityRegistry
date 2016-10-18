@@ -48,7 +48,7 @@ public class ServiceValidatorTests {
     public void validateValidService() {
         Service validService = new Service();
         validService.setName("Test service");
-        validService.setMrn("urn:mrn:mcl:org:test:service:instance:test-service");
+        validService.setMrn("urn:mrn:mcl:org:test:service:test-service:instance:test-service-instance");
         validService.setOidcAccessType("bearer-only");
         validService.setOidcRedirectUri("http://test-redirect-url-to-service.net");
         Set<ConstraintViolation<Service>> violations = validator.validate(validService);
@@ -59,12 +59,13 @@ public class ServiceValidatorTests {
     public void validateInvalidService() {
         Service invalidService = new Service();
         invalidService.setName("Test service");
+        // Invalid MRN service instances format
         invalidService.setMrn("urn:mrn:mcl:org:test:service:instance:test-service");
         // Invalid access type
         invalidService.setOidcAccessType("just rubish");
         // Invalid URL format
         invalidService.setOidcRedirectUri("test-redirect-url-to-service.net");
         Set<ConstraintViolation<Service>> violations = validator.validate(invalidService);
-        assertEquals(2, violations.size());
+        assertEquals(3, violations.size());
     }
 }

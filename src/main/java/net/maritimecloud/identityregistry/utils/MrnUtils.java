@@ -25,7 +25,12 @@ public class MrnUtils {
     // TODO: "mcl" probably shouldn't be hardcoded...
     public final static String MC_MRN_OWNER_PREFIX = MC_MRN_PREFIX + ":mcl";
     public final static String MC_MRN_ORG_PREFIX = MC_MRN_OWNER_PREFIX + ":org";
-    public final static Pattern URN_PATTERN = Pattern.compile("^urn:mrn:[a-z0-9][a-z0-9-]{0,31}:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern URN_PATTERN = Pattern.compile("^urn:[a-z0-9][a-z0-9-]{0,31}:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_SERVICE_INSTANCE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:service:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:instance:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_USER_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:user:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_VESSEL_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:vessel:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_DEVICE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:device:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
 
     public static String getOrgShortNameFromOrgMrn(String orgMrn) {
@@ -111,15 +116,22 @@ public class MrnUtils {
 
     public static boolean validateMrn(String mrn) {
         if (mrn == null || mrn.trim().isEmpty()) {
-            return false;
+            throw new IllegalArgumentException("MRN is empty");
         }
-        if (!URN_PATTERN.matcher(mrn).matches()) {
-            return false;
+        if (!MRN_PATTERN.matcher(mrn).matches()) {
+            throw new IllegalArgumentException("MRN is not in a valid format");
         }
-        // TODO: validating mrn based on the entity type
-        if (mrn.contains(":service:") || !mrn.contains(":service:")) {
-            throw new IllegalArgumentException("The MRN must belong to a service instance!");
+        // validate mrn based on the entity type
+        if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
+            throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
+        } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
+            throw new IllegalArgumentException("MRN is not in a valid format for a user");
+        } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
+            throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
+        } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
+            throw new IllegalArgumentException("MRN is not in a valid format for a device");
         }
+        return true;
     }
 
     /**

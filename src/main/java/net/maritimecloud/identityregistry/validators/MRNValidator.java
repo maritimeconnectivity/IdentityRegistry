@@ -19,8 +19,6 @@ import net.maritimecloud.identityregistry.utils.MrnUtils;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
-import java.util.ArrayList;
-import java.util.List;
 
 public class MRNValidator implements ConstraintValidator<MRN, String> {
 
@@ -30,7 +28,16 @@ public class MRNValidator implements ConstraintValidator<MRN, String> {
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
-        return MrnUtils.validateMrn(value);
+        try {
+            boolean ret = MrnUtils.validateMrn(value);
+            return ret;
+        } catch (IllegalArgumentException e) {
+            context.disableDefaultConstraintViolation();
+            context
+                .buildConstraintViolationWithTemplate(e.getMessage())
+                .addConstraintViolation();
+            return false;
+        }
     }
 
 }
