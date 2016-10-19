@@ -102,13 +102,16 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McBasicRestException
      */
     protected ResponseEntity<?> updateEntity(HttpServletRequest request, String orgMrn, String entityMrn, T input) throws McBasicRestException {
+        if (!entityMrn.equals(input.getMrn())) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+        }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             T entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getId().compareTo(input.getId()) == 0 && entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(entity);
                 this.entityService.save(entity);
                 return new ResponseEntity<>(HttpStatus.OK);

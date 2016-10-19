@@ -22,24 +22,18 @@ import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.keycloak.admin.client.Keycloak;
 import org.keycloak.admin.client.resource.IdentityProviderResource;
-import org.keycloak.admin.client.resource.IdentityProvidersResource;
 import org.keycloak.admin.client.resource.RealmResource;
 import org.keycloak.representations.idm.ClientRepresentation;
 import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
-import org.keycloak.util.JsonSerialization;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.MalformedInputException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -163,7 +157,7 @@ public class KeycloakAdminUtil {
      * @throws IOException
      */
     public void createIdentityProvider(String orgMrn, List<IdentityProviderAttribute> input) throws IOException {
-        String name = MrnUtils.getOrgShortNameFromOrgMrn(orgMrn);
+        String name = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         Map<String, String> idpAtrMap = idpAttributes2Map(input);
         // Check for valid input
         String providerType = idpAtrMap.get("providerType");
@@ -269,13 +263,13 @@ public class KeycloakAdminUtil {
             usernameMapper.setIdentityProviderAlias(name);
             usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
             usernameMapper.setName(usernameMapperName);
+            // Import username to an mrn in the form: urn:mrn:mcl:user:<org-id>:<user-id>
             Map<String, String> usernameMapperConf = new HashMap<String, String>();
             if (idpAtrMap.containsKey("usernameAttr")) {
-                usernameMapperConf.put("template", orgMrn + ":user:${CLAIM.preferred_username}");
+                usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM.preferred_username}");
             } else {
-                usernameMapperConf.put("template", orgMrn + ":user:${CLAIM." + idpAtrMap.get("permissionsAttr") + "}");
+                usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM." + idpAtrMap.get("permissionsAttr") + "}");
             }
-            usernameMapperConf.put("template", orgMrn + ":user:${CLAIM.preferred_username}");
             usernameMapper.setConfig(usernameMapperConf);
             newIdpRes.addMapper(usernameMapper);
         }
@@ -287,7 +281,7 @@ public class KeycloakAdminUtil {
      * @param orgMrn  Alias of the IDP to delete.
      */
     public void deleteIdentityProvider(String orgMrn) {
-        String alias = MrnUtils.getOrgShortNameFromOrgMrn(orgMrn);
+        String alias = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         // First delete any users associated with the IDP
         List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ orgMrn + ":user:", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
         for (UserRepresentation user : users) {
@@ -332,8 +326,7 @@ public class KeycloakAdminUtil {
         attr.put("mrn", Arrays.asList(userMrn));
         attr.put("permissions",  Arrays.asList(permissions));
         user.setAttributes(attr);
-        Response ret;
-        ret = getProjectUserRealm().users().create(user);
+        Response ret = getProjectUserRealm().users().create(user);
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
             logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
@@ -346,7 +339,8 @@ public class KeycloakAdminUtil {
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);
         cred.setValue(password);
-        cred.setTemporary(false);
+        // Make sure the user updates the password on first login
+        cred.setTemporary(true);
         // Find the user by searching for the username
         user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
         user.setCredentials(Arrays.asList(cred));

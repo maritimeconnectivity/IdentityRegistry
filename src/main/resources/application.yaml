@@ -99,7 +99,7 @@ net:
                     To log in using the Maritime Cloud go to a webpage that supports Maritime Cloud login (for example the Maritime Cloud Management Portal: %4$s), click the Maritime Cloud logo which will redirect you to a new page. Here you must click the on the button reading "%5$s". This will redirect you to a new page where you can log in using the credentials below.
                     
                     The login credentials for %1$s is: %2$s / %3$s
-                    Please keep the credentials save!
+                    You will be asked to update your credentials on first login - please keep your credentials save!
                     
                     Best regards,
                     The Maritime Cloud

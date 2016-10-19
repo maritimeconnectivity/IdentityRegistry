@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
 
 import java.util.Objects;
 
@@ -34,8 +35,9 @@ public class Role extends TimestampModel {
     public Role() {
     }
 
-    @ApiModelProperty(required = true, value = "The role that should be mapped to the permission", allowableValues = "ROLE_ORG_ADMIN, ROLE_USER")
+    @ApiModelProperty(required = true, value = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_USER")
     @Column(name = "role_name")
+    @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_USER"})
     private String roleName;
 
     @ApiModelProperty(required = true, value = "The permission that should be mapped to the role")

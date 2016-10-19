@@ -15,7 +15,7 @@
 package net.maritimecloud.identityregistry.validators;
 
 
-import net.maritimecloud.identityregistry.utils.MrnUtils;
+import net.maritimecloud.identityregistry.utils.MrnUtil;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -29,7 +29,7 @@ public class MRNValidator implements ConstraintValidator<MRN, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
-            boolean ret = MrnUtils.validateMrn(value);
+            boolean ret = MrnUtil.validateMrn(value);
             return ret;
         } catch (IllegalArgumentException e) {
             context.disableDefaultConstraintViolation();

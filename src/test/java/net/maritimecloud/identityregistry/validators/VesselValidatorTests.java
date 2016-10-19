@@ -45,26 +45,26 @@ public class VesselValidatorTests {
         invalidVessel.setName("Test Vessel");
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
-        assertTrue(errors.hasErrors());
+        assertEquals(1, errors.getErrorCount());
     }
 
     @Test
     public void validateInvalidVesselNoName() {
         Vessel invalidVessel = new Vessel();
-        invalidVessel.setMrn("urn:mrn:mcl:org:test:vessel:invalid-vessel");
+        invalidVessel.setMrn("urn:mrn:mcl:vessel:testorg:vessel:invalid-vessel");
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
-        assertTrue(errors.hasErrors());
+        assertEquals(1, errors.getErrorCount());
     }
 
     @Test
     public void validateValidVesselNoAttributes() {
         Vessel validVessel = new Vessel();
-        validVessel.setMrn("urn:mrn:mcl:org:test:vessel:valid-vessel");
+        validVessel.setMrn("urn:mrn:mcl:vessel:test-org:valid-vessel");
         validVessel.setName("Test Vessel");
         Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
         this.vesselValidator.validate(validVessel, errors);
-        assertFalse(errors.hasErrors());
+        assertEquals(0, errors.getErrorCount());
     }
 
     @Test
@@ -81,7 +81,7 @@ public class VesselValidatorTests {
         validVessel.setAttributes(Arrays.asList(va1, va2));
         Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
         this.vesselValidator.validate(validVessel, errors);
-        assertFalse(errors.hasErrors());
+        assertEquals(0, errors.getErrorCount());
     }
 
     @Test
@@ -100,7 +100,6 @@ public class VesselValidatorTests {
         invalidVessel.setAttributes(Arrays.asList(va1, va2));
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
-        assertTrue(errors.hasErrors());
         assertEquals(2, errors.getErrorCount());
     }
 

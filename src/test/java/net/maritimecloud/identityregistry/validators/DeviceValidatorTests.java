@@ -47,7 +47,7 @@ public class DeviceValidatorTests {
     @Test
     public void validateValidDevice() {
         Device validDevice = new Device();
-        validDevice.setMrn("urn:mrn:mcl:org:test:device:test-device1");
+        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
         validDevice.setName("Test Device");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);

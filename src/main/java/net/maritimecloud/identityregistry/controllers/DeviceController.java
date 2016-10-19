@@ -134,7 +134,7 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/device/{deviceMrn}/generatecertificate",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -149,7 +149,7 @@ public class DeviceController extends EntityController<Device> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

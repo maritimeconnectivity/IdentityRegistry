@@ -133,6 +133,9 @@ public class UserController extends EntityController<User> {
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
+        if (!userMrn.equals(input.getMrn())) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+        }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             User user = this.entityService.getByMrn(userMrn);
@@ -182,7 +185,7 @@ public class UserController extends EntityController<User> {
                 // Remove user from keycloak if created there.
                 if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    keycloakAU.deleteUser(user.getMrn());
+                    keycloakAU.deleteUser(user.getEmail());
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
             }
@@ -214,7 +217,7 @@ public class UserController extends EntityController<User> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/user/{userMrn}/generatecertificate",
+            value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -229,7 +232,7 @@ public class UserController extends EntityController<User> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/user/{userMrn}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

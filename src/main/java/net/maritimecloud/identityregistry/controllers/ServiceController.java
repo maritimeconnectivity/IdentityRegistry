@@ -76,10 +76,9 @@ public class ServiceController extends EntityController<Service> {
             if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
                     && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                String serviceClientId = (org.getMrn() + "_" + input.getName()).replace(" ", "_");
-                input.setOidcClientId(serviceClientId);
+                input.setOidcClientId(input.getMrn());
                 try {
-                    String clientSecret = keycloakAU.createClient(serviceClientId, input.getOidcAccessType(), input.getOidcRedirectUri());
+                    String clientSecret = keycloakAU.createClient(input.getMrn(), input.getOidcAccessType(), input.getOidcRedirectUri());
                     input.setOidcClientSecret(clientSecret);
                 } catch(IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
@@ -126,20 +125,23 @@ public class ServiceController extends EntityController<Service> {
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
+        if (!serviceMrn.equals(input.getMrn())) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+        }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Service service = this.entityService.getByMrn(serviceMrn);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (service.getId().compareTo(input.getId()) == 0 && service.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 input.selectiveCopyTo(service);
                 // Update the keycloak client for the service if needed
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String serviceClientId = (org.getMrn() + "_" + service.getName()).replace(" ", "_");
-                    keycloakAU.updateClient(serviceClientId, service.getOidcAccessType(), service.getOidcRedirectUri());
+                    service.setOidcClientId(service.getMrn());
+                    keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
                 }
                 this.entityService.save(service);
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -207,7 +209,7 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/generatecertificate",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -222,7 +224,7 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

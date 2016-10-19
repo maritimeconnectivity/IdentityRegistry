@@ -17,9 +17,9 @@ package net.maritimecloud.identityregistry.utils;
 import java.util.regex.Pattern;
 
 /**
- * Utility class to create MRNs and extract certain info from MRNs
+ * Utility class to create, validate and extract certain info from MRNs
  */
-public class MrnUtils {
+public class MrnUtil {
 
     public final static String MC_MRN_PREFIX = "urn:mrn";
     // TODO: "mcl" probably shouldn't be hardcoded...
@@ -27,7 +27,7 @@ public class MrnUtils {
     public final static String MC_MRN_ORG_PREFIX = MC_MRN_OWNER_PREFIX + ":org";
     public final static Pattern URN_PATTERN = Pattern.compile("^urn:[a-z0-9][a-z0-9-]{0,31}:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
-    public final static Pattern MRN_SERVICE_INSTANCE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:service:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:instance:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    public final static Pattern MRN_SERVICE_INSTANCE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:service:instance:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_USER_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:user:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_VESSEL_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:vessel:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_DEVICE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:device:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
@@ -40,49 +40,41 @@ public class MrnUtils {
 
     /**
      * Returns the org shortname of the organization responsible for validating the organization that is
-     * identified by the given MRN. If MaritimeCloud is the validator "mcl" is returned.
-     * @param orgMrn
+     * identified by the given shortname. If MaritimeCloud is the validator "mcl" is returned.
+     * @param orgShortname
      * @return
      */
-    public static String getOrgValidatorFromOrgMrn(String orgMrn) {
-        int idx = orgMrn.lastIndexOf(":");
-        if (idx == (MC_MRN_ORG_PREFIX.length())) {
-            int endIdx = orgMrn.indexOf(":", MC_MRN_PREFIX.length() + 1);
-            return orgMrn.substring(MC_MRN_PREFIX.length() + 1, endIdx);
-        } else {
+    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
+        if (orgShortname.contains("@")) {
             // This handles the nested validators
-            int endIdx = orgMrn.indexOf(":", MC_MRN_ORG_PREFIX.length() + 1);
-            return orgMrn.substring(MC_MRN_ORG_PREFIX.length() + 1, endIdx);
+            String[] dividedShotname = orgShortname.split("@", 2);
+            return dividedShotname[1];
+        } else {
+            return "mcl";
         }
     }
 
     public static String getOrgShortNameFromEntityMrn(String entityMrn) {
-        int endIdx = entityMrn.indexOf(":user:");
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":device:");
+        // An entity MRN looks like this: urn:mrn:mcl:user:<org-shortname>:<user-id>
+        int tmpIdx = entityMrn.indexOf(":user:");
+        int startIdx = tmpIdx + 6;
+        if (tmpIdx < 0) {
+            tmpIdx = entityMrn.indexOf(":device:");
+            startIdx = tmpIdx + 8;
         }
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":vessel:");
+        if (tmpIdx < 0) {
+            tmpIdx = entityMrn.indexOf(":vessel:");
+            startIdx = tmpIdx + 8;
         }
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":service:");
+        if (tmpIdx < 0) {
+            tmpIdx = entityMrn.indexOf(":service:");
+            startIdx = tmpIdx + 9;
         }
-        int startIdx = entityMrn.lastIndexOf(":", endIdx - 1) + 1;
+        if (tmpIdx < 0) {
+            throw new IllegalArgumentException("MRN is not a valid entity MRN!");
+        }
+        int endIdx = entityMrn.indexOf(":", startIdx);
         return entityMrn.substring(startIdx, endIdx);
-    }
-
-    public static String getOrgMrnEntityMrn(String entityMrn) {
-        int endIdx = entityMrn.indexOf(":user:");
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":device:");
-        }
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":vessel:");
-        }
-        if (endIdx < 0) {
-            endIdx = entityMrn.indexOf(":service:");
-        }
-        return entityMrn.substring(0, endIdx);
     }
 
     public static String getEntityIdFromMrn(String entityMrn) {
@@ -94,7 +86,7 @@ public class MrnUtils {
         if (!serviceMrn.contains(":instance:") || !serviceMrn.contains(":service:")) {
             throw new IllegalArgumentException("The MRN must belong to a service instance!");
         }
-        int startIdx = serviceMrn.indexOf(":service:") + 9;
+        int startIdx = serviceMrn.indexOf(":service:instance:") + 18;
         int endIdx = serviceMrn.indexOf(":", startIdx);
         return serviceMrn.substring(startIdx, endIdx);
     }
@@ -141,8 +133,7 @@ public class MrnUtils {
      */
     public static String generateClientName(String serviceMrn) {
         String orgShortName = getOrgShortNameFromEntityMrn(serviceMrn);
-        String orgMrn = getOrgMrnEntityMrn(serviceMrn);
-        String orgValidator = getOrgValidatorFromOrgMrn(orgMrn);
+        String orgValidator = getOrgValidatorFromOrgShortname(orgShortName);
         String serviceName = getEntityIdFromMrn(serviceMrn);
         String serviceType = getServiceTypeFromMrn(serviceMrn);
         String clientName = orgValidator + "_" + orgShortName + "_" + serviceType + "_" + serviceName;

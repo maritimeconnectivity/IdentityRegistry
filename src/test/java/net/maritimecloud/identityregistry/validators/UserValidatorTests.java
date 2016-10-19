@@ -50,7 +50,7 @@ public class UserValidatorTests {
         validUser.setFirstName("Firstname");
         validUser.setLastName("Lastname");
         validUser.setEmail("user@test.org");
-        validUser.setMrn("urn:mrn:mcl:org:test:user:test-user");
+        validUser.setMrn("urn:mrn:mcl:user:testorg:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(validUser);
         assertTrue(violations.isEmpty());
@@ -64,7 +64,7 @@ public class UserValidatorTests {
         invalidUser.setLastName(" ");
         // Invalid email
         invalidUser.setEmail("user-test.org");
-        invalidUser.setMrn("urn:mrn:mcl:org:test:user:test-user");
+        invalidUser.setMrn("urn:mrn:mcl:user:testorg:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser);
         assertEquals(2, violations.size());

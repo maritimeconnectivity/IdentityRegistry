@@ -284,7 +284,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/generatecertificate",
+            value = "/api/org/{orgMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -305,7 +305,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

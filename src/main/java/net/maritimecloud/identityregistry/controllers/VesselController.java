@@ -146,7 +146,7 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/generatecertificate",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -161,7 +161,7 @@ public class VesselController extends EntityController<Vessel> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificates/{certId}/revoke",
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

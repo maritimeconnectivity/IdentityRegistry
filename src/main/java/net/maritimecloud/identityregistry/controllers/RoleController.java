@@ -21,13 +21,16 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import java.util.List;
 
 @RestController
@@ -56,7 +59,7 @@ public class RoleController {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<List<Role>> getCRL(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<List<Role>> getRoles(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             List<Role> roles = this.roleService.listFromOrg(org.getId());
@@ -71,8 +74,8 @@ public class RoleController {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody Role input) throws McBasicRestException {
+    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
+    public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Role input, BindingResult bindingResult) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             input.setIdOrganization(org.getId());
@@ -123,7 +126,8 @@ public class RoleController {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
-    public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId, @RequestBody Role input) throws McBasicRestException {
+    public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId, @Valid @RequestBody Role input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Role role = this.roleService.getById(roleId);
