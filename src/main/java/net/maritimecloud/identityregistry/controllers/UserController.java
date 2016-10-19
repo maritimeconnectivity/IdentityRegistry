@@ -18,6 +18,7 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import io.swagger.annotations.ApiOperation;
@@ -33,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -78,13 +80,13 @@ public class UserController extends EntityController<User> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input) throws McBasicRestException {
+    public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            String password = null;
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
-                password = PasswordUtil.generatePassword();
+                String password = PasswordUtil.generatePassword();
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.createUser(input.getMrn(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgMrn, input.getPermissions(), true);
@@ -129,7 +131,8 @@ public class UserController extends EntityController<User> {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @RequestBody User input) throws McBasicRestException {
+    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             User user = this.entityService.getByMrn(userMrn);

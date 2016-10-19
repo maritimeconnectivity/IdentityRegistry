@@ -55,7 +55,7 @@ net:
             # The DN of the certificate used to sync users from keycloak
             user-sync:
                 c: DK
-                o: "DMA;Danish Maritime Authority"
+                o: "urn:mrn:mcl:org:dma"
                 ou: device
                 cn: User sync
 

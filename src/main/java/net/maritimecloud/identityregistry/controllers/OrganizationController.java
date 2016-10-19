@@ -28,6 +28,7 @@ import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -39,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -96,7 +98,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/apply",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody Organization input) throws McBasicRestException {
+    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
         input.setApproved(false);
@@ -203,7 +206,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.PUT)
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
-            @RequestBody Organization input) throws McBasicRestException {
+            @Valid @RequestBody Organization input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (!orgMrn.equals(input.getMrn())) {

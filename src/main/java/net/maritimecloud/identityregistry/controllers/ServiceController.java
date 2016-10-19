@@ -15,7 +15,9 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -32,6 +34,7 @@ import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -64,7 +67,8 @@ public class ServiceController extends EntityController<Service> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody Service input) throws McBasicRestException {
+    public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             input.setIdOrganization(org.getId());
@@ -78,7 +82,7 @@ public class ServiceController extends EntityController<Service> {
                     String clientSecret = keycloakAU.createClient(serviceClientId, input.getOidcAccessType(), input.getOidcRedirectUri());
                     input.setOidcClientSecret(clientSecret);
                 } catch(IOException e) {
-                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_ADMIN_KC_USER, request.getServletPath());
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                 }
             } else {
                 input.setOidcAccessType(null);
@@ -120,7 +124,8 @@ public class ServiceController extends EntityController<Service> {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @RequestBody Service input) throws McBasicRestException {
+    public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Service service = this.entityService.getByMrn(serviceMrn);

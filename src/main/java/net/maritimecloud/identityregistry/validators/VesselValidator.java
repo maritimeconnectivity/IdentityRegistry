@@ -16,7 +16,6 @@ package net.maritimecloud.identityregistry.validators;
 
 
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
-import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;

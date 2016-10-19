@@ -16,7 +16,9 @@ package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -28,6 +30,7 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -57,7 +60,8 @@ public class DeviceController extends EntityController<Device> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody Device input) throws McBasicRestException {
+    public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         return this.createEntity(request, orgMrn, input);
     }
 
@@ -88,7 +92,8 @@ public class DeviceController extends EntityController<Device> {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody Device input) throws McBasicRestException {
+    public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
         return this.updateEntity(request, orgMrn, deviceMrn, input);
     }
 

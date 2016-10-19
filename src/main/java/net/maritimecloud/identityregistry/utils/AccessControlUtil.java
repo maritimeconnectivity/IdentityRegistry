@@ -42,19 +42,21 @@ public class AccessControlUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
 
-    public static boolean hasAccessToOrg(String orgShortName) {
-        if (orgShortName == null || orgShortName.trim().isEmpty()) {
-            logger.debug("The orgShortName was empty!");
+    public static boolean hasAccessToOrg(String orgMrn) {
+        if (orgMrn == null || orgMrn.trim().isEmpty()) {
+            logger.debug("The orgMrn was empty!");
             return false;
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // First check if the user is a SITE_ADMIN, in which case he gets access.
         for (GrantedAuthority authority : auth.getAuthorities()) {
             String role = authority.getAuthority();
+            logger.debug("User has role: " + role);
             if ("ROLE_SITE_ADMIN".equals(role)) {
                 return true;
             }
         }
+        logger.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
         if (auth instanceof KeycloakAuthenticationToken) {
             logger.debug("OIDC authentication in process");
@@ -63,29 +65,24 @@ public class AccessControlUtil {
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
-                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgShortName.toLowerCase())) {
-                logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgShortName);
+                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgMrn.toLowerCase())) {
+                logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
                 return true;
             }
-            logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgShortName);
+            logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
             logger.debug("Certificate authentication in process");
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
-            // The O(rganization) value looks like this in the certificate: <org shortname>;<org fullname>
-            String certOrg = person.getO();
-            int idx = certOrg.indexOf(";");
-            if (idx < 1) {
-                return false;
-            }
-            certOrg = certOrg.substring(0, idx);
-            if (orgShortName.equals(certOrg)) {
-                logger.debug("Entity with O=" + certOrg + " is in " + orgShortName);
+            // The O(rganization) value in the certificate is an MRN
+            String certOrgMrn = person.getO();
+            if (orgMrn.equals(certOrgMrn)) {
+                logger.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
                 return true;
             }
-            logger.debug("Entity with O=" + certOrg + " is not in " + orgShortName);
+            logger.debug("Entity with O=" + certOrgMrn + " is not in " + orgMrn);
         } else {
             if (auth != null) {
                 logger.debug("Unknown authentication method: " + auth.getClass());
