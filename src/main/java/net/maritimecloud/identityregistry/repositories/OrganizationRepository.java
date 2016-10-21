@@ -27,4 +27,6 @@ public interface OrganizationRepository extends CrudRepository<Organization, Lon
 
     List<Organization> findByApprovedFalse();
 
+    List<Organization> findByApprovedTrue();
+
 }
