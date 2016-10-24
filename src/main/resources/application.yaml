@@ -37,14 +37,14 @@ net:
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console
             keycloak-broker-realm: MaritimeCloud
-            keycloak-broker-base-url: http://localhost:9080/auth/
+            keycloak-broker-base-url: http://localhost:8080/auth/
 
             # Login info for the keycloak used for project users
             keycloak-project-users-admin-user: idreg-test-idp-admin
             keycloak-project-users-admin-password: idreg-test-idp-admin
             keycloak-project-users-admin-client: security-admin-console
             keycloak-project-users-realm: ProjectTestUsers
-            keycloak-project-users-base-url: http://localhost:9080/auth/
+            keycloak-project-users-base-url: http://localhost:8080/auth/
 
             keycloak-client-template: mc-client-template
 

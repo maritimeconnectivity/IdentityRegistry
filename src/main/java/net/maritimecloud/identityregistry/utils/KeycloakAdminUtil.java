@@ -34,11 +34,7 @@ import org.springframework.stereotype.Component;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 import javax.ws.rs.NotFoundException;
 import javax.ws.rs.core.Response;
@@ -86,6 +82,32 @@ public class KeycloakAdminUtil {
 
     private Keycloak keycloakBrokerInstance = null;
     private Keycloak keycloakUserInstance = null;
+
+    // Used in createIdpMapper
+    private static final Map<String, String> oidcDefaultMappers = new HashMap<String, String>();
+    static {
+        oidcDefaultMappers.put("firstNameAttr", null);
+        oidcDefaultMappers.put("lastNameAttr", null);
+        oidcDefaultMappers.put("emailAttr", null);
+        oidcDefaultMappers.put("permissionsAttr", "permissions");
+    }
+
+    private static final Map<String, String> samlDefaultMappers = new HashMap<String, String>();
+    static {
+        samlDefaultMappers.put("firstNameAttr", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname");
+        samlDefaultMappers.put("lastNameAttr", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname");
+        samlDefaultMappers.put("emailAttr", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+        samlDefaultMappers.put("permissionsAttr", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
+    }
+
+    private static final Map<String, String> attrNames2Keycloak = new HashMap<String, String>();
+    static {
+        attrNames2Keycloak.put("firstNameAttr", "firstName");
+        attrNames2Keycloak.put("lastNameAttr", "lastName");
+        attrNames2Keycloak.put("emailAttr", "email");
+        attrNames2Keycloak.put("permissionsAttr", "permissions");
+    }
+
 
     private static final Logger logger = LoggerFactory.getLogger(KeycloakAdminUtil.class);
 
@@ -197,7 +219,6 @@ public class KeycloakAdminUtil {
         idp.setTrustEmail(true);
         idp.setStoreToken(false);
         idp.setAddReadTokenRoleOnCreate(false);
-        idp.setAuthenticateByDefault(false);
         idp.setFirstBrokerLoginFlowAlias("Auto first broker login");
         idp.setConfig(importConf);
 
@@ -218,63 +239,81 @@ public class KeycloakAdminUtil {
             }
         }
 
-        IdentityProviderResource newIdpRes = getBrokerRealm().identityProviders().get(name);
-        // Create mappers - if they don't already exists
-        ArrayList<String> mappers = new ArrayList<String>();
+        // Create the mappers for the IDP
+        createIdpMappers(name, idpAtrMap, orgMrn);
+    }
+
+    private void createIdpMappers(String idpName, Map<String, String> idpAtrMap, String orgMrn) {
+
+        String providerType = idpAtrMap.get("providerType");
+        IdentityProviderResource newIdpRes = getBrokerRealm().identityProviders().get(idpName);
+        // Delete any existing mapper
         for (IdentityProviderMapperRepresentation mapper : newIdpRes.getMappers()) {
-            mappers.add(mapper.getName());
+            newIdpRes.delete(mapper.getId());
         }
-        String orgMapperName = name + " org mapper";
-        if (!mappers.contains(orgMapperName)) {
-            // Create mapper for hardcoded org value
-            IdentityProviderMapperRepresentation orgMapper = new IdentityProviderMapperRepresentation();
-            orgMapper.setIdentityProviderAlias(name);
-            orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
-            orgMapper.setName(orgMapperName);
-            Map<String, String> orgMapperConf = new HashMap<String, String>();
-            orgMapperConf.put("attribute.value", orgMrn);
-            orgMapperConf.put("attribute", "org");
-            orgMapper.setConfig(orgMapperConf);
-            newIdpRes.addMapper(orgMapper);
-        }
+        // Create mapper for hardcoded org value
+        String orgMapperName = "org mapper";
+        IdentityProviderMapperRepresentation orgMapper = new IdentityProviderMapperRepresentation();
+        orgMapper.setIdentityProviderAlias(idpName);
+        orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
+        orgMapper.setName(orgMapperName);
+        Map<String, String> orgMapperConf = new HashMap<String, String>();
+        orgMapperConf.put("attribute.value", orgMrn);
+        orgMapperConf.put("attribute", "org");
+        orgMapper.setConfig(orgMapperConf);
+        newIdpRes.addMapper(orgMapper);
 
-        String permissionMapperName = name + " permission mapper";
-        if (!mappers.contains(permissionMapperName)) {
-            // Create mapper for permissions attribute
-            IdentityProviderMapperRepresentation permissionsMapper = new IdentityProviderMapperRepresentation();
-            permissionsMapper.setIdentityProviderAlias(name);
-            permissionsMapper.setIdentityProviderMapper("oidc-user-attribute-idp-mapper");
-            permissionsMapper.setName(permissionMapperName);
-            Map<String, String> permissionsMapperConf = new HashMap<String, String>();
-            if (idpAtrMap.containsKey("permissionsAttr")) {
-                permissionsMapperConf.put("claim", idpAtrMap.get("permissionsAttr"));
-            } else {
-                permissionsMapperConf.put("claim", "permissions");
-            }
-            permissionsMapperConf.put("user.attribute", "permissions");
-            permissionsMapper.setConfig(permissionsMapperConf);
-            newIdpRes.addMapper(permissionsMapper);
-        }
-
-        String usernameMapperName = name + " username mapper";
-        if (!mappers.contains(usernameMapperName)) {
-            // Create mapper/template for username
-            IdentityProviderMapperRepresentation usernameMapper = new IdentityProviderMapperRepresentation();
-            usernameMapper.setIdentityProviderAlias(name);
+        // Create username mapper
+        String usernameMapperName = "username mapper";
+        IdentityProviderMapperRepresentation usernameMapper = new IdentityProviderMapperRepresentation();
+        usernameMapper.setIdentityProviderAlias(idpName);
+        usernameMapper.setName(usernameMapperName);
+        Map<String, String> usernameMapperConf = new HashMap<String, String>();
+        if ("oidc".equals(providerType)) {
+            // Create OIDC specific mapper
             usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
-            usernameMapper.setName(usernameMapperName);
             // Import username to an mrn in the form: urn:mrn:mcl:user:<org-id>:<user-id>
-            Map<String, String> usernameMapperConf = new HashMap<String, String>();
-            if (idpAtrMap.containsKey("usernameAttr")) {
-                usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM.preferred_username}");
-            } else {
-                usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM." + idpAtrMap.get("permissionsAttr") + "}");
+            usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM." + idpAtrMap.getOrDefault("usernameAttr", "preferred_username") + "}");
+        } else {
+            usernameMapper.setIdentityProviderMapper("saml-username-idp-mapper");
+            // Import username to an mrn in the form: urn:mrn:mcl:user:<org-id>:<user-id>
+            usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${" + idpAtrMap.getOrDefault("usernameAttr", "NAMEID") + "}");
+        }
+        usernameMapper.setConfig(usernameMapperConf);
+        newIdpRes.addMapper(usernameMapper);
+
+        // Add other mappers as needed
+        // The mappers are set up differently based on the provider type
+        Map<String, String> defaultMappers = null;
+        String mapperConfKey;
+        if ("oidc".equals(providerType)) {
+            defaultMappers = oidcDefaultMappers;
+            mapperConfKey = "claim";
+        } else {
+            defaultMappers = samlDefaultMappers;
+            mapperConfKey = "attribute.name";
+        }
+        String mapperType = providerType + "-user-attribute-idp-mapper";
+        for (Map.Entry<String, String> entry: defaultMappers.entrySet()) {
+            String attrName = attrNames2Keycloak.get(entry.getKey());
+            String attrValue = idpAtrMap.getOrDefault(entry.getKey(), entry.getValue());
+            // Skip creating this mapper if no value is defined
+            if (attrValue == null) {
+                continue;
             }
-            usernameMapper.setConfig(usernameMapperConf);
-            newIdpRes.addMapper(usernameMapper);
+            String attrMapperName = attrName + " mapper";
+            IdentityProviderMapperRepresentation mapper = new IdentityProviderMapperRepresentation();
+            mapper.setIdentityProviderAlias(idpName);
+            mapper.setIdentityProviderMapper(mapperType);
+            mapper.setName(attrMapperName);
+            Map<String, String> mapperConf = new HashMap<String, String>();
+            mapperConf.put(mapperConfKey, attrValue);
+            mapperConf.put("user.attribute", attrName);
+            mapper.setConfig(mapperConf);
+            newIdpRes.addMapper(mapper);
         }
     }
-    
+
     /**
      * Delete Identity Provider with the given alias
      * 

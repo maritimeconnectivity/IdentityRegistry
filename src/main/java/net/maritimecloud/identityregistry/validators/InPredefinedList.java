@@ -33,7 +33,7 @@ public @interface InPredefinedList {
 
     String[] acceptedValues();
 
-    String message() default "Given value is not in the prefined list of valid values!";
+    String message() default "Given value is not in the predefined list of valid values!";
 
     Class<?>[] groups() default { };
 

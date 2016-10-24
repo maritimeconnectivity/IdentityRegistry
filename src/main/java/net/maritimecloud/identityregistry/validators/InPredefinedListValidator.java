@@ -35,6 +35,10 @@ public class InPredefinedListValidator implements ConstraintValidator<InPredefin
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value != null && !valueList.contains(value.toLowerCase())) {
+            context.disableDefaultConstraintViolation();
+            context
+                    .buildConstraintViolationWithTemplate("The value '" + value + "' is not in the predefined list of accepted values!")
+                    .addConstraintViolation();
             return false;
         }
         return true;

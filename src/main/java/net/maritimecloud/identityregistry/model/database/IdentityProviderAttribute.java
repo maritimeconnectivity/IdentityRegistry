@@ -34,7 +34,7 @@ public class IdentityProviderAttribute extends TimestampModel {
             allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
                     "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, " +
                     "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret," +
-                    "givenNameAttr, surNameAttr, emailAttr, usernameAttr, permissionsAttr, orgMrnAttr"
+                    "providerType, firstNameAttr, lastNameAttr, emailAttr, usernameAttr, permissionsAttr"
     )
     @Column(name = "attribute_name")
     @NotBlank
@@ -42,7 +42,7 @@ public class IdentityProviderAttribute extends TimestampModel {
             acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
                 "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
                 "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
-                "givenNameAttr", "surNameAttr", "emailAttr", "usernameAttr", "permissionsAttr", "orgMrnAttr"}
+                "providerType", "firstNameAttr", "lastNameAttr", "emailAttr", "usernameAttr", "permissionsAttr"}
     )
     private String attributeName;
 
