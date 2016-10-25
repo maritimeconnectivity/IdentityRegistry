@@ -17,20 +17,15 @@ package net.maritimecloud.identityregistry.security;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
-import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
-import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
-import org.springframework.security.config.annotation.method.configuration.GlobalMethodSecurityConfiguration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
@@ -55,30 +50,11 @@ import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-//@ComponentScan("net.maritimecloud.identityregistry")
-public class MultiSecurityConfig extends GlobalMethodSecurityConfiguration {
-
-    @Autowired
-    private ApplicationContext context;
+public class MultiSecurityConfig {
 
     @Bean
     public AccessControlUtil accessControlUtil() {
         return new AccessControlUtil();
-    }
-
-    @Bean
-    public RoleHierarchy roleHierarchy() {
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-        roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN    ROLE_ORG_ADMIN > ROLE_USER");
-        return roleHierarchy;
-    }
-
-    @Override
-    public MethodSecurityExpressionHandler createExpressionHandler() {
-        DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
-        defaultMethodSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
-        defaultMethodSecurityExpressionHandler.setApplicationContext(context);
-        return defaultMethodSecurityExpressionHandler;
     }
 
     @Configuration
