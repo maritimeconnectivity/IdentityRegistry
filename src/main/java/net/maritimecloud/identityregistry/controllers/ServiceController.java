@@ -306,5 +306,11 @@ public class ServiceController extends EntityController<Service> {
     protected Service getCertEntity(Certificate cert) {
         return cert.getService();
     }
+
+    @Override
+    protected String getName(CertificateModel certOwner) {
+        return ((Service)certOwner).getCertDomainName();
+    }
+
 }
 
