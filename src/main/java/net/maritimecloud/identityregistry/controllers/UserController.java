@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.*;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -97,8 +98,12 @@ public class UserController extends EntityController<User> {
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
             }
             input.setIdOrganization(org.getId());
-            User newUser = this.entityService.save(input);
-            return new ResponseEntity<User>(newUser, HttpStatus.OK);
+            try {
+                User newUser = this.entityService.save(input);
+                return new ResponseEntity<User>(newUser, HttpStatus.OK);
+            } catch (DataIntegrityViolationException e) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

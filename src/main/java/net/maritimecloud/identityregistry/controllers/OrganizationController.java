@@ -27,6 +27,7 @@ import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -103,7 +104,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
         input.setApproved(false);
-        Organization newOrg = this.organizationService.save(input);
+        Organization newOrg;
+        try {
+            newOrg = this.organizationService.save(input);
+        } catch (DataIntegrityViolationException e) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+        }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
         // Send email to admin saying that an Organization is awaiting approval

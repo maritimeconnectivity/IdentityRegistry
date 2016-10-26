@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -143,8 +144,12 @@ public class ServiceController extends EntityController<Service> {
                     service.setOidcClientId(service.getMrn());
                     keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
                 }
-                this.entityService.save(service);
-                return new ResponseEntity<>(HttpStatus.OK);
+                try {
+                    this.entityService.save(service);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                } catch (DataIntegrityViolationException e) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+                }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.entities.EntityModel;
 import net.maritimecloud.identityregistry.services.EntityService;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -66,8 +67,12 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             input.setIdOrganization(org.getId());
-            T newEntity = this.entityService.save(input);
-            return new ResponseEntity<T>(newEntity, HttpStatus.OK);
+            try {
+                T newEntity = this.entityService.save(input);
+                return new ResponseEntity<T>(newEntity, HttpStatus.OK);
+            } catch (DataIntegrityViolationException e) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
