@@ -61,10 +61,6 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
-    @JsonIgnore
-    @Column(name = "id_keycloak")
-    private String idKeycloak;
-
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
@@ -78,7 +74,6 @@ public class Service extends NonHumanEntityModel {
         service.setOidcClientSecret(oidcClientSecret);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
-        service.setIdKeycloak(idKeycloak);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
         service.setChildIds();
@@ -157,14 +152,5 @@ public class Service extends NonHumanEntityModel {
     public void setCertDomainName(String certDomainName) {
         this.certDomainName = certDomainName;
     }
-
-    public String getIdKeycloak() {
-        return idKeycloak;
-    }
-
-    public void setIdKeycloak(String idKeycloak) {
-        this.idKeycloak = idKeycloak;
-    }
-
 }
 

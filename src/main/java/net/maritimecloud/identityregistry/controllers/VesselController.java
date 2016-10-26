@@ -36,6 +36,7 @@ import java.util.HashMap;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -55,7 +56,7 @@ public class VesselController extends EntityController<Vessel> {
     @Autowired
     private VesselValidator vesselValidator;
 
-    @InitBinder
+    @InitBinder("vessel")
     protected void initBinder(final HttpServletRequest request, final ServletRequestDataBinder binder) {
         binder.addValidators(vesselValidator);
     }
@@ -165,7 +166,7 @@ public class VesselController extends EntityController<Vessel> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         return this.revokeEntityCert(request, orgMrn, vesselMrn, certId, input);
     }
 

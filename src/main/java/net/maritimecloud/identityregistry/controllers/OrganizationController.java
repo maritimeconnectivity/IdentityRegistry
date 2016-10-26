@@ -309,7 +309,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Certificate cert = this.certificateService.getCertificateById(certId);

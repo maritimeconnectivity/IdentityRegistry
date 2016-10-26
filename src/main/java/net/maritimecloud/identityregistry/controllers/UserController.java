@@ -236,7 +236,7 @@ public class UserController extends EntityController<User> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         return this.revokeEntityCert(request, orgMrn, userMrn, certId, input);
     }
 

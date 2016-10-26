@@ -175,8 +175,7 @@ public class ServiceController extends EntityController<Service> {
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String serviceClientId = (org.getMrn() + "_" + service.getName()).replace(" ", "_");
-                    keycloakAU.deleteClient(serviceClientId);
+                    keycloakAU.deleteClient(service.getMrn());
                 }
                 this.entityService.delete(service.getId());
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -228,7 +227,7 @@ public class ServiceController extends EntityController<Service> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable Long certId,  @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         return this.revokeEntityCert(request, orgMrn, serviceMrn, certId, input);
     }
 
@@ -256,8 +255,7 @@ public class ServiceController extends EntityController<Service> {
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String serviceClientId = (org.getMrn() + "_" + service.getName()).replace(" ", "_");
-                    String keycloakJson = keycloakAU.getClientKeycloakJson(serviceClientId);
+                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getMrn());
                     return new ResponseEntity<String>(keycloakJson, HttpStatus.OK);
                 }
             }
@@ -291,8 +289,7 @@ public class ServiceController extends EntityController<Service> {
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String serviceClientId = (org.getMrn() + "_" + service.getName()).replace(" ", "_");
-                    String jbossXml = keycloakAU.getClientJbossXml(serviceClientId);
+                    String jbossXml = keycloakAU.getClientJbossXml(service.getMrn());
                     return new ResponseEntity<String>(jbossXml, HttpStatus.OK);
                 }
             }

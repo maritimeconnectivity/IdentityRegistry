@@ -38,6 +38,7 @@ public class CertificateRevocation implements JsonSerializable {
             acceptedValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",
                     "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
     )
+    @NotBlank
     private String revokationReason;
 
     public boolean validateReason() {

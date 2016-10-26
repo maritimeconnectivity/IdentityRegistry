@@ -14,12 +14,17 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
+import io.swagger.annotations.ApiModelProperty;
+import org.hibernate.validator.constraints.NotBlank;
+
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
 public abstract class NonHumanEntityModel extends EntityModel {
     @Column(name = "name")
+    @NotBlank
+    @ApiModelProperty(required = true)
     private String name;
 
     /** Copies this entity into the other */
