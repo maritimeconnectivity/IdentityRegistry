@@ -52,7 +52,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String certificateHeader) throws UsernameNotFoundException {
         if (certificateHeader == null || certificateHeader.length() < 10) {
-            logger.debug("No certificate header found");
+            logger.warn("No certificate header found");
             throw new UsernameNotFoundException("No certificate header found");
         }
         X509Certificate userCertificate = certUtil.getCertFromString(certificateHeader);
@@ -63,20 +63,22 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         
         // Actually authenticate certificate against root cert.
         if (!certUtil.verifyCertificate(userCertificate)) {
-            throw new UsernameNotFoundException("Not authenticated");
+            logger.warn("Certificate could not be verified");
+            throw new UsernameNotFoundException("Certificate could not be verified");
         }
         // Get user details from the certificate
         UserDetails user = certUtil.getUserFromCert(userCertificate);
         if (user == null) {
-            logger.error("Extraction of data from the certificate failed");
-            throw new UsernameNotFoundException("Extraction of data from the certificate failed");
+            logger.warn("Extraction of data from the certificate failed");
+            throw new UsernameNotFoundException("Extraction of data from the client certificate failed");
         }
         // Convert the permissions extracted from the certificate to authorities in this API
         InetOrgPerson person = ((InetOrgPerson)user);
         String certOrg = person.getO();
         Organization org = organizationService.getOrganizationByMrn(certOrg);
         if (org == null) {
-            throw new UsernameNotFoundException("Unknown Organization");
+            logger.warn("Unknown Organization '" + certOrg + "' in client certificate");
+            throw new UsernameNotFoundException("Unknown Organization in client certificate");
         }
         Collection<GrantedAuthority> newRoles = new ArrayList<GrantedAuthority>();
         logger.debug("Looking up roles");

@@ -173,7 +173,7 @@ public class CertificateUtil {
         // Dates are converted to GMT/UTC inside the cert builder 
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
-        Date expire = new GregorianCalendar(CERT_EXPIRE_YEAR, 1, 1).getTime();
+        Date expire = new GregorianCalendar(CERT_EXPIRE_YEAR, 0, 1).getTime();
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(issuer,
                                                                                 BigInteger.valueOf(serialNumber),
                                                                                 now, // Valid from now...
@@ -663,9 +663,13 @@ public class CertificateUtil {
         }
         return essence.createUserDetails();
     }
-    
-    
-    private Certificate getRootCertificate() {
+
+    /**
+     * Returns a Maritime Cloud certificate from the truststore
+     * @param alias Either ROOT_CERT_ALIAS or INTERMEDIATE_CERT_ALIAS
+     * @return
+     */
+    private Certificate getMCCertificate(String alias) {
         logger.debug(TRUSTSTORE_PATH);
         FileInputStream is;
         try {
@@ -678,19 +682,17 @@ public class CertificateUtil {
         try {
             keystore = KeyStore.getInstance(KEYSTORE_TYPE);
             keystore.load(is, TRUSTSTORE_PASSWORD.toCharArray());
-            //KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(TRUSTSTORE_PASSWORD.toCharArray());
-            Certificate rootCert = keystore.getCertificate(ROOT_CERT_ALIAS);
+            Certificate rootCert = keystore.getCertificate(alias);
             return rootCert;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
             logger.error("Could not load root certificate", e);
             return null;
         }
-
     }
     
     public boolean verifyCertificate(X509Certificate certToVerify) {
-        Certificate rootCert = getRootCertificate();
+        Certificate rootCert = getMCCertificate(INTERMEDIATE_CERT_ALIAS);
         JcaX509CertificateHolder certHolder;
         try {
             certHolder = new JcaX509CertificateHolder(certToVerify);
@@ -700,6 +702,7 @@ public class CertificateUtil {
         }
         PublicKey pubKey = rootCert.getPublicKey();
         if (pubKey == null) {
+            logger.error("Could not get public key of root certificate");
             return false;
         }
         ContentVerifierProvider contentVerifierProvider = null;
@@ -710,6 +713,7 @@ public class CertificateUtil {
             return false;
         }
         if (contentVerifierProvider == null) {
+            logger.error("Created ContentVerifierProvider from root public key is null");
             return false;
         }
         try {
@@ -720,12 +724,13 @@ public class CertificateUtil {
             logger.error("Error when trying to validate signature", e);
             return false;
         }
+        logger.debug("Certificate does not seem to be valid!");
         return false;
     }
 
     public BasicOCSPRespBuilder initOCSPRespBuilder(OCSPReq request) {
 
-        SubjectPublicKeyInfo keyinfo = SubjectPublicKeyInfo.getInstance(getRootCertificate().getPublicKey().getEncoded());
+        SubjectPublicKeyInfo keyinfo = SubjectPublicKeyInfo.getInstance(getMCCertificate(ROOT_CERT_ALIAS).getPublicKey().getEncoded());
         BasicOCSPRespBuilder respBuilder;
         try {
             respBuilder = new BasicOCSPRespBuilder(keyinfo,
@@ -799,7 +804,8 @@ public class CertificateUtil {
     }
 
     /* 
-     * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates
+     * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates.
+     * You might want to edit CERT_EXPIRE_YEAR to make sure the root cert is valid longer that the certificates it signs.
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
         System.out.println("Initializing CA");
