@@ -56,8 +56,8 @@ public class UserController extends EntityController<User> {
     private String userSyncO;
     @Value("${net.maritimecloud.idreg.user-sync.ou}")
     private String userSyncOU;
-    @Value("${net.maritimecloud.idreg.user-sync.cn}")
-    private String userSyncCN;
+    @Value("${net.maritimecloud.idreg.user-sync.mrn}")
+    private String userSyncMRN;
 
     @Autowired
     public void setUserService(EntityService<User> userService) {
@@ -259,7 +259,7 @@ public class UserController extends EntityController<User> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input) throws McBasicRestException {
-        if (!AccessControlUtil.isUserSync(this.userSyncCN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
+        if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);

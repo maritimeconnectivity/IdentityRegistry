@@ -57,7 +57,7 @@ net:
                 c: DK
                 o: "urn:mrn:mcl:org:dma"
                 ou: device
-                cn: User sync
+                mrn: "urn:mrn:mcl:device:dma:sync"
 
             # Certificate setup
             certs:

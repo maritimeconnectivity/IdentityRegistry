@@ -74,14 +74,9 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         // Convert the permissions extracted from the certificate to authorities in this API
         InetOrgPerson person = ((InetOrgPerson)user);
         String certOrg = person.getO();
-        int idx = certOrg.indexOf(";");
-        if (idx < 1) {
-            throw new UsernameNotFoundException("Invalid Organization Name Format");
-        }
-        certOrg = certOrg.substring(0, idx);
         Organization org = organizationService.getOrganizationByMrn(certOrg);
         if (org == null) {
-            throw new UsernameNotFoundException("Invalid Organization Name");
+            throw new UsernameNotFoundException("Unknown Organization");
         }
         Collection<GrantedAuthority> newRoles = new ArrayList<GrantedAuthority>();
         logger.debug("Looking up roles");

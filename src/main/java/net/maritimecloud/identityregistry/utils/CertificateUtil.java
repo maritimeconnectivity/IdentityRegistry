@@ -42,14 +42,7 @@ import java.security.cert.CertificateFactory;
 import java.security.cert.CertificateParsingException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Collection;
-import java.util.Date;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 import java.security.spec.ECGenParameterSpec;
 
 import org.bouncycastle.asn1.ASN1Encodable;
@@ -120,6 +113,7 @@ public class CertificateUtil {
 
     public static final String ROOT_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud, CN=MaritimeCloud Root Certificate, E=info@maritimecloud.net";
     public static final String MCIDREG_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud Identity Registry, CN=MaritimeCloud Identity Registry Certificate, E=info@maritimecloud.net";
+    public static final int CERT_EXPIRE_YEAR = 2025;
     public static final String ROOT_CERT_ALIAS = "rootcert";
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
@@ -179,12 +173,11 @@ public class CertificateUtil {
         // Dates are converted to GMT/UTC inside the cert builder 
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
-        cal.add(Calendar.YEAR, 1);
-        Date nextYear = cal.getTime();
+        Date expire = new GregorianCalendar(CERT_EXPIRE_YEAR, 1, 1).getTime();
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(issuer,
                                                                                 BigInteger.valueOf(serialNumber),
-                                                                                now, // Valid from now 
-                                                                                nextYear, // Valid for a year
+                                                                                now, // Valid from now...
+                                                                                expire, // until CERT_EXPIRE_YEAR
                                                                                 subject,
                                                                                 subjectPublicKey);
         JcaX509ExtensionUtils extensionUtil = new JcaX509ExtensionUtils();
@@ -582,8 +575,9 @@ public class CertificateUtil {
         X500Name x500name = new X500Name(certDN);
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
         String name = getElement(x500name, BCStyle.CN);
-        essence.setUsername(name);
-        essence.setUid(name);
+        String uid = getElement(x500name, BCStyle.UID);
+        essence.setUsername(uid);
+        essence.setUid(uid);
         essence.setDn(certDN);
         essence.setCn(new String[] { name });
         essence.setSn(name);

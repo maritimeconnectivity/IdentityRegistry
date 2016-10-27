@@ -91,7 +91,7 @@ public class AccessControlUtil {
         return false;
     }
 
-    public static boolean isUserSync(String userSyncCN, String userSyncO, String userSyncOU, String userSyncC) {
+    public static boolean isUserSync(String userSyncMRN, String userSyncO, String userSyncOU, String userSyncC) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof PreAuthenticatedAuthenticationToken) {
             logger.debug("Certificate authentication of user sync'er in process");
@@ -99,13 +99,13 @@ public class AccessControlUtil {
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
-            if (userSyncCN.equals(person.getCn()[0]) && userSyncO.equals(person.getO())
+            if (userSyncMRN.equals(person.getUid()) && userSyncO.equals(person.getO())
                     // Hack alert! There is no country property in this type, so we misuse PostalAddress...
                     && userSyncOU.equals(person.getOu()) && userSyncC.equals(person.getPostalAddress())) {
                 logger.debug("User sync'er accepted!");
                 return true;
             }
-            logger.debug("This was not the user-sync'er! " + userSyncCN + "~" + person.getCn()[0] + ", " + userSyncO + "~"
+            logger.debug("This was not the user-sync'er! " + userSyncMRN + "~" + person.getUid() + ", " + userSyncO + "~"
                     + person.getO() + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
         }
         return false;
