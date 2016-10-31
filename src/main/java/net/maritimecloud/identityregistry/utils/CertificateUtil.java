@@ -769,8 +769,12 @@ public class CertificateUtil {
      * @return
      */
     public static String getElement(X500Name x500name, ASN1ObjectIdentifier style) {
-        RDN cn = x500name.getRDNs(style)[0];
-        return valueToString(cn.getFirst().getValue());
+        try {
+            RDN cn = x500name.getRDNs(style)[0];
+            return valueToString(cn.getFirst().getValue());
+        } catch (ArrayIndexOutOfBoundsException e) {
+            return null;
+        }
     }
 
     /**

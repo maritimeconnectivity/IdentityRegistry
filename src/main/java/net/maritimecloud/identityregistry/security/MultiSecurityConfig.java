@@ -178,6 +178,7 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
+                    .antMatchers(HttpMethod.POST, "/x509//api/org/**/user-sync/").authenticated()
                     .antMatchers(HttpMethod.POST, "/x509/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").hasRole("ORG_ADMIN")
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").hasRole("ORG_ADMIN")
