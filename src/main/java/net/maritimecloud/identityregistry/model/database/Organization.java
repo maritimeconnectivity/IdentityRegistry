@@ -22,6 +22,7 @@ import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.*;
@@ -103,10 +104,10 @@ public class Organization extends CertificateModel {
         org.setLogo(logo);
         org.setType(type);
         org.setApproved(approved);
-        this.certificates.clear();
-        this.certificates.addAll(certificates);
-        this.identityProviderAttributes.clear();
-        this.identityProviderAttributes.addAll(identityProviderAttributes);
+        org.getCertificates().clear();
+        org.getCertificates().addAll(certificates);
+        org.getIdentityProviderAttributes().clear();
+        org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
         org.setChildIds();
         return org;
     }
@@ -120,8 +121,8 @@ public class Organization extends CertificateModel {
         org.setAddress(address);
         org.setCountry(country);
         org.setType(type);
-        this.identityProviderAttributes.clear();
-        this.identityProviderAttributes.addAll(identityProviderAttributes);
+        org.getIdentityProviderAttributes().clear();
+        org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
         org.setChildIds();
         return org;
     }
@@ -154,7 +155,7 @@ public class Organization extends CertificateModel {
 
     @Override
     public void clearSensitiveFields() {
-        this.identityProviderAttributes = null;
+        this.identityProviderAttributes.clear();
     }
 
     /******************************/

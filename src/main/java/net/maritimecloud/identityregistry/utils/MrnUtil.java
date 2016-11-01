@@ -67,8 +67,8 @@ public class MrnUtil {
             startIdx = tmpIdx + 8;
         }
         if (tmpIdx < 0) {
-            tmpIdx = entityMrn.indexOf(":service:");
-            startIdx = tmpIdx + 9;
+            tmpIdx = entityMrn.indexOf(":service:instance:");
+            startIdx = tmpIdx + 18;
         }
         if (tmpIdx < 0) {
             throw new IllegalArgumentException("MRN is not a valid entity MRN!");

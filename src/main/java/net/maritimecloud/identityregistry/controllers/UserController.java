@@ -85,6 +85,10 @@ public class UserController extends EntityController<User> {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
+            // Check that the entity being created belongs to the organization
+            if (MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                 String password = PasswordUtil.generatePassword();
@@ -143,6 +147,10 @@ public class UserController extends EntityController<User> {
         }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
+            // Check that the entity being updated belongs to the organization
+            if (MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
             User user = this.entityService.getByMrn(userMrn);
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -181,6 +189,10 @@ public class UserController extends EntityController<User> {
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
+            // Check that the entity being deleted belongs to the organization
+            if (MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
             User user = this.entityService.getByMrn(userMrn);
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
@@ -262,13 +274,13 @@ public class UserController extends EntityController<User> {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             String userMrn = input.getMrn();
             if (userMrn == null || userMrn.isEmpty()) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            User oldUser = ((UserService)this.entityService).getUserByUserOrgIdAndIdOrganization(userMrn, org.getId());
+            User oldUser = this.entityService.getByMrn(userMrn);
             // If user does not exists, we create him
             if (oldUser == null) {
                 input.setIdOrganization(org.getId());
