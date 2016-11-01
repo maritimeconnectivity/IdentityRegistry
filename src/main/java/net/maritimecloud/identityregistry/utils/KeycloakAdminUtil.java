@@ -360,7 +360,7 @@ public class KeycloakAdminUtil {
             user.setLastName(lastName);
         }
         // Set attributes
-        Map<String, Object> attr = new HashMap<String,Object>();
+        Map<String, List<String>> attr = new HashMap<String,List<String>>();
         attr.put("org", Arrays.asList(orgMrn));
         attr.put("mrn", Arrays.asList(userMrn));
         attr.put("permissions",  Arrays.asList(permissions));
@@ -419,7 +419,7 @@ public class KeycloakAdminUtil {
             user.setLastName(lastName);
             updated = true;
         }
-        Map<String, Object> attr = user.getAttributes();
+        Map<String, List<String>> attr = user.getAttributes();
         if (attr.containsKey("permissions")) {
             List<String> oldPermissions = (List<String>) attr.get("permissions");
             if (oldPermissions != null && !oldPermissions.isEmpty()) {
