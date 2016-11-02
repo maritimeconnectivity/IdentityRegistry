@@ -98,9 +98,9 @@ This will return some json looking like this, which is mostly an echo of the pos
     "country": "Denmark",
     "email": "dma@dma.dk",
     "mrn": "urn:mrn:mcl:org:dma",
-    "url": "http://www.soefartsstyrelsen.dk/"
+    "url": "http://www.soefartsstyrelsen.dk/",
     "updatedAt": 1478089051176,
-    "createdAt": 1478089051176,
+    "createdAt": 1478089051176
 }
 ```
 
