@@ -1,0 +1,7 @@
+{
+  "mrn":"urn:mrn:mcl:user:dma:dma-employee",
+  "firstName":"Dma",
+  "lastName": "Employee",
+  "email" : "dma-employee@dma.dk",
+  "permissions": "MCADMIN"
+}

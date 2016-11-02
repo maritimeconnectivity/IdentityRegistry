@@ -9,3 +9,6 @@ mysql -u root -p < "$DIR/create-database-and-user.sql"
 
 echo "Create tables..."
 mysql -D identity_registry --user=idreg --password=idreg < "$DIR/create-tables.sql"
+
+echo "Insert data..."
+mysql -D identity_registry --user=idreg --password=idreg < "$DIR/create-mc-org.sql"

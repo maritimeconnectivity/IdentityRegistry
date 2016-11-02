@@ -1,1 +1,8 @@
-{"name":"Danish Maritime Authority","mrn":"urn:mrn:mcl:org:dma","country":"Denmark","url":"http://www.soefartsstyrelsen.dk/"}
+{
+    "name": "Danish Maritime Authority",
+    "mrn": "urn:mrn:mcl:org:dma",
+    "address": "Carl Jacobsensvej 31, 2500 Valby",
+    "country": "Denmark",
+    "url": "http://www.soefartsstyrelsen.dk/",
+    "email": "dma@dma.dk"
+}
