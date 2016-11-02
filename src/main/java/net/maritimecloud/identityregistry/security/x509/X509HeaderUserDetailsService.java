@@ -14,8 +14,10 @@
  */
 package net.maritimecloud.identityregistry.security.x509;
 
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.Role;
+import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,9 +28,7 @@ import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 import java.security.cert.X509Certificate;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
+import java.util.*;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +44,8 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private OrganizationService organizationService;
     @Autowired
     private RoleService roleService;
+    @Autowired
+    private CertificateService certificateService;
     @Autowired
     private CertificateUtil certUtil;
 
@@ -65,6 +67,17 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         if (!certUtil.verifyCertificate(userCertificate)) {
             logger.warn("Certificate could not be verified");
             throw new UsernameNotFoundException("Certificate could not be verified");
+        }
+        // Check that the certificate has not been revoked
+        long certId = userCertificate.getSerialNumber().longValue();
+        Certificate cert = certificateService.getCertificateById(certId);
+        if (cert.getRevoked()) {
+            Calendar cal = Calendar.getInstance();
+            Date now = cal.getTime();
+            if (cert.getRevokedAt() == null || cert.getRevokedAt().before(now)) {
+                logger.warn("The certificate has been revoked! Cert #" + certId);
+                throw new UsernameNotFoundException("The certificate has been revoked! Cert #" + certId);
+            }
         }
         // Get user details from the certificate
         UserDetails user = certUtil.getUserFromCert(userCertificate);

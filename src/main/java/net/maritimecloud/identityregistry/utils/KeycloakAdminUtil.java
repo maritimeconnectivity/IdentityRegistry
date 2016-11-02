@@ -363,7 +363,9 @@ public class KeycloakAdminUtil {
         Map<String, List<String>> attr = new HashMap<String,List<String>>();
         attr.put("org", Arrays.asList(orgMrn));
         attr.put("mrn", Arrays.asList(userMrn));
-        attr.put("permissions",  Arrays.asList(permissions));
+        if (permissions != null && !permissions.trim().isEmpty()) {
+            attr.put("permissions", Arrays.asList(permissions));
+        }
         user.setAttributes(attr);
         Response ret = getProjectUserRealm().users().create(user);
         String errMsg = ret.readEntity(String.class);
@@ -425,13 +427,17 @@ public class KeycloakAdminUtil {
             if (oldPermissions != null && !oldPermissions.isEmpty()) {
                 String permission = oldPermissions.get(0);
                 if (permission == null || !permission.equals(newPermissions)) {
-                    attr.put("permissions", Arrays.asList(newPermissions));
+                    if (newPermissions != null) {
+                        attr.put("permissions", Arrays.asList(newPermissions));
+                    } else {
+                        attr.put("permissions", Arrays.asList(""));
+                    }
                     user.setAttributes(attr);
                     updated = true;
                 }
             }
         } else {
-            if (newPermissions != null) {
+            if (newPermissions != null && !newPermissions.trim().isEmpty()) {
                 attr.put("permissions", Arrays.asList(newPermissions));
                 user.setAttributes(attr);
                 updated = true;
