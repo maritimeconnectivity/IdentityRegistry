@@ -139,4 +139,18 @@ public class MrnUtilsTests {
         boolean ret = MrnUtil.validateMrn(vesselMrn);
     }
 
+    @Test
+    public void extractPrefixFromMRN() {
+        String userMrn = "urn:mrn:mcl:service:instance:dma:nw-nm-prod";
+        String prefix = MrnUtil.getMrnPrefix(userMrn);
+        assertEquals("Prefix should be 'urn:mrn:mcl'","urn:mrn:mcl", prefix);
+    }
+
+    @Test
+    public void extractPrefixFromMRN2() {
+        String userMrn = "urn:mrn:iala:device:iala:device6";
+        String prefix = MrnUtil.getMrnPrefix(userMrn);
+        assertEquals("Prefix should be 'urn:mrn:iala'","urn:mrn:iala", prefix);
+    }
+
 }

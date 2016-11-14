@@ -101,7 +101,7 @@ public class MrnUtil {
             // urn:mrn:mcl:org:dma:service:nw-nm:instance:nw-nm2
             throw new IllegalArgumentException("Generating MRN for services is not supported");
         } else {
-            mrn = orgMrn + ":" + type + ":" + entityId;
+            mrn = getMrnPrefix(orgMrn) + ":" + type + ":" + getOrgShortNameFromOrgMrn(orgMrn) + ":" + entityId;
         }
         return mrn;
     }
@@ -127,17 +127,14 @@ public class MrnUtil {
     }
 
     /**
-     * Generates a client name - used for client name in Keycloak
-     * @param serviceMrn
+     * Get MRN prefix. Would be 'urn:mrn:mcl' for 'urn:mrn:mcl:org:dma', and 'urn:mrn:stm' for 'urn:mrn:stm:user:sma:user42'
+     * @param mrn
      * @return
      */
-    public static String generateClientName(String serviceMrn) {
-        String orgShortName = getOrgShortNameFromEntityMrn(serviceMrn);
-        String orgValidator = getOrgValidatorFromOrgShortname(orgShortName);
-        String serviceName = getEntityIdFromMrn(serviceMrn);
-        String serviceType = getServiceTypeFromMrn(serviceMrn);
-        String clientName = orgValidator + "_" + orgShortName + "_" + serviceType + "_" + serviceName;
-        return clientName;
+    public static String getMrnPrefix(String mrn) {
+        // mrn always starts with 'urn:mrn:<sub-namespace>'
+        int prefixEnd = mrn.indexOf(":", 8);
+        return mrn.substring(0, prefixEnd);
     }
 
 }
