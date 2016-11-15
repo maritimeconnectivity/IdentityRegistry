@@ -263,7 +263,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             //  TODO: we need to do some sync'ing with the Service Registry.
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(org.getMrn().toLowerCase());
+                keycloakAU.deleteIdentityProvider(org.getMrn());
             } else {
                 // Remove any users from the shared project IDP
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);

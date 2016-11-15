@@ -317,14 +317,15 @@ public class KeycloakAdminUtil {
     /**
      * Delete Identity Provider with the given alias
      * 
-     * @param orgMrn  Alias of the IDP to delete.
+     * @param orgMrn  MRN of the IDP to delete.
      */
     public void deleteIdentityProvider(String orgMrn) {
+        // First delete any users associated with the IDP. Find it by username, which is the mrn
         String alias = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-        // First delete any users associated with the IDP
-        List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ orgMrn + ":user:", /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
+        String searchStr = MrnUtil.getMrnPrefix(orgMrn) + ":user:" + alias + ":";
+        List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ searchStr, /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
         for (UserRepresentation user : users) {
-            if (user.getUsername().startsWith(orgMrn + ":user:")) {
+            if (user.getUsername().startsWith(searchStr)) {
                 getBrokerRealm().users().get(user.getId()).remove();
             }
         }
