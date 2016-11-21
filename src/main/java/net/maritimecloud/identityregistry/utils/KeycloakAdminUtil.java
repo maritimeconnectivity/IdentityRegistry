@@ -269,15 +269,16 @@ public class KeycloakAdminUtil {
         usernameMapper.setIdentityProviderAlias(idpName);
         usernameMapper.setName(usernameMapperName);
         Map<String, String> usernameMapperConf = new HashMap<String, String>();
+        String mrnPrefix = MrnUtil.getMrnPrefix(orgMrn);
         if ("oidc".equals(providerType)) {
             // Create OIDC specific mapper
             usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
             // Import username to an mrn in the form: urn:mrn:mcl:user:<org-id>:<user-id>
-            usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${CLAIM." + idpAtrMap.getOrDefault("usernameAttr", "preferred_username") + "}");
+            usernameMapperConf.put("template", mrnPrefix +":user:${ALIAS}:${CLAIM." + idpAtrMap.getOrDefault("usernameAttr", "preferred_username") + "}");
         } else {
             usernameMapper.setIdentityProviderMapper("saml-username-idp-mapper");
             // Import username to an mrn in the form: urn:mrn:mcl:user:<org-id>:<user-id>
-            usernameMapperConf.put("template", "urn:mrn:mcl:user:${ALIAS}:${" + idpAtrMap.getOrDefault("usernameAttr", "NAMEID") + "}");
+            usernameMapperConf.put("template", mrnPrefix + ":user:${ALIAS}:${" + idpAtrMap.getOrDefault("usernameAttr", "NAMEID") + "}");
         }
         usernameMapper.setConfig(usernameMapperConf);
         newIdpRes.addMapper(usernameMapper);
