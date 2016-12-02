@@ -30,8 +30,8 @@ import java.io.InputStream;
  */
 public class ImageUtil {
 
-    public static final int MAX_HEIGHT = 600;
-    public static final int MAX_WIDTH = 800;
+    public static final float MAX_HEIGHT = 600.0f;
+    public static final float MAX_WIDTH = 800.0f;
     public static final String OUTPUT_FORMAT = "png";
 
     public static ByteArrayOutputStream resize(InputStream inputStream) throws IOException {
