@@ -332,7 +332,11 @@ public class ServiceController extends EntityController<Service> {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        return ((Service)certOwner).getCertDomainName();
+        String name = ((Service)certOwner).getCertDomainName();
+        if (name == null || name.trim().isEmpty()) {
+            name = ((Service) certOwner).getName();
+        }
+        return name;
     }
 
 }
