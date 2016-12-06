@@ -22,18 +22,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
+import java.security.*;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableEntryException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -87,6 +77,7 @@ import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -118,7 +109,7 @@ public class CertificateUtil {
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
-    public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
+    public static final String SIGNER_ALGORITHM = "SHA256withECDSA";
 
     // Values below are loaded from application.yaml
     @Value("${net.maritimecloud.idreg.certs.crl-url}")
