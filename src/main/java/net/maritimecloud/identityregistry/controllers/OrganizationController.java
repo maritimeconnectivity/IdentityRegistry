@@ -64,30 +64,23 @@ public class OrganizationController extends BaseControllerWithCertificate {
     private EntityService<User> userService;
     @Autowired
     private EntityService<Vessel> vesselService;
+
     @Autowired
     private RoleService roleService;
 
     @Autowired
     private EmailUtil emailUtil;
 
+    @Autowired
     private OrganizationService organizationService;
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
 
+    @Autowired
     private CertificateService certificateService;
 
     private static final Logger logger = LoggerFactory.getLogger(OrganizationController.class);
-
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
 
     /**
      * Receives an application for a new organization and root-user

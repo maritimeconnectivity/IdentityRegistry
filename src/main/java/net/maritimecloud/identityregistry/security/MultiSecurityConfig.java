@@ -103,10 +103,10 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.GET, "/oidc/api/**").hasRole("USER")
+                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
             ;
         }
 
@@ -129,7 +129,16 @@ public class MultiSecurityConfig {
         @Bean
         public RoleHierarchy roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN    ROLE_ORG_ADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+                                        "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                                        "ROLE_USER_ADMIN > ROLE_USER\n" +
+                                        "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
+                                        "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
+                                        "ROLE_DEVICE_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 
@@ -178,11 +187,10 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509//api/org/**/user-sync/").authenticated()
-                    .antMatchers(HttpMethod.POST, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.PUT, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").hasRole("ORG_ADMIN")
-                    .antMatchers(HttpMethod.GET, "/x509/api/**").hasRole("USER")
+                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
             ;
 
             if (!useStandardSSL) {
@@ -216,7 +224,16 @@ public class MultiSecurityConfig {
         @Bean
         public RoleHierarchy roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN    ROLE_ORG_ADMIN > ROLE_USER");
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+                                        "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                                        "ROLE_USER_ADMIN > ROLE_USER\n" +
+                                        "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
+                                        "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
+                                        "ROLE_DEVICE_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 
