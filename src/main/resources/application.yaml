@@ -61,6 +61,7 @@ net:
 
             # Certificate setup
             certs:
+                mcidreg-cert-x500-name: "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test Identity Registry, CN=MaritimeCloud Test Identity Registry Certificate, E=info@maritimecloud.net"
                 root-keystore: mc-root-keystore.jks
                 it-keystore: mc-it-keystore.jks
                 keystore-password: changeit

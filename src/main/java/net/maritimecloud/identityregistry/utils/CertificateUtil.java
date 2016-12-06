@@ -22,18 +22,8 @@ import java.io.IOException;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
-import java.security.InvalidAlgorithmParameterException;
-import java.security.KeyPair;
-import java.security.KeyPairGenerator;
-import java.security.KeyStore;
+import java.security.*;
 import java.security.KeyStore.PrivateKeyEntry;
-import java.security.KeyStoreException;
-import java.security.NoSuchAlgorithmException;
-import java.security.NoSuchProviderException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
-import java.security.SecureRandom;
-import java.security.UnrecoverableEntryException;
 import java.security.cert.CRLException;
 import java.security.cert.Certificate;
 import java.security.cert.CertificateEncodingException;
@@ -87,6 +77,7 @@ import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
+import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -111,16 +102,17 @@ public class CertificateUtil {
 
     private static final Logger logger = LoggerFactory.getLogger(CertificateUtil.class);
 
-    public static final String ROOT_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud, CN=MaritimeCloud Root Certificate, E=info@maritimecloud.net";
-    public static final String MCIDREG_CERT_X500_NAME = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud, OU=MaritimeCloud Identity Registry, CN=MaritimeCloud Identity Registry Certificate, E=info@maritimecloud.net";
     public static final int CERT_EXPIRE_YEAR = 2025;
     public static final String ROOT_CERT_ALIAS = "rootcert";
     public static final String INTERMEDIATE_CERT_ALIAS = "imcert";
     public static final String BC_PROVIDER_NAME = "BC";
     public static final String KEYSTORE_TYPE = "jks";
-    public static final String SIGNER_ALGORITHM = "SHA224withECDSA";
+    public static final String SIGNER_ALGORITHM = "SHA256withECDSA";
 
     // Values below are loaded from application.yaml
+    @Value("${net.maritimecloud.idreg.certs.mcidreg-cert-x500-name}")
+    public String MCIDREG_CERT_X500_NAME;
+
     @Value("${net.maritimecloud.idreg.certs.crl-url}")
     private String CRL_URL;
 
@@ -241,7 +233,7 @@ public class CertificateUtil {
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
      * Should only be used to init the CA.
      */
-    public void initCA() {
+    public void initCA(String rootCertX500Name, String mcidregCertX500Name) {
         if (KEYSTORE_PASSWORD == null) {
             KEYSTORE_PASSWORD = "changeit";
         }
@@ -276,7 +268,7 @@ public class CertificateUtil {
             X509Certificate cacert;
             try {
                 cacert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
-                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(ROOT_CERT_X500_NAME), null, "ROOTCA");
+                                          new X500Name(rootCertX500Name), new X500Name(rootCertX500Name), null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -285,7 +277,7 @@ public class CertificateUtil {
             X509Certificate imcert;
             try {
                 imcert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
-                                          new X500Name(ROOT_CERT_X500_NAME), new X500Name(MCIDREG_CERT_X500_NAME), null, "INTERMEDIATE");
+                                          new X500Name(rootCertX500Name), new X500Name(mcidregCertX500Name), null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
@@ -810,11 +802,17 @@ public class CertificateUtil {
     /* 
      * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates.
      * You might want to edit CERT_EXPIRE_YEAR to make sure the root cert is valid longer that the certificates it signs.
+     * You might also want to change rootCertX500Name and mcidregCertX500Name to reflect your setup, remember to put
+     * mcidregCertX500Name in application.yaml at net.maritimecloud.idreg.certs.mcidreg-cert-x500-name.
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
         System.out.println("Initializing CA");
         CertificateUtil certUtil = new CertificateUtil();
-        certUtil.initCA();
+        String rootCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test, CN=MaritimeCloud Test Root Certificate, E=info@maritimecloud.net";
+        System.out.println("Root CA DN: " + rootCertX500Name);
+        String mcidregCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test Identity Registry, CN=MaritimeCloud Test Identity Registry Certificate, E=info@maritimecloud.net";
+        System.out.println("MC Id Reg intermediate cert DN: " + mcidregCertX500Name);
+        certUtil.initCA(rootCertX500Name, mcidregCertX500Name);
         System.out.println("Done initializing CA");
     }*/
 }
