@@ -180,21 +180,15 @@ public class CertificateUtil {
                                                                                             X509KeyUsage.nonRepudiation   |
                                                                                             X509KeyUsage.keyEncipherment  |
                                                                                             X509KeyUsage.keyCertSign      |
-                                                                                            X509KeyUsage.dataEncipherment |
                                                                                             X509KeyUsage.cRLSign));
         } else if ("INTERMEDIATE".equals(type)) {
-            certV3Bldr = certV3Bldr.addExtension(Extension.keyUsage, true, new X509KeyUsage(X509KeyUsage.digitalSignature |
+            certV3Bldr = certV3Bldr.addExtension(Extension.basicConstraints, true, new BasicConstraints(true))
+                                   .addExtension(Extension.keyUsage, true, new X509KeyUsage(X509KeyUsage.digitalSignature |
                                                                                             X509KeyUsage.nonRepudiation   |
                                                                                             X509KeyUsage.keyEncipherment  |
                                                                                             X509KeyUsage.keyCertSign      |
-                                                                                            X509KeyUsage.dataEncipherment | 
-                                                                                            X509KeyUsage.cRLSign))
-                                   .addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+                                                                                            X509KeyUsage.cRLSign));
         } else {
-            // Basic extension setup
-            certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
-                                   .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
             // Subject Alternative Name
             GeneralName[] genNames = null;
             if (customAttrs != null && !customAttrs.isEmpty()) {
@@ -213,16 +207,20 @@ public class CertificateUtil {
             if (genNames != null) {
                 certV3Bldr = certV3Bldr.addExtension(Extension.subjectAlternativeName, false, new GeneralNames(genNames));
             }
-            // CRL Distribution Points
-            DistributionPointName distPointOne = new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, CRL_URL)));
-            DistributionPoint[] distPoints = new DistributionPoint[1];
-            distPoints[0] = new DistributionPoint(distPointOne, null, null);
-            certV3Bldr.addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distPoints));
-            // OCSP endpoint
-            GeneralName ocspName = new GeneralName(GeneralName.uniformResourceIdentifier, OCSP_URL);
-            AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspName);
-            certV3Bldr.addExtension(Extension.authorityInfoAccess, false, authorityInformationAccess);
         }
+        // Basic extension setup
+        certV3Bldr = certV3Bldr.addExtension(Extension.authorityKeyIdentifier, false, extensionUtil.createAuthorityKeyIdentifier(signerPublicKey))
+                               .addExtension(Extension.subjectKeyIdentifier, false, extensionUtil.createSubjectKeyIdentifier(subjectPublicKey));
+        // CRL Distribution Points
+        DistributionPointName distPointOne = new DistributionPointName(new GeneralNames(new GeneralName(GeneralName.uniformResourceIdentifier, CRL_URL)));
+        DistributionPoint[] distPoints = new DistributionPoint[1];
+        distPoints[0] = new DistributionPoint(distPointOne, null, null);
+        certV3Bldr.addExtension(Extension.cRLDistributionPoints, false, new CRLDistPoint(distPoints));
+        // OCSP endpoint
+        GeneralName ocspName = new GeneralName(GeneralName.uniformResourceIdentifier, OCSP_URL);
+        AuthorityInformationAccess authorityInformationAccess = new AuthorityInformationAccess(X509ObjectIdentifiers.ocspAccessMethod, ocspName);
+        certV3Bldr.addExtension(Extension.authorityInfoAccess, false, authorityInformationAccess);
+        // Create the key signer
         JcaContentSignerBuilder builder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
         builder.setProvider(BC_PROVIDER_NAME);
         ContentSigner signer = builder.build(signerPrivateKey);
@@ -233,7 +231,7 @@ public class CertificateUtil {
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
      * Should only be used to init the CA.
      */
-    public void initCA(String rootCertX500Name, String mcidregCertX500Name) {
+    public void initCA(String rootCertX500Name, String mcidregCertX500Name, String crlUrl, String ocspUrl) {
         if (KEYSTORE_PASSWORD == null) {
             KEYSTORE_PASSWORD = "changeit";
         }
@@ -249,7 +247,13 @@ public class CertificateUtil {
         if (TRUSTSTORE_PATH == null) {
             TRUSTSTORE_PATH = "mc-truststore.jks";
         }
-        KeyPair cakp = generateKeyPair(); 
+        if (CRL_URL == null) {
+            CRL_URL = crlUrl;
+        }
+        if (OCSP_URL == null) {
+            OCSP_URL = ocspUrl;
+        }
+        KeyPair cakp = generateKeyPair();
         KeyPair imkp = generateKeyPair(); 
         KeyStore rootks;
         KeyStore itks;
@@ -802,17 +806,19 @@ public class CertificateUtil {
     /* 
      * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates.
      * You might want to edit CERT_EXPIRE_YEAR to make sure the root cert is valid longer that the certificates it signs.
-     * You might also want to change rootCertX500Name and mcidregCertX500Name to reflect your setup, remember to put
-     * mcidregCertX500Name in application.yaml at net.maritimecloud.idreg.certs.mcidreg-cert-x500-name.
+     * You might also want to change rootCertX500Name, mcidregCertX500Name, ocspUrl and crlUrl to reflect your setup,
+     * remember to put mcidregCertX500Name in application.yaml at net.maritimecloud.idreg.certs.mcidreg-cert-x500-name.
     public static void main(String[] args) {
         Security.addProvider(new BouncyCastleProvider());
         System.out.println("Initializing CA");
+        String ocspUrl = "https://localhost/x509/api/certificates/ocsp";
+        String crlUrl = "https://localhost/x509/api/certificates/crl";
         CertificateUtil certUtil = new CertificateUtil();
         String rootCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test, CN=MaritimeCloud Test Root Certificate, E=info@maritimecloud.net";
         System.out.println("Root CA DN: " + rootCertX500Name);
         String mcidregCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test Identity Registry, CN=MaritimeCloud Test Identity Registry Certificate, E=info@maritimecloud.net";
         System.out.println("MC Id Reg intermediate cert DN: " + mcidregCertX500Name);
-        certUtil.initCA(rootCertX500Name, mcidregCertX500Name);
+        certUtil.initCA(rootCertX500Name, mcidregCertX500Name, crlUrl, ocspUrl);
         System.out.println("Done initializing CA");
     }*/
 }
