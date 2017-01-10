@@ -129,7 +129,10 @@ public class MultiSecurityConfig {
         @Bean
         public RoleHierarchy roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+            // If the hierarchy is changed, remember to update the hierarchy below and the list in
+            // net.maritimecloud.identityregistry.controllers.RoleController:getAvailableRoles()
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_APPROVE_ORG\n" +
+                                        "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
                                         "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
@@ -224,7 +227,10 @@ public class MultiSecurityConfig {
         @Bean
         public RoleHierarchy roleHierarchy() {
             RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
-            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+            // If the hierarchy is changed, remember to update the hierarchy above and the list in
+            // net.maritimecloud.identityregistry.controllers.RoleController:getAvailableRoles()
+            roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_APPROVE_ORG\n" +
+                                        "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
                                         "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +

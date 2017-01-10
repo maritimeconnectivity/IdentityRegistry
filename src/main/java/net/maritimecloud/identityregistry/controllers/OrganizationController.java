@@ -119,7 +119,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/unapprovedorgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('SITE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public ResponseEntity<List<Organization>> getUnapprovedOrganizations(HttpServletRequest request) {
         List<Organization> orgs = this.organizationService.getUnapprovedOrganizations();
         return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
@@ -135,7 +135,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/approve",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    @PreAuthorize("hasRole('SITE_ADMIN')")
+    @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
         if (org == null) {

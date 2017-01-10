@@ -31,23 +31,18 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Arrays;
 import java.util.List;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
 public class RoleController {
 
+    @Autowired
     private RoleService roleService;
+    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
-    public void setCertificateService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
     /**
      * Returns a list of rolemappings for this organization
      *
@@ -188,4 +183,25 @@ public class RoleController {
         List<String> roles = AccessControlUtil.getMyRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
+
+    /**
+     * Returns a list of available roles
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/role/available-roles",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    public ResponseEntity<List<String>> getAvailableRoles(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+        // See net.maritimecloud.identityregistry.security.MultiSecurityConfig for the role hierarchy
+        List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
+                                           "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN",
+                                           "ROLE_APPROVE_ORG", "ROLE_USER");
+        return new ResponseEntity<>(roles, HttpStatus.OK);
+    }
+
+
 }
