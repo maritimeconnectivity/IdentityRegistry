@@ -15,12 +15,14 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.*;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import io.swagger.annotations.ApiOperation;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -41,11 +43,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 public class UserController extends EntityController<User> {
@@ -63,6 +60,9 @@ public class UserController extends EntityController<User> {
     public void setUserService(EntityService<User> userService) {
         this.entityService = userService;
     }
+
+    @Autowired
+    private RoleService roleService;
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
@@ -270,11 +270,65 @@ public class UserController extends EntityController<User> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input) throws McBasicRestException {
+    public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input,
+                                      @RequestParam(value = "org-name", required = false) String orgName,
+                                      @RequestParam(value = "org-address", required = false) String orgAddress) throws McBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        // The organization does not exists - check if this a an organization hosted by an external "validator".
+        if (org == null && orgAddress != null && orgName != null) {
+            // Check that the org shortname is the same for the orgMrn and userMrn
+            String orgShortname = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+            if (!orgShortname.equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+            }
+            // Since the permissions of this user will be used as a template for administrator permissions, it must be
+            // verified that the user actually has some permissions.
+            if (input.getPermissions() == null || input.getPermissions().isEmpty()) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
+            }
+            // Check validators?
+            String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
+            // Create the new org based on given info
+            org = new Organization();
+            org.setName(orgName);
+            org.setMrn(orgMrn);
+            org.setApproved(true);
+            org.setEmail(input.getEmail());
+            // Extract domain-name from the user email and use that for org url.
+            int at = input.getEmail().indexOf("@");
+            String url = "http://" + input.getEmail().substring(at+1);
+            org.setUrl(url);
+            // Extract country from address
+            String country = "";
+            String address = "";
+            int lastComma = orgAddress.lastIndexOf(",");
+            if (lastComma > 0) {
+                country = orgAddress.substring(lastComma+1).trim();
+                address = orgAddress.substring(0, lastComma).trim();
+            } else {
+                country = "The Seven Seas";
+                address = orgAddress;
+            }
+            org.setAddress(address);
+            org.setCountry(country);
+            // save the new organization
+            org = this.organizationService.save(org);
+            // Create the initial roles for the organization. The permissions of the first user is used to define the ORG_ADMIN
+            // Come on! That's a great idea!!
+            if (input.getPermissions() != null) {
+                for (String permission : input.getPermissions().split(",")) {
+                    Role newRole = new Role();
+                    newRole.setRoleName("ROLE_ORG_ADMIN");
+                    newRole.setPermission(permission.trim());
+                    newRole.setIdOrganization(org.getId());
+                    this.roleService.save(newRole);
+                }
+            }
+        }
+
         if (org != null) {
             String userMrn = input.getMrn();
             if (userMrn == null || userMrn.isEmpty()) {
