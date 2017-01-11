@@ -137,6 +137,7 @@ spring:
         username: idreg
         password: idreg
         driverClassName: com.mysql.jdbc.Driver
+flyway.baseline-on-migrate: true
 
 ---
 spring:

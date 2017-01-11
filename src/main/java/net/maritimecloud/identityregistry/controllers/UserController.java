@@ -314,6 +314,7 @@ public class UserController extends EntityController<User> {
             }
             org.setAddress(address);
             org.setCountry(country);
+            org.setFederationType("external-idp");
             // save the new organization
             org = this.organizationService.save(org);
             // Create the initial roles for the organization. The permissions of the first user is used to define the ORG_ADMIN

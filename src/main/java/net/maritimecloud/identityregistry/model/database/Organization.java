@@ -16,6 +16,7 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import net.maritimecloud.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
@@ -44,7 +45,8 @@ public class Organization extends CertificateModel {
     // Due to limitation in the X509, Organization MRN must not be longer than 64 characters
     @Length(max = 64)
     @NotBlank
-    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
+    @MRN
+    @ApiModelProperty(value = "The Maritime Resource Name", required = true, readOnly = true)
     @Column(name = "mrn")
     private String mrn;
 
@@ -77,6 +79,10 @@ public class Organization extends CertificateModel {
     @Column(name = "approved")
     private boolean approved;
 
+    @Column(name = "federation_type")
+    @ApiModelProperty(value = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", readOnly = true)
+    private String federationType;
+
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL)
     @JoinColumn(name="id_logo")
@@ -102,7 +108,7 @@ public class Organization extends CertificateModel {
         org.setAddress(address);
         org.setCountry(country);
         org.setLogo(logo);
-        org.setType(type);
+        org.setFederationType(federationType);
         org.setApproved(approved);
         org.getCertificates().clear();
         org.getCertificates().addAll(certificates);
@@ -120,7 +126,6 @@ public class Organization extends CertificateModel {
         org.setUrl(url);
         org.setAddress(address);
         org.setCountry(country);
-        org.setType(type);
         org.getIdentityProviderAttributes().clear();
         org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
         org.setChildIds();
@@ -156,6 +161,7 @@ public class Organization extends CertificateModel {
     @Override
     public void clearSensitiveFields() {
         this.identityProviderAttributes.clear();
+        this.federationType = null;
     }
 
     /******************************/
@@ -169,12 +175,12 @@ public class Organization extends CertificateModel {
         this.mrn = mrn;
     }
 
-    public String getType() {
-        return type;
+    public String getFederationType() {
+        return federationType;
     }
 
-    public void setType(String type) {
-        this.type = type;
+    public void setFederationType(String federationType) {
+        this.type = federationType;
     }
 
     public String getName() {

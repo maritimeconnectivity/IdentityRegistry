@@ -227,10 +227,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
                 }
+                org.setFederationType("own-idp");
             } else if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 // Remove old IDP if new input doesn't contain IDP info
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 keycloakAU.deleteIdentityProvider(input.getMrn());
+                org.setFederationType("test-idp");
             }
             input.selectiveCopyTo(org);
             this.organizationService.save(org);
