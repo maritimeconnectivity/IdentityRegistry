@@ -85,7 +85,11 @@ public class ServiceController extends EntityController<Service> {
                 input.setOidcClientId(input.getMrn());
                 try {
                     String clientSecret = keycloakAU.createClient(input.getMrn(), input.getOidcAccessType(), input.getOidcRedirectUri());
-                    input.setOidcClientSecret(clientSecret);
+                    if (input.getOidcAccessType().equals("confidential")) {
+                        input.setOidcClientSecret(clientSecret);
+                    } else {
+                        input.setOidcClientSecret(null);
+                    }
                 } catch(IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                 }
@@ -151,7 +155,12 @@ public class ServiceController extends EntityController<Service> {
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     service.setOidcClientId(service.getMrn());
-                    keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                    String clientSecret = keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                    if (service.getOidcAccessType().equals("confidential")) {
+                        service.setOidcClientSecret(clientSecret);
+                    } else {
+                        service.setOidcClientSecret(null);
+                    }
                 }
                 try {
                     this.entityService.save(service);
