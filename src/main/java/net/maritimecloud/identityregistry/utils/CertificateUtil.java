@@ -641,8 +641,10 @@ public class CertificateUtil {
                         essence.setUid(value);
                         break;
                     case MC_OID_PERMISSIONS:
-                        SimpleGrantedAuthority role = new SimpleGrantedAuthority(value);
-                        roles.add(role);
+                        if (value != null && !value.trim().isEmpty()) {
+                            SimpleGrantedAuthority role = new SimpleGrantedAuthority(value);
+                            roles.add(role);
+                        }
                         break;
                     default:
                         logger.error("Unknown OID!");
