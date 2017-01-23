@@ -149,19 +149,28 @@ public class ServiceController extends EntityController<Service> {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                input.selectiveCopyTo(service);
                 // Update the keycloak client for the service if needed
-                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
+                        && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    service.setOidcClientId(service.getMrn());
-                    String clientSecret = keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                    String clientSecret;
+                    try {
+                        if (service.getOidcClientId() != null && !service.getOidcClientId().isEmpty()) {
+                            clientSecret = keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                        } else {
+                            service.setOidcClientId(service.getMrn());
+                            clientSecret = keycloakAU.createClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                        }
+                    } catch (IOException e){
+                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
+                    }
                     if (service.getOidcAccessType().equals("confidential")) {
                         service.setOidcClientSecret(clientSecret);
                     } else {
                         service.setOidcClientSecret(null);
                     }
                 }
+                input.selectiveCopyTo(service);
                 try {
                     this.entityService.save(service);
                     return new ResponseEntity<>(HttpStatus.OK);
