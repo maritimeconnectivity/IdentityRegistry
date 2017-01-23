@@ -530,8 +530,14 @@ public class KeycloakAdminUtil {
      * @param redirectUri
      * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
      */
-    public String updateClient(String clientId, String type, String redirectUri) {
-        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+    public String updateClient(String clientId, String type, String redirectUri) throws IOException {
+        List<ClientRepresentation> clients = getBrokerRealm().clients().findByClientId(clientId);
+        if (clients == null || clients.isEmpty()) {
+            // hmm, this shouldn't happen...
+            logger.warn("Could not find client that should be upgraded - will create it!");
+            return this.createClient(clientId, type, redirectUri);
+        }
+        ClientRepresentation client = clients.get(0);
         client.setClientAuthenticatorType(type);
         client.setRedirectUris(Arrays.asList(redirectUri));
         if ("public".equals(type)) {
