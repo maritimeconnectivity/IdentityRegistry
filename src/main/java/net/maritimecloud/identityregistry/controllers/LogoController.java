@@ -21,7 +21,9 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.ImageUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -78,13 +80,20 @@ public class LogoController {
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/logo",
-            method = RequestMethod.GET,
-            produces = "image/png")
+            method = RequestMethod.GET)
     @ResponseBody
     public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
-        if (org != null && org.getLogo() != null) {
-            return new ResponseEntity<>(org.getLogo().getImage(), HttpStatus.OK);
+        if (org != null) {
+            if (org.getLogo() != null) {
+                byte[] image = org.getLogo().getImage();
+                HttpHeaders responseHeaders = new HttpHeaders();
+                responseHeaders.setContentLength(image.length);
+                responseHeaders.setContentType(MediaType.IMAGE_PNG);
+                return new ResponseEntity<>(image, responseHeaders, HttpStatus.OK);
+            } else {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.LOGO_NOT_FOUND, request.getServletPath());
+            }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
