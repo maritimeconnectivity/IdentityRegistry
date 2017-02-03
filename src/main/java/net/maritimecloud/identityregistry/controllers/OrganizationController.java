@@ -97,6 +97,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
         input.setApproved(false);
+        // If no federation type is set we for now default to "test-idp"
+        if (input.getFederationType() == null || input.getFederationType().isEmpty()) {
+            input.setFederationType("test-idp");
+        }
         Organization newOrg;
         try {
             newOrg = this.organizationService.save(input);
@@ -232,6 +236,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 // Remove old IDP if new input doesn't contain IDP info
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 keycloakAU.deleteIdentityProvider(input.getMrn());
+                // TODO: Determine if setting to "external-idp" could be done as well.
                 org.setFederationType("test-idp");
             }
             input.selectiveCopyTo(org);

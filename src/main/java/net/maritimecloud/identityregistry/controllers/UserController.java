@@ -90,7 +90,7 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
-            if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
+            if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                 String password = PasswordUtil.generatePassword();
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
@@ -159,7 +159,7 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Update user in keycloak if created there.
-            if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
+            if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.updateUser(input.getMrn(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
