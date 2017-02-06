@@ -79,13 +79,16 @@ public class ServiceController extends EntityController<Service> {
             }
             input.setIdOrganization(org.getId());
             // Setup a keycloak client for the service if needed
-            if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
-                    && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
+            if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
+                // Check if the redirect uri is set if access type is "bearer-only"
+                if (!"bearer-only".equals(input.getOidcAccessType()) && (input.getOidcRedirectUri() == null || input.getOidcRedirectUri().trim().isEmpty())) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
+                }
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 input.setOidcClientId(input.getMrn());
                 try {
                     String clientSecret = keycloakAU.createClient(input.getMrn(), input.getOidcAccessType(), input.getOidcRedirectUri());
-                    if (input.getOidcAccessType().equals("confidential")) {
+                    if ("confidential".equals(input.getOidcAccessType())) {
                         input.setOidcClientSecret(clientSecret);
                     } else {
                         input.setOidcClientSecret(null);
@@ -150,8 +153,11 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Update the keycloak client for the service if needed
-                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()
-                        && input.getOidcRedirectUri() != null && !input.getOidcRedirectUri().trim().isEmpty()) {
+                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
+                    // Check if the redirect uri is set if access type is "bearer-only"
+                    if (!"bearer-only".equals(input.getOidcAccessType()) && (input.getOidcRedirectUri() == null || input.getOidcRedirectUri().trim().isEmpty())) {
+                        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
+                    }
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     String clientSecret;
                     try {
@@ -164,7 +170,7 @@ public class ServiceController extends EntityController<Service> {
                     } catch (IOException e){
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                     }
-                    if (service.getOidcAccessType().equals("confidential")) {
+                    if ("confidential".equals(service.getOidcAccessType())) {
                         service.setOidcClientSecret(clientSecret);
                     } else {
                         service.setOidcClientSecret(null);

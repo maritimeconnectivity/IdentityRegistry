@@ -21,4 +21,5 @@ public class MCIdRegConstants {
     public static final String WRONG_ENTITY_ORG_ID_FORMAT = "The organizational id of the entity must be in lowercase and prefixed with the lowercase organization shortname follow by a dot!";
     public static final String INVALID_IMAGE = "Could not read the image format!";
     public static final String LOGO_NOT_FOUND = "This organization does not have a logo!";
+    public static final String OIDC_MISSING_REDIRECT_URL = "This OpenID Connect Access Type requires a redirect URI!";
 }
