@@ -1,4 +1,5 @@
-/* Copyright 2016 Danish Maritime Authority.
+/*
+ * Copyright 2017 Danish Maritime Authority.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -44,7 +45,7 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("Maritime Cloud Identity Registry API")
                 .description("Maritime Cloud Identity Registry API can be used for managing entities in the Maritime Cloud.")
-                .version("0.0.1")
+                .version("0.4.0")
                 .contact(new Contact("Maritime Cloud", "http://maritimecloud.net", "info@maritimecloud.net"))
                 .build();
     }
