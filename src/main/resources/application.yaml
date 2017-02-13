@@ -104,6 +104,7 @@ net:
                     
                     Best regards,
                     The Maritime Cloud
+                bug-report-email: bug-report@maritimecloud.net
 
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
