@@ -26,7 +26,7 @@ public class BugReport implements JsonSerializable {
 
     private String description;
 
-    private List<String> attachments;
+    private List<BugReportAttachment> attachments;
 
 
     public String getSubject() {
@@ -45,11 +45,11 @@ public class BugReport implements JsonSerializable {
         this.description = description;
     }
 
-    public List<String> getAttachments() {
+    public List<BugReportAttachment> getAttachments() {
         return attachments;
     }
 
-    public void setAttachments(List<String> attachments) {
+    public void setAttachments(List<BugReportAttachment> attachments) {
         this.attachments = attachments;
     }
 }
