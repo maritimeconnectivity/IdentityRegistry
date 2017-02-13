@@ -1,4 +1,5 @@
-/* Copyright 2016 Danish Maritime Authority.
+/*
+ * Copyright 2017 Danish Maritime Authority.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -99,6 +100,7 @@ public class MultiSecurityConfig {
                 .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
+                    .antMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()
@@ -186,6 +188,7 @@ public class MultiSecurityConfig {
                 .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
+                    .antMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
                     .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl").permitAll()
                     .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()

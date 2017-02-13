@@ -1,4 +1,5 @@
-/* Copyright 2016 Danish Maritime Authority.
+/*
+ * Copyright 2017 Danish Maritime Authority.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -19,7 +20,19 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
 import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.mail.javamail.MimeMessagePreparator;
 import org.springframework.stereotype.Component;
+
+import org.springframework.mail.javamail.JavaMailSender;
+
+import javax.activation.DataSource;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+import java.io.InputStream;
 
 @Component
 public class EmailUtil {
@@ -50,8 +63,11 @@ public class EmailUtil {
     @Value("${net.maritimecloud.idreg.email.created-user-text}")
     private String createdUserText;
 
+    @Value("${net.maritimecloud.idreg.email.bug-report-email}")
+    private String bugReportEmail;
+
     @Autowired
-    private MailSender mailSender;
+    private JavaMailSender mailSender;
 
     public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) throws MailException {
         if (sendTo == null || sendTo.trim().isEmpty()) {
@@ -84,6 +100,21 @@ public class EmailUtil {
         msg.setSubject(createdUserSubject);
         msg.setText(String.format(createdUserText, userName, loginName, loginPassword, portalUrl, projectIDPName));
         this.mailSender.send(msg);
+    }
+
+    public void sendBugReport(String subject, String body, DataSource[] attachments) throws MailException, MessagingException {
+        MimeMessage message = this.mailSender.createMimeMessage();
+        MimeMessageHelper helper = new MimeMessageHelper(message, true);
+        helper.setTo(bugReportEmail);
+        helper.setFrom(from);
+        helper.setSubject(subject);
+        helper.setText(body);
+        if (attachments != null) {
+            for (DataSource attach : attachments) {
+                helper.addAttachment(attach.getName(), attach);
+            }
+        }
+        this.mailSender.send(message);
     }
 
 }
