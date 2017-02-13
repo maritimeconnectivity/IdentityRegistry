@@ -36,7 +36,7 @@ public class BugReportController {
     @Autowired
     private EmailUtil emailUtil;
 
-    //@ApiOperation(hidden=true, value = "Reports a bug")
+    @ApiOperation(hidden=true, value = "Reports a bug")
     @RequestMapping(
             value = "/api/report-bug",
             method = RequestMethod.POST,
@@ -44,7 +44,7 @@ public class BugReportController {
     @ResponseBody
     public ResponseEntity<?> reportBug(HttpServletRequest request, @RequestBody BugReport report) throws McBasicRestException {
         try {
-            emailUtil.sendBugReport(report.getSubject(), report.getDescription(), null);
+            emailUtil.sendBugReport(report);
         } catch (MessagingException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
         }

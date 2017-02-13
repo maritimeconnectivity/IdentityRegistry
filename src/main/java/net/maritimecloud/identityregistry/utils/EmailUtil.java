@@ -15,24 +15,21 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import net.maritimecloud.identityregistry.model.data.BugReport;
+import net.maritimecloud.identityregistry.model.data.BugReportAttachment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.MailException;
-import org.springframework.mail.MailSender;
 import org.springframework.mail.SimpleMailMessage;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
-import org.springframework.mail.javamail.MimeMessagePreparator;
+import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.stereotype.Component;
 
-import org.springframework.mail.javamail.JavaMailSender;
+import java.util.Base64;
 
-import javax.activation.DataSource;
-import javax.mail.Message;
 import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
-import java.io.InputStream;
+import javax.mail.util.ByteArrayDataSource;
 
 @Component
 public class EmailUtil {
@@ -102,16 +99,19 @@ public class EmailUtil {
         this.mailSender.send(msg);
     }
 
-    public void sendBugReport(String subject, String body, DataSource[] attachments) throws MailException, MessagingException {
+    public void sendBugReport(BugReport report) throws MailException, MessagingException {
         MimeMessage message = this.mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
         helper.setTo(bugReportEmail);
         helper.setFrom(from);
-        helper.setSubject(subject);
-        helper.setText(body);
-        if (attachments != null) {
-            for (DataSource attach : attachments) {
-                helper.addAttachment(attach.getName(), attach);
+        helper.setSubject(report.getSubject());
+        helper.setText(report.getDescription());
+        if (report.getAttachments() != null) {
+            for (BugReportAttachment attachment : report.getAttachments()) {
+                // Decode base64 encoded data
+                byte[] data =  Base64.getDecoder().decode(attachment.getData());
+                ByteArrayDataSource dataSource = new ByteArrayDataSource(data, attachment.getMimetype());
+                helper.addAttachment(attachment.getName(), dataSource);
             }
         }
         this.mailSender.send(message);
