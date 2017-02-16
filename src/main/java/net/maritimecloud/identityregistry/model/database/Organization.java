@@ -181,7 +181,7 @@ public class Organization extends CertificateModel {
     }
 
     public void setFederationType(String federationType) {
-        this.type = federationType;
+        this.federationType = federationType;
     }
 
     public String getName() {

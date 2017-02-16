@@ -150,7 +150,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
         }
         // Create the Identity Provider for the org
-        if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
+        if ("own-idp".equals(org.getFederationType()) && org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
             keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
             try {
                 keycloakAU.createIdentityProvider(org.getMrn().toLowerCase(), org.getIdentityProviderAttributes());
@@ -218,7 +218,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
-            if (input.getIdentityProviderAttributes() != null && !input.getIdentityProviderAttributes().isEmpty()) {
+            if ("own-idp".equals(input.getFederationType()) && input.getIdentityProviderAttributes() != null && !input.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 // If the IDP setup is different we delete the old IDP in keycloak
                 if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()
