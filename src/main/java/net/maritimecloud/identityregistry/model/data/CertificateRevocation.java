@@ -20,6 +20,7 @@ import net.maritimecloud.identityregistry.model.JsonSerializable;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
 import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
@@ -27,7 +28,7 @@ import java.util.Date;
 public class CertificateRevocation implements JsonSerializable {
 
     @ApiModelProperty(value = "The date the certificate revocation should be activated.", required = true)
-    @NotBlank
+    @NotNull
     private Date revokedAt;
 
     @ApiModelProperty(
