@@ -18,6 +18,8 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -58,6 +60,8 @@ public class ServiceController extends EntityController<Service> {
         this.entityService = entityService;
     }
 
+
+    private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
     /**
      * Creates a new Service
      * 
@@ -177,7 +181,8 @@ public class ServiceController extends EntityController<Service> {
                             clientSecret = keycloakAU.createClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
                         }
                     } catch (IOException e){
-                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
+                        logger.error("Error while updating/creation client in keycloak.", e);
+                        throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                     }
                     if ("confidential".equals(service.getOidcAccessType())) {
                         service.setOidcClientSecret(clientSecret);
