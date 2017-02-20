@@ -103,8 +103,16 @@ public class ServiceController extends EntityController<Service> {
                 input.setOidcClientSecret(null);
                 input.setOidcRedirectUri(null);
             }
-            Service newService = this.entityService.save(input);
-            return new ResponseEntity<Service>(newService, HttpStatus.OK);
+            try {
+                Service newService = this.entityService.save(input);
+                return new ResponseEntity<Service>(newService, HttpStatus.OK);
+            } catch (DataIntegrityViolationException e) {
+                // If save to DB failed, remove the client from keycloak if it was created.
+                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
+                    keycloakAU.deleteClient(input.getMrn());
+                }
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

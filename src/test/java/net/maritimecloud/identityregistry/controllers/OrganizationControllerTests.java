@@ -191,7 +191,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
@@ -224,7 +224,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         try {
             // Note that the mrn in the url is different from the org mrn - should mean it fails
@@ -257,7 +257,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the users orgMrn is different from mrn of the org - means it should fail
-        Authentication auth = generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
@@ -273,51 +273,63 @@ public class OrganizationControllerTests {
 
 
     /**
-     * Helper function of build fake KeycloakAuthenticationToken
-     * @param orgMrn
-     * @param role
-     * @param permissions
-     * @return
+     * Try to access an organization with the appropriate role
      */
-    private KeycloakAuthenticationToken generateKeycloakToken(String orgMrn, String role, String permissions) {
-        AccessToken accessToken = new AccessToken();
-        if (orgMrn != null && !orgMrn.isEmpty()) {
-            accessToken.setOtherClaims(AccessControlUtil.ORG_PROPERTY_NAME, orgMrn);
+    @Test
+    public void testAccessGetOrgWithRights() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
         }
-        if (permissions != null && !permissions.isEmpty()) {
-            accessToken.setOtherClaims(AccessControlUtil.PERMISSIONS_PROPERTY_NAME, permissions);
-        }
-        RefreshableKeycloakSecurityContext ksc = new RefreshableKeycloakSecurityContext(null, null, "accessTokenString", accessToken, "idTokenString", null, "refreshTokenString");
-        Set<String> roles = new HashSet<>();
-        roles.add(role);
-        KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>("name", ksc);
-        SimpleKeycloakAccount account = new SimpleKeycloakAccount(principal, roles, ksc);
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(role));
-        return new KeycloakAuthenticationToken(account, authorities);
     }
 
     /**
-     * Helper function of build fake PreAuthenticatedAuthenticationToken - used for x509 authentication
-     * @param orgMrn
-     * @param role
-     * @param permissions
-     * @return
+     * Try to access an organization with the appropriate role as SITE_ADMIN
      */
-    private PreAuthenticatedAuthenticationToken generatePreAuthenticatedAuthenticationToken(String orgMrn, String role, String permissions) {
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
-        authorities.add(new SimpleGrantedAuthority(role));
-        InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
-        String username = "urn:mrn:mcl:user:dma:dmauser";
-        essence.setUsername(username);
-        essence.setUid(username);
-        essence.setDn("O="+orgMrn);
-        essence.setO(orgMrn);
-        essence.setCn(new String[] {"dmauser"});
-        essence.setAuthorities(authorities);
-
-        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
-        return token;
+    @Test
+    public void testAccessGetOrgWithRights2() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_SITE_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
     }
 
 
@@ -331,11 +343,11 @@ public class OrganizationControllerTests {
         try {
             // Convert object to JSON string
             String jsonInString = mapper.writeValueAsString(org);
-            System.out.println(jsonInString);
+            //System.out.println(jsonInString);
 
             // Convert object to JSON string and pretty print
             jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(org);
-            System.out.println(jsonInString);
+            //System.out.println(jsonInString);
 
             return jsonInString;
         } catch (JsonGenerationException e) {
