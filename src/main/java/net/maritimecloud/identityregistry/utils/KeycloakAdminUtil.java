@@ -493,7 +493,11 @@ public class KeycloakAdminUtil {
         ClientRepresentation client = new ClientRepresentation();
         client.setClientId(clientId);
         client.setClientAuthenticatorType("client-secret");
-        client.setRedirectUris(Arrays.asList(redirectUri));
+        if (redirectUri != null && !redirectUri.trim().isEmpty()) {
+            client.setRedirectUris(Arrays.asList(redirectUri));
+        } else {
+            client.setRedirectUris(null);
+        }
         client.setWebOrigins(Arrays.asList("+"));
         client.setDirectAccessGrantsEnabled(false);
         client.setProtocol("openid-connect");
@@ -547,7 +551,11 @@ public class KeycloakAdminUtil {
         }
         ClientRepresentation client = clients.get(0);
         client.setClientAuthenticatorType(type);
-        client.setRedirectUris(Arrays.asList(redirectUri));
+        if (redirectUri != null && !redirectUri.trim().isEmpty()) {
+            client.setRedirectUris(Arrays.asList(redirectUri));
+        } else {
+            client.setRedirectUris(null);
+        }
         if ("public".equals(type)) {
             client.setBearerOnly(false);
             client.setPublicClient(true);
@@ -559,6 +567,7 @@ public class KeycloakAdminUtil {
             client.setBearerOnly(false);
             client.setPublicClient(false);
         }
+        // Update client
         getBrokerRealm().clients().get(client.getId()).update(client);
         if (!type.equals("public")) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
