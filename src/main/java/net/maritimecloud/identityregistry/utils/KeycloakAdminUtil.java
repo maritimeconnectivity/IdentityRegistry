@@ -525,9 +525,7 @@ public class KeycloakAdminUtil {
         if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
             ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).get(0);
-            String cr_secret = createdClient.getSecret();
             String secret = getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
-            logger.warn("Secret from ClientRepresentation: " + cr_secret + ", secret from ClientResource: " + secret);
             return secret;
         } else {
             return "";
