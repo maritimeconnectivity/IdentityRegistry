@@ -107,6 +107,10 @@ public class UserController extends EntityController<User> {
                 User newUser = this.entityService.save(input);
                 return new ResponseEntity<User>(newUser, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
+                // If save to DB failed, remove the user from keycloak if it was created.
+                if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
+                    keycloakAU.deleteUser(input.getEmail());
+                }
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
             }
         } else {
