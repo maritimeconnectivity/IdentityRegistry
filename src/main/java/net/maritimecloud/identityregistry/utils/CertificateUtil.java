@@ -470,7 +470,7 @@ public class CertificateUtil {
         for (net.maritimecloud.identityregistry.model.database.Certificate cert : revokedCerts) {
             String certReason = cert.getRevokeReason().toLowerCase();
             int reason = getCRLReasonFromString(certReason);
-            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId()), now, reason);
+            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId()), cert.getRevokedAt(), reason);
         }
         //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
         //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));

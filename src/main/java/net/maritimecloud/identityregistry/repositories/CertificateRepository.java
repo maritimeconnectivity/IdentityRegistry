@@ -28,7 +28,7 @@ public interface CertificateRepository extends CrudRepository<Certificate, Long>
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
-    @Query("SELECT c FROM Certificate c WHERE c.revoked=1 AND CURDATE() BETWEEN c.start AND c.end")
+    @Query("SELECT c FROM Certificate c WHERE c.revoked=1")
     List<Certificate> findRevoked();
 }
 

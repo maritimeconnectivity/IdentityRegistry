@@ -46,7 +46,6 @@ public abstract class CertificateModel extends TimestampModel {
             for (Certificate cert : getCertificates()) {
                 // Revoke certificates
                 cert.setRevokedAt(now);
-                cert.setEnd(now);
                 cert.setRevokeReason("cessationofoperation");
                 cert.setRevoked(true);
                 // Detach certificate from entity - since the model type isn't known, just blank all.
