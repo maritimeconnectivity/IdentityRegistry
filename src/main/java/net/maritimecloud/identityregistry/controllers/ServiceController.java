@@ -21,6 +21,8 @@ import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -312,12 +314,12 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Get the keycloak json for the client the service represents if it exists
-                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     String keycloakJson = keycloakAU.getClientKeycloakJson(service.getMrn());
                     return new ResponseEntity<String>(keycloakJson, HttpStatus.OK);
                 }
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -333,8 +335,7 @@ public class ServiceController extends EntityController<Service> {
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/jbossxml",
-            method = RequestMethod.GET,
-            produces = "application/xml;charset=UTF-8")
+            method = RequestMethod.GET)
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
@@ -350,12 +351,15 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Get the jboss xml for the client the service represents if it exists
-                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     String jbossXml = keycloakAU.getClientJbossXml(service.getMrn());
-                    return new ResponseEntity<String>(jbossXml, HttpStatus.OK);
+                    HttpHeaders responseHeaders = new HttpHeaders();
+                    responseHeaders.setContentLength(jbossXml.length());
+                    responseHeaders.setContentType(MediaType.APPLICATION_XML);
+                    return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
                 }
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

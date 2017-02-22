@@ -39,4 +39,5 @@ public class MCIdRegConstants {
     public static final String LOGO_NOT_FOUND = "This organization does not have a logo!";
     public static final String OIDC_MISSING_REDIRECT_URL = "This OpenID Connect Access Type requires a redirect URI!";
     public static final String BUG_REPORT_CREATION_FAILED = "Creation of bug report failed!";
+    public static final String OIDC_CONF_FILE_NOT_AVAILABLE = "There is no OIDC configuration file available for this service!";
 }
