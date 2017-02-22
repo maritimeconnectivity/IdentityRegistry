@@ -103,7 +103,7 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
                     .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl").permitAll()
-                    .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()
+                    .antMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp/**").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp").permitAll()
                     .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()

@@ -110,7 +110,7 @@ public class OrganizationControllerTests {
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
-                .alwaysDo(print())
+                //.alwaysDo(print())
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
     }

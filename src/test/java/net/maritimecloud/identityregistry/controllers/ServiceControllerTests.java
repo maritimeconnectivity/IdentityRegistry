@@ -87,7 +87,7 @@ public class ServiceControllerTests {
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
-                .alwaysDo(print())
+                //.alwaysDo(print())
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
     }
@@ -260,8 +260,86 @@ public class ServiceControllerTests {
         }
     }
 
+
     /**
-     * Helper function to serialize an organization to json
+     * Try to get a JBoss conf XML for a service
+     */
+    @Test
+    public void testAccessServiceJBossXMLWithRights() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setIdOrganization(new Long(1));
+        service.setOidcAccessType("bearer-only");
+        String serviceJson = serialize(service);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
+        when(org.getId()).thenReturn(new Long(1));
+        given(this.keycloakAU.getClientJbossXml("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/jbossxml").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    /**
+     * Try to get a JBoss conf XML for a service where it is not available
+     */
+    @Test
+    public void testAccessServiceJBossXMLWithRightsNoConf() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setIdOrganization(new Long(1));
+        service.setOidcAccessType(null);
+        String serviceJson = serialize(service);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
+        when(org.getId()).thenReturn(new Long(1));
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/jbossxml").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isNotFound());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    /**
+     * Helper function to serialize a service to json
      * @param service
      * @return
      */
