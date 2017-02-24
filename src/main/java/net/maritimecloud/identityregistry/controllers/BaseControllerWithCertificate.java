@@ -32,6 +32,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -50,10 +51,6 @@ public abstract class BaseControllerWithCertificate {
     private CertificateUtil certUtil;
 
     protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
-        // Create the certificate and save it so that it gets an id that can be used as certificate serialnumber
-        Certificate newMCCert = new Certificate();
-        certOwner.assignToCert(newMCCert);
-        newMCCert = this.certificateService.saveCertificate(newMCCert);
         // Generate keypair for user
         KeyPair userKeyPair = CertificateUtil.generateKeyPair();
         // Find special MC attributes to put in the certificate
@@ -66,7 +63,8 @@ public abstract class BaseControllerWithCertificate {
         if (uid == null || uid.trim().isEmpty()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
-        X509Certificate userCert = certUtil.generateCertForEntity(newMCCert.getId(), org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs);
+        BigInteger serialNumber = certUtil.generateSerialNumber();
+        X509Certificate userCert = certUtil.generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs);
         String pemCertificate = "";
         try {
             pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
@@ -77,7 +75,12 @@ public abstract class BaseControllerWithCertificate {
         String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
         String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
         PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
+
+        // Create the certificate
+        Certificate newMCCert = new Certificate();
+        certOwner.assignToCert(newMCCert);
         newMCCert.setCertificate(pemCertificate);
+        newMCCert.setSerialNumber(serialNumber);
         // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
         Calendar cal = Calendar.getInstance();
         long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);

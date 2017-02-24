@@ -22,6 +22,7 @@ import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 import javax.persistence.Column;
@@ -50,6 +51,9 @@ public class Certificate extends TimestampModel {
 
     @Column(name = "end")
     private Date end;
+
+    @Column(name = "serial_number")
+    private BigInteger serialNumber;
 
     @Column(name = "revoked")
     private boolean revoked;
@@ -123,6 +127,14 @@ public class Certificate extends TimestampModel {
 
     public void setEnd(Date end) {
         this.end = end;
+    }
+
+    public BigInteger getSerialNumber() {
+        return serialNumber;
+    }
+
+    public void setSerialNumber(BigInteger serialNumber) {
+        this.serialNumber = serialNumber;
     }
 
     public boolean getRevoked() {

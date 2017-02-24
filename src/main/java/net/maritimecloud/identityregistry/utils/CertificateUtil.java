@@ -15,13 +15,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
-import java.io.ByteArrayInputStream;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.StringWriter;
-import java.io.UnsupportedEncodingException;
+import java.io.*;
 import java.math.BigInteger;
 import java.security.*;
 import java.security.KeyStore.PrivateKeyEntry;
@@ -85,6 +79,7 @@ import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.operator.jcajce.JcaDigestCalculatorProviderBuilder;
+import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
@@ -135,6 +130,8 @@ public class CertificateUtil {
     @Value("${net.maritimecloud.idreg.certs.truststore-password}")
     private String TRUSTSTORE_PASSWORD;
 
+    SecureRandom random = new SecureRandom();
+
     // OIDs used for the extra info stored in the SubjectAlternativeName extension
     // Generate more random OIDs at http://www.itu.int/en/ITU-T/asn1/Pages/UUID/generate_uuid.aspx
     public static final String MC_OID_FLAGSTATE        = "2.25.323100633285601570573910217875371967771";
@@ -161,14 +158,14 @@ public class CertificateUtil {
      * @return A signed X509Certificate
      * @throws Exception
      */
-    public X509Certificate buildAndSignCert(Long serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, X500Name issuer, X500Name subject,
+    public X509Certificate buildAndSignCert(BigInteger serialNumber, PrivateKey signerPrivateKey, PublicKey signerPublicKey, PublicKey subjectPublicKey, X500Name issuer, X500Name subject,
                                                    Map<String, String> customAttrs, String type) throws Exception {
         // Dates are converted to GMT/UTC inside the cert builder 
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
         Date expire = new GregorianCalendar(CERT_EXPIRE_YEAR, 0, 1).getTime();
         X509v3CertificateBuilder certV3Bldr = new JcaX509v3CertificateBuilder(issuer,
-                                                                                BigInteger.valueOf(serialNumber),
+                                                                                serialNumber,
                                                                                 now, // Valid from now...
                                                                                 expire, // until CERT_EXPIRE_YEAR
                                                                                 subject,
@@ -232,7 +229,7 @@ public class CertificateUtil {
      * Generates a self-signed certificate based on the keypair and saves it in the keystore.
      * Should only be used to init the CA.
      */
-    public void initCA(String rootCertX500Name, String mcidregCertX500Name, String crlUrl, String ocspUrl) {
+    public void initCA(String rootCertX500Name, String mcidregCertX500Name, String crlUrl, String ocspUrl, String outputCaCrlPath) {
         if (KEYSTORE_PASSWORD == null) {
             KEYSTORE_PASSWORD = "changeit";
         }
@@ -256,7 +253,7 @@ public class CertificateUtil {
         }
         KeyPair cakp = generateKeyPair();
         KeyPair imkp = generateKeyPair(); 
-        KeyStore rootks;
+        KeyStore rootks = null;
         KeyStore itks;
         KeyStore ts;
         FileOutputStream rootfos = null;
@@ -272,7 +269,7 @@ public class CertificateUtil {
             itfos = new FileOutputStream(INTERMEDIATE_KEYSTORE_PATH);
             X509Certificate cacert;
             try {
-                cacert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
+                cacert = buildAndSignCert(generateSerialNumber(), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
                                           new X500Name(rootCertX500Name), new X500Name(rootCertX500Name), null, "ROOTCA");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -281,7 +278,7 @@ public class CertificateUtil {
             }
             X509Certificate imcert;
             try {
-                imcert = buildAndSignCert(Long.valueOf(0), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
+                imcert = buildAndSignCert(generateSerialNumber(), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
                                           new X500Name(rootCertX500Name), new X500Name(mcidregCertX500Name), null, "INTERMEDIATE");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
@@ -327,6 +324,18 @@ public class CertificateUtil {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray());
+            PrivateKeyEntry rootCertEntry = null;
+            try {
+                rootCertEntry = (PrivateKeyEntry) rootks.getEntry(ROOT_CERT_ALIAS, protParam);
+            } catch (NoSuchAlgorithmException e) {
+                e.printStackTrace();
+            } catch (UnrecoverableEntryException e) {
+                e.printStackTrace();
+            } catch (KeyStoreException e) {
+                e.printStackTrace();
+            }
+            generateRootCACRL(rootCertX500Name, null, rootCertEntry, outputCaCrlPath);
         }
     }
     
@@ -398,7 +407,7 @@ public class CertificateUtil {
      * @param publickey The public key of the entity
      * @return Returns a signed X509Certificate
      */
-    public X509Certificate generateCertForEntity(Long serialNumber, String country, String orgName, String type, String callName, String email, String uid, PublicKey publickey, Map<String, String> customAttr) {
+    public X509Certificate generateCertForEntity(BigInteger serialNumber, String country, String orgName, String type, String callName, String email, String uid, PublicKey publickey, Map<String, String> customAttr) {
         PrivateKeyEntry signingCertEntry = getSigningCertEntry();
         java.security.cert.Certificate signingCert = signingCertEntry.getCertificate();
         X509Certificate signingX509Cert = (X509Certificate) signingCert;
@@ -465,12 +474,15 @@ public class CertificateUtil {
      */
     public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.database.Certificate> revokedCerts) {
         Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.DATE, 7);
         X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(MCIDREG_CERT_X500_NAME), now);
-        crlBuilder.setNextUpdate(new Date(now.getTime() + 24 * 60 * 60 * 1000)); // The next CRL is tomorrow (dummy value)
+        crlBuilder.setNextUpdate(new Date(now.getTime() + 24 * 60 * 60 * 1000 * 7)); // The next CRL is next week (dummy value)
         for (net.maritimecloud.identityregistry.model.database.Certificate cert : revokedCerts) {
             String certReason = cert.getRevokeReason().toLowerCase();
             int reason = getCRLReasonFromString(certReason);
-            crlBuilder.addCRLEntry(BigInteger.valueOf(cert.getId()), cert.getRevokedAt(), reason);
+            crlBuilder.addCRLEntry(cert.getSerialNumber(), cert.getRevokedAt(), reason);
         }
         //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
         //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
@@ -499,6 +511,68 @@ public class CertificateUtil {
             e.printStackTrace();
         }
         return crl;
+    }
+
+    /**
+     * Creates a Certificate Revocation List (CRL) for the certificate serialnumbers given.
+     *
+     * @param revokedCerts  List of the serialnumbers that should be revoked.
+     * @return
+     */
+    public void generateRootCACRL(String signName, List<net.maritimecloud.identityregistry.model.database.Certificate> revokedCerts, PrivateKeyEntry keyEntry, String outputCaCrlPath) {
+        Date now = new Date();
+        Calendar cal = Calendar.getInstance();
+        cal.setTime(now);
+        cal.add(Calendar.YEAR, 1);
+        X509v2CRLBuilder crlBuilder = new X509v2CRLBuilder(new X500Name(signName), now);
+        crlBuilder.setNextUpdate(cal.getTime()); // The next CRL is next year (dummy value)
+        if (revokedCerts !=  null) {
+            for (net.maritimecloud.identityregistry.model.database.Certificate cert : revokedCerts) {
+                String certReason = cert.getRevokeReason().toLowerCase();
+                int reason = getCRLReasonFromString(certReason);
+                crlBuilder.addCRLEntry(cert.getSerialNumber(), cert.getRevokedAt(), reason);
+            }
+        }
+        //crlBuilder.addExtension(X509Extensions.AuthorityKeyIdentifier, false, new AuthorityKeyIdentifierStructure(caCert));
+        //crlBuilder.addExtension(X509Extensions.CRLNumber, false, new CRLNumber(BigInteger.valueOf(1)));
+
+        JcaContentSignerBuilder signBuilder = new JcaContentSignerBuilder(SIGNER_ALGORITHM);
+        signBuilder.setProvider(BC_PROVIDER_NAME);
+        ContentSigner signer;
+        try {
+            signer = signBuilder.build(keyEntry.getPrivateKey());
+        } catch (OperatorCreationException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return;
+        }
+
+        X509CRLHolder cRLHolder = crlBuilder.build(signer);
+        JcaX509CRLConverter converter = new JcaX509CRLConverter();
+        converter.setProvider(BC_PROVIDER_NAME);
+        X509CRL crl = null;
+        try {
+            crl = converter.getCRL(cRLHolder);
+        } catch (CRLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        String pemCrl = "";
+        try {
+            pemCrl = CertificateUtil.getPemFromEncoded("X509 CRL", crl.getEncoded());
+        } catch (CRLException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        try {
+            BufferedWriter writer = new BufferedWriter( new FileWriter(outputCaCrlPath));
+            writer.write(pemCrl);
+            writer.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return;
     }
 
     /**
@@ -806,7 +880,17 @@ public class CertificateUtil {
         return new String(cs);
     }
 
-    /* 
+    public BigInteger generateSerialNumber() {
+        // BigInteger => NUMERICAL(50) MySQL ?
+        // Max number supported in X509 serial number 2^159-1 = 730750818665451459101842416358141509827966271487
+        BigInteger maxValue = new BigInteger("730750818665451459101842416358141509827966271487");
+        // Min number 2^32-1 = 4294967296
+        BigInteger minValue = new BigInteger("4294967296");
+        BigInteger serialNumber =BigIntegers.createRandomInRange(minValue, maxValue, random);
+        return serialNumber;
+    }
+
+    /*
      * Uncomment this, build, and run class with ./setup/initca.sh to init CA certificates.
      * You might want to edit CERT_EXPIRE_YEAR to make sure the root cert is valid longer that the certificates it signs.
      * You might also want to change rootCertX500Name, mcidregCertX500Name, ocspUrl and crlUrl to reflect your setup,
@@ -816,12 +900,52 @@ public class CertificateUtil {
         System.out.println("Initializing CA");
         String ocspUrl = "https://localhost/x509/api/certificates/ocsp";
         String crlUrl = "https://localhost/x509/api/certificates/crl";
+        String outputCaCrlPath = "";
         CertificateUtil certUtil = new CertificateUtil();
         String rootCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test, CN=MaritimeCloud Test Root Certificate, E=info@maritimecloud.net";
         System.out.println("Root CA DN: " + rootCertX500Name);
         String mcidregCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test Identity Registry, CN=MaritimeCloud Test Identity Registry Certificate, E=info@maritimecloud.net";
         System.out.println("MC Id Reg intermediate cert DN: " + mcidregCertX500Name);
-        certUtil.initCA(rootCertX500Name, mcidregCertX500Name, crlUrl, ocspUrl);
+        certUtil.initCA(rootCertX500Name, mcidregCertX500Name, crlUrl, ocspUrl, outputCaCrlPath);
         System.out.println("Done initializing CA");
+    }*/
+
+    /*
+     * Uncomment this, build, and run class to produce Root CA CRL
+     * Fill out rootKeystorePath, rootKeystorePassword, rootCertX500Name, rootCertAlias and outputCaCrlPath to match your setup
+    public static void main(String[] args) {
+        Security.addProvider(new BouncyCastleProvider());
+        System.out.println("Generating CA Root CRL");
+        CertificateUtil certUtil = new CertificateUtil();
+        String rootKeystorePath = "mc-root-keystore.jks";
+        String rootKeystorePassword = "changeit";
+        String rootCertX500Name = "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test, CN=MaritimeCloud Test Root Certificate, E=info@maritimecloud.net";
+        String rootCertAlias = ROOT_CERT_ALIAS;
+        String outputCaCrlPath = "mc-root-crl.pem";
+        FileInputStream is;
+        try {
+            is = new FileInputStream(rootKeystorePath);
+        } catch (FileNotFoundException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        KeyStore keystore;
+        PrivateKeyEntry signingCertEntry = null;
+        try {
+            keystore = KeyStore.getInstance(KEYSTORE_TYPE);
+            keystore.load(is, rootKeystorePassword.toCharArray());
+            KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(rootKeystorePassword.toCharArray());
+            signingCertEntry = (PrivateKeyEntry) keystore.getEntry(rootCertAlias, protParam);
+
+        } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableEntryException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return;
+        }
+        // To actually revoke some certificates, replace the null below with a list of type:
+        // List<net.maritimecloud.identityregistry.model.database.Certificate>
+        certUtil.generateRootCACRL(rootCertX500Name, null, signingCertEntry, outputCaCrlPath);
+        System.out.println("Wrote Root CA CRL to: " + outputCaCrlPath);
     }*/
 }
