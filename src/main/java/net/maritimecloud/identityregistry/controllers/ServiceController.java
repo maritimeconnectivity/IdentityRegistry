@@ -22,6 +22,8 @@ import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -260,8 +262,8 @@ public class ServiceController extends EntityController<Service> {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<List<Service>> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
-        return this.getOrganizationEntities(request, orgMrn);
+    public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McBasicRestException {
+        return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
     /**

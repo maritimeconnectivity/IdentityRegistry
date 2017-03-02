@@ -16,12 +16,14 @@
 package net.maritimecloud.identityregistry.repositories;
 
 import java.util.List;
+
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.Organization;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
-public interface OrganizationRepository extends CrudRepository<Organization, Long> {
-    List<Organization> findByName(String lastName);
-
+public interface OrganizationRepository extends PagingAndSortingRepository<Organization, Long> {
     Organization findByMrnAndApprovedTrue(String mrn);
 
     Organization findByMrn(String mrn);
@@ -29,5 +31,9 @@ public interface OrganizationRepository extends CrudRepository<Organization, Lon
     List<Organization> findByApprovedFalse();
 
     List<Organization> findByApprovedTrue();
+
+    Page<Organization> findByApprovedFalse(Pageable pageable);
+
+    Page<Organization> findByApprovedTrue(Pageable pageable);
 
 }

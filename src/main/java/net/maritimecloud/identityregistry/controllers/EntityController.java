@@ -20,6 +20,8 @@ import net.maritimecloud.identityregistry.model.database.entities.EntityModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.web.bind.annotation.RestController;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -174,11 +176,11 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<List<T>> getOrganizationEntities(HttpServletRequest request, String orgMrn) throws McBasicRestException {
+    protected Page<T> getOrganizationEntities(HttpServletRequest request, String orgMrn, Pageable pageable) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            List<T> entities = this.entityService.listFromOrg(org.getId());
-            return new ResponseEntity<List<T>>(entities, HttpStatus.OK);
+            Page<T> entities = this.entityService.listPageFromOrg(org.getId(), pageable);
+            return entities;
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

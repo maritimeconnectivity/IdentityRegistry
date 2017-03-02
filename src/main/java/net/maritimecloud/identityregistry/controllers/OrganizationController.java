@@ -29,6 +29,8 @@ import net.maritimecloud.identityregistry.utils.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -125,9 +127,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
-    public ResponseEntity<List<Organization>> getUnapprovedOrganizations(HttpServletRequest request) {
-        List<Organization> orgs = this.organizationService.getUnapprovedOrganizations();
-        return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
+    public Page<Organization> getUnapprovedOrganizations(HttpServletRequest request, Pageable pageable) {
+        return this.organizationService.getUnapprovedOrganizations(pageable);
     }
 
     /**
@@ -194,9 +195,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/orgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<List<Organization>> getOrganization(HttpServletRequest request) {
-        List<Organization> orgs = this.organizationService.listAll();
-        return new ResponseEntity<List<Organization>>(orgs, HttpStatus.OK);
+    public Page<Organization> getOrganization(HttpServletRequest request, Pageable pageable) {
+        return this.organizationService.listAllPage(pageable);
     }
 
     /**
@@ -268,7 +268,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             } else {
                 // Remove any users from the shared project IDP
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                for (User user : this.userService.listFromOrg(org.getId())) {
+                for (User user : this.userService.listAllFromOrg(org.getId())) {
                     keycloakAU.deleteUser(user.getEmail());
                 }
             }

@@ -17,6 +17,8 @@ package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
 import net.maritimecloud.identityregistry.repositories.EntityRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
@@ -25,8 +27,12 @@ public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseSe
 
     protected EntityRepository<T> repository;
 
-    public List<T> listFromOrg(Long id) {
+    public List<T> listAllFromOrg(Long id) {
         return this.getRepository().findByidOrganization(id);
+    }
+
+    public Page<T> listPageFromOrg(Long id, Pageable pageable) {
+        return this.getRepository().findByidOrganization(id, pageable);
     }
 
     @Transactional

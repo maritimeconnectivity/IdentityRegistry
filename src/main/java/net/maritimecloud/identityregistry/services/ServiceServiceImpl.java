@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.repositories.ServiceRepository;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -31,8 +33,8 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements En
     }
 
     @Override
-    public List<Service> listFromOrg(Long orgId) {
-        List<Service> ret = repository.findByidOrganization(orgId);
+    public Page<Service> listPageFromOrg(Long orgId, Pageable pageable) {
+        Page<Service> ret = repository.findByidOrganization(orgId, pageable);
         ret = this.filterResult(ret);
         return ret;
     }

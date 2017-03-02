@@ -18,6 +18,8 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.RestController;
@@ -124,8 +126,8 @@ public class DeviceController extends EntityController<Device> {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<List<Device>> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
-        return this.getOrganizationEntities(request, orgMrn);
+    public Page<Device> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McBasicRestException {
+        return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
     /**

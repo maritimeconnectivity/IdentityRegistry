@@ -20,6 +20,8 @@ import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
@@ -53,10 +55,15 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
         return organizationRepository.findByMrnAndApprovedTrue(mrn);
     }
 
-    /* This only shows approved organizations */
     @Override
     public List<Organization> listAll() {
-        return this.filterResult(Lists.newArrayList(getRepository().findByApprovedTrue()));
+        return getRepository().findByApprovedTrue();
+    }
+
+    /* This only shows approved organizations */
+    @Override
+    public Page<Organization> listAllPage(Pageable pageable) {
+        return this.filterResult(getRepository().findByApprovedTrue(pageable));
     }
 
     @Override
@@ -77,8 +84,8 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     }
 
     @Override
-    protected List<Organization> filterResult(List<Organization> data) {
-        if (data != null && !data.isEmpty() && data.get(0).hasSensitiveFields() && !accessControlUtil.hasRole("SITE_ADMIN")) {
+    protected Page<Organization> filterResult(Page<Organization> data) {
+        if (data != null && !data.hasContent() && !accessControlUtil.hasRole("SITE_ADMIN")) {
             // If not authorized to see all we clean the object for sensitive data.
             boolean isAuthorized = isAuthorized();
             for (Organization org : data) {
@@ -91,7 +98,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
         return data;
     }
 
-    public List<Organization> getUnapprovedOrganizations() {
-        return getRepository().findByApprovedFalse();
+    public Page<Organization> getUnapprovedOrganizations(Pageable pageable) {
+        return getRepository().findByApprovedFalse(pageable);
     }
 }

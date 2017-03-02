@@ -15,10 +15,15 @@
  */
 package net.maritimecloud.identityregistry.services;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+
 import java.util.List;
 
 public interface EntityService<T> extends BaseService<T> {
-    List<T> listFromOrg(Long id);
+    List<T> listAllFromOrg(Long id);
+
+    Page<T> listPageFromOrg(Long id, Pageable pageable);
 
     void deleteByOrg(Long id);
 

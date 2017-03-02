@@ -21,6 +21,7 @@ import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
@@ -50,12 +51,15 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
         return data;
     }
 
-    protected List<T> filterResult(List<T> data) {
-        if (data != null && !data.isEmpty() && data.get(0).hasSensitiveFields()) {
+    protected Page<T> filterResult(Page<T> data) {
+        if (data != null && !data.hasContent()) {
             // If not authorized to see all we clean the object for sensitive data.
             if (!isAuthorized()) {
                 logger.debug("Clearing Sensitive Fields");
                 for (T entity : data) {
+                    if (!entity.hasSensitiveFields()) {
+                        break;
+                    }
                     entity.clearSensitiveFields();
                 }
             }

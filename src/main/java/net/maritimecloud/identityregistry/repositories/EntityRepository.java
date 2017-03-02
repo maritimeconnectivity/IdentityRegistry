@@ -15,14 +15,19 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.NoRepositoryBean;
+import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
 
 @NoRepositoryBean
-public interface EntityRepository<T> extends CrudRepository<T, Long> {
+public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long> {
     List<T> findByidOrganization(Long orgId);
+
+    Page<T> findByidOrganization(Long orgId, Pageable pageable);
 
     void deleteByidOrganization(Long orgId);
 
