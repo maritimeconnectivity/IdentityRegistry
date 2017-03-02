@@ -16,6 +16,8 @@
 package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.Organization;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 import java.util.List;
 
@@ -26,5 +28,7 @@ public interface OrganizationService extends BaseService<Organization>{
     /* Does not filter sensitive data from the result! */
     Organization getOrganizationByMrnNoFilter(String mrn);
 
-    List<Organization> getUnapprovedOrganizations();
+    Page<Organization> getUnapprovedOrganizations(Pageable page);
+
+    Page<Organization> listAllPage(Pageable pageable);
 }
