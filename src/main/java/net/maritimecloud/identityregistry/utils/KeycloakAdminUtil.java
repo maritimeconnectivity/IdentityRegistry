@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -346,7 +347,7 @@ public class KeycloakAdminUtil {
      * @param orgMrn        MRN of the org
      * @throws IOException
      */
-    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException {
+    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
         logger.debug("creating user: " + userMrn);
 
         UserRepresentation user = new UserRepresentation();
@@ -373,8 +374,13 @@ public class KeycloakAdminUtil {
         Response ret = getProjectUserRealm().users().create(user);
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
-            logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
-            throw new IOException("User creation failed: " + errMsg);
+            if (ret.getStatus() == 409) {
+                logger.debug("creating user failed due to duplicated user" + errMsg);
+                throw new DuplicatedKeycloakEntry("User with mrn: " +userMrn + " already exists.", errMsg);
+            } else {
+                logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                throw new IOException("User creating failed: " + errMsg);
+            }
         }
         logger.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
         ret.close();
@@ -489,7 +495,7 @@ public class KeycloakAdminUtil {
      * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
      * @throws IOException
      */
-    public String createClient(String clientId, String type, String redirectUri) throws IOException {
+    public String createClient(String clientId, String type, String redirectUri) throws IOException, DuplicatedKeycloakEntry {
         ClientRepresentation client = new ClientRepresentation();
         client.setClientId(clientId);
         client.setClientAuthenticatorType("client-secret");
@@ -519,8 +525,13 @@ public class KeycloakAdminUtil {
         Response ret = getBrokerRealm().clients().create(client);
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
-            logger.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
-            throw new IOException("Client creation failed: " + errMsg);
+            if (ret.getStatus() == 409) {
+                logger.debug("creating client failed due to duplicated client" + errMsg);
+                throw new DuplicatedKeycloakEntry("Client with mrn: " +clientId + " already exists.", errMsg);
+            } else {
+                logger.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                throw new IOException("Client creation failed: " + errMsg);
+            }
         }
         if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
@@ -545,7 +556,11 @@ public class KeycloakAdminUtil {
         if (clients == null || clients.isEmpty()) {
             // hmm, this shouldn't happen...
             logger.warn("Could not find client that should be upgraded - will create it!");
-            return this.createClient(clientId, type, redirectUri);
+            try {
+                return this.createClient(clientId, type, redirectUri);
+            } catch (DuplicatedKeycloakEntry duplicatedKeycloakEntry) {
+                throw new IOException("Client creation failed due to the client already existing, though it should not! ");
+            }
         }
         ClientRepresentation client = clients.get(0);
         client.setClientAuthenticatorType(type);

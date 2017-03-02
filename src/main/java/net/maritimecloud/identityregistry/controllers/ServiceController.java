@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
@@ -102,6 +103,8 @@ public class ServiceController extends EntityController<Service> {
                     }
                 } catch(IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
+                } catch (DuplicatedKeycloakEntry dke) {
+                    throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                 }
             } else {
                 input.setOidcAccessType(null);
@@ -117,7 +120,7 @@ public class ServiceController extends EntityController<Service> {
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.deleteClient(input.getMrn());
                 }
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -185,6 +188,8 @@ public class ServiceController extends EntityController<Service> {
                     } catch (IOException e){
                         logger.error("Error while updating/creation client in keycloak.", e);
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
+                    } catch (DuplicatedKeycloakEntry dke) {
+                        throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                     }
                     if ("confidential".equals(service.getOidcAccessType())) {
                         service.setOidcClientSecret(clientSecret);
@@ -197,7 +202,7 @@ public class ServiceController extends EntityController<Service> {
                     this.entityService.save(service);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (DataIntegrityViolationException e) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+                    throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
                 }
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());

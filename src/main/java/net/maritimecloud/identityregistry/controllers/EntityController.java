@@ -77,7 +77,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 T newEntity = this.entityService.save(input);
                 return new ResponseEntity<T>(newEntity, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

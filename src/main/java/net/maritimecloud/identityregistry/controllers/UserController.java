@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.EntityService;
@@ -96,6 +97,8 @@ public class UserController extends EntityController<User> {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.createUser(input.getMrn(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgMrn, input.getPermissions(), true);
+                } catch (DuplicatedKeycloakEntry dke) {
+                    throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
@@ -111,7 +114,7 @@ public class UserController extends EntityController<User> {
                 if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                     keycloakAU.deleteUser(input.getEmail());
                 }
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -284,7 +287,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         // The organization does not exists - check if this a an organization hosted by an external "validator".
         if (org == null && orgAddress != null && orgName != null) {
-            // Check that the org shortname is the same for the orgMrn and userMrn
+            // Check that the org shortname is the same for the orgMrn and originalErrorMessage
             String orgShortname = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
             if (!orgShortname.equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
