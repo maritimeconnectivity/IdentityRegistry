@@ -16,23 +16,25 @@
 package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.ToString;
 
+import javax.persistence.MappedSuperclass;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
+import javax.persistence.PreRemove;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
-import javax.persistence.*;
-
 @MappedSuperclass
+@ToString
 public abstract class CertificateModel extends TimestampModel {
 
     @PostPersist
     @PostUpdate
     public void setChildIds() {
         if (getCertificates() != null) {
-            for (Certificate cert : getCertificates()) {
-                this.assignToCert(cert);
-            }
+            getCertificates().forEach(this::assignToCert);
         }
     }
 

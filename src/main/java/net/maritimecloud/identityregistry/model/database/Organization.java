@@ -17,18 +17,27 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Email;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
-
-import java.util.ArrayList;
-import java.util.List;
-
-import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
+import javax.persistence.Table;
 import javax.validation.Valid;
+import java.util.List;
 
 /**
  * Model object representing an organization
@@ -36,6 +45,9 @@ import javax.validation.Valid;
 
 @Entity
 @Table(name = "organizations")
+@Getter
+@Setter
+@ToString
 public class Organization extends CertificateModel {
 
     @ApiModelProperty(value = "The name of the organization", required = true)
@@ -85,7 +97,7 @@ public class Organization extends CertificateModel {
     private String federationType;
 
     @JsonIgnore
-    @OneToOne(cascade = CascadeType.ALL)
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name="id_logo")
     private Logo logo;
 
@@ -163,92 +175,5 @@ public class Organization extends CertificateModel {
     public void clearSensitiveFields() {
         this.identityProviderAttributes.clear();
         this.federationType = null;
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
-    }
-
-    public String getFederationType() {
-        return federationType;
-    }
-
-    public void setFederationType(String federationType) {
-        this.federationType = federationType;
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public String getUrl() {
-        return url;
-    }
-
-    public void setUrl(String url) {
-        this.url = url;
-    }
-
-    public String getCountry() {
-        return country;
-    }
-
-    public void setCountry(String country) {
-        this.country = country;
-    }
-
-    public String getAddress() {
-        return address;
-    }
-
-    public void setAddress(String address) {
-        this.address = address;
-    }
-
-    public boolean getApproved() {
-        return approved;
-    }
-
-    public void setApproved(boolean approved) {
-        this.approved = approved;
-    }
-
-    public List<Certificate> getCertificates() {
-        return certificates;
-    }
-
-    public List<IdentityProviderAttribute> getIdentityProviderAttributes() {
-        return identityProviderAttributes;
-    }
-
-    public void setIdentityProviderAttributes(List<IdentityProviderAttribute> identityProviderAttributes) {
-        this.identityProviderAttributes = identityProviderAttributes;
-    }
-
-    public Logo getLogo() {
-        return logo;
-    }
-
-    public void setLogo(Logo logo) {
-        this.logo = logo;
     }
 }

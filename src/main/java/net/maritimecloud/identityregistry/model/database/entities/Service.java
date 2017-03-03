@@ -15,19 +15,19 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import java.util.List;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.validators.InPredefinedList;
-import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
+import java.util.List;
 
 /**
  * Model object representing a service
@@ -35,6 +35,9 @@ import org.hibernate.validator.constraints.URL;
 
 @Entity
 @Table(name = "services")
+@Getter
+@Setter
+@ToString
 public class Service extends NonHumanEntityModel {
 
     public Service() {
@@ -105,53 +108,6 @@ public class Service extends NonHumanEntityModel {
         this.setOidcClientId(null);
         this.setOidcClientSecret(null);
         this.setOidcRedirectUri(null);
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public List<Certificate> getCertificates() {
-        return certificates;
-    }
-
-    public String getOidcAccessType() {
-        return oidcAccessType;
-    }
-
-    public void setOidcAccessType(String oidcAccessType) {
-        this.oidcAccessType = oidcAccessType;
-    }
-
-    public String getOidcClientId() {
-        return oidcClientId;
-    }
-
-    public void setOidcClientId(String oidcClientId) {
-        this.oidcClientId = oidcClientId;
-    }
-
-    public String getOidcClientSecret() {
-        return oidcClientSecret;
-    }
-
-    public void setOidcClientSecret(String oidcClientSecret) {
-        this.oidcClientSecret = oidcClientSecret;
-    }
-
-    public String getOidcRedirectUri() {
-        return oidcRedirectUri;
-    }
-
-    public void setOidcRedirectUri(String oidcRedirectUri) {
-        this.oidcRedirectUri = oidcRedirectUri;
-    }
-
-    public String getCertDomainName() {
-        return certDomainName;
-    }
-
-    public void setCertDomainName(String certDomainName) {
-        this.certDomainName = certDomainName;
     }
 }
 

@@ -15,8 +15,9 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import java.util.List;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+
+import java.util.List;
 
 public interface VesselRepository extends EntityRepository<Vessel> {
     List<Vessel> findByName(String lastName);

@@ -18,15 +18,27 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import lombok.experimental.Accessors;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
 import org.hibernate.validator.constraints.NotBlank;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
+import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
 
 @Entity
 @Table(name = "identity_provider_attributes")
+@Getter
+@Setter
+@Accessors(chain = true)
+@ToString(exclude = "organization")
 public class IdentityProviderAttribute extends TimestampModel {
 
     @ApiModelProperty(
@@ -63,30 +75,6 @@ public class IdentityProviderAttribute extends TimestampModel {
         return id;
     }
 
-    public String getAttributeName() {
-        return attributeName;
-    }
-
-    public void setAttributeName(String attributeName) {
-        this.attributeName = attributeName;
-    }
-
-    public String getAttributeValue() {
-        return attributeValue;
-    }
-
-    public void setAttributeValue(String attributeValue) {
-        this.attributeValue = attributeValue;
-    }
-
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }
-
     public int compareNameAndValueTo(IdentityProviderAttribute other) {
         // Check if "other" is null
         if (other == null) {
@@ -108,25 +96,25 @@ public class IdentityProviderAttribute extends TimestampModel {
         }
         int ret = 0;
         // Check attributeName content
-        if (this.getAttributeName() != null && other.getAttributeName() != null
-                && !this.getAttributeName().equals(other.getAttributeName())) {
+        if (this.getAttributeName() != null && !this.getAttributeName().equals(other.getAttributeName())) {
             ret = 1;
         }
         // Check attributeValue content
-        if (this.getAttributeValue() != null && other.getAttributeValue() != null
-                && !this.getAttributeValue().equals(other.getAttributeValue())) {
+        if (this.getAttributeValue() != null && !this.getAttributeValue().equals(other.getAttributeValue())) {
             ret = 1;
         }
         return ret;
     }
 
     public static boolean listsEquals(List<IdentityProviderAttribute> first, List<IdentityProviderAttribute> second) {
-        if (first == null && second != null || first != null && second == null) {
-            return false;
-        }
         if (first == null && second == null) {
             return true;
         }
+
+        if (first == null || second == null) {
+            return false;
+        }
+
         if (first.size() != second.size()) {
             return false;
         }
@@ -149,9 +137,6 @@ public class IdentityProviderAttribute extends TimestampModel {
                 return false;
             }
         }
-        if (secondCopy.size() == 0) {
-            return true;
-        }
-        return false;
+        return secondCopy.size() == 0;
     }
 }

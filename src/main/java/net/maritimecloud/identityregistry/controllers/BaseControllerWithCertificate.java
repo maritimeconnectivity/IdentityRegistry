@@ -65,12 +65,11 @@ public abstract class BaseControllerWithCertificate {
         }
         BigInteger serialNumber = certUtil.generateSerialNumber();
         X509Certificate userCert = certUtil.generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs);
-        String pemCertificate = "";
+        String pemCertificate;
         try {
             pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
         } catch (CertificateEncodingException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+           throw new RuntimeException(e.getMessage(), e);
         }
         String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
         String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
@@ -119,7 +118,7 @@ public abstract class BaseControllerWithCertificate {
 
     /* Override if the entity type isn't of type EntityModel */
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
-        HashMap<String, String> attrs = new HashMap<String, String>();
+        HashMap<String, String> attrs = new HashMap<>();
         EntityModel entity = (EntityModel) certOwner;
         if (entity.getMrn() != null) {
             attrs.put(CertificateUtil.MC_OID_MRN, entity.getMrn());

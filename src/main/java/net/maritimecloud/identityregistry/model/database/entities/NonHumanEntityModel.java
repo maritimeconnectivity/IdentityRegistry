@@ -16,12 +16,18 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 
 @MappedSuperclass
+@Getter
+@Setter
+@ToString
 public abstract class NonHumanEntityModel extends EntityModel {
     @Column(name = "name")
     @NotBlank
@@ -41,16 +47,5 @@ public abstract class NonHumanEntityModel extends EntityModel {
         NonHumanEntityModel entity = (NonHumanEntityModel) super.selectiveCopyTo(target);
         entity.setName(name);
         return entity;
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
     }
 }

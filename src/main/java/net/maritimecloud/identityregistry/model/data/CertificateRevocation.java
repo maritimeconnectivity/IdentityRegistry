@@ -16,6 +16,9 @@
 package net.maritimecloud.identityregistry.model.data;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
 import org.hibernate.validator.constraints.NotBlank;
@@ -24,7 +27,9 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
-
+@Getter
+@Setter
+@ToString
 public class CertificateRevocation implements JsonSerializable {
 
     @ApiModelProperty(value = "The date the certificate revocation should be activated.", required = true)
@@ -44,34 +49,22 @@ public class CertificateRevocation implements JsonSerializable {
     private String revokationReason;
 
     public boolean validateReason() {
-        ArrayList<String> validReasons = new ArrayList<String>(Arrays.asList(
-            "unspecified",
-            "keycompromise",
-            "cacompromise",
-            "affiliationchanged",
-            "superseded",
-            "cessationofoperation",
-            "certificatehold",
-            "removefromcrl",
-            "privilegewithdrawn",
-            "aacompromise"));
+        ArrayList<String> validReasons = new ArrayList<>(Arrays.asList(
+                "unspecified",
+                "keycompromise",
+                "cacompromise",
+                "affiliationchanged",
+                "superseded",
+                "cessationofoperation",
+                "certificatehold",
+                "removefromcrl",
+                "privilegewithdrawn",
+                "aacompromise"));
         String reason = getRevokationReason();
         if (reason != null && validReasons.contains(reason)) {
             return true;
         }
         return false;
-    }
-
-    public Date getRevokedAt() {
-        return revokedAt;
-    }
-
-    public void setRevokedAt(Date revokedAt) {
-        this.revokedAt = revokedAt;
-    }
-
-    public String getRevokationReason() {
-        return revokationReason;
     }
 
     public void setRevokationReason(String revokationReason) {

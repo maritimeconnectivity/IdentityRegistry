@@ -15,14 +15,14 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import java.util.List;
-
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.CrudRepository;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.User;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+
+import java.util.List;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
     List<Certificate> findByvessel(Vessel vessel);

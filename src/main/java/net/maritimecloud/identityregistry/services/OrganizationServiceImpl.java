@@ -15,7 +15,8 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import com.google.common.collect.Lists;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.repositories.OrganizationRepository;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,9 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-
-import net.maritimecloud.identityregistry.model.database.Organization;
-import net.maritimecloud.identityregistry.repositories.OrganizationRepository;
 
 import java.util.List;
 

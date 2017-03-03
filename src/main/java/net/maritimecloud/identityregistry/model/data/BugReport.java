@@ -16,40 +16,18 @@
 
 package net.maritimecloud.identityregistry.model.data;
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
 
 import java.util.List;
-
+@Getter
+@Setter
+@ToString
 public class BugReport implements JsonSerializable {
 
     private String subject;
-
     private String description;
-
     private List<BugReportAttachment> attachments;
-
-
-    public String getSubject() {
-        return subject;
-    }
-
-    public void setSubject(String subject) {
-        this.subject = subject;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public List<BugReportAttachment> getAttachments() {
-        return attachments;
-    }
-
-    public void setAttachments(List<BugReportAttachment> attachments) {
-        this.attachments = attachments;
-    }
 }

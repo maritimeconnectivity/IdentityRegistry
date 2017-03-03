@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import org.apache.http.HttpEntity;
@@ -30,21 +31,23 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.ws.rs.NotFoundException;
+import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
-
-import javax.ws.rs.NotFoundException;
-import javax.ws.rs.core.Response;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 @Component
+@Slf4j
 public class KeycloakAdminUtil {
     // Load the info needed to log into the Keycloak instance that is used as ID Broker (hosts ID Providers) 
     @Value("${net.maritimecloud.idreg.keycloak-broker-admin-user}")
@@ -86,7 +89,7 @@ public class KeycloakAdminUtil {
     private Keycloak keycloakUserInstance = null;
 
     // Used in createIdpMapper
-    private static final Map<String, String> oidcDefaultMappers = new HashMap<String, String>();
+    private static final Map<String, String> oidcDefaultMappers = new HashMap<>();
     static {
         oidcDefaultMappers.put("firstNameAttr", null);
         oidcDefaultMappers.put("lastNameAttr", null);
@@ -94,7 +97,7 @@ public class KeycloakAdminUtil {
         oidcDefaultMappers.put("permissionsAttr", "permissions");
     }
 
-    private static final Map<String, String> samlDefaultMappers = new HashMap<String, String>();
+    private static final Map<String, String> samlDefaultMappers = new HashMap<>();
     static {
         samlDefaultMappers.put("firstNameAttr", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/givenname");
         samlDefaultMappers.put("lastNameAttr", "http://schemas.xmlsoap.org/ws/2005/05/identity/claims/surname");
@@ -102,16 +105,13 @@ public class KeycloakAdminUtil {
         samlDefaultMappers.put("permissionsAttr", "http://schemas.microsoft.com/ws/2008/06/identity/claims/role");
     }
 
-    private static final Map<String, String> attrNames2Keycloak = new HashMap<String, String>();
+    private static final Map<String, String> attrNames2Keycloak = new HashMap<>();
     static {
         attrNames2Keycloak.put("firstNameAttr", "firstName");
         attrNames2Keycloak.put("lastNameAttr", "lastName");
         attrNames2Keycloak.put("emailAttr", "email");
         attrNames2Keycloak.put("permissionsAttr", "permissions");
     }
-
-
-    private static final Logger logger = LoggerFactory.getLogger(KeycloakAdminUtil.class);
 
     /**
      * Constructor.
@@ -152,7 +152,7 @@ public class KeycloakAdminUtil {
      */
     private Map<String, String> getIdpSetupUrl(String infoUrl, String providerId) throws IOException {
         // Get IDP info by using keycloaks builtin parser
-        Map<String, Object> importFromUrl = new HashMap<String, Object>();
+        Map<String, Object> importFromUrl = new HashMap<>();
         importFromUrl.put("fromUrl", infoUrl);
         importFromUrl.put("providerId", providerId); // providerId can be either "keycloak-oidc", "oidc" or "saml"
         Map<String, String> importConf = getBrokerRealm().identityProviders().importFrom(importFromUrl);
@@ -164,11 +164,11 @@ public class KeycloakAdminUtil {
     }
 
     private Map<String, String> idpAttributes2Map(List<IdentityProviderAttribute> input) {
-        logger.debug("In idpAttributes2Map, number of attrs: " + input.size());
+        log.debug("In idpAttributes2Map, number of attrs: " + input.size());
         Map<String, String> ret = new HashMap<>();
         for (IdentityProviderAttribute atr : input) {
             ret.put(atr.getAttributeName(), atr.getAttributeValue());
-            logger.debug("idp attr name: " + atr.getAttributeName()+ ", value: " + atr.getAttributeValue());
+            log.debug("idp attr name: " + atr.getAttributeName() + ", value: " + atr.getAttributeValue());
         }
         return ret;
     }
@@ -196,7 +196,7 @@ public class KeycloakAdminUtil {
         if (idpAtrMap.containsKey("importUrl")) {
             importConf = getIdpSetupUrl(idpAtrMap.get("importUrl"), idpAtrMap.get("providerType"));
         } else {
-            importConf = new HashMap<String, String>(idpAtrMap);
+            importConf = new HashMap<>(idpAtrMap);
             importConf.remove("providerType");
         }
         if ("oidc".equals(providerType)) {
@@ -230,12 +230,14 @@ public class KeycloakAdminUtil {
         try {
             oldIdp = oldIdpRes.toRepresentation();
         } catch(NotFoundException nfe) {
+            log.warn("Unable to convert old IDP");
         }
+        // todo the code below should be moved inside the try and catch block, there is no reason for the oldIdp variable
         if (oldIdp != null) {
             getBrokerRealm().identityProviders().get(name).update(idp);
         } else {
             Response ret = getBrokerRealm().identityProviders().create(idp);
-            logger.debug("Returned status from creating IDP: " + ret.getStatus());
+            log.debug("Returned status from creating IDP: " + ret.getStatus());
             if (ret.getStatus() != 201) {
                 throw new IOException("Could not create IDP");
             }
@@ -259,7 +261,7 @@ public class KeycloakAdminUtil {
         orgMapper.setIdentityProviderAlias(idpName);
         orgMapper.setIdentityProviderMapper("hardcoded-attribute-idp-mapper");
         orgMapper.setName(orgMapperName);
-        Map<String, String> orgMapperConf = new HashMap<String, String>();
+        Map<String, String> orgMapperConf = new HashMap<>();
         orgMapperConf.put("attribute.value", orgMrn);
         orgMapperConf.put("attribute", "org");
         orgMapper.setConfig(orgMapperConf);
@@ -270,7 +272,7 @@ public class KeycloakAdminUtil {
         IdentityProviderMapperRepresentation usernameMapper = new IdentityProviderMapperRepresentation();
         usernameMapper.setIdentityProviderAlias(idpName);
         usernameMapper.setName(usernameMapperName);
-        Map<String, String> usernameMapperConf = new HashMap<String, String>();
+        Map<String, String> usernameMapperConf = new HashMap<>();
         String mrnPrefix = MrnUtil.getMrnPrefix(orgMrn);
         if ("oidc".equals(providerType)) {
             // Create OIDC specific mapper
@@ -287,7 +289,7 @@ public class KeycloakAdminUtil {
 
         // Add other mappers as needed
         // The mappers are set up differently based on the provider type
-        Map<String, String> defaultMappers = null;
+        Map<String, String> defaultMappers;
         String mapperConfKey;
         if ("oidc".equals(providerType)) {
             defaultMappers = oidcDefaultMappers;
@@ -309,7 +311,7 @@ public class KeycloakAdminUtil {
             mapper.setIdentityProviderAlias(idpName);
             mapper.setIdentityProviderMapper(mapperType);
             mapper.setName(attrMapperName);
-            Map<String, String> mapperConf = new HashMap<String, String>();
+            Map<String, String> mapperConf = new HashMap<>();
             mapperConf.put(mapperConfKey, attrValue);
             mapperConf.put("user.attribute", attrName);
             mapper.setConfig(mapperConf);
@@ -348,7 +350,7 @@ public class KeycloakAdminUtil {
      * @throws IOException
      */
     public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        logger.debug("creating user: " + userMrn);
+        log.debug("creating user: " + userMrn);
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(email);
@@ -364,25 +366,25 @@ public class KeycloakAdminUtil {
             user.setLastName(lastName);
         }
         // Set attributes
-        Map<String, List<String>> attr = new HashMap<String,List<String>>();
-        attr.put("org", Arrays.asList(orgMrn));
-        attr.put("mrn", Arrays.asList(userMrn));
+        Map<String, List<String>> attr = new HashMap<>();
+        attr.put("org", Collections.singletonList(orgMrn));
+        attr.put("mrn", Collections.singletonList(userMrn));
         if (permissions != null && !permissions.trim().isEmpty()) {
-            attr.put("permissions", Arrays.asList(permissions));
+            attr.put("permissions", Collections.singletonList(permissions));
         }
         user.setAttributes(attr);
         Response ret = getProjectUserRealm().users().create(user);
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
             if (ret.getStatus() == 409) {
-                logger.debug("creating user failed due to duplicated user" + errMsg);
+                log.debug("creating user failed due to duplicated user" + errMsg);
                 throw new DuplicatedKeycloakEntry("User with mrn: " +userMrn + " already exists.", errMsg);
             } else {
-                logger.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                log.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
                 throw new IOException("User creating failed: " + errMsg);
             }
         }
-        logger.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
+        log.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
         ret.close();
         
         // Set credentials
@@ -393,10 +395,10 @@ public class KeycloakAdminUtil {
         cred.setTemporary(true);
         // Find the user by searching for the username
         user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
-        user.setCredentials(Arrays.asList(cred));
-        logger.debug("setting password for user: " + user.getId());
+        user.setCredentials(Collections.singletonList(cred));
+        log.debug("setting password for user: " + user.getId());
         getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
-        logger.debug("created user");
+        log.debug("created user");
     }
 
 
@@ -412,7 +414,7 @@ public class KeycloakAdminUtil {
     public void updateUser(String userMrn,  String firstName, String lastName, String email, String newPermissions, boolean enabled) throws IOException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         if (userReps.size() != 1) {
-            logger.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
+            log.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
         }
         UserRepresentation user = userReps.get(0);
@@ -432,14 +434,14 @@ public class KeycloakAdminUtil {
         }
         Map<String, List<String>> attr = user.getAttributes();
         if (attr.containsKey("permissions")) {
-            List<String> oldPermissions = (List<String>) attr.get("permissions");
+            List<String> oldPermissions = attr.get("permissions");
             if (oldPermissions != null && !oldPermissions.isEmpty()) {
                 String permission = oldPermissions.get(0);
                 if (permission == null || !permission.equals(newPermissions)) {
                     if (newPermissions != null) {
-                        attr.put("permissions", Arrays.asList(newPermissions));
+                        attr.put("permissions", Collections.singletonList(newPermissions));
                     } else {
-                        attr.put("permissions", Arrays.asList(""));
+                        attr.put("permissions", Collections.singletonList(""));
                     }
                     user.setAttributes(attr);
                     updated = true;
@@ -447,23 +449,23 @@ public class KeycloakAdminUtil {
             }
         } else {
             if (newPermissions != null && !newPermissions.trim().isEmpty()) {
-                attr.put("permissions", Arrays.asList(newPermissions));
+                attr.put("permissions", Collections.singletonList(newPermissions));
                 user.setAttributes(attr);
                 updated = true;
             }
         }
         if (attr.containsKey("mrn")) {
-            List<String> oldMrn = (List<String>) attr.get("mrn");
+            List<String> oldMrn = attr.get("mrn");
             if (oldMrn != null && !oldMrn.isEmpty()) {
                 String mrn = oldMrn.get(0);
                 if (mrn == null || !mrn.equals(userMrn)) {
-                    attr.put("mrn", Arrays.asList(userMrn));
+                    attr.put("mrn", Collections.singletonList(userMrn));
                     user.setAttributes(attr);
                     updated = true;
                 }
             }
         } else {
-            attr.put("mrn", Arrays.asList(userMrn));
+            attr.put("mrn", Collections.singletonList(userMrn));
             user.setAttributes(attr);
             updated = true;
         }
@@ -500,11 +502,11 @@ public class KeycloakAdminUtil {
         client.setClientId(clientId);
         client.setClientAuthenticatorType("client-secret");
         if (redirectUri != null && !redirectUri.trim().isEmpty()) {
-            client.setRedirectUris(Arrays.asList(redirectUri));
+            client.setRedirectUris(Collections.singletonList(redirectUri));
         } else {
             client.setRedirectUris(null);
         }
-        client.setWebOrigins(Arrays.asList("+"));
+        client.setWebOrigins(Collections.singletonList("+"));
         client.setDirectAccessGrantsEnabled(false);
         client.setProtocol("openid-connect");
         client.setEnabled(true);
@@ -526,10 +528,10 @@ public class KeycloakAdminUtil {
         String errMsg = ret.readEntity(String.class);
         if (ret.getStatus() != 201) {
             if (ret.getStatus() == 409) {
-                logger.debug("creating client failed due to duplicated client" + errMsg);
+                log.debug("creating client failed due to duplicated client" + errMsg);
                 throw new DuplicatedKeycloakEntry("Client with mrn: " +clientId + " already exists.", errMsg);
             } else {
-                logger.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                log.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
                 throw new IOException("Client creation failed: " + errMsg);
             }
         }
@@ -555,7 +557,7 @@ public class KeycloakAdminUtil {
         List<ClientRepresentation> clients = getBrokerRealm().clients().findByClientId(clientId);
         if (clients == null || clients.isEmpty()) {
             // hmm, this shouldn't happen...
-            logger.warn("Could not find client that should be upgraded - will create it!");
+            log.warn("Could not find client that should be upgraded - will create it!");
             try {
                 return this.createClient(clientId, type, redirectUri);
             } catch (DuplicatedKeycloakEntry duplicatedKeycloakEntry) {
@@ -565,7 +567,7 @@ public class KeycloakAdminUtil {
         ClientRepresentation client = clients.get(0);
         client.setClientAuthenticatorType(type);
         if (redirectUri != null && !redirectUri.trim().isEmpty()) {
-            client.setRedirectUris(Arrays.asList(redirectUri));
+            client.setRedirectUris(Collections.singletonList(redirectUri));
         } else {
             client.setRedirectUris(null);
         }
@@ -637,13 +639,13 @@ public class KeycloakAdminUtil {
     private String getFromKeycloak(String url, String token) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         try {
-            logger.debug("get url: " + url);
+            log.debug("get url: " + url);
             HttpGet get = new HttpGet(url);
             get.addHeader("Authorization", "Bearer " + token);
             try {
                 HttpResponse response = client.execute(get);
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    logger.debug("" + response.getStatusLine().getStatusCode());
+                    log.debug("" + response.getStatusLine().getStatusCode());
                     return null;
                 }
                 String content = getContent(response.getEntity());

@@ -15,18 +15,19 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import java.util.List;
+import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 
 import javax.persistence.CascadeType;
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
-
-import io.swagger.annotations.ApiModelProperty;
-import net.maritimecloud.identityregistry.model.database.Certificate;
+import java.util.List;
 
 /**
  * Model object representing a vessel
@@ -34,6 +35,9 @@ import net.maritimecloud.identityregistry.model.database.Certificate;
 
 @Entity
 @Table(name = "vessels")
+@Getter
+@Setter
+@ToString
 public class Vessel extends NonHumanEntityModel {
 
     public Vessel() {
@@ -82,20 +86,5 @@ public class Vessel extends NonHumanEntityModel {
 
     public void assignToCert(Certificate cert){
         cert.setVessel(this);
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public List<VesselAttribute> getAttributes() {
-        return attributes;
-    }
-
-    public void setAttributes(List<VesselAttribute> attributes) {
-        this.attributes = attributes;
-    }
-
-    public List<Certificate> getCertificates() {
-        return certificates;
     }
 }

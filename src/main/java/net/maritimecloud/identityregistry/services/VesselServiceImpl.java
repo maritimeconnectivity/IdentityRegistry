@@ -15,13 +15,10 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import java.util.List;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.repositories.VesselRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class VesselServiceImpl extends EntityServiceImpl<Vessel> implements EntityService<Vessel> {

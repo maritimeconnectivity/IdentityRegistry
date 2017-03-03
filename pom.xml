@@ -147,6 +147,13 @@
 			<artifactId>flyway-core</artifactId>
 			<version>4.0.3</version>
 		</dependency>
+		<!-- Lombok -->
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<version>1.16.14</version>
+			<scope>provided</scope>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}-latest</finalName>

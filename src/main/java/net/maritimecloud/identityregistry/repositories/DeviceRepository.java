@@ -15,8 +15,9 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import java.util.List;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
+
+import java.util.List;
 
 public interface DeviceRepository extends EntityRepository<Device> {
     List<Device> findByName(String lastName);

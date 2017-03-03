@@ -15,11 +15,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-
+import lombok.extern.slf4j.Slf4j;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.slf4j.Logger;
@@ -28,12 +24,18 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
 
 
 @Component("accessControlUtil")
+@Slf4j
 public class AccessControlUtil {
 
     @Autowired
@@ -41,38 +43,36 @@ public class AccessControlUtil {
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
-    private static final Logger logger = LoggerFactory.getLogger(AccessControlUtil.class);
-
     public static boolean hasAccessToOrg(String orgMrn) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
-            logger.debug("The orgMrn was empty!");
+            log.debug("The orgMrn was empty!");
             return false;
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // First check if the user is a SITE_ADMIN, in which case he gets access.
         for (GrantedAuthority authority : auth.getAuthorities()) {
             String role = authority.getAuthority();
-            logger.debug("User has role: " + role);
+            log.debug("User has role: " + role);
             if ("ROLE_SITE_ADMIN".equals(role)) {
                 return true;
             }
         }
-        logger.debug("User not a SITE_ADMIN");
+        log.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
         if (auth instanceof KeycloakAuthenticationToken) {
-            logger.debug("OIDC authentication in process");
+            log.debug("OIDC authentication in process");
             // Keycloak authentication
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
                     ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgMrn.toLowerCase())) {
-                logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
+                log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
                 return true;
             }
-            logger.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
+            log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            logger.debug("Certificate authentication in process");
+            log.debug("Certificate authentication in process");
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
@@ -80,14 +80,12 @@ public class AccessControlUtil {
             // The O(rganization) value in the certificate is an MRN
             String certOrgMrn = person.getO();
             if (orgMrn.equals(certOrgMrn)) {
-                logger.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
+                log.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
                 return true;
             }
-            logger.debug("Entity with O=" + certOrgMrn + " is not in " + orgMrn);
+            log.debug("Entity with O=" + certOrgMrn + " is not in " + orgMrn);
         } else {
-            if (auth != null) {
-                logger.debug("Unknown authentication method: " + auth.getClass());
-            }
+            log.debug("Unknown authentication method: " + auth.getClass());
         }
         return false;
     }
@@ -95,7 +93,7 @@ public class AccessControlUtil {
     public static boolean isUserSync(String userSyncMRN, String userSyncO, String userSyncOU, String userSyncC) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            logger.debug("Certificate authentication of user sync'er in process");
+            log.debug("Certificate authentication of user sync'er in process");
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
@@ -103,10 +101,10 @@ public class AccessControlUtil {
             if (userSyncMRN.equals(person.getUid()) && userSyncO.equals(person.getO())
                     // Hack alert! There is no country property in this type, so we misuse PostalAddress...
                     && userSyncOU.equals(person.getOu()) && userSyncC.equals(person.getPostalAddress())) {
-                logger.debug("User sync'er accepted!");
+                log.debug("User sync'er accepted!");
                 return true;
             }
-            logger.debug("This was not the user-sync'er! " + userSyncMRN + "~" + person.getUid() + ", " + userSyncO + "~"
+            log.debug("This was not the user-sync'er! " + userSyncMRN + "~" + person.getUid() + ", " + userSyncO + "~"
                     + person.getO() + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
         }
         return false;
@@ -115,7 +113,7 @@ public class AccessControlUtil {
     public static boolean hasPermission(String permission) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof KeycloakAuthenticationToken) {
-            logger.debug("OIDC permission lookup");
+            log.debug("OIDC permission lookup");
             // Keycloak authentication
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
@@ -130,7 +128,7 @@ public class AccessControlUtil {
                 }
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            logger.debug("Certificate permission lookup");
+            log.debug("Certificate permission lookup");
             // Certificate authentication
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the permission is granted to this user
@@ -147,14 +145,14 @@ public class AccessControlUtil {
             }
         } else {
             if (auth != null) {
-                logger.debug("Unknown authentication method: " + auth.getClass());
+                log.debug("Unknown authentication method: " + auth.getClass());
             }
         }
         return false;
     }
 
     public static List<String> getMyRoles() {
-        logger.debug("Role lookup");
+        log.debug("Role lookup");
         List<String> roles = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null) {
@@ -179,10 +177,10 @@ public class AccessControlUtil {
             // If the user does not have the role (or a role that is above it in the role hierarchy)
             // an exception will be thrown by Spring Security.
             hasRoleUtil.testRole(role);
-            logger.debug("user has role " + role);
+            log.debug("user has role " + role);
             return true;
         } catch (Exception ade) {
-            logger.debug("user does not have role " + role);
+            log.debug("user does not have role " + role);
             return false;
         }
     }

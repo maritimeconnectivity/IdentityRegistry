@@ -17,15 +17,20 @@ package net.maritimecloud.identityregistry.model.database.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.validators.MRN;
-import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
 import java.util.Objects;
 
 @MappedSuperclass
+@Getter
+@Setter
+@ToString
 public abstract class EntityModel extends CertificateModel {
 
 
@@ -61,30 +66,4 @@ public abstract class EntityModel extends CertificateModel {
         return entity;
     }
 
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
-    }
-
-    public String getMrn() {
-        return mrn;
-    }
-
-    public void setMrn(String mrn) {
-        this.mrn = mrn;
-    }
-
-    public String getPermissions() {
-        return permissions;
-    }
-
-    public void setPermissions(String permissions) {
-        this.permissions = permissions;
-    }
 }

@@ -16,18 +16,18 @@
 package net.maritimecloud.identityregistry.security;
 //package com.climate.oada.security;
 
-import java.io.IOException;
-
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import lombok.Setter;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
 import org.springframework.security.web.savedrequest.HttpSessionRequestCache;
 import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.StringUtils;
+
+import javax.servlet.ServletException;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * By default, form login will answer a successful authentication request with a 301 MOVED PERMANENTLY status code; this makes sense
@@ -39,16 +39,10 @@ import org.springframework.util.StringUtils;
  * .SavedRequestAwareAuthenticationSuccessHandler with one notable difference – the redirect logic is removed
  *
  */
+@Setter
 public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private RequestCache requestCache = new HttpSessionRequestCache();
-
-    /**
-     * Default Constructor.
-     */
-    public RestAuthenticationSuccessHandler() {
-
-    }
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication)
@@ -67,13 +61,5 @@ public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticat
             return;
         }
         clearAuthenticationAttributes(request);
-    }
-
-    /**
-    *
-    * @param cache - Request cache
-    */
-    public void setRequestCache(RequestCache cache) {
-        this.requestCache = cache;
     }
 }

@@ -21,22 +21,24 @@ import net.maritimecloud.identityregistry.model.database.Role;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
+import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
-
-import java.security.cert.X509Certificate;
-import java.util.*;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Service;
+
+import java.security.cert.X509Certificate;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.List;
 
 @Service("userDetailsService")
 public class X509HeaderUserDetailsService implements UserDetailsService {
@@ -72,7 +74,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         // Check that the certificate has not been revoked
         long certId = userCertificate.getSerialNumber().longValue();
         Certificate cert = certificateService.getCertificateById(certId);
-        if (cert.getRevoked()) {
+        if (cert.isRevoked()) {
             Calendar cal = Calendar.getInstance();
             Date now = cal.getTime();
             if (cert.getRevokedAt() == null || cert.getRevokedAt().before(now)) {
@@ -94,7 +96,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             logger.warn("Unknown Organization '" + certOrg + "' in client certificate");
             throw new UsernameNotFoundException("Unknown Organization in client certificate");
         }
-        Collection<GrantedAuthority> newRoles = new ArrayList<GrantedAuthority>();
+        Collection<GrantedAuthority> newRoles = new ArrayList<>();
         logger.debug("Looking up roles");
         for (GrantedAuthority role : user.getAuthorities()) {
             logger.debug("Looking up roles");

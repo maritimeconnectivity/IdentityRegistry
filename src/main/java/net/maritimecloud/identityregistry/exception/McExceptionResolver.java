@@ -15,11 +15,10 @@
  */
 package net.maritimecloud.identityregistry.exception;
 
+import net.maritimecloud.identityregistry.model.data.ExceptionModel;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
-
-import net.maritimecloud.identityregistry.model.data.ExceptionModel;
 
 @ControllerAdvice
 public class McExceptionResolver {
@@ -28,6 +27,6 @@ public class McExceptionResolver {
     public ResponseEntity<ExceptionModel> processRestError(McBasicRestException ex) {
         // mimics the standard spring error structure on exceptions 
         ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
-        return new ResponseEntity<ExceptionModel>(exp, ex.getStatus());
+        return new ResponseEntity<>(exp, ex.getStatus());
     }
 }

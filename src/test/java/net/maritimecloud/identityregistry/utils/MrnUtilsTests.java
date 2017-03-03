@@ -21,9 +21,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -96,7 +95,7 @@ public class MrnUtilsTests {
     @Test(expected=IllegalArgumentException.class)
     public void extractServiceTypeFromServiceMRN1() {
         String userMrn = "urn:mrn:mcl:service:specification:dma:nw-nm-spec";
-        String ret = MrnUtil.getServiceTypeFromMrn(userMrn);
+        MrnUtil.getServiceTypeFromMrn(userMrn);
     }
 
     @Test
@@ -123,7 +122,7 @@ public class MrnUtilsTests {
     @Test(expected=IllegalArgumentException.class)
     public void validatingOrgMRN2() {
         String orgMrn = "urn:x-mrn:mcl:org:dma";
-        boolean ret = MrnUtil.validateMrn(orgMrn);
+        MrnUtil.validateMrn(orgMrn);
     }
 
     @Test
@@ -137,7 +136,7 @@ public class MrnUtilsTests {
     public void validatingVesselMRN2() {
         // Invalid mrn - special characters like "ø" are not allowed
         String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-løwenørn";
-        boolean ret = MrnUtil.validateMrn(vesselMrn);
+        MrnUtil.validateMrn(vesselMrn);
     }
 
     @Test

@@ -15,41 +15,18 @@
  */
 package net.maritimecloud.identityregistry.model.data;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
-
+@AllArgsConstructor
+@Getter
+@Setter
+@ToString
 public class PemCertificate implements JsonSerializable {
 
     private String privateKey;
     private String publicKey;
     private String certificate;
-    
-    public PemCertificate(String privateKey, String publicKey, String certificate) {
-        this.privateKey = privateKey;
-        this.publicKey = publicKey;
-        this.certificate = certificate;
-    }
-
-    public String getPrivateKey() {
-        return privateKey;
-    }
-
-    public void setPrivateKey(String privateKey) {
-        this.privateKey = privateKey;
-    }
-
-    public String getPublicKey() {
-        return publicKey;
-    }
-
-    public void setPublicKey(String publicKey) {
-        this.publicKey = publicKey;
-    }
-
-    public String getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
-    }
 }

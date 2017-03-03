@@ -15,16 +15,13 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import java.util.List;
+import io.swagger.annotations.ApiModelProperty;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 
-import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-
-import io.swagger.annotations.ApiModelProperty;
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import org.hibernate.validator.constraints.NotBlank;
+import java.util.List;
 
 /**
  * Model object representing a device

@@ -15,33 +15,28 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
-import net.maritimecloud.identityregistry.services.EntityService;
-import net.maritimecloud.identityregistry.utils.ValidateUtil;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RestController;
-
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
-
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
+import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
 
 @RestController
 public class DeviceController extends EntityController<Device> {

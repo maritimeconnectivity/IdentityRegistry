@@ -15,37 +15,38 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
+import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import net.maritimecloud.identityregistry.validators.VesselValidator;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.*;
-
-import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.data.PemCertificate;
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
-import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
-
-import java.util.HashMap;
-import java.util.List;
+import org.springframework.web.bind.annotation.InitBinder;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.ResponseEntity;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import java.util.HashMap;
 
 @RestController
 public class VesselController extends EntityController<Vessel> {
@@ -60,7 +61,7 @@ public class VesselController extends EntityController<Vessel> {
     private VesselValidator vesselValidator;
 
     @InitBinder("vessel")
-    protected void initBinder(final HttpServletRequest request, final ServletRequestDataBinder binder) {
+    protected void initBinder(final ServletRequestDataBinder binder) {
         binder.addValidators(vesselValidator);
     }
 

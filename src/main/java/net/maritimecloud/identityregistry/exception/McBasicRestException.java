@@ -16,10 +16,15 @@
 
 package net.maritimecloud.identityregistry.exception;
 
-import java.util.Date;
-
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
+import java.util.Date;
+@Getter
+@Setter
+@ToString
 public class McBasicRestException extends Exception {
 
     // mimics the standard spring error structure on exceptions 
@@ -37,43 +42,5 @@ public class McBasicRestException extends Exception {
         this.error = status.getReasonPhrase();
     }
 
-    public HttpStatus getStatus() {
-        return status;
-    }
 
-    public void setStatus(HttpStatus status) {
-        this.status = status;
-    }
-
-    public String getError() {
-        return error;
-    }
-
-    public void setError(String error) {
-        this.error = error;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
-
-    public String getPath() {
-        return path;
-    }
-
-    public void setPath(String path) {
-        this.path = path;
-    }
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
 }

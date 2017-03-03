@@ -28,8 +28,6 @@ import org.springframework.validation.Errors;
 
 import java.util.Arrays;
 
-import static junit.framework.TestCase.assertFalse;
-import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(SpringRunner.class)

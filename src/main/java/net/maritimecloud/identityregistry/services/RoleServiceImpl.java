@@ -35,8 +35,8 @@ public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleServic
 
     @Override
     public List<Role> getRolesByIdOrganizationAndPermission(Long idOrganization, String permission) {
-        return ((RoleRepository)repository).findByIdOrganizationAndPermission(idOrganization, permission);
-    };
+        return repository.findByIdOrganizationAndPermission(idOrganization, permission);
+    }
 
     public List<Role> listFromOrg(Long id) {
         return this.getRepository().findByidOrganization(id);

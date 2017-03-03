@@ -17,16 +17,17 @@ package net.maritimecloud.identityregistry.model.database.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
-
-import java.util.Arrays;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.util.Date;
 
 /**
  * Model object representing a vessel attribute
@@ -34,6 +35,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name = "vessel_attributes")
+@Getter
+@Setter
+@ToString(exclude = "vessel")
 public class VesselAttribute extends TimestampModel {
 
     public VesselAttribute() {
@@ -68,46 +72,10 @@ public class VesselAttribute extends TimestampModel {
         return id;
     }
 
-    public String getAttributeName() {
-        return attributeName;
-    }
-
     public void setAttributeName(String attributeName) {
         if (attributeName != null) {
             attributeName = attributeName.toLowerCase();
         }
         this.attributeName = attributeName;
-    }
-
-    public String getAttributeValue() {
-        return attributeValue;
-    }
-
-    public void setAttributeValue(String attributeValue) {
-        this.attributeValue = attributeValue;
-    }
-
-    public Date getStart() {
-        return start;
-    }
-
-    public void setStart(Date start) {
-        this.start = start;
-    }
-
-    public Date getEnd() {
-        return end;
-    }
-
-    public void setEnd(Date end) {
-        this.end = end;
-    }
-
-    public Vessel getVessel() {
-        return vessel;
-    }
-
-    public void setVessel(Vessel vessel) {
-        this.vessel = vessel;
     }
 }

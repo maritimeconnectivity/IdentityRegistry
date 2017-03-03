@@ -50,14 +50,11 @@ import java.util.List;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @RunWith(SpringRunner.class)
@@ -117,7 +114,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcl:org:dma");
@@ -133,7 +130,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -153,7 +150,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcl:org:dma");
@@ -170,7 +167,7 @@ public class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:sma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -191,7 +188,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -208,7 +205,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -230,7 +227,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -247,7 +244,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -270,7 +267,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         service.setOidcAccessType("bearer-only");
         String serviceJson = serialize(service);
         // Build org object to test with
@@ -288,7 +285,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         given(this.keycloakAU.getClientJbossXml("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/jbossxml").with(authentication(auth))
@@ -309,7 +306,7 @@ public class ServiceControllerTests {
         Service service = new Service();
         service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
         service.setName("NW NM Service");
-        service.setIdOrganization(new Long(1));
+        service.setIdOrganization(1l);
         service.setOidcAccessType(null);
         String serviceJson = serialize(service);
         // Build org object to test with
@@ -327,7 +324,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(new Long(1));
+        when(org.getId()).thenReturn(1l);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
@@ -355,13 +352,8 @@ public class ServiceControllerTests {
             //System.out.println(jsonInString);
 
             return jsonInString;
-        } catch (JsonGenerationException e) {
-            e.printStackTrace();
-        } catch (JsonMappingException e) {
-            e.printStackTrace();
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         }
-        return null;
     }
 }

@@ -15,46 +15,45 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
-import net.maritimecloud.identityregistry.model.database.*;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
+import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
-import net.maritimecloud.identityregistry.utils.*;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.maritimecloud.identityregistry.utils.EmailUtil;
+import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
-
-import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.services.OrganizationService;
-
-import java.io.IOException;
-import java.net.MalformedURLException;
-import java.util.HashMap;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import java.io.IOException;
+import java.net.MalformedURLException;
+import java.util.HashMap;
 
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
@@ -82,8 +81,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Autowired
     private CertificateService certificateService;
-
-    private static final Logger logger = LoggerFactory.getLogger(OrganizationController.class);
 
     /**
      * Receives an application for a new organization and root-user
@@ -114,7 +111,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
         // Send email to admin saying that an Organization is awaiting approval
         emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName());
-        return new ResponseEntity<Organization>(newOrg, HttpStatus.OK);
+        return new ResponseEntity<>(newOrg, HttpStatus.OK);
     }
 
     /**
@@ -127,7 +124,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
-    public Page<Organization> getUnapprovedOrganizations(HttpServletRequest request, Pageable pageable) {
+    public Page<Organization> getUnapprovedOrganizations(Pageable pageable) {
         return this.organizationService.getUnapprovedOrganizations(pageable);
     }
 
@@ -147,7 +144,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
-        if (org.getApproved()) {
+        if (org.isApproved()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
         }
         // Create the Identity Provider for the org
@@ -164,7 +161,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Enabled the organization and save it
         org.setApproved(true);
         Organization approvedOrg =  this.organizationService.save(org);
-        return new ResponseEntity<Organization>(approvedOrg, HttpStatus.OK);
+        return new ResponseEntity<>(approvedOrg, HttpStatus.OK);
     }
 
 
@@ -183,7 +180,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (org == null) {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
-        return new ResponseEntity<Organization>(org, HttpStatus.OK);
+        return new ResponseEntity<>(org, HttpStatus.OK);
     }
 
     /**
@@ -195,7 +192,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/orgs",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public Page<Organization> getOrganization(HttpServletRequest request, Pageable pageable) {
+    public Page<Organization> getOrganization(Pageable pageable) {
         return this.organizationService.listAllPage(pageable);
     }
 
@@ -299,7 +296,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             PemCertificate ret = this.issueCertificate(org, org, "organization", request);
-            return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
+            return new ResponseEntity<>(ret, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

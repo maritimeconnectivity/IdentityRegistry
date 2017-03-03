@@ -30,10 +30,11 @@ import javax.validation.Validation;
 import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 
-import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
@@ -106,7 +107,7 @@ public class OrganizationValidatorTests {
         IdentityProviderAttribute attr = new IdentityProviderAttribute();
         attr.setAttributeName("importUrl");
         attr.setAttributeValue("qwerty");
-        validOrg.setIdentityProviderAttributes(Arrays.asList(attr));
+        validOrg.setIdentityProviderAttributes(Collections.singletonList(attr));
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(validOrg);
         assertTrue(violations.isEmpty());
