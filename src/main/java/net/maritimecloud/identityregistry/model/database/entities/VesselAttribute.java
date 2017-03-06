@@ -44,11 +44,11 @@ public class VesselAttribute extends TimestampModel {
     }
 
     @ApiModelProperty(value = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
-    @Column(name = "attribute_name")
+    @Column(name = "attribute_name", nullable = false)
     private String attributeName;
 
     @ApiModelProperty(value = "Vessel attribute value", required = true)
-    @Column(name = "attribute_value")
+    @Column(name = "attribute_value", nullable = false)
     private String attributeValue;
 
     @Column(name = "start")
@@ -59,7 +59,7 @@ public class VesselAttribute extends TimestampModel {
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id_vessel")
+    @JoinColumn(name = "id_vessel", nullable = false)
     private Vessel vessel;
 
     /******************************/

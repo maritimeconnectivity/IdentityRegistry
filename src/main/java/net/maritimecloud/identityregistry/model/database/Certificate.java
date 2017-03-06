@@ -48,19 +48,19 @@ public class Certificate extends TimestampModel {
     }
 
     @ApiModelProperty(value = "The certificate on PEM format")
-    @Column(name = "certificate", columnDefinition = "MEDIUMTEXT")
+    @Column(name = "certificate", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String certificate;
 
-    @Column(name = "start")
+    @Column(name = "start", nullable = false)
     private Date start;
 
-    @Column(name = "end")
+    @Column(name = "end", nullable = false)
     private Date end;
 
-    @Column(name = "serial_number")
+    @Column(name = "serial_number", nullable = false)
     private BigInteger serialNumber;
 
-    @Column(name = "revoked")
+    @Column(name = "revoked", nullable = false)
     private boolean revoked;
 
     @Column(name= "revoked_at")

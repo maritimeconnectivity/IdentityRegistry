@@ -36,16 +36,16 @@ public class Role extends TimestampModel {
     }
 
     @ApiModelProperty(required = true, value = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_USER")
-    @Column(name = "role_name")
+    @Column(name = "role_name", nullable = false)
     @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_USER"})
     private String roleName;
 
     @ApiModelProperty(required = true, value = "The permission that should be mapped to the role")
-    @Column(name = "permission")
+    @Column(name = "permission", nullable = false)
     private String permission;
 
     @JsonIgnore
-    @Column(name = "id_organization")
+    @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
     /** Copies this user into the other */

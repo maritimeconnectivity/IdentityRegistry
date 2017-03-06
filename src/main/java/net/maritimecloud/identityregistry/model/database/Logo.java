@@ -36,7 +36,7 @@ public class Logo extends TimestampModel {
     public Logo() {
     }
 
-    @Column(name = "image")
+    @Column(name = "image", nullable = false)
     private byte[] image;
 
     @JsonIgnore

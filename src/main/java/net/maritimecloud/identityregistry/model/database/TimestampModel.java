@@ -36,7 +36,7 @@ import java.util.Date;
 public abstract class TimestampModel implements JsonSerializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @Column(name = "id")
+    @Column(name = "id", nullable = false)
     protected Long id;
 
     @Column(name = "created_at", updatable=false)

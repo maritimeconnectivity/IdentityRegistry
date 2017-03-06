@@ -29,7 +29,7 @@ import javax.persistence.MappedSuperclass;
 @Setter
 @ToString
 public abstract class NonHumanEntityModel extends EntityModel {
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     @NotBlank
     @ApiModelProperty(required = true)
     private String name;

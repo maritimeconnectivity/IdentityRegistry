@@ -51,7 +51,7 @@ import java.util.List;
 public class Organization extends CertificateModel {
 
     @ApiModelProperty(value = "The name of the organization", required = true)
-    @Column(name = "name")
+    @Column(name = "name", nullable = false)
     @NotBlank
     private String name;
 
@@ -60,21 +60,21 @@ public class Organization extends CertificateModel {
     @NotBlank
     @MRN
     @ApiModelProperty(value = "The Maritime Resource Name", required = true, readOnly = true)
-    @Column(name = "mrn")
+    @Column(name = "mrn", nullable = false)
     private String mrn;
 
-    @Column(name = "email")
+    @Column(name = "email", nullable = false)
     @Email
     @ApiModelProperty(required = true)
     private String email;
 
-    @Column(name = "url")
+    @Column(name = "url", nullable = false)
     @ApiModelProperty(required = true)
     @NotBlank
     @URL
     private String url;
 
-    @Column(name = "address")
+    @Column(name = "address", nullable = false)
     @NotBlank
     @ApiModelProperty(required = true)
     private String address;
@@ -89,10 +89,10 @@ public class Organization extends CertificateModel {
     private String type;
 
     @JsonIgnore
-    @Column(name = "approved")
+    @Column(name = "approved", nullable = false)
     private boolean approved;
 
-    @Column(name = "federation_type")
+    @Column(name = "federation_type", nullable = false)
     @ApiModelProperty(value = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", readOnly = true)
     private String federationType;
 

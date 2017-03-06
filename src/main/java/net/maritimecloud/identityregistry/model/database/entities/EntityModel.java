@@ -35,12 +35,12 @@ public abstract class EntityModel extends CertificateModel {
 
 
     @JsonIgnore
-    @Column(name = "id_organization")
+    @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
     @ApiModelProperty(value = "The Maritime Resource Name", required = true)
     @MRN
-    @Column(name = "mrn")
+    @Column(name = "mrn", nullable = false)
     private String mrn;
 
     @ApiModelProperty(value = "Permissions as assigned from the organization")

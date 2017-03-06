@@ -49,7 +49,7 @@ public class IdentityProviderAttribute extends TimestampModel {
                     "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret," +
                     "providerType, firstNameAttr, lastNameAttr, emailAttr, usernameAttr, permissionsAttr"
     )
-    @Column(name = "attribute_name")
+    @Column(name = "attribute_name", nullable = false)
     @NotBlank
     @InPredefinedList(
             acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
@@ -61,12 +61,12 @@ public class IdentityProviderAttribute extends TimestampModel {
 
     @ApiModelProperty(value = "OpenId Connect or SAML2 attribute value", required = true)
     @NotBlank
-    @Column(name = "attribute_value")
+    @Column(name = "attribute_value", nullable = false)
     private String attributeValue;
 
     @JsonIgnore
     @ManyToOne
-    @JoinColumn(name = "id_organization")
+    @JoinColumn(name = "id_organization", nullable = false)
     private Organization organization;
 
     @Override
@@ -75,6 +75,11 @@ public class IdentityProviderAttribute extends TimestampModel {
         return id;
     }
 
+    /**
+     * Compares this IdentityProviderAttribute with another, but only compares AttributeName and AttributeValue
+     * @param other The other IdentityProviderAttribute to compare with
+     * @return 0 if equal, otherwise non-zero values.
+     */
     public int compareNameAndValueTo(IdentityProviderAttribute other) {
         // Check if "other" is null
         if (other == null) {
@@ -106,6 +111,13 @@ public class IdentityProviderAttribute extends TimestampModel {
         return ret;
     }
 
+    /**
+     * Compares two IdentityProviderAttribute lists, but only looks the AttributeName and AttributeValue attributes
+     * on list elements.
+     * @param first First list of IdentityProviderAttribute to compare
+     * @param second Second list of IdentityProviderAttribute to compare
+     * @return true if lists are equal, else false
+     */
     public static boolean listsEquals(List<IdentityProviderAttribute> first, List<IdentityProviderAttribute> second) {
         if (first == null && second == null) {
             return true;
