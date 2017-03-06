@@ -28,7 +28,12 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
@@ -59,7 +64,7 @@ public class RoleController {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             List<Role> roles = this.roleService.listFromOrg(org.getId());
-            return new ResponseEntity<List<Role>>(roles, HttpStatus.OK);
+            return new ResponseEntity<>(roles, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -76,7 +81,7 @@ public class RoleController {
         if (org != null) {
             input.setIdOrganization(org.getId());
             Role newRole = this.roleService.save(input);
-            return new ResponseEntity<Role>(newRole, HttpStatus.OK);
+            return new ResponseEntity<>(newRole, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -102,7 +107,7 @@ public class RoleController {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             if (role.getIdOrganization().compareTo(org.getId()) == 0) {
-                return new ResponseEntity<Role>(role, HttpStatus.OK);
+                return new ResponseEntity<>(role, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -180,7 +185,7 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<List<String>> getMyRole(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) throws McBasicRestException {
         List<String> roles = AccessControlUtil.getMyRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
@@ -196,7 +201,7 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<List<String>> getAvailableRoles(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) throws McBasicRestException {
         // See net.maritimecloud.identityregistry.security.MultiSecurityConfig for the role hierarchy
         List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
                                            "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN",

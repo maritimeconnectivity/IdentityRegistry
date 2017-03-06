@@ -15,21 +15,7 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
-import java.io.*;
-import java.math.BigInteger;
-import java.security.*;
-import java.security.KeyStore.PrivateKeyEntry;
-import java.security.cert.CRLException;
-import java.security.cert.Certificate;
-import java.security.cert.CertificateEncodingException;
-import java.security.cert.CertificateException;
-import java.security.cert.CertificateFactory;
-import java.security.cert.CertificateParsingException;
-import java.security.cert.X509CRL;
-import java.security.cert.X509Certificate;
-import java.util.*;
-import java.security.spec.ECGenParameterSpec;
-
+import lombok.extern.slf4j.Slf4j;
 import org.bouncycastle.asn1.ASN1Encodable;
 import org.bouncycastle.asn1.ASN1Encoding;
 import org.bouncycastle.asn1.ASN1InputStream;
@@ -72,7 +58,7 @@ import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
 import org.bouncycastle.cert.ocsp.OCSPRespBuilder;
-import org.bouncycastle.jce.provider.BouncyCastleProvider;
+import org.bouncycastle.jce.X509KeyUsage;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -83,20 +69,57 @@ import org.bouncycastle.util.BigIntegers;
 import org.bouncycastle.util.encoders.Hex;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemWriter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Component;
-import org.bouncycastle.jce.X509KeyUsage;
+
+import java.io.BufferedWriter;
+import java.io.ByteArrayInputStream;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.KeyStore.PrivateKeyEntry;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
+import java.security.PrivateKey;
+import java.security.PublicKey;
+import java.security.SecureRandom;
+import java.security.UnrecoverableEntryException;
+import java.security.cert.CRLException;
+import java.security.cert.Certificate;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509CRL;
+import java.security.cert.X509Certificate;
+import java.security.spec.ECGenParameterSpec;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
+import java.util.Date;
+import java.util.GregorianCalendar;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 @Component
+@Slf4j
 public class CertificateUtil {
-
-    private static final Logger logger = LoggerFactory.getLogger(CertificateUtil.class);
 
     public static final int CERT_EXPIRE_YEAR = 2025;
     public static final String ROOT_CERT_ALIAS = "rootcert";
@@ -150,11 +173,7 @@ public class CertificateUtil {
     /**
      * Builds and signs a certificate. The certificate will be build on the given subject-public-key and signed with
      * the given issuer-private-key. The issuer and subject will be identified in the strings provided.
-     * 
-     * @param signerPrivateKey
-     * @param subjectPublicKey
-     * @param issuer
-     * @param subject
+     *
      * @return A signed X509Certificate
      * @throws Exception
      */
@@ -194,7 +213,7 @@ public class CertificateUtil {
                 Iterator<Map.Entry<String,String>> it = customAttrs.entrySet().iterator();
                 int idx = 0;
                 while (it.hasNext()) {
-                    Map.Entry<String,String> pair = (Map.Entry<String,String>)it.next();
+                    Map.Entry<String,String> pair = it.next();
                     //genNames[idx] = new GeneralName(GeneralName.otherName, new DERUTF8String(pair.getKey() + ";" + pair.getValue()));
                     DERSequence othernameSequence = new DERSequence(new ASN1Encodable[]{
                             new ASN1ObjectIdentifier(pair.getKey()), new DERTaggedObject(true, 0, new DERUTF8String(pair.getValue()))});
@@ -272,18 +291,14 @@ public class CertificateUtil {
                 cacert = buildAndSignCert(generateSerialNumber(), cakp.getPrivate(), cakp.getPublic(), cakp.getPublic(),
                                           new X500Name(rootCertX500Name), new X500Name(rootCertX500Name), null, "ROOTCA");
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return;
+                throw new RuntimeException(e.getMessage(), e);
             }
             X509Certificate imcert;
             try {
                 imcert = buildAndSignCert(generateSerialNumber(), cakp.getPrivate(), cakp.getPublic(), imkp.getPublic(),
                                           new X500Name(rootCertX500Name), new X500Name(mcidregCertX500Name), null, "INTERMEDIATE");
             } catch (Exception e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-                return;
+                throw new RuntimeException(e.getMessage(), e);
             }
             Certificate[] certChain = new Certificate[1];
             certChain[0] = cacert;
@@ -306,40 +321,36 @@ public class CertificateUtil {
             ts.setCertificateEntry(INTERMEDIATE_CERT_ALIAS, imcert);
             ts.store(tsfos, TRUSTSTORE_PASSWORD.toCharArray());
         } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return;
+            throw new RuntimeException(e.getMessage(), e);
         } finally {
-            try {
-                if (rootfos != null) {
-                    rootfos.close();
-                }
-                if (itfos != null) {
-                    itfos.close();
-                }
-                if (tsfos != null) {
-                    tsfos.close();
-                }
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            safeClose(rootfos);
+            safeClose(itfos);
+            safeClose(tsfos);
+
             KeyStore.ProtectionParameter protParam = new KeyStore.PasswordProtection(KEYSTORE_PASSWORD.toCharArray());
-            PrivateKeyEntry rootCertEntry = null;
+            PrivateKeyEntry rootCertEntry;
             try {
                 rootCertEntry = (PrivateKeyEntry) rootks.getEntry(ROOT_CERT_ALIAS, protParam);
-            } catch (NoSuchAlgorithmException e) {
-                e.printStackTrace();
-            } catch (UnrecoverableEntryException e) {
-                e.printStackTrace();
-            } catch (KeyStoreException e) {
-                e.printStackTrace();
+                generateRootCACRL(rootCertX500Name, null, rootCertEntry, outputCaCrlPath);
+            } catch (NoSuchAlgorithmException | UnrecoverableEntryException | KeyStoreException e) {
+                // todo, I think is an irrecoverable state, but we should not throw exception from finally, perhaps this code should not be in a finally block
+                log.error("unable to generate RootCACRL", e);
             }
-            generateRootCACRL(rootCertX500Name, null, rootCertEntry, outputCaCrlPath);
+
         }
     }
-    
-    
+
+    private void safeClose(FileOutputStream stream) {
+        if (stream != null) {
+            try {
+                stream.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
+
     /**
      * Generates a keypair (public and private) based on Elliptic curves.
      * 
@@ -350,17 +361,13 @@ public class CertificateUtil {
         KeyPairGenerator g;
         try {
             g = KeyPairGenerator.getInstance("ECDSA", BC_PROVIDER_NAME);
-        } catch (NoSuchAlgorithmException | NoSuchProviderException e1) {
-            // TODO Auto-generated catch block
-            e1.printStackTrace();
-            return null;
+        } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+            throw new RuntimeException(e.getMessage(), e);
         }
         try {
             g.initialize(ecGenSpec, new SecureRandom());
         } catch (InvalidAlgorithmParameterException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e.getMessage(), e);
         }
         KeyPair pair = g.generateKeyPair();
         return pair;
@@ -368,18 +375,16 @@ public class CertificateUtil {
     
     
     /**
-     * Loads the MaritimeCloud certificate used for signing from the keystore
+     * Loads the MaritimeCloud certificate used for signing from the (jks) keystore
      *  
-     * @return
+     * @return a keyStore containing
      */
     public PrivateKeyEntry getSigningCertEntry() {
         FileInputStream is;
         try {
             is = new FileInputStream(INTERMEDIATE_KEYSTORE_PATH);
         } catch (FileNotFoundException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e.getMessage(), e);
         }
         KeyStore keystore;
         try {
@@ -390,9 +395,7 @@ public class CertificateUtil {
             return signingCertEntry;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException | UnrecoverableEntryException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-            return null;
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
     
@@ -470,7 +473,7 @@ public class CertificateUtil {
      * Creates a Certificate Revocation List (CRL) for the certificate serialnumbers given.
      * 
      * @param revokedCerts  List of the serialnumbers that should be revoked.
-     * @return
+     * @return a X509 certificate
      */
     public X509CRL generateCRL(List<net.maritimecloud.identityregistry.model.database.Certificate> revokedCerts) {
         Date now = new Date();
@@ -517,7 +520,6 @@ public class CertificateUtil {
      * Creates a Certificate Revocation List (CRL) for the certificate serialnumbers given.
      *
      * @param revokedCerts  List of the serialnumbers that should be revoked.
-     * @return
      */
     public void generateRootCACRL(String signName, List<net.maritimecloud.identityregistry.model.database.Certificate> revokedCerts, PrivateKeyEntry keyEntry, String outputCaCrlPath) {
         Date now = new Date();
@@ -550,19 +552,17 @@ public class CertificateUtil {
         X509CRLHolder cRLHolder = crlBuilder.build(signer);
         JcaX509CRLConverter converter = new JcaX509CRLConverter();
         converter.setProvider(BC_PROVIDER_NAME);
-        X509CRL crl = null;
+        X509CRL crl;
         try {
             crl = converter.getCRL(cRLHolder);
         } catch (CRLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            throw new RuntimeException(e.getMessage(), e);
         }
-        String pemCrl = "";
+        String pemCrl;
         try {
             pemCrl = CertificateUtil.getPemFromEncoded("X509 CRL", crl.getEncoded());
         } catch (CRLException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            log.warn("unable to generate RootCACRL", e);
             return;
         }
         try {
@@ -572,7 +572,6 @@ public class CertificateUtil {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return;
     }
 
     /**
@@ -581,7 +580,7 @@ public class CertificateUtil {
      */
     private static String reverseX500Name(String name) {
         String[] RDN = name.split(",");
-        StringBuffer buf = new StringBuffer(name.length());
+        StringBuilder buf = new StringBuilder(name.length());
         for(int i = RDN.length - 1; i >= 0; i--){
             if(i != RDN.length - 1)
                 buf.append(',');
@@ -619,7 +618,7 @@ public class CertificateUtil {
         try {
             certificateFactory = CertificateFactory.getInstance("X.509");
         } catch (CertificateException e) {
-            logger.error("Exception while creating CertificateFactory", e);
+            log.error("Exception while creating CertificateFactory", e);
             return null;
         }
 
@@ -627,17 +626,17 @@ public class CertificateUtil {
         // (2 or more). Also replace tabs, which nginx sometimes sends instead of whitespaces.
         String certificateContent = certificateHeader.replaceAll("\\s{2,}", System.lineSeparator()).replaceAll("\\t+", System.lineSeparator());
         if (certificateContent == null || certificateContent.length() < 10) {
-            logger.debug("No certificate content found");
+            log.debug("No certificate content found");
             return null;
         }
-        X509Certificate userCertificate = null;
+        X509Certificate userCertificate;
         try {
             userCertificate = (X509Certificate) certificateFactory.generateCertificate(new ByteArrayInputStream(certificateContent.getBytes("ISO-8859-11")));
         } catch (CertificateException | UnsupportedEncodingException e) {
-            logger.error("Exception while converting certificate extracted from header", e);
+            log.error("Exception while converting certificate extracted from header", e);
             return null;
         }
-        logger.debug("Certificate was extracted from the header");
+        log.debug("Certificate was extracted from the header");
         return userCertificate;
     }
     
@@ -657,19 +656,19 @@ public class CertificateUtil {
         essence.setDescription(certDN);
         // Hack alert! There is no country property in this type, so we misuse PostalAddress...
         essence.setPostalAddress(getElement(x500name, BCStyle.C));
-        logger.debug("Parsed certificate, name: " + name);
+        log.debug("Parsed certificate, name: " + name);
 
         // Extract info from Subject Alternative Name extension
         Collection<List<?>> san = null;
         try {
             san = userCertificate.getSubjectAlternativeNames();
         } catch (CertificateParsingException e) {
-            logger.warn("could not extract info from Subject Alternative Names - will be ignored.");
+            log.warn("could not extract info from Subject Alternative Names - will be ignored.");
         }
         // Check that the certificate includes the SubjectAltName extension
         if (san != null) {
             // Use the type OtherName to search for the certified server name
-            Collection<GrantedAuthority> roles = new ArrayList<GrantedAuthority>();
+            Collection<GrantedAuthority> roles = new ArrayList<>();
             for (List item : san) {
                 Integer type = (Integer) item.get(0);
                 if (type == 0) {
@@ -688,10 +687,10 @@ public class CertificateUtil {
                         oid = asnOID.getId();
                         value = ((DERUTF8String) encoded).getString();
                     } catch (UnsupportedEncodingException e) {
-                        logger.error("Error decoding subjectAltName" + e.getLocalizedMessage(),e);
+                        log.error("Error decoding subjectAltName" + e.getLocalizedMessage(), e);
                         continue;
                     } catch (Exception e) {
-                        logger.error("Error decoding subjectAltName" + e.getLocalizedMessage(),e);
+                        log.error("Error decoding subjectAltName" + e.getLocalizedMessage(), e);
                         continue;
                     } finally {
                         if (decoder != null) {
@@ -701,7 +700,7 @@ public class CertificateUtil {
                             }
                         }
                     }
-                    logger.debug("oid: " + oid + ", value: " + value);
+                    log.debug("oid: " + oid + ", value: " + value);
                     switch (oid) {
                     case MC_OID_FLAGSTATE:
                     case MC_OID_CALLSIGN:
@@ -709,7 +708,7 @@ public class CertificateUtil {
                     case MC_OID_MMSI_NUMBER:
                     case MC_OID_AIS_SHIPTYPE:
                     case MC_OID_PORT_OF_REGISTER:
-                        logger.debug("Ship specific OIDs are ignored");
+                        log.debug("Ship specific OIDs are ignored");
                         break;
                     case MC_OID_MRN:
                         // We only support 1 mrn
@@ -722,12 +721,12 @@ public class CertificateUtil {
                         }
                         break;
                     default:
-                        logger.error("Unknown OID!");
+                        log.error("Unknown OID!");
                         break;
                     }
                 } else {
                     // Other types are not supported so ignore them
-                    logger.warn("SubjectAltName of invalid type found: " + type);
+                    log.warn("SubjectAltName of invalid type found: " + type);
                 }
             }
             if (!roles.isEmpty()) {
@@ -740,16 +739,16 @@ public class CertificateUtil {
     /**
      * Returns a Maritime Cloud certificate from the truststore
      * @param alias Either ROOT_CERT_ALIAS or INTERMEDIATE_CERT_ALIAS
-     * @return
+     * @return a certificate
      */
     private Certificate getMCCertificate(String alias) {
-        logger.debug(TRUSTSTORE_PATH);
+        log.debug(TRUSTSTORE_PATH);
         FileInputStream is;
         try {
             is = new FileInputStream(TRUSTSTORE_PATH);
         } catch (FileNotFoundException e) {
-            logger.error("Could not open truststore", e);
-            return null;
+            log.error("Could not open truststore", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
         KeyStore keystore;
         try {
@@ -759,8 +758,8 @@ public class CertificateUtil {
             return rootCert;
             
         } catch (NoSuchAlgorithmException | CertificateException | IOException | KeyStoreException e) {
-            logger.error("Could not load root certificate", e);
-            return null;
+            log.error("Could not load root certificate", e);
+            throw new RuntimeException(e.getMessage(), e);
         }
     }
     
@@ -770,23 +769,23 @@ public class CertificateUtil {
         try {
             certHolder = new JcaX509CertificateHolder(certToVerify);
         } catch (CertificateEncodingException e) {
-            logger.error("Could not create JcaX509CertificateHolder", e);
+            log.error("Could not create JcaX509CertificateHolder", e);
             return false;
         }
         PublicKey pubKey = rootCert.getPublicKey();
         if (pubKey == null) {
-            logger.error("Could not get public key of root certificate");
+            log.error("Could not get public key of root certificate");
             return false;
         }
-        ContentVerifierProvider contentVerifierProvider = null;
+        ContentVerifierProvider contentVerifierProvider;
         try {
             contentVerifierProvider = new JcaContentVerifierProviderBuilder().setProvider(BC_PROVIDER_NAME).build(pubKey);
         } catch (OperatorCreationException e) {
-            logger.error("Could not create ContentVerifierProvider from public key", e);
+            log.error("Could not create ContentVerifierProvider from public key", e);
             return false;
         }
         if (contentVerifierProvider == null) {
-            logger.error("Created ContentVerifierProvider from root public key is null");
+            log.error("Created ContentVerifierProvider from root public key is null");
             return false;
         }
         try {
@@ -794,10 +793,10 @@ public class CertificateUtil {
                 return true;
             }
         } catch (CertException e) {
-            logger.error("Error when trying to validate signature", e);
+            log.error("Error when trying to validate signature", e);
             return false;
         }
-        logger.debug("Certificate does not seem to be valid!");
+        log.debug("Certificate does not seem to be valid!");
         return false;
     }
 
@@ -857,18 +856,18 @@ public class CertificateUtil {
      */
     public static String valueToString(ASN1Encodable value)
     {
-        StringBuffer vBuf = new StringBuffer();
+        StringBuilder vBuf = new StringBuilder();
         if (value instanceof ASN1String && !(value instanceof DERUniversalString)) {
             String v = ((ASN1String)value).getString();
             vBuf.append(v);
         } else {
             try {
-                vBuf.append("#" + bytesToString(Hex.encode(value.toASN1Primitive().getEncoded(ASN1Encoding.DER))));
+                vBuf.append("#").append(bytesToString(Hex.encode(value.toASN1Primitive().getEncoded(ASN1Encoding.DER))));
             } catch (IOException e) {
                 throw new IllegalArgumentException("Other value has no encoded form");
             }
         }
-        logger.debug(vBuf.toString());
+        log.debug(vBuf.toString());
         return vBuf.toString();
     }
     

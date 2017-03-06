@@ -16,30 +16,20 @@
 
 package net.maritimecloud.identityregistry.exception;
 
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+
 /**
  * Thrown when keycloak returns 409 on conflict due to duplicated entries
  */
+@Getter
+@Setter
+@ToString
+@AllArgsConstructor
 public class DuplicatedKeycloakEntry extends Exception {
-    protected String originalErrorMessage;
     protected String errorMessage;
+    protected String originalErrorMessage;
 
-    public DuplicatedKeycloakEntry(String errorMessage, String originalErrorMessage) {
-        this.originalErrorMessage = this.originalErrorMessage;
-        this.errorMessage = errorMessage;
-    }
-    public String getOriginalErrorMessage() {
-        return originalErrorMessage;
-    }
-
-    public void setOriginalErrorMessage(String originalErrorMessage) {
-        this.originalErrorMessage = originalErrorMessage;
-    }
-
-    public String getErrorMessage() {
-        return errorMessage;
-    }
-
-    public void setErrorMessage(String errorMessage) {
-        this.errorMessage = errorMessage;
-    }
 }

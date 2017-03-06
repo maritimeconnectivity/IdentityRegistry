@@ -15,14 +15,11 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.repositories.ServiceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-
-import java.util.List;
 
 @org.springframework.stereotype.Service
 public class ServiceServiceImpl extends EntityServiceImpl<Service> implements EntityService<Service> {

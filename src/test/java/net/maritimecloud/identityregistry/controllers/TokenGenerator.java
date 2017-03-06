@@ -27,7 +27,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Helper class to generate fake tokens for use when testing controllers.
@@ -84,7 +87,7 @@ public class TokenGenerator {
     }
 
     public static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {
-        Collection<GrantedAuthority> authorities = new ArrayList<GrantedAuthority>();
+        Collection<GrantedAuthority> authorities = new ArrayList<>();
         String[] roleArr = roles.split(",");
         for(String role : roleArr) {
             authorities.add(new SimpleGrantedAuthority(role.trim()));

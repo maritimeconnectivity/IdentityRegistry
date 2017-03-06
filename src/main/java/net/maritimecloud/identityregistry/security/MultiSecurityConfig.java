@@ -15,9 +15,15 @@
  */
 package net.maritimecloud.identityregistry.security;
 
+import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
+import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
+import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -39,14 +45,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
-
-import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
-import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
-
-import org.springframework.boot.context.embedded.FilterRegistrationBean;
-import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -168,7 +166,7 @@ public class MultiSecurityConfig {
             super();
             if (!useStandardSSL) {
                 userDetailsService = new X509HeaderUserDetailsService();
-                UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken>(userDetailsService);
+                UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>(userDetailsService);
                 preAuthenticatedProvider = new PreAuthenticatedAuthenticationProvider();
                 preAuthenticatedProvider.setPreAuthenticatedUserDetailsService(wrapper);
             }

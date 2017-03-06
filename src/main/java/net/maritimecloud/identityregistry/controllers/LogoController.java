@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.database.Logo;
 import net.maritimecloud.identityregistry.model.database.Organization;
@@ -27,14 +28,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
+@Slf4j
 public class LogoController {
 
     private OrganizationService organizationService;
@@ -46,10 +57,9 @@ public class LogoController {
 
     /**
      * Creates or updates a logo for an organization
-     * @param request
-     * @param orgMrn
-     * @param logo
-     * @return
+     * @param request request to get servletPath
+     * @param orgMrn resource location for organization
+     * @param logo the log encoded as a MultipartFile
      * @throws McBasicRestException
      */
     @RequestMapping(
@@ -61,13 +71,13 @@ public class LogoController {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             try {
-                this.saveLogo(org, logo.getInputStream());
+                this.updateLogo(org, logo.getInputStream());
                 organizationService.save(org);
+                return new ResponseEntity<>(HttpStatus.CREATED);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Unable to create logo", e);
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
-            return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -103,10 +113,9 @@ public class LogoController {
 
     /**
      * Creates or updates a logo for an organization
-     * @param request
-     * @param orgMrn
-     * @param logo
-     * @return
+     * @param request so we can get the servlet path
+     * @param orgMrn the resource
+     * @param logo the logo bytes
      * @throws McBasicRestException
      */
     @RequestMapping(
@@ -119,7 +128,7 @@ public class LogoController {
         if (org != null) {
             try {
                 ByteArrayInputStream inputLogo = new ByteArrayInputStream(logo);
-                this.saveLogo(org, inputLogo);
+                this.updateLogo(org, inputLogo);
                 organizationService.save(org);
             } catch (IOException e) {
                 e.printStackTrace();
@@ -153,8 +162,8 @@ public class LogoController {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
-
-    private void saveLogo(Organization org, InputStream logoInputStream) throws IOException {
+    // this method belongs to on the Organization class, not as a free function in the controller
+    private void updateLogo(Organization org, InputStream logoInputStream) throws IOException {
         ByteArrayOutputStream newImage = ImageUtil.resize(logoInputStream);
         if (org.getLogo() != null) {
             org.getLogo().setImage(newImage.toByteArray());

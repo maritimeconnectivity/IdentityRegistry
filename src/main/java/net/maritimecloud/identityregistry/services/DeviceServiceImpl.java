@@ -15,11 +15,10 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.repositories.DeviceRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
 
 @Service
 public class DeviceServiceImpl extends EntityServiceImpl<Device> implements EntityService<Device> {

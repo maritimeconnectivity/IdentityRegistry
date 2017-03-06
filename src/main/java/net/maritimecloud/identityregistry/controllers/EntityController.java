@@ -15,32 +15,28 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
-import net.maritimecloud.identityregistry.model.database.entities.EntityModel;
-import net.maritimecloud.identityregistry.services.EntityService;
-import net.maritimecloud.identityregistry.utils.MrnUtil;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.web.bind.annotation.RestController;
-
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.entities.EntityModel;
 import net.maritimecloud.identityregistry.services.CertificateService;
+import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
-
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-
+import net.maritimecloud.identityregistry.utils.MrnUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
 
 @RestController
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
@@ -77,7 +73,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             input.setIdOrganization(org.getId());
             try {
                 T newEntity = this.entityService.save(input);
-                return new ResponseEntity<T>(newEntity, HttpStatus.OK);
+                return new ResponseEntity<>(newEntity, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
                 throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
@@ -104,7 +100,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                return new ResponseEntity<T>(entity, HttpStatus.OK);
+                return new ResponseEntity<>(entity, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -179,8 +175,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     protected Page<T> getOrganizationEntities(HttpServletRequest request, String orgMrn, Pageable pageable) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            Page<T> entities = this.entityService.listPageFromOrg(org.getId(), pageable);
-            return entities;
+            return this.entityService.listPageFromOrg(org.getId(), pageable);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -206,7 +201,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 PemCertificate ret = this.issueCertificate(entity, org, type, request);
-                return new ResponseEntity<PemCertificate>(ret, HttpStatus.OK);
+                return new ResponseEntity<>(ret, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

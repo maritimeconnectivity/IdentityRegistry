@@ -16,7 +16,9 @@
 package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -26,6 +28,9 @@ import java.util.Objects;
 
 @Entity
 @Table(name="logos")
+@Getter
+@Setter
+@ToString(exclude = "organization")
 public class Logo extends TimestampModel {
 
     public Logo() {
@@ -45,24 +50,5 @@ public class Logo extends TimestampModel {
         logo.setOrganization(organization);
         logo.setImage(image);
         return logo;
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public byte[] getImage() {
-        return image;
-    }
-
-    public void setImage(byte[] image) {
-        this.image = image;
-    }
-
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
     }
 }

@@ -15,38 +15,45 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import io.swagger.annotations.ApiOperation;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
+import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.Role;
+import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.RoleService;
-import net.maritimecloud.identityregistry.utils.*;
+import net.maritimecloud.identityregistry.utils.AccessControlUtil;
+import net.maritimecloud.identityregistry.utils.EmailUtil;
+import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.MrnUtil;
+import net.maritimecloud.identityregistry.utils.PasswordUtil;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.*;
-
-import io.swagger.annotations.ApiOperation;
-import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.database.Organization;
-import net.maritimecloud.identityregistry.model.data.PemCertificate;
-import net.maritimecloud.identityregistry.model.database.entities.User;
-import net.maritimecloud.identityregistry.services.UserService;
-
-import java.io.IOException;
-import java.util.List;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import java.io.IOException;
 
 @RestController
 public class UserController extends EntityController<User> {
@@ -110,7 +117,7 @@ public class UserController extends EntityController<User> {
             input.setIdOrganization(org.getId());
             try {
                 User newUser = this.entityService.save(input);
-                return new ResponseEntity<User>(newUser, HttpStatus.OK);
+                return new ResponseEntity<>(newUser, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the user from keycloak if it was created.
                 if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
@@ -312,8 +319,8 @@ public class UserController extends EntityController<User> {
             String url = "http://" + input.getEmail().substring(at+1);
             org.setUrl(url);
             // Extract country from address
-            String country = "";
-            String address = "";
+            String country;
+            String address;
             int lastComma = orgAddress.lastIndexOf(",");
             if (lastComma > 0) {
                 country = orgAddress.substring(lastComma+1).trim();

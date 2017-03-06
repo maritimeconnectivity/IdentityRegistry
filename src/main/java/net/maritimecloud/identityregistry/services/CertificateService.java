@@ -15,12 +15,12 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import java.util.List;
-
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.User;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+
+import java.util.List;
 
 public interface CertificateService {
     Certificate getCertificateById(Long id);

@@ -15,7 +15,10 @@
  */
 package net.maritimecloud.identityregistry.model.database;
 
-import java.util.Date;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import net.maritimecloud.identityregistry.model.JsonSerializable;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -24,11 +27,12 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
-
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import net.maritimecloud.identityregistry.model.JsonSerializable;
+import java.util.Date;
 
 @MappedSuperclass
+@Getter
+@Setter
+@ToString
 public abstract class TimestampModel implements JsonSerializable {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
@@ -59,14 +63,6 @@ public abstract class TimestampModel implements JsonSerializable {
 
     protected void setId(Long id) {
         this.id = id;
-    }
-
-    public Date getCreatedAt() {
-        return createdAt;
-    }
-
-    public Date getUpdatedAt() {
-        return updatedAt;
     }
 
     // Override if needed - use to detect if blanking of sensitive fields are needed

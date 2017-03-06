@@ -15,47 +15,43 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
-import net.maritimecloud.identityregistry.model.database.CertificateModel;
-import net.maritimecloud.identityregistry.utils.MrnUtil;
-import net.maritimecloud.identityregistry.utils.ValidateUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
-import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.RestController;
-
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
-import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
-
-import java.io.IOException;
-import java.util.List;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
-
+import net.maritimecloud.identityregistry.utils.MrnUtil;
+import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RestController;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.validation.Valid;
+import java.io.IOException;
 
 @RestController
+@Slf4j
 public class ServiceController extends EntityController<Service> {
     @Autowired
     private KeycloakAdminUtil keycloakAU;
@@ -66,7 +62,6 @@ public class ServiceController extends EntityController<Service> {
     }
 
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceController.class);
     /**
      * Creates a new Service
      * 
@@ -116,7 +111,7 @@ public class ServiceController extends EntityController<Service> {
             }
             try {
                 Service newService = this.entityService.save(input);
-                return new ResponseEntity<Service>(newService, HttpStatus.OK);
+                return new ResponseEntity<>(newService, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the client from keycloak if it was created.
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
@@ -188,7 +183,7 @@ public class ServiceController extends EntityController<Service> {
                             clientSecret = keycloakAU.createClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
                         }
                     } catch (IOException e){
-                        logger.error("Error while updating/creation client in keycloak.", e);
+                        log.error("Error while updating/creation client in keycloak.", e);
                         throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                     } catch (DuplicatedKeycloakEntry dke) {
                         throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
@@ -324,7 +319,7 @@ public class ServiceController extends EntityController<Service> {
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     String keycloakJson = keycloakAU.getClientKeycloakJson(service.getMrn());
-                    return new ResponseEntity<String>(keycloakJson, HttpStatus.OK);
+                    return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
                 }
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }

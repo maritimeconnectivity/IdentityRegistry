@@ -16,18 +16,18 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import io.swagger.annotations.ApiModelProperty;
-
-import java.util.List;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
+import net.maritimecloud.identityregistry.model.database.Certificate;
+import org.hibernate.validator.constraints.Email;
+import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.validation.constraints.Pattern;
-
-import net.maritimecloud.identityregistry.model.database.Certificate;
-import org.hibernate.validator.constraints.Email;
-import org.hibernate.validator.constraints.NotBlank;
+import java.util.List;
 
 /**
  * Model object representing an user
@@ -35,6 +35,9 @@ import org.hibernate.validator.constraints.NotBlank;
 
 @Entity
 @Table(name = "users")
+@Getter
+@Setter
+@ToString(exclude = "certificates")
 public class User extends EntityModel {
 
     public User() {
@@ -87,37 +90,5 @@ public class User extends EntityModel {
     public void assignToCert(Certificate cert){
         cert.setUser(this);
     }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public String getFirstName() {
-        return firstName;
-    }
-
-    public void setFirstName(String firstName) {
-        this.firstName = firstName;
-    }
-
-    public String getLastName() {
-        return lastName;
-    }
-
-    public void setLastName(String lastName) {
-        this.lastName = lastName;
-    }
-
-    public String getEmail() {
-        return email;
-    }
-
-    public void setEmail(String email) {
-        this.email = email;
-    }
-
-    public List<Certificate> getCertificates() {
-        return certificates;
-    }
-
 }
 

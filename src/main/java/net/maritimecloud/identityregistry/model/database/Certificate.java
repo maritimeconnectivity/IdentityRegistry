@@ -17,19 +17,21 @@ package net.maritimecloud.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
-
-import java.math.BigInteger;
-import java.util.Date;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import java.math.BigInteger;
+import java.util.Date;
 
 /**
  * Model object representing a certificate
@@ -37,6 +39,9 @@ import javax.persistence.Table;
 
 @Entity
 @Table(name="certificates")
+@Getter
+@Setter
+@ToString(exclude = {"vessel", "user", "device", "service", "organization"})
 public class Certificate extends TimestampModel {
 
     public Certificate() {
@@ -100,105 +105,5 @@ public class Certificate extends TimestampModel {
     @ManyToOne
     @JoinColumn(name = "id_organization")
     private Organization organization;
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-
-    public String getCertificate() {
-        return certificate;
-    }
-
-    public void setCertificate(String certificate) {
-        this.certificate = certificate;
-    }
-
-    public Date getStart() {
-        return start;
-    }
-
-    public void setStart(Date start) {
-        this.start = start;
-    }
-
-    public Date getEnd() {
-        return end;
-    }
-
-    public void setEnd(Date end) {
-        this.end = end;
-    }
-
-    public BigInteger getSerialNumber() {
-        return serialNumber;
-    }
-
-    public void setSerialNumber(BigInteger serialNumber) {
-        this.serialNumber = serialNumber;
-    }
-
-    public boolean getRevoked() {
-        return revoked;
-    }
-
-    public void setRevoked(boolean revoked) {
-        this.revoked = revoked;
-    }
-
-    public Date getRevokedAt() {
-        return revokedAt;
-    }
-
-    public void setRevokedAt(Date revokedAt) {
-        this.revokedAt = revokedAt;
-    }
-
-    public String getRevokeReason() {
-        return revokeReason;
-    }
-
-    public void setRevokeReason(String revokeReason) {
-        this.revokeReason = revokeReason;
-    }
-
-    public Vessel getVessel() {
-        return vessel;
-    }
-
-    public void setVessel(Vessel vessel) {
-        this.vessel = vessel;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public Device getDevice() {
-        return device;
-    }
-
-    public void setDevice(Device device) {
-        this.device = device;
-    }
-
-    public Service getService() {
-        return service;
-    }
-
-    public void setService(Service service) {
-        this.service = service;
-    }
-
-    public Organization getOrganization() {
-        return organization;
-    }
-
-    public void setOrganization(Organization organization) {
-        this.organization = organization;
-    }
 
 }

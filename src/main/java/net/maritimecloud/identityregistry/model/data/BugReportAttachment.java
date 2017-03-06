@@ -16,34 +16,17 @@
 package net.maritimecloud.identityregistry.model.data;
 
 
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
-
+@Getter
+@Setter
+@ToString
 public class BugReportAttachment implements JsonSerializable {
     private String name;
     private String mimetype;
     private String data;
 
-    public String getName() {
-        return name;
-    }
 
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getMimetype() {
-        return mimetype;
-    }
-
-    public void setMimetype(String mimetype) {
-        this.mimetype = mimetype;
-    }
-
-    public String getData() {
-        return data;
-    }
-
-    public void setData(String data) {
-        this.data = data;
-    }
 }
