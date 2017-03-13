@@ -21,12 +21,14 @@ import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
+import org.hibernate.validator.constraints.NotBlank;
 import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.Pattern;
 import java.util.List;
 
 /**
@@ -65,6 +67,11 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
+    @ApiModelProperty(value = "The version of this service instance.")
+    @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be 32 characters long")
+    @Column(name = "instance_version", nullable = false)
+    private String instanceVersion;
+
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(mappedBy = "service")
     //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
@@ -78,6 +85,7 @@ public class Service extends NonHumanEntityModel {
         service.setOidcClientSecret(oidcClientSecret);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
+        service.setInstanceVersion(instanceVersion);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
         service.setChildIds();
@@ -91,6 +99,7 @@ public class Service extends NonHumanEntityModel {
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
+        service.setInstanceVersion(instanceVersion);
         service.setChildIds();
         return service;
     }
@@ -108,6 +117,17 @@ public class Service extends NonHumanEntityModel {
         this.setOidcClientId(null);
         this.setOidcClientSecret(null);
         this.setOidcRedirectUri(null);
+    }
+
+    /**
+     * Generates the oidcClientId. Currently done by concat'ing the version and the mrn
+     */
+    public void generateOidcClientId() {
+        if (this.getInstanceVersion() == null || this.getInstanceVersion().trim().isEmpty()
+                || this.getMrn() == null || this.getMrn().trim().isEmpty()) {
+            throw new IllegalArgumentException("Service Instance Version or Instance Mrn is empty!");
+        }
+        this.setOidcClientId(this.getInstanceVersion() + "-" + this.getMrn());
     }
 }
 

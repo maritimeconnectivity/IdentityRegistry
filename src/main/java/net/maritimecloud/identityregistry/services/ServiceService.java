@@ -13,22 +13,14 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.repositories;
+
+package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.PagingAndSortingRepository;
 
-import java.util.List;
-
-public interface ServiceRepository extends PagingAndSortingRepository<Service, Long> {
-    Page<Service> findByidOrganization(Long orgId, Pageable pageable);
-
-    void deleteByidOrganization(Long orgId);
-
-    List<Service> findByName(String lastName);
-
-    Service getByMrnAndInstanceVersion(String mrn, String version);
-    Page<Service> findByMrn(String mrn, Pageable pageable);
+public interface ServiceService extends EntityService<Service>{
+    Service getServiceByMrnAndVersion(String mrn, String version);
+    Page<Service> getServicesByMrn(String mrn, Pageable pageable);
 }

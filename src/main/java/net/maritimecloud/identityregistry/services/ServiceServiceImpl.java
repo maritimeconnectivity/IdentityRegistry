@@ -22,16 +22,28 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
 @org.springframework.stereotype.Service
-public class ServiceServiceImpl extends EntityServiceImpl<Service> implements EntityService<Service> {
+public class ServiceServiceImpl extends EntityServiceImpl<Service> implements ServiceService {
 
     @Autowired
-    public void setServiceRepository(ServiceRepository ServiceRepository) {
-        this.repository = ServiceRepository;
-    }
+    private ServiceRepository repository;
 
     @Override
     public Page<Service> listPageFromOrg(Long orgId, Pageable pageable) {
         Page<Service> ret = repository.findByidOrganization(orgId, pageable);
+        ret = this.filterResult(ret);
+        return ret;
+    }
+
+    public Service getServiceByMrnAndVersion(String mrn, String version) {
+        return repository.getByMrnAndInstanceVersion(mrn, version);
+    }
+
+    public Service getByMrn(String mrn) {
+        throw new UnsupportedOperationException("Single services cannot be fetched using only MRN!");
+    }
+
+    public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
+        Page<Service> ret = repository.findByMrn(mrn, pageable);
         ret = this.filterResult(ret);
         return ret;
     }

@@ -52,6 +52,7 @@ public class ServiceValidatorTests {
         validService.setMrn("urn:mrn:mcl:service:instance:testorg:test-design:test-service-instance");
         validService.setOidcAccessType("bearer-only");
         validService.setOidcRedirectUri("http://test-redirect-url-to-service.net");
+        validService.setInstanceVersion("0.3.4.a,d+e-g_h:y");
         Set<ConstraintViolation<Service>> violations = validator.validate(validService);
         assertTrue(violations.isEmpty());
     }
@@ -66,7 +67,9 @@ public class ServiceValidatorTests {
         invalidService.setOidcAccessType("just rubish");
         // Invalid URL format
         invalidService.setOidcRedirectUri("test-redirect-url-to-service.net");
+        // Invalid version format
+        invalidService.setInstanceVersion("0.3.4/4");
         Set<ConstraintViolation<Service>> violations = validator.validate(invalidService);
-        assertEquals(3, violations.size());
+        assertEquals(4, violations.size());
     }
 }

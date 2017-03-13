@@ -25,6 +25,7 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.services.ServiceService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
@@ -90,9 +91,9 @@ public class ServiceController extends EntityController<Service> {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
                 }
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                input.setOidcClientId(input.getMrn());
+                input.generateOidcClientId();
                 try {
-                    String clientSecret = keycloakAU.createClient(input.getMrn(), input.getOidcAccessType(), input.getOidcRedirectUri());
+                    String clientSecret = keycloakAU.createClient(input.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                     if ("confidential".equals(input.getOidcAccessType())) {
                         input.setOidcClientSecret(clientSecret);
                     } else {
@@ -125,7 +126,7 @@ public class ServiceController extends EntityController<Service> {
     }
 
     /**
-     * Returns info about the service identified by the given ID
+     * Returns all version of the service instance identified by the given ID
      * 
      * @return a reply...
      * @throws McBasicRestException 
@@ -136,8 +137,56 @@ public class ServiceController extends EntityController<Service> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
-        return this.getEntity(request, orgMrn, serviceMrn);
+    public Page<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Page<Service> services = ((ServiceService) this.entityService).getServicesByMrn(serviceMrn, pageable);
+            if (services == null || !services.hasContent()) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (services.iterator().next().getIdOrganization().compareTo(org.getId()) == 0) {
+                return services;
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Returns specific version of the service instance identified by the given ID
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8")
+    @ResponseBody
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                return new ResponseEntity<>(service, HttpStatus.OK);
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
     }
 
     /**
@@ -147,13 +196,13 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        if (!serviceMrn.equals(input.getMrn())) {
+        if (!serviceMrn.equals(input.getMrn()) || !version.equals(input.getInstanceVersion())) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -162,7 +211,7 @@ public class ServiceController extends EntityController<Service> {
             if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            Service service = this.entityService.getByMrn(serviceMrn);
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -177,10 +226,10 @@ public class ServiceController extends EntityController<Service> {
                     String clientSecret;
                     try {
                         if (service.getOidcClientId() != null && !service.getOidcClientId().isEmpty()) {
-                            clientSecret = keycloakAU.updateClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                            clientSecret = keycloakAU.updateClient(service.getOidcClientId(), service.getOidcAccessType(), service.getOidcRedirectUri());
                         } else {
-                            service.setOidcClientId(service.getMrn());
-                            clientSecret = keycloakAU.createClient(service.getMrn(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                            service.generateOidcClientId();
+                            clientSecret = keycloakAU.createClient(service.getOidcClientId(), service.getOidcAccessType(), service.getOidcRedirectUri());
                         }
                     } catch (IOException e){
                         log.error("Error while updating/creation client in keycloak.", e);
@@ -215,18 +264,18 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
             method = RequestMethod.DELETE)
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
             if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            Service service = this.entityService.getByMrn(serviceMrn);
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -268,12 +317,29 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<PemCertificate> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
-        return this.newEntityCert(request, orgMrn, serviceMrn, "service");
+    public ResponseEntity<PemCertificate> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                PemCertificate ret = this.issueCertificate(service, org, "service", request);
+                return new ResponseEntity<>(ret, HttpStatus.OK);
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
     }
 
     /**
@@ -283,12 +349,33 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException 
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/{certId}/revoke",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
-        return this.revokeEntityCert(request, orgMrn, serviceMrn, certId, input);
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
+            if (service == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
+                Certificate cert = this.certificateService.getCertificateById(certId);
+                Service certEntity = getCertEntity(cert);
+                if (certEntity != null && certEntity.getId().compareTo(service.getId()) == 0) {
+                    this.revokeCertificate(cert.getId(), input, request);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
     }
 
     /**
@@ -298,19 +385,19 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/keycloakjson",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/keycloakjson",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
+    public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            Service service = this.entityService.getByMrn(serviceMrn);
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -318,7 +405,7 @@ public class ServiceController extends EntityController<Service> {
                 // Get the keycloak json for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getMrn());
+                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
                     return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
                 }
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
@@ -336,18 +423,18 @@ public class ServiceController extends EntityController<Service> {
      * @throws McBasicRestException
      */
     @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/jbossxml",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml",
             method = RequestMethod.GET)
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McBasicRestException {
+    public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            Service service = this.entityService.getByMrn(serviceMrn);
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
             if (service == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -355,7 +442,7 @@ public class ServiceController extends EntityController<Service> {
                 // Get the jboss xml for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String jbossXml = keycloakAU.getClientJbossXml(service.getMrn());
+                    String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
                     HttpHeaders responseHeaders = new HttpHeaders();
                     responseHeaders.setContentLength(jbossXml.length());
                     responseHeaders.setContentType(MediaType.APPLICATION_XML);
