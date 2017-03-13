@@ -879,14 +879,20 @@ public class CertificateUtil {
         return new String(cs);
     }
 
+    /**
+     * Generate a unique serial number to uniquely identify certificates.
+     *
+     * @return a unique serialnumber
+     */
     public BigInteger generateSerialNumber() {
         // BigInteger => NUMERICAL(50) MySQL ?
         // Max number supported in X509 serial number 2^159-1 = 730750818665451459101842416358141509827966271487
         BigInteger maxValue = new BigInteger("730750818665451459101842416358141509827966271487");
-        // Min number 2^32-1 = 4294967296
+        // Min number 2^32-1 = 4294967296 - we set a minimum value to avoid collisions with old certificates that has used seq numbers
         BigInteger minValue = new BigInteger("4294967296");
-        BigInteger serialNumber =BigIntegers.createRandomInRange(minValue, maxValue, random);
+        BigInteger serialNumber = BigIntegers.createRandomInRange(minValue, maxValue, random);
         return serialNumber;
+        //return new BigInteger(159, random).abs();
     }
 
     /*
