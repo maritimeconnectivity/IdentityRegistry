@@ -37,6 +37,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.math.BigInteger;
 
 @RestController
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
@@ -215,7 +216,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a reply...
      * @throws McBasicRestException
      */
-    protected ResponseEntity<?> revokeEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, Long certId, CertificateRevocation input) throws McBasicRestException {
+    protected ResponseEntity<?> revokeEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, BigInteger certId, CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
@@ -227,10 +228,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                Certificate cert = this.certificateService.getCertificateById(certId);
+                Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
                 T certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().compareTo(entity.getId()) == 0) {
-                    this.revokeCertificate(cert.getId(), input, request);
+                    this.revokeCertificate(cert.getSerialNumber(), input, request);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }

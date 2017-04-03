@@ -61,15 +61,14 @@ net:
 
             # Certificate setup
             certs:
-                mcidreg-cert-x500-name: "C=DK, ST=Denmark, L=Copenhagen, O=MaritimeCloud Test, OU=MaritimeCloud Test Identity Registry, CN=MaritimeCloud Test Identity Registry Certificate, E=info@maritimecloud.net"
-                root-keystore: mc-root-keystore.jks
-                it-keystore: mc-it-keystore.jks
-                keystore-password: changeit
+                sub-ca-keystore: mc-sub-ca-keystore.jks
+                sub-ca-keystore-password: changeit
+                sub-ca-key-password: changeit
                 truststore: mc-truststore.jks
                 truststore-password: changeit
-                crl-url: https://localhost/x509/api/certificates/crl
-                ocsp-url: https://localhost/x509/api/certificates/ocsp
+                root-crl-path: rootca.crl
 
+            # Email setup
             email:
                 from: no-reply@maritimecloud.net
                 admin-email: admin@maritimecloud.net

@@ -22,13 +22,14 @@ import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
+    Certificate getBySerialNumber(BigInteger serialNumber);
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
-    @Query("SELECT c FROM Certificate c WHERE c.revoked=1")
-    List<Certificate> findRevoked();
+    List<Certificate> findByCertificateAuthorityAndRevokedTrue(String caAlias);
 }
 

@@ -50,6 +50,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.math.BigInteger;
 
 @RestController
 @Slf4j
@@ -353,7 +354,7 @@ public class ServiceController extends EntityController<Service> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
@@ -365,10 +366,10 @@ public class ServiceController extends EntityController<Service> {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                Certificate cert = this.certificateService.getCertificateById(certId);
+                Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
                 Service certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().compareTo(service.getId()) == 0) {
-                    this.revokeCertificate(cert.getId(), input, request);
+                    this.revokeCertificate(cert.getSerialNumber(), input, request);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }
             }

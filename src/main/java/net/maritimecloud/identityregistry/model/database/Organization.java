@@ -110,6 +110,10 @@ public class Organization extends CertificateModel {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
     private List<IdentityProviderAttribute> identityProviderAttributes;
 
+    @JsonIgnore
+    @Column(name = "certificate_authority", nullable = false)
+    private String certificateAuthority;
+
     public Organization() {
     }
 

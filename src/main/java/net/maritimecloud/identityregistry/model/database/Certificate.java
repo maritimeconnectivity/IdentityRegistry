@@ -24,6 +24,9 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.pki.Revocation;
+import net.maritimecloud.pki.RevocationInfo;
+import net.maritimecloud.pki.ocsp.CertStatus;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -31,6 +34,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.math.BigInteger;
+import java.security.cert.CRLReason;
 import java.util.Date;
 
 /**
@@ -81,6 +85,9 @@ public class Certificate extends TimestampModel {
     @Column(name = "revoke_reason")
     private String revokeReason;
 
+    @Column(name= "certificate_authority", nullable = false)
+    private String certificateAuthority;
+
     @JsonIgnore
     @ManyToOne
     @JoinColumn(name = "id_vessel")
@@ -106,4 +113,13 @@ public class Certificate extends TimestampModel {
     @JoinColumn(name = "id_organization")
     private Organization organization;
 
+    public RevocationInfo toRevocationInfo() {
+        RevocationInfo info;
+        if (revoked) {
+            info = new RevocationInfo(serialNumber, CRLReason.values()[Revocation.getCRLReasonFromString(revokeReason)], revokedAt, CertStatus.REVOKED);
+        } else {
+            info = new RevocationInfo(serialNumber, null, null, CertStatus.GOOD);
+        }
+        return info;
+    }
 }

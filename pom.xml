@@ -156,6 +156,11 @@
 			<version>1.16.14</version>
 			<scope>provided</scope>
 		</dependency>
+		<dependency>
+			<groupId>net.maritimecloud.pki</groupId>
+			<artifactId>mc-pki</artifactId>
+			<version>0.4.99-SNAPSHOT</version>
+		</dependency>
 	</dependencies>
 	<build>
 		<finalName>${project.artifactId}-latest</finalName>

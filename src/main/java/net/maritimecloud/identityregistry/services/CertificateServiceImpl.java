@@ -23,6 +23,7 @@ import net.maritimecloud.identityregistry.repositories.CertificateRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
 import java.util.List;
 
 @Service
@@ -30,13 +31,13 @@ public class CertificateServiceImpl implements CertificateService {
     private CertificateRepository CertificateRepository;
 
     @Autowired
-    public void setDeviceRepository(CertificateRepository CertificateRepository) {
+    public void setCertificateRepository(CertificateRepository CertificateRepository) {
         this.CertificateRepository = CertificateRepository;
     }
 
     @Override
-    public Certificate getCertificateById(Long id) {
-        return CertificateRepository.findOne(id);
+    public Certificate getCertificateBySerialNumber(BigInteger serialNumber) {
+        return CertificateRepository.getBySerialNumber(serialNumber);
     }
 
     @Override
@@ -65,8 +66,9 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
-    public List<Certificate> listRevokedCertificate() {
-        return CertificateRepository.findRevoked();
+    public List<Certificate> listRevokedCertificate(String caAlias) {
+        return CertificateRepository.findByCertificateAuthorityAndRevokedTrue(caAlias);
     }
+
 }
 

@@ -26,6 +26,7 @@ import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import net.maritimecloud.identityregistry.validators.VesselValidator;
+import net.maritimecloud.pki.PKIConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,6 +47,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.math.BigInteger;
 import java.util.HashMap;
 
 @RestController
@@ -170,7 +172,7 @@ public class VesselController extends EntityController<Vessel> {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable Long certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         return this.revokeEntityCert(request, orgMrn, vesselMrn, certId, input);
     }
 
@@ -183,22 +185,22 @@ public class VesselController extends EntityController<Vessel> {
             String attrName = attr.getAttributeName().toLowerCase();
             switch(attrName) {
                 case "callsign":
-                    attrs.put(CertificateUtil.MC_OID_CALLSIGN, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_CALLSIGN, attr.getAttributeValue());
                     break;
                 case "imo-number":
-                    attrs.put(CertificateUtil.MC_OID_IMO_NUMBER, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_IMO_NUMBER, attr.getAttributeValue());
                     break;
                 case "mmsi-number":
-                    attrs.put(CertificateUtil.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
                     break;
                 case "flagstate":
-                    attrs.put(CertificateUtil.MC_OID_FLAGSTATE, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_FLAGSTATE, attr.getAttributeValue());
                     break;
                 case "ais-class":
-                    attrs.put(CertificateUtil.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
                     break;
                 case "port-of-register":
-                    attrs.put(CertificateUtil.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
+                    attrs.put(PKIConstants.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
                     break;
                 default:
                     logger.debug("Unexpected attribute value: " + attrName);

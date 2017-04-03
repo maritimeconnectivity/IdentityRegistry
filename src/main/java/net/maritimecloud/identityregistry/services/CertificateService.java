@@ -20,10 +20,11 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 
+import java.math.BigInteger;
 import java.util.List;
 
 public interface CertificateService {
-    Certificate getCertificateById(Long id);
+    Certificate getCertificateBySerialNumber(BigInteger serialNumber);
 
     Certificate saveCertificate(Certificate certificate);
 
@@ -35,5 +36,5 @@ public interface CertificateService {
     
     List<Certificate> listDeviceCertificate(Device device);
 
-    List<Certificate> listRevokedCertificate();
+    List<Certificate> listRevokedCertificate(String caAlias);
 }

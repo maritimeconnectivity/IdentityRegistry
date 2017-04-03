@@ -16,6 +16,7 @@
 package net.maritimecloud.identityregistry.security.x509;
 
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.pki.CertificateHandler;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
 import org.slf4j.Logger;
@@ -45,14 +46,14 @@ public class X509UserDetailsService implements UserDetailsService {
         //User user = new User(getElement(x500name, BCStyle.CN), "", true /*enabled*/, true /* not-expired */, true /* cred-not-expired*/, true /* not-locked*/, roles);
         //InetOrgPerson person = new InetOrgPerson();
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
-        String name = CertificateUtil.getElement(x500name, BCStyle.CN);
+        String name = CertificateHandler.getElement(x500name, BCStyle.CN);
         essence.setUsername(name);
         essence.setUid(name);
         essence.setDn(certDN);
         essence.setCn(new String[]{name});
         essence.setSn(name);
-        essence.setO(CertificateUtil.getElement(x500name, BCStyle.O));
-        essence.setOu(CertificateUtil.getElement(x500name, BCStyle.OU));
+        essence.setO(CertificateHandler.getElement(x500name, BCStyle.O));
+        essence.setOu(CertificateHandler.getElement(x500name, BCStyle.OU));
         essence.setAuthorities(roles);
         essence.setDescription(certDN);
         logger.debug("Parsed certificate, name: " + name);

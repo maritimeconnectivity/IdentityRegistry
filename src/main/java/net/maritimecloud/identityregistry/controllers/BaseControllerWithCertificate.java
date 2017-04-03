@@ -26,6 +26,9 @@ import net.maritimecloud.identityregistry.model.database.entities.NonHumanEntity
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.pki.CertificateBuilder;
+import net.maritimecloud.pki.CertificateHandler;
+import net.maritimecloud.pki.PKIConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,11 +51,11 @@ public abstract class BaseControllerWithCertificate {
     private CertificateService certificateService;
 
     @Autowired
-    private CertificateUtil certUtil;
+    private CertificateUtil certificateUtil;
 
     protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         // Generate keypair for user
-        KeyPair userKeyPair = CertificateUtil.generateKeyPair();
+        KeyPair userKeyPair = CertificateBuilder.generateKeyPair();
         // Find special MC attributes to put in the certificate
         HashMap<String, String> attrs = getAttr(certOwner);
 
@@ -63,16 +66,21 @@ public abstract class BaseControllerWithCertificate {
         if (uid == null || uid.trim().isEmpty()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
-        BigInteger serialNumber = certUtil.generateSerialNumber();
-        X509Certificate userCert = certUtil.generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs);
+        BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber();
+        X509Certificate userCert = null;
+        try {
+            userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority());
+        } catch (Exception e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
         String pemCertificate;
         try {
-            pemCertificate = CertificateUtil.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
+            pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
         } catch (CertificateEncodingException e) {
            throw new RuntimeException(e.getMessage(), e);
         }
-        String pemPublicKey = CertificateUtil.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-        String pemPrivateKey = CertificateUtil.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
+        String pemPublicKey = CertificateHandler.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
+        String pemPrivateKey = CertificateHandler.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
         PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
 
         // Create the certificate
@@ -80,6 +88,7 @@ public abstract class BaseControllerWithCertificate {
         certOwner.assignToCert(newMCCert);
         newMCCert.setCertificate(pemCertificate);
         newMCCert.setSerialNumber(serialNumber);
+        newMCCert.setCertificateAuthority(org.getCertificateAuthority());
         // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
         Calendar cal = Calendar.getInstance();
         long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
@@ -89,8 +98,8 @@ public abstract class BaseControllerWithCertificate {
         return ret;
     }
 
-    protected void revokeCertificate(Long certId, CertificateRevocation input, HttpServletRequest request) throws McBasicRestException {
-        Certificate cert = this.certificateService.getCertificateById(certId);
+    protected void revokeCertificate(BigInteger certId, CertificateRevocation input, HttpServletRequest request) throws McBasicRestException {
+        Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
         if (!input.validateReason()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_REVOCATION_REASON, request.getServletPath());
         }
@@ -121,10 +130,10 @@ public abstract class BaseControllerWithCertificate {
         HashMap<String, String> attrs = new HashMap<>();
         EntityModel entity = (EntityModel) certOwner;
         if (entity.getMrn() != null) {
-            attrs.put(CertificateUtil.MC_OID_MRN, entity.getMrn());
+            attrs.put(PKIConstants.MC_OID_MRN, entity.getMrn());
         }
         if (entity.getPermissions() != null) {
-            attrs.put(CertificateUtil.MC_OID_PERMISSIONS, entity.getPermissions());
+            attrs.put(PKIConstants.MC_OID_PERMISSIONS, entity.getPermissions());
         }
         return attrs;
     }

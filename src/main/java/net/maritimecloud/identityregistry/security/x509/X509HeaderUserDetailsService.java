@@ -22,6 +22,8 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.pki.CertificateHandler;
+import net.maritimecloud.pki.PKIIdentity;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +35,12 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Service;
 
+import java.math.BigInteger;
+import java.security.InvalidAlgorithmParameterException;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.cert.CertPathValidatorException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -49,7 +57,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private RoleService roleService;
     @Autowired
     private CertificateService certificateService;
-    @Autowired
+    //@Autowired
     private CertificateUtil certUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
@@ -60,20 +68,30 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             logger.warn("No certificate header found");
             throw new UsernameNotFoundException("No certificate header found");
         }
-        X509Certificate userCertificate = certUtil.getCertFromString(certificateHeader);
+        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certificateHeader);
         if (userCertificate == null) {
             logger.error("Extracting certificate from header failed");
             throw new UsernameNotFoundException("Extracting certificate from header failed");
         }
         
         // Actually authenticate certificate against root cert.
-        if (!certUtil.verifyCertificate(userCertificate)) {
+        // This is actually done by the nginx reverse proxy, so do we really need to do it again?
+        try {
+            if (!CertificateHandler.verifyCertificateChain(userCertificate, certUtil.getKeystoreHandler().getTrustStore())) {
+                logger.warn("Certificate could not be verified");
+                throw new UsernameNotFoundException("Certificate could not be verified");
+            }
+        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException e) {
+            logger.error("Unexpected error during certificate validation!", e);
+            throw new UsernameNotFoundException("Certificate could not be verified due to unexpected error!", e);
+        } catch (CertPathValidatorException e) {
             logger.warn("Certificate could not be verified");
             throw new UsernameNotFoundException("Certificate could not be verified");
         }
+
         // Check that the certificate has not been revoked
-        long certId = userCertificate.getSerialNumber().longValue();
-        Certificate cert = certificateService.getCertificateById(certId);
+        BigInteger certId = userCertificate.getSerialNumber();
+        Certificate cert = certificateService.getCertificateBySerialNumber(certId);
         if (cert.isRevoked()) {
             Calendar cal = Calendar.getInstance();
             Date now = cal.getTime();
@@ -83,41 +101,42 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             }
         }
         // Get user details from the certificate
-        UserDetails user = certUtil.getUserFromCert(userCertificate);
+        PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
         if (user == null) {
             logger.warn("Extraction of data from the certificate failed");
             throw new UsernameNotFoundException("Extraction of data from the client certificate failed");
         }
+        // Convert the PKIIdentity to a user object Spring can read
+        InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
+        essence.setUid(user.getMrn());
+        essence.setUsername(user.getMrn());
+        essence.setO(user.getO());
+        essence.setOu(user.getOu());
+        essence.setPostalCode(user.getCountry());
+        essence.setSn(user.getSn());
+        essence.setCn(new String[] { user.getCn() } );
+        essence.setDn(user.getDn());
+        essence.setDescription(user.getDn());
         // Convert the permissions extracted from the certificate to authorities in this API
-        InetOrgPerson person = ((InetOrgPerson)user);
-        String certOrg = person.getO();
-        Organization org = organizationService.getOrganizationByMrn(certOrg);
-        if (org == null) {
-            logger.warn("Unknown Organization '" + certOrg + "' in client certificate");
-            throw new UsernameNotFoundException("Unknown Organization in client certificate");
-        }
-        Collection<GrantedAuthority> newRoles = new ArrayList<>();
-        logger.debug("Looking up roles");
-        for (GrantedAuthority role : user.getAuthorities()) {
-            logger.debug("Looking up roles");
-            String auth = role.getAuthority();
-            String[] auths = auth.split(",");
-            for (String auth2 : auths) {
-                logger.debug("Looking up role: " + auth2);
-                List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth2);
+        if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
+            Collection<GrantedAuthority> newRoles = new ArrayList<>();
+            Organization org = organizationService.getOrganizationByMrn(user.getO());
+            String[] permissions = user.getPermissions().split(",");
+            for(String permission: permissions) {
+                logger.debug("Looking up role: " + permission);
+                List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
                 if (foundRoles != null) {
                     for (Role foundRole : foundRoles) {
                         newRoles.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
                     }
                 }
             }
+            // Add ROLE_USER as standard for authenticated users with no other role.
+            if (newRoles.isEmpty()) {
+                newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
+            }
+            essence.setAuthorities(newRoles);
         }
-        // Add ROLE_USER as standard for authenticated users with no other role.
-        if (newRoles.isEmpty()) {
-            newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
-        }
-        InetOrgPerson.Essence essence = new InetOrgPerson.Essence((InetOrgPerson) user);
-        essence.setAuthorities(newRoles);
         return essence.createUserDetails();
     }
 }
