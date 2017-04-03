@@ -34,6 +34,7 @@ import net.maritimecloud.identityregistry.utils.EmailUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import net.maritimecloud.pki.PKIConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -102,6 +103,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (input.getFederationType() == null || input.getFederationType().isEmpty()) {
             input.setFederationType("test-idp");
         }
+        // Default to the MC CA
+        input.setCertificateAuthority(PKIConstants.ROOT_CERT_ALIAS);
         Organization newOrg;
         try {
             newOrg = this.organizationService.save(input);

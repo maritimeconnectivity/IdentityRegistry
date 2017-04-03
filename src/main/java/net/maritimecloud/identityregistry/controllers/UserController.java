@@ -309,12 +309,15 @@ public class UserController extends EntityController<User> {
             }
             // Check validators?
             String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
+            // The org validator is also CA
+            String orgCa = "urn:mrn:mcl:ca:" + orgValidator;
             // Create the new org based on given info
             org = new Organization();
             org.setName(orgName);
             org.setMrn(orgMrn);
             org.setApproved(true);
             org.setEmail(input.getEmail());
+            org.setCertificateAuthority(orgCa);
             // Extract domain-name from the user email and use that for org url.
             int at = input.getEmail().indexOf("@");
             String url = "http://" + input.getEmail().substring(at+1);
