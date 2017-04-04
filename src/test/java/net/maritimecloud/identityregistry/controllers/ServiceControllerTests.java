@@ -45,7 +45,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -122,7 +124,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER", "");
@@ -160,7 +162,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
@@ -200,7 +202,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
@@ -240,7 +242,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
@@ -283,7 +285,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
@@ -323,7 +325,7 @@ public class ServiceControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");

@@ -32,6 +32,7 @@ import javax.persistence.ManyToOne;
 import javax.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 
 @Entity
 @Table(name = "identity_provider_attributes")
@@ -118,7 +119,7 @@ public class IdentityProviderAttribute extends TimestampModel {
      * @param second Second list of IdentityProviderAttribute to compare
      * @return true if lists are equal, else false
      */
-    public static boolean listsEquals(List<IdentityProviderAttribute> first, List<IdentityProviderAttribute> second) {
+    public static boolean listsEquals(Set<IdentityProviderAttribute> first, Set<IdentityProviderAttribute> second) {
         if (first == null && second == null) {
             return true;
         }

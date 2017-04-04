@@ -45,6 +45,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Component
 @Slf4j
@@ -163,7 +164,7 @@ public class KeycloakAdminUtil {
         return importConf;
     }
 
-    private Map<String, String> idpAttributes2Map(List<IdentityProviderAttribute> input) {
+    private Map<String, String> idpAttributes2Map(Set<IdentityProviderAttribute> input) {
         log.debug("In idpAttributes2Map, number of attrs: " + input.size());
         Map<String, String> ret = new HashMap<>();
         for (IdentityProviderAttribute atr : input) {
@@ -180,7 +181,7 @@ public class KeycloakAdminUtil {
      * @param input         map containing data about the IDP
      * @throws IOException
      */
-    public void createIdentityProvider(String orgMrn, List<IdentityProviderAttribute> input) throws IOException {
+    public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException {
         String name = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         Map<String, String> idpAtrMap = idpAttributes2Map(input);
         // Check for valid input

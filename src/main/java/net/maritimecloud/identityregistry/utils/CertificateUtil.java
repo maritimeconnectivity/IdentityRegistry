@@ -23,12 +23,14 @@ import net.maritimecloud.pki.PKIConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
+
 @Component
 @Slf4j
 public class CertificateUtil {
 
     // Values below are loaded from application.yaml
-    @Value("${net.maritimecloud.idreg.certs.sub-ca-keystore}")
+    @Value("${net.maritimecloud.idreg.certs.sub-ca-keystore-path}")
     private String subCaKeystorePath;
 
     @Value("${net.maritimecloud.idreg.certs.sub-ca-keystore-password}")
@@ -37,7 +39,7 @@ public class CertificateUtil {
     @Value("${net.maritimecloud.idreg.certs.sub-ca-key-password}")
     private String subCaKeyPassword;
 
-    @Value("${net.maritimecloud.idreg.certs.truststore}")
+    @Value("${net.maritimecloud.idreg.certs.truststore-path}")
     private String truststorePath;
 
     @Value("${net.maritimecloud.idreg.certs.truststore-password}")
@@ -56,6 +58,10 @@ public class CertificateUtil {
     private PKIConfiguration pkiConfiguration;
 
     public CertificateUtil() {
+    }
+
+    @PostConstruct
+    public void setup() {
         pkiConfiguration = new PKIConfiguration();
         pkiConfiguration.setTruststorePath(truststorePath);
         pkiConfiguration.setTruststorePassword(truststorePassword);

@@ -26,10 +26,12 @@ import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model object representing a service
@@ -73,9 +75,8 @@ public class Service extends NonHumanEntityModel {
     private String instanceVersion;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
-    @OneToMany(mappedBy = "service")
-    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
-    private List<Certificate> certificates;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
+    private Set<Certificate> certificates;
 
     /** Copies this service into the other */
     public Service copyTo(EntityModel target) {

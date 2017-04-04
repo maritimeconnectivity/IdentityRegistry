@@ -25,9 +25,11 @@ import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model object representing an user
@@ -60,9 +62,8 @@ public class User extends EntityModel {
     private String email;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
-    @OneToMany(mappedBy = "user")
-    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
-    private List<Certificate> certificates;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
+    private Set<Certificate> certificates;
 
     /** Copies this user into the other */
     public User copyTo(EntityModel target) {

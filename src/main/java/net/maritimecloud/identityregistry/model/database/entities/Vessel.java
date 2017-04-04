@@ -23,11 +23,13 @@ import net.maritimecloud.identityregistry.model.database.Certificate;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model object representing a vessel
@@ -47,9 +49,8 @@ public class Vessel extends NonHumanEntityModel {
     private List<VesselAttribute> attributes;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
-    @OneToMany(mappedBy = "vessel", orphanRemoval=false)
-    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
-    private List<Certificate> certificates;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
+    private Set<Certificate> certificates;
 
     /** Copies this vessel into the other */
     public Vessel copyTo(EntityModel target) {

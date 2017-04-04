@@ -25,6 +25,7 @@ import javax.persistence.PreRemove;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 
 @MappedSuperclass
 @ToString
@@ -59,7 +60,7 @@ public abstract class CertificateModel extends TimestampModel {
             }
         }
     }
-    public abstract List<Certificate> getCertificates();
+    public abstract Set<Certificate> getCertificates();
 
     @JsonIgnore
     public abstract void assignToCert(Certificate cert); // Do something like cert.set<ModelName>(this)

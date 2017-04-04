@@ -61,12 +61,12 @@ net:
 
             # Certificate setup
             certs:
-                sub-ca-keystore: mc-sub-ca-keystore.jks
+                sub-ca-keystore-path: mc-sub-ca-keystore.jks
                 sub-ca-keystore-password: changeit
                 sub-ca-key-password: changeit
-                truststore: mc-truststore.jks
+                truststore-path: mc-truststore.jks
                 truststore-password: changeit
-                root-crl-path: rootca.crl
+                root-crl-path: root-ca.crl
 
             # Email setup
             email:

@@ -38,6 +38,7 @@ import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model object representing an organization
@@ -102,13 +103,12 @@ public class Organization extends CertificateModel {
     private Logo logo;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
-    @OneToMany(mappedBy = "organization")
-    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
-    private List<Certificate> certificates;
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "organization")
+    private Set<Certificate> certificates;
 
     @Valid
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
-    private List<IdentityProviderAttribute> identityProviderAttributes;
+    private Set<IdentityProviderAttribute> identityProviderAttributes;
 
     @JsonIgnore
     @Column(name = "certificate_authority", nullable = false)

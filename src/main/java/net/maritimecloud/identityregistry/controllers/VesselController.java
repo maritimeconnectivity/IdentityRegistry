@@ -23,7 +23,6 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import net.maritimecloud.identityregistry.services.EntityService;
-import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import net.maritimecloud.identityregistry.validators.VesselValidator;
 import net.maritimecloud.pki.PKIConstants;

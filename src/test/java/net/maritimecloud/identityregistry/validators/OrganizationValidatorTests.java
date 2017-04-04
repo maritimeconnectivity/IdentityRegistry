@@ -31,6 +31,7 @@ import javax.validation.Validator;
 import javax.validation.ValidatorFactory;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
@@ -107,7 +108,7 @@ public class OrganizationValidatorTests {
         IdentityProviderAttribute attr = new IdentityProviderAttribute();
         attr.setAttributeName("importUrl");
         attr.setAttributeValue("qwerty");
-        validOrg.setIdentityProviderAttributes(Collections.singletonList(attr));
+        validOrg.setIdentityProviderAttributes(Collections.singleton(attr));
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(validOrg);
         assertTrue(violations.isEmpty());
@@ -131,7 +132,7 @@ public class OrganizationValidatorTests {
         attr2.setAttributeName("importUrl");
         attr2.setAttributeValue("");
 
-        invalidOrg.setIdentityProviderAttributes(Arrays.asList(attr1, attr2));
+        invalidOrg.setIdentityProviderAttributes(new HashSet<>(Arrays.asList(attr1, attr2)));
 
         Set<ConstraintViolation<Organization>> violations = validator.validate(invalidOrg);
         assertEquals(2, violations.size());

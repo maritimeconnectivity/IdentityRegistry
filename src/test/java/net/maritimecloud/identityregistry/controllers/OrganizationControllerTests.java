@@ -47,7 +47,9 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
@@ -173,7 +175,7 @@ public class OrganizationControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
         String orgJson = this.serialize(org);
@@ -206,7 +208,7 @@ public class OrganizationControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
         String orgJson = this.serialize(org);
@@ -239,7 +241,7 @@ public class OrganizationControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
         String orgJson = this.serialize(org);
@@ -272,7 +274,7 @@ public class OrganizationControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
         String orgJson = this.serialize(org);
@@ -302,7 +304,7 @@ public class OrganizationControllerTests {
         org.setUrl("http://dma.dk");
         org.setEmail("dma@dma.dk");
         org.setName("Danish Maritime Authority");
-        List<IdentityProviderAttribute> identityProviderAttributes = new ArrayList<>();
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
         String orgJson = this.serialize(org);

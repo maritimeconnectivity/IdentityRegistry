@@ -85,6 +85,7 @@ public class Certificate extends TimestampModel {
     @Column(name = "revoke_reason")
     private String revokeReason;
 
+    @JsonIgnore
     @Column(name= "certificate_authority", nullable = false)
     private String certificateAuthority;
 

@@ -19,9 +19,11 @@ import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Model object representing a device
@@ -34,10 +36,9 @@ public class Device extends NonHumanEntityModel {
     public Device() {
     }
 
-    @OneToMany(mappedBy = "device")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
-    //@Where(clause="UTC_TIMESTAMP() BETWEEN start AND end")
-    private List<Certificate> certificates;
+    private Set<Certificate> certificates;
 
     /** Copies this device into the other */
     public Device copyTo(EntityModel target) {
@@ -63,7 +64,7 @@ public class Device extends NonHumanEntityModel {
     /******************************/
     /** Getters and setters      **/
     /******************************/
-    public List<Certificate> getCertificates() {
+    public Set<Certificate> getCertificates() {
         return certificates;
     }
 }

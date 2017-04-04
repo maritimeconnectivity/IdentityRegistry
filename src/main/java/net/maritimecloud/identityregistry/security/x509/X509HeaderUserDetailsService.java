@@ -57,7 +57,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private RoleService roleService;
     @Autowired
     private CertificateService certificateService;
-    //@Autowired
+    @Autowired
     private CertificateUtil certUtil;
 
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
@@ -76,7 +76,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         
         // Actually authenticate certificate against root cert.
         // This is actually done by the nginx reverse proxy, so do we really need to do it again?
-        try {
+        /*try {
             if (!CertificateHandler.verifyCertificateChain(userCertificate, certUtil.getKeystoreHandler().getTrustStore())) {
                 logger.warn("Certificate could not be verified");
                 throw new UsernameNotFoundException("Certificate could not be verified");
@@ -87,7 +87,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         } catch (CertPathValidatorException e) {
             logger.warn("Certificate could not be verified");
             throw new UsernameNotFoundException("Certificate could not be verified");
-        }
+        }*/
 
         // Check that the certificate has not been revoked
         BigInteger certId = userCertificate.getSerialNumber();
