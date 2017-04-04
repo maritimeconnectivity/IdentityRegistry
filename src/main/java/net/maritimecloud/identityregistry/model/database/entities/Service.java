@@ -69,7 +69,7 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
-    @ApiModelProperty(value = "The version of this service instance.")
+    @ApiModelProperty(value = "The version of this service instance.", readOnly = true, required = true)
     @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be 32 characters long")
     @Column(name = "instance_version", nullable = false)
     private String instanceVersion;

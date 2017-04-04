@@ -24,7 +24,7 @@ import java.util.List;
 
 @NoRepositoryBean
 public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long> {
-    List<T> findByidOrganization(Long orgId);
+    List<T> findByIdOrganization(Long orgId);
 
     Page<T> findByidOrganization(Long orgId, Pageable pageable);
 

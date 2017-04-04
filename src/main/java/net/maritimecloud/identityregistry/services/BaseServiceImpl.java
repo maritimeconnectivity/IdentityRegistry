@@ -67,10 +67,6 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
         return data;
     }
 
-    public List<T> listAll() {
-        return Lists.newArrayList(getRepository().findAll());
-    }
-
     public T getById(Long id) {
         T ret = getRepository().findOne(id);
         ret = filterResult(ret);

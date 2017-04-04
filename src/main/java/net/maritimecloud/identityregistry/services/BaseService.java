@@ -26,7 +26,5 @@ public interface BaseService<T> {
 
     void delete(Long id);
 
-    List<T> listAll();
-
     CrudRepository<T, Long> getRepository();
 }

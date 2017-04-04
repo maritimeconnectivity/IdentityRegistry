@@ -53,11 +53,6 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
         return organizationRepository.findByMrnAndApprovedTrue(mrn);
     }
 
-    @Override
-    public List<Organization> listAll() {
-        return getRepository().findByApprovedTrue();
-    }
-
     /* This only shows approved organizations */
     @Override
     public Page<Organization> listAllPage(Pageable pageable) {

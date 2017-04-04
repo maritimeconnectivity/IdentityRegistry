@@ -28,7 +28,7 @@ public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseSe
     protected EntityRepository<T> repository;
 
     public List<T> listAllFromOrg(Long id) {
-        return this.getRepository().findByidOrganization(id);
+        return this.getRepository().findByIdOrganization(id);
     }
 
     public Page<T> listPageFromOrg(Long id, Pageable pageable) {
