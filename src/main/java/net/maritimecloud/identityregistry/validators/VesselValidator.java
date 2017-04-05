@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.validators;
 
 
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
@@ -39,13 +40,15 @@ public class VesselValidator implements Validator {
         ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "name.empty", "name is required.");
         Vessel vessel = (Vessel) target;
         if (vessel.getAttributes() != null) {
-            for (int i = 0; i < vessel.getAttributes().size(); ++i) {
+            int i = 0;
+            for (VesselAttribute attribute : vessel.getAttributes()) {
                 try {
                     errors.pushNestedPath("attributes[" + i + "]");
-                    ValidationUtils.invokeValidator(this.vesselAttributeValidator, vessel.getAttributes().get(i), errors);
+                    ValidationUtils.invokeValidator(this.vesselAttributeValidator, attribute, errors);
                 } finally {
                     errors.popNestedPath();
                 }
+                i++;
             }
         }
     }

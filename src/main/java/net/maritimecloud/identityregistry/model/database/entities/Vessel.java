@@ -45,8 +45,8 @@ public class Vessel extends NonHumanEntityModel {
     public Vessel() {
     }
 
-    @OneToMany(cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
-    private List<VesselAttribute> attributes;
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
+    private Set<VesselAttribute> attributes;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")

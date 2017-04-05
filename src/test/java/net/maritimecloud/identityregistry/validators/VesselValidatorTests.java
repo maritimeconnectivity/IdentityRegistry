@@ -27,6 +27,7 @@ import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
 
 import java.util.Arrays;
+import java.util.HashSet;
 
 import static junit.framework.TestCase.assertEquals;
 
@@ -77,7 +78,7 @@ public class VesselValidatorTests {
         VesselAttribute va2 = new VesselAttribute();
         va2.setAttributeName("imo-number");
         va2.setAttributeValue("1234567");
-        validVessel.setAttributes(Arrays.asList(va1, va2));
+        validVessel.setAttributes(new HashSet<>(Arrays.asList(va1, va2)));
         Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
         this.vesselValidator.validate(validVessel, errors);
         assertEquals(0, errors.getErrorCount());
@@ -96,7 +97,7 @@ public class VesselValidatorTests {
         // Invalid attribute: must be one of the pre-defined values
         va2.setAttributeName(null);
         va2.setAttributeValue("1234567");
-        invalidVessel.setAttributes(Arrays.asList(va1, va2));
+        invalidVessel.setAttributes(new HashSet<>(Arrays.asList(va1, va2)));
         Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
         this.vesselValidator.validate(invalidVessel, errors);
         assertEquals(2, errors.getErrorCount());
