@@ -89,17 +89,6 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             throw new UsernameNotFoundException("Certificate could not be verified");
         }*/
 
-        // Check that the certificate has not been revoked
-        BigInteger certId = userCertificate.getSerialNumber();
-        Certificate cert = certificateService.getCertificateBySerialNumber(certId);
-        if (cert.isRevoked()) {
-            Calendar cal = Calendar.getInstance();
-            Date now = cal.getTime();
-            if (cert.getRevokedAt() == null || cert.getRevokedAt().before(now)) {
-                logger.warn("The certificate has been revoked! Cert #" + certId);
-                throw new UsernameNotFoundException("The certificate has been revoked! Cert #" + certId);
-            }
-        }
         // Get user details from the certificate
         PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
         if (user == null) {
