@@ -20,6 +20,7 @@ import net.maritimecloud.identityregistry.repositories.ServiceRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.transaction.annotation.Transactional;
 
 @org.springframework.stereotype.Service
 public class ServiceServiceImpl extends EntityServiceImpl<Service> implements ServiceService {
@@ -47,5 +48,24 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
         ret = this.filterResult(ret);
         return ret;
     }
+
+    @Override
+    @Transactional
+    public Service save(Service service) {
+        return repository.save(service);
+    }
+
+    @Override
+    @Transactional
+    public void delete(Long id) {
+        repository.delete(id);
+    }
+
+    @Override
+    public Service getById(Long id) {
+        Service ret = repository.findOne(id);
+        return filterResult(ret);
+    }
+
 }
 
