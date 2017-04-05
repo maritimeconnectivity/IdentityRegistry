@@ -26,6 +26,8 @@ import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spring.web.plugins.Docket;
 import springfox.documentation.swagger2.annotations.EnableSwagger2;
 
+import java.math.BigInteger;
+
 @Configuration
 @EnableSwagger2
 public class SwaggerConfig {
@@ -34,6 +36,7 @@ public class SwaggerConfig {
     public Docket api() { 
         return new Docket(DocumentationType.SWAGGER_2)
           .apiInfo(getApiInfo())
+          .directModelSubstitute(BigInteger.class, String.class)
           .select()
             .apis(RequestHandlerSelectors.any())
             .paths(PathSelectors.regex("/(oidc|x509)/api/.*"))
