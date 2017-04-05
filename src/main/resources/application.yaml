@@ -67,6 +67,7 @@ net:
                 truststore-path: mc-truststore.jks
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
+                base-crl-ocsp-path: https://localhost/x509/api/certificates/
 
             # Email setup
             email:

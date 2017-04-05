@@ -67,9 +67,9 @@ public abstract class BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
         BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber();
-        X509Certificate userCert = null;
+        X509Certificate userCert;
         try {
-            userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority());
+            userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
         } catch (Exception e) {
             throw new RuntimeException(e.getMessage(), e);
         }

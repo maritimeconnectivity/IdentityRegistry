@@ -50,6 +50,10 @@ public class CertificateUtil {
     private String rootCrlPath;
 
     @Getter
+    @Value("${net.maritimecloud.idreg.certs.base-crl-ocsp-path}")
+    private String baseCrlOcspCrlURI;
+
+    @Getter
     private KeystoreHandler keystoreHandler;
 
     @Getter
