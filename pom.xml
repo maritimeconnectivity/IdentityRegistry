@@ -151,6 +151,12 @@
 			<version>1.16.16</version>
 			<scope>provided</scope>
 		</dependency>
+		<!-- Needed to avoid using an older version that conflicts with a newer version from mc-pki -->
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcprov-jdk15on</artifactId>
+			<version>1.56</version>
+		</dependency>
 		<dependency>
 			<groupId>net.maritimecloud.pki</groupId>
 			<artifactId>mc-pki</artifactId>

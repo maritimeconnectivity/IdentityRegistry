@@ -90,12 +90,16 @@ public class CertificateController {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
+        X509Certificate caCert = (X509Certificate) certUtil.getKeystoreHandler().getMCCertificate(caAlias);
+        if (caCert == null) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
         List<Certificate> revokedCerts = this.certificateService.listRevokedCertificate(caAlias);
         List<RevocationInfo> revocationInfos = new ArrayList<>();
         for (Certificate cert : revokedCerts) {
             revocationInfos.add(cert.toRevocationInfo());
         }
-        String dn = ((X509Certificate)certUtil.getKeystoreHandler().getMCCertificate(caAlias)).getSubjectDN().getName();
+        String dn = caCert.getSubjectDN().getName();
         X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), dn);
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
