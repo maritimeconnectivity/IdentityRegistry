@@ -30,6 +30,8 @@ public class McIdregApplication {
         System.setProperty("java.awt.headless", "true");
         // Set Bouncy Castle as Provider, used for Certificates.
         Security.addProvider(new BouncyCastleProvider());
+        // Allow encoded "/" (%2F) in urls. Needed for OCSP encoded GET requests.
+        System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         SpringApplication.run(McIdregApplication.class, args);
     }
 }

@@ -34,6 +34,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
@@ -45,6 +46,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.firewall.HttpFirewall;
 
 @Configuration
 @EnableWebSecurity
@@ -248,6 +251,19 @@ public class MultiSecurityConfig {
             DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
             defaultWebSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
             return defaultWebSecurityExpressionHandler;
+        }
+
+        // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
+        @Bean
+        public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+            DefaultHttpFirewall firewall = new DefaultHttpFirewall();
+            firewall.setAllowUrlEncodedSlash(true);
+            return firewall;
+        }
+
+        @Override
+        public void configure(WebSecurity web) throws Exception {
+            web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
         }
     }
 }

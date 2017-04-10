@@ -44,9 +44,7 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
@@ -54,6 +52,7 @@ import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -223,7 +222,7 @@ public class ServiceControllerTests {
     }
 
     /**
-     * Try to update a service without the appropriate association
+     * Try to update a service with the appropriate association
      */
     @Test
     public void testAccessUpdateServiceWithRights() {
@@ -262,6 +261,44 @@ public class ServiceControllerTests {
         }
     }
 
+    /**
+     * Try to update a service with the appropriate association but with version set to null
+     */
+    @Test
+    public void testCreateServiceWithVersionNull() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion(null);
+        service.setIdOrganization(1l);
+        String serviceJson = serialize(service);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1l);
+        try {
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/service").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
 
     /**
      * Try to get a JBoss conf XML for a service

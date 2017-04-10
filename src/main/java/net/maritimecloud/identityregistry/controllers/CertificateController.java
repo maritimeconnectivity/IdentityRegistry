@@ -41,8 +41,11 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URLDecoder;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.CRLException;
@@ -128,22 +131,31 @@ public class CertificateController {
     }
 
     @RequestMapping(
-            value = "/api/certificates/ocsp/{caAlias}/{encodedOCSP}",
+            value = "/api/certificates/ocsp/{caAlias}/**",
             method = RequestMethod.GET,
             produces = "application/ocsp-response")
     @ResponseBody
-    public ResponseEntity<?> getOCSP(@PathVariable String caAlias, @PathVariable String encodedOCSP) {
+    public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
+        String uri = request.getRequestURI();
+        String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
+        try {
+            encodedOCSP = URLDecoder.decode(encodedOCSP, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            log.error("Failed to URL decode OCSP", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        byte[] decodedOCSP = Base64.decode(encodedOCSP);
         byte[] byteResponse;
         try {
-            byteResponse = handleOCSP(Base64.decode(encodedOCSP), caAlias);
+            byteResponse = handleOCSP(decodedOCSP, caAlias);
         } catch (IOException e) {
-            log.error("Failed to get OCSP", e);
+            log.error("Failed to base64 decode OCSP", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(byteResponse, HttpStatus.OK);
     }
 
-    private byte[] handleOCSP(byte[] input, String certAlias) throws IOException {
+    protected byte[] handleOCSP(byte[] input, String certAlias) throws IOException {
         OCSPReq ocspreq = new OCSPReq(input);
         /* TODO: verify signature - needed?
         if (ocspreq.isSigned()) {
