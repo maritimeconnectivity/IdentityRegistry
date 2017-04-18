@@ -1,6 +1,6 @@
 /* Obtained from https://github.com/springfox/springfox/issues/755#issuecomment-262416232 */
 
-package net.maritimecloud.identityregistry.security;
+package net.maritimecloud.identityregistry.config;
 
 import com.fasterxml.classmate.ResolvedType;
 import com.fasterxml.classmate.TypeResolver;

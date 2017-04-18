@@ -16,7 +16,7 @@
 /*
  * Copied from http://stackoverflow.com/a/32320294
  */
-package net.maritimecloud.identityregistry.security;
+package net.maritimecloud.identityregistry.config;
 
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;

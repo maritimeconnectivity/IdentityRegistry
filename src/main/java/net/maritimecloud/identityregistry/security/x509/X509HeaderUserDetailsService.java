@@ -55,10 +55,11 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private OrganizationService organizationService;
     @Autowired
     private RoleService roleService;
-    @Autowired
+
+    /*@Autowired
     private CertificateService certificateService;
     @Autowired
-    private CertificateUtil certUtil;
+    private CertificateUtil certUtil;*/
 
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
 
@@ -101,14 +102,15 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         essence.setUsername(user.getMrn());
         essence.setO(user.getO());
         essence.setOu(user.getOu());
-        essence.setPostalCode(user.getCountry());
+        // Hack alert! There is no country property in this type, so we misuse PostalAddress...
+        essence.setPostalAddress(user.getCountry());
         essence.setSn(user.getSn());
         essence.setCn(new String[] { user.getCn() } );
         essence.setDn(user.getDn());
         essence.setDescription(user.getDn());
         // Convert the permissions extracted from the certificate to authorities in this API
+        Collection<GrantedAuthority> newRoles = new ArrayList<>();
         if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
-            Collection<GrantedAuthority> newRoles = new ArrayList<>();
             Organization org = organizationService.getOrganizationByMrn(user.getO());
             String[] permissions = user.getPermissions().split(",");
             for(String permission: permissions) {
@@ -120,12 +122,12 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
                     }
                 }
             }
-            // Add ROLE_USER as standard for authenticated users with no other role.
-            if (newRoles.isEmpty()) {
-                newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
-            }
-            essence.setAuthorities(newRoles);
         }
+        // Add ROLE_USER as standard for authenticated users with no other role.
+        if (newRoles.isEmpty()) {
+            newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
+        }
+        essence.setAuthorities(newRoles);
         return essence.createUserDetails();
     }
 }

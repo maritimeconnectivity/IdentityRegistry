@@ -14,7 +14,7 @@
  *  limitations under the License.
  */
 
-package net.maritimecloud.identityregistry.security;
+package net.maritimecloud.identityregistry.config;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

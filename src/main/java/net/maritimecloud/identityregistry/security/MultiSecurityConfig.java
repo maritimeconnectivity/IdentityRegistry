@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.security;
 
+import net.maritimecloud.identityregistry.config.SimpleCorsFilter;
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
