@@ -102,8 +102,7 @@ public class CertificateController {
         for (Certificate cert : revokedCerts) {
             revocationInfos.add(cert.toRevocationInfo());
         }
-        String dn = caCert.getSubjectDN().getName();
-        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), dn);
+        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias));
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
             return new ResponseEntity<>(pemCrl, HttpStatus.OK);
