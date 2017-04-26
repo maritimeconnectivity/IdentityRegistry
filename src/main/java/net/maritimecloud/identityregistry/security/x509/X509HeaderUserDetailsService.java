@@ -112,6 +112,10 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         Collection<GrantedAuthority> newRoles = new ArrayList<>();
         if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
             Organization org = organizationService.getOrganizationByMrn(user.getO());
+            if (org == null) {
+                logger.error("The Organization is unknown!");
+                throw new UsernameNotFoundException("The Organization is unknown!");
+            }
             String[] permissions = user.getPermissions().split(",");
             for(String permission: permissions) {
                 logger.debug("Looking up role: " + permission);
