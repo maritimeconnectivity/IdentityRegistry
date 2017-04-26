@@ -54,7 +54,9 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
@@ -115,6 +117,7 @@ public class ServiceControllerTests {
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
+        String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcl:org:dma");
@@ -134,7 +137,7 @@ public class ServiceControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk());
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);

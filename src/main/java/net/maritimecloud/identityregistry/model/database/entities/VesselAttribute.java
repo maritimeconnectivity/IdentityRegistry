@@ -21,6 +21,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
+import net.maritimecloud.identityregistry.validators.InPredefinedList;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -44,6 +45,7 @@ public class VesselAttribute extends TimestampModel {
     }
 
     @ApiModelProperty(value = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
+    @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
     private String attributeName;
 

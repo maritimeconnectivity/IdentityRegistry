@@ -18,14 +18,28 @@ package net.maritimecloud.identityregistry.validators;
 
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
+import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.validation.Errors;
 import org.springframework.validation.ValidationUtils;
 import org.springframework.validation.Validator;
 
+import javax.validation.ConstraintViolation;
+import javax.validation.Validation;
+import javax.validation.ValidatorFactory;
+import java.util.Set;
+
 @Component
-public class VesselValidator implements Validator {
+public class VesselValidator implements Validator, InitializingBean {
+
+    private javax.validation.Validator validator;
+
+    public void afterPropertiesSet() throws Exception {
+        ValidatorFactory validatorFactory = Validation.buildDefaultValidatorFactory();
+        validator = validatorFactory.usingContext().getValidator();
+    }
+
     @Autowired
     private VesselAttributeValidator vesselAttributeValidator;
 
@@ -36,8 +50,13 @@ public class VesselValidator implements Validator {
 
     @Override
     public void validate(Object target, Errors errors) {
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "mrn", "mrn.empty", "mrn  is required.");
-        ValidationUtils.rejectIfEmptyOrWhitespace(errors, "name", "name.empty", "name is required.");
+        Set<ConstraintViolation<Object>> constraintViolations = validator.validate(target);
+        for (ConstraintViolation<Object> constraintViolation : constraintViolations) {
+            String propertyPath = constraintViolation.getPropertyPath().toString();
+            String message = constraintViolation.getMessage();
+            errors.rejectValue(propertyPath, "", message);
+        }
+
         Vessel vessel = (Vessel) target;
         if (vessel.getAttributes() != null) {
             int i = 0;
