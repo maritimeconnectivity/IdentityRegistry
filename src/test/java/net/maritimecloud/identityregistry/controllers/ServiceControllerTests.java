@@ -17,6 +17,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
@@ -48,6 +49,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -235,6 +237,8 @@ public class ServiceControllerTests {
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
+        service.setOidcAccessType("bearer-only");
+        service.setOidcRedirectUri("https://localhost");
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -261,6 +265,12 @@ public class ServiceControllerTests {
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
+        }
+        try {
+            verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm", "bearer-only", "https://localhost");
+        } catch (IOException | DuplicatedKeycloakEntry e) {
+            e.printStackTrace();
+            fail();
         }
     }
 

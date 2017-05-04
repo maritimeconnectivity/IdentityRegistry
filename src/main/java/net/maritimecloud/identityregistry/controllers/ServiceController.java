@@ -117,7 +117,7 @@ public class ServiceController extends EntityController<Service> {
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the client from keycloak if it was created.
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
-                    keycloakAU.deleteClient(input.getMrn());
+                    keycloakAU.deleteClient(input.getOidcClientId());
                 }
                 throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
@@ -285,7 +285,7 @@ public class ServiceController extends EntityController<Service> {
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
                         && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    keycloakAU.deleteClient(service.getMrn());
+                    keycloakAU.deleteClient(service.getOidcClientId());
                 }
                 this.entityService.delete(service.getId());
                 return new ResponseEntity<>(HttpStatus.OK);

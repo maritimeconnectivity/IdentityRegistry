@@ -143,7 +143,6 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<!-- Do not upgrade before this is resolved: https://github.com/flyway/flyway/issues/1549 -->
 			<version>4.2.0</version>
 		</dependency>
 		<!-- Lombok -->
