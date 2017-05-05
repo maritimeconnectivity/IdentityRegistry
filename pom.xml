@@ -161,7 +161,7 @@
 		<dependency>
 			<groupId>net.maritimecloud.pki</groupId>
 			<artifactId>mc-pki</artifactId>
-			<version>0.5.0-beta</version>
+			<version>0.5.0</version>
 		</dependency>
 	</dependencies>
 	<build>
