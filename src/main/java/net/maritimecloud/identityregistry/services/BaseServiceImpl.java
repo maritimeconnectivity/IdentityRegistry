@@ -15,7 +15,6 @@
  */
 package net.maritimecloud.identityregistry.services;
 
-import com.google.common.collect.Lists;
 import net.maritimecloud.identityregistry.model.database.TimestampModel;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import org.slf4j.Logger;
@@ -53,15 +52,27 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     protected Page<T> filterResult(Page<T> data) {
         if (data != null && !data.hasContent()) {
-            // If not authorized to see all we clean the object for sensitive data.
-            if (!isAuthorized()) {
-                logger.debug("Clearing Sensitive Fields");
-                for (T entity : data) {
-                    if (!entity.hasSensitiveFields()) {
-                        break;
-                    }
-                    entity.clearSensitiveFields();
+            data = (Page<T>) this.filterIterable(data);
+        }
+        return data;
+    }
+
+    protected List<T> filterResult(List<T> data) {
+        if (data != null && !data.isEmpty()) {
+            data = (List<T>) this.filterIterable(data);
+        }
+        return data;
+    }
+
+    protected Iterable<T> filterIterable(Iterable<T> data) {
+        // If not authorized to see all we clean the object for sensitive data.
+        if (!isAuthorized()) {
+            logger.debug("Clearing Sensitive Fields");
+            for (T entity : data) {
+                if (!entity.hasSensitiveFields()) {
+                    break;
                 }
+                entity.clearSensitiveFields();
             }
         }
         return data;
@@ -69,8 +80,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     public T getById(Long id) {
         T ret = getRepository().findOne(id);
-        ret = filterResult(ret);
-        return ret;
+        return filterResult(ret);
     }
 
     @Transactional

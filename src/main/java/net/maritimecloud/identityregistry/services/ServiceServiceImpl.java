@@ -22,6 +22,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @org.springframework.stereotype.Service
 public class ServiceServiceImpl extends EntityServiceImpl<Service> implements ServiceService {
 
@@ -31,8 +33,13 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     @Override
     public Page<Service> listPageFromOrg(Long orgId, Pageable pageable) {
         Page<Service> ret = repository.findByidOrganization(orgId, pageable);
-        ret = this.filterResult(ret);
-        return ret;
+        return this.filterResult(ret);
+    }
+
+    @Override
+    public List<Service> listAllFromOrg(Long id) {
+        List<Service> ret = repository.findByidOrganization(id);
+        return this.filterResult(ret);
     }
 
     public Service getServiceByMrnAndVersion(String mrn, String version) {
@@ -45,8 +52,13 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
 
     public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
         Page<Service> ret = repository.findByMrn(mrn, pageable);
-        ret = this.filterResult(ret);
-        return ret;
+        return this.filterResult(ret);
+    }
+
+    @Transactional
+    @Override
+    public void deleteByOrg(Long id) {
+        repository.deleteByidOrganization(id);
     }
 
     @Override

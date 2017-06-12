@@ -24,6 +24,7 @@ import java.util.List;
 
 public interface ServiceRepository extends PagingAndSortingRepository<Service, Long> {
     Page<Service> findByidOrganization(Long orgId, Pageable pageable);
+    List<Service> findByidOrganization(Long orgId);
 
     void deleteByidOrganization(Long orgId);
 
