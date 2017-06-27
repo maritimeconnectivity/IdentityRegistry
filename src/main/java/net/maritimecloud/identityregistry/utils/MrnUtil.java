@@ -75,6 +75,9 @@ public class MrnUtil {
             throw new IllegalArgumentException("MRN is not a valid entity MRN!");
         }
         int endIdx = entityMrn.indexOf(":", startIdx);
+        if (endIdx < 0) {
+            throw new IllegalArgumentException("MRN is not a valid entity MRN!");
+        }
         return entityMrn.substring(startIdx, endIdx);
     }
 

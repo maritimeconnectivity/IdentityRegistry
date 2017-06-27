@@ -17,16 +17,12 @@ package net.maritimecloud.identityregistry.utils;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
-@WebAppConfiguration
 public class MrnUtilsTests {
 
     @Test
@@ -69,6 +65,12 @@ public class MrnUtilsTests {
         String userMrn = "urn:mrn:mcl:user:dfds@bimco:fiskerfinn";
         String ret = MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
+    }
+
+    @Test(expected=IllegalArgumentException.class)
+    public void extractOrgShortnameFromUserMRN3() {
+        String userMrn = "urn:mrn:mcl:user:thc";
+        MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
     }
 
     @Test
