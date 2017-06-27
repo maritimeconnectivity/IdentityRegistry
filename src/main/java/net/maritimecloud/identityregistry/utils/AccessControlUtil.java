@@ -66,7 +66,7 @@ public class AccessControlUtil {
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
-                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).toLowerCase().equals(orgMrn.toLowerCase())) {
+                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).equalsIgnoreCase(orgMrn)) {
                 log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
                 return true;
             }
@@ -79,7 +79,7 @@ public class AccessControlUtil {
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             // The O(rganization) value in the certificate is an MRN
             String certOrgMrn = person.getO();
-            if (orgMrn.equals(certOrgMrn)) {
+            if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
                 log.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
                 return true;
             }
@@ -98,7 +98,7 @@ public class AccessControlUtil {
             PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
-            if (userSyncMRN.equals(person.getUid()) && userSyncO.equals(person.getO())
+            if (userSyncMRN.equalsIgnoreCase(person.getUid()) && userSyncO.equalsIgnoreCase(person.getO())
                     // Hack alert! There is no country property in this type, so we misuse PostalAddress...
                     && userSyncOU.equals(person.getOu()) && userSyncC.equals(person.getPostalAddress())) {
                 log.debug("User sync'er accepted!");

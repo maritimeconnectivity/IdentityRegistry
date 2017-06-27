@@ -67,7 +67,7 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public List<Certificate> listRevokedCertificate(String caAlias) {
-        return CertificateRepository.findByCertificateAuthorityAndRevokedTrue(caAlias);
+        return CertificateRepository.findByCertificateAuthorityIgnoreCaseAndRevokedTrue(caAlias);
     }
 
 }

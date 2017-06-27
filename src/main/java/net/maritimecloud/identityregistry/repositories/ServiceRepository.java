@@ -30,6 +30,6 @@ public interface ServiceRepository extends PagingAndSortingRepository<Service, L
 
     List<Service> findByName(String lastName);
 
-    Service getByMrnAndInstanceVersion(String mrn, String version);
-    Page<Service> findByMrn(String mrn, Pageable pageable);
+    Service getByMrnIgnoreCaseAndInstanceVersion(String mrn, String version);
+    Page<Service> findByMrnIgnoreCase(String mrn, Pageable pageable);
 }

@@ -43,7 +43,7 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     public Service getServiceByMrnAndVersion(String mrn, String version) {
-        return repository.getByMrnAndInstanceVersion(mrn, version);
+        return repository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
     }
 
     public Service getByMrn(String mrn) {
@@ -51,7 +51,7 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
-        Page<Service> ret = repository.findByMrn(mrn, pageable);
+        Page<Service> ret = repository.findByMrnIgnoreCase(mrn, pageable);
         return this.filterResult(ret);
     }
 

@@ -30,5 +30,5 @@ public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long>
 
     void deleteByidOrganization(Long orgId);
 
-    T getByMrn(String mrn);
+    T getByMrnIgnoreCase(String mrn);
 }

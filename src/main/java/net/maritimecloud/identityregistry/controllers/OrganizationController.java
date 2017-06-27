@@ -215,7 +215,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            if (!orgMrn.equals(input.getMrn())) {
+            if (!orgMrn.equalsIgnoreCase(input.getMrn())) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.

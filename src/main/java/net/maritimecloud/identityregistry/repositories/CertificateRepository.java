@@ -30,6 +30,6 @@ public interface CertificateRepository extends CrudRepository<Certificate, Long>
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
-    List<Certificate> findByCertificateAuthorityAndRevokedTrue(String caAlias);
+    List<Certificate> findByCertificateAuthorityIgnoreCaseAndRevokedTrue(String caAlias);
 }
 
