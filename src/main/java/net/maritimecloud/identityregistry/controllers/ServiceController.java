@@ -30,6 +30,7 @@ import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import net.maritimecloud.pki.PKIConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -51,6 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 @RestController
 @Slf4j
@@ -467,9 +469,26 @@ public class ServiceController extends EntityController<Service> {
         String name = ((Service)certOwner).getCertDomainName();
         if (name == null || name.trim().isEmpty()) {
             name = ((Service) certOwner).getName();
+        } else {
+            // Make sure that we only put one domain name in the common name field
+            String[] domainNames = name.split(",");
+            name = domainNames[0].trim();
         }
         return name;
     }
 
+    protected HashMap<String, String> getAttr(CertificateModel certOwner) {
+        HashMap<String, String> attrs = super.getAttr(certOwner);
+        // Find special MC attributes to put in the certificate
+        Service service = (Service) certOwner;
+        String certDomainName = service.getCertDomainName();
+        if (certDomainName != null && !certDomainName.trim().isEmpty()) {
+            String[] domainNames = certDomainName.split(",");
+            for (String domainName : domainNames) {
+                attrs.put(PKIConstants.X509_SAN_DNSNAME, domainName.trim());
+            }
+        }
+        return attrs;
+    }
 }
 
