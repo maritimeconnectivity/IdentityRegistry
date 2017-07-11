@@ -75,7 +75,7 @@ net:
                 admin-email: admin@maritimecloud.net
                 org-awaiting-approval-subject: "%s is awaiting approval for being added to the Maritime Cloud"
                 created-user-subject: A login for the Maritime Cloud has been created for you
-                portal-url: https://portal.maritimecloud.net
+                portal-url: https://management.maritimecloud.net
                 project-IDP-name: ProjectTestUsers
                 org-awaiting-approval-text: |
                     Thank you for applying for %1$s to be added to the Maritime Cloud!
