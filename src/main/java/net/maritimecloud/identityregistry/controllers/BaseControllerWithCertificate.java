@@ -51,7 +51,7 @@ public abstract class BaseControllerWithCertificate {
     private CertificateService certificateService;
 
     @Autowired
-    private CertificateUtil certificateUtil;
+    protected CertificateUtil certificateUtil;
 
     protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         // Generate keypair for user

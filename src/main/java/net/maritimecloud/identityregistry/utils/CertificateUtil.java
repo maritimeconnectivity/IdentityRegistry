@@ -54,6 +54,10 @@ public class CertificateUtil {
     private String baseCrlOcspCrlURI;
 
     @Getter
+    @Value("${net.maritimecloud.idreg.certs.default-sub-ca}")
+    private String defaultSubCa;
+
+    @Getter
     private KeystoreHandler keystoreHandler;
 
     @Getter

@@ -103,8 +103,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (input.getFederationType() == null || input.getFederationType().isEmpty()) {
             input.setFederationType("test-idp");
         }
-        // Default to the MC CA
-        input.setCertificateAuthority(PKIConstants.ROOT_CERT_ALIAS);
+        // Default to the MC IDR CA
+        input.setCertificateAuthority(certificateUtil.getDefaultSubCa());
         Organization newOrg;
         try {
             newOrg = this.organizationService.save(input);

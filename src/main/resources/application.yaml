@@ -68,6 +68,7 @@ net:
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
+                default-sub-ca: urn:mrn:mcl:ca:maritimecloud-idreg
 
             # Email setup
             email:
