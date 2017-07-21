@@ -11,9 +11,7 @@ $ ./setup/setup-db.sh
 You will be prompted for the root password for the database. The script will create a new user and this user will be used to create the needed tables.
 If you see this error: ```ERROR 1698 (28000): Access denied for user 'root'@'localhost'```, try running the command with ```sudo```.
 
-The setup script will also create an organization called "Maritime Cloud" that is used for the bootstrap process.
-
-The database can be drop with this command:
+The database can be dropped with this command:
 ```sh
 $ ./setup/drop-db.sh
 ```
@@ -39,7 +37,7 @@ server {
     ssl_certificate_key /etc/ssl/private/ssl-cert-snakeoil.key;
     ssl_client_certificate /etc/ssl/mc-ca-chain.pem;
     ssl_verify_client optional;
-    #ssl_crl /etc/ssl/mc-crl.pem;
+    ssl_crl /etc/ssl/combined-crl.pem;
     ssl_verify_depth 2;
     location / {
         proxy_pass http://localhost:8443;
@@ -52,17 +50,25 @@ server {
         add_header 'Access-Control-Allow-Headers' 'Content-Type, Accept, X-Requested-With, remember-me, authorization';
     }
 }
-
 ```
 
+The `ssl_certificate` and `ssl_certificate_key` properties in the configuration above points to the standard self-signed certificate that comes with an Ubuntu Linux. The `ssl_client_certificate` and `ssl_crl` should point to the `mc-ca-chain.pem` and `combined-crl.pem` provided in the the root of this project.
+
 Run using you favorite IDE or using the console:
+
 ```sh
 $ java -jar target/mc-identityregistry-core-latest.war
 ```
 Change the version number as needed. The Identity Registry will now be running and requests to https://localhost/api/... will forwarded through nginx to the spring boot application on http://localhost:8443/api/... that wraps the API.
 
+The first time the application is started it creates the database tables needed. You should now insert an organization used for bootstraping by running this script:
+
+```sh
+$ ./setup/create-mc-org.sh
+```
+
 ## Authentication using Openid Connect (Required!) 
-To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](https://keycloak.gitbooks.io/securing-client-applications-guide/content/v/latest/topics/oidc/java/spring-security-adapter.html) is used for easy integration. Get a instance up and running by following the [Keycloak manual](https://keycloak.gitbooks.io/server-installation-and-configuration/content/v/latest/index.html), and don't forget to add the special [Maritime Cloud SPI modules](https://github.com/MaritimeCloud/MaritimeCloudKeycloakSpi). Now it is needed to create a few realms in keycloak. Do this by importing the files `setup/maritimecloud-realm.json` and `setup/projecttestusers-realm.json`.
+To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](https://keycloak.gitbooks.io/securing-client-applications-guide/content/v/latest/topics/oidc/java/spring-security-adapter.html) is used for easy integration. Get a instance up and running by following the [Keycloak manual](https://keycloak.gitbooks.io/server-installation-and-configuration/content/v/latest/index.html), and don't forget to add the special [Maritime Cloud SPI modules](https://github.com/MaritimeCloud/MaritimeCloudKeycloakSpi). Now it is needed to create a few realms in keycloak. Do this by importing the files `setup/maritimecloud-realm.json`, `setup/projecttestusers-realm.json` and `setup/certificates-realm.json`.
 
 You have now setup the main "MaritimeCloud" realm and the "ProjectTestUsers" realm that is used to host users for organizations that do not have their own Identity Provider. The "MaritimeCloud" realm comes with an administrative user for the Organization "Maritime Cloud", who has administrative rights for the entire Identity Registry API. This users should be used for setting up the Identity Registry. The users credentials are mc-admin@maritimecloud.net / admin. Normally users are not placed in the MaritimeCloud realm, but in the ProjectTestUsers realm or other dedicated Identity Providers, but for bootstraping purposes the user is placed in the MaritimeCloud realm. **This user should be deleted when going live.**
 
