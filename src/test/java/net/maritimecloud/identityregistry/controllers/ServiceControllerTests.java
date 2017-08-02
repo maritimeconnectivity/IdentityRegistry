@@ -27,6 +27,7 @@ import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.ServiceService;
 import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,6 +42,7 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -392,6 +394,164 @@ public class ServiceControllerTests {
             assertTrue(false);
         }
     }
+
+    /**
+     * Try to update a service with valid OIDC info
+     */
+    @Test
+    public void testUpdateServiceWithValidOIDC() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion("0.3.4");
+        service.setIdOrganization(1l);
+        service.setOidcAccessType("public");
+        service.setOidcRedirectUri("https://localhost");
+        String serviceJson = serialize(service);
+        // Old service that we want to update
+        Service oldService = new Service();
+        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setName("NW NM Service");
+        oldService.setInstanceVersion("0.3.4");
+        oldService.setIdOrganization(1l);
+        oldService.setOidcAccessType("bearer-only");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        when(org.getId()).thenReturn(1l);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        try {
+            verify(this.keycloakAU, times(1)).updateClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm", "public", "https://localhost");
+        } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    /**
+     * Try to update a service with invalid OIDC info
+     */
+    @Test
+    public void testUpdateServiceWithInvalidOIDC() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion("0.3.4");
+        service.setIdOrganization(1l);
+        service.setOidcAccessType("public");
+        //service.setOidcRedirectUri("https://localhost");
+        String serviceJson = serialize(service);
+        // Old service that we want to update
+        Service oldService = new Service();
+        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setName("NW NM Service");
+        oldService.setInstanceVersion("0.3.4");
+        oldService.setIdOrganization(1l);
+        oldService.setOidcAccessType("bearer-only");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        when(org.getId()).thenReturn(1l);
+        try {
+            MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest()).andReturn();
+            String stringResult = result.getResponse().getContentAsString();
+            assertTrue(stringResult.contains(MCIdRegConstants.OIDC_MISSING_REDIRECT_URL));
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    /**
+     * Try to update a service with valid OIDC info
+     */
+    @Test
+    public void testUpdateServiceRemoveOIDC() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion("0.3.4");
+        service.setIdOrganization(1l);
+        String serviceJson = serialize(service);
+        // Old service that we want to update
+        Service oldService = new Service();
+        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setName("NW NM Service");
+        oldService.setInstanceVersion("0.3.4");
+        oldService.setIdOrganization(1l);
+        oldService.setOidcAccessType("bearer-only");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        when(org.getId()).thenReturn(1l);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+        verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+    }
+
 
     /**
      * Helper function to serialize a service to json

@@ -89,7 +89,7 @@ public class ServiceController extends EntityController<Service> {
             input.setIdOrganization(org.getId());
             // Setup a keycloak client for the service if needed
             if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
-                // Check if the redirect uri is set if access type is "bearer-only"
+                // Check if the redirect uri is set if access type is not "bearer-only"
                 if (!"bearer-only".equals(input.getOidcAccessType()) && (input.getOidcRedirectUri() == null || input.getOidcRedirectUri().trim().isEmpty())) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
                 }
@@ -221,7 +221,7 @@ public class ServiceController extends EntityController<Service> {
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Update the keycloak client for the service if needed
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
-                    // Check if the redirect uri is set if access type is "bearer-only"
+                    // Check if the redirect uri is set if access type is not "bearer-only"
                     if (!"bearer-only".equals(input.getOidcAccessType()) && (input.getOidcRedirectUri() == null || input.getOidcRedirectUri().trim().isEmpty())) {
                         throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
                     }
@@ -229,10 +229,10 @@ public class ServiceController extends EntityController<Service> {
                     String clientSecret;
                     try {
                         if (service.getOidcClientId() != null && !service.getOidcClientId().isEmpty()) {
-                            clientSecret = keycloakAU.updateClient(service.getOidcClientId(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                            clientSecret = keycloakAU.updateClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                         } else {
                             service.generateOidcClientId();
-                            clientSecret = keycloakAU.createClient(service.getOidcClientId(), service.getOidcAccessType(), service.getOidcRedirectUri());
+                            clientSecret = keycloakAU.createClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                         }
                     } catch (IOException e){
                         log.error("Error while updating/creation client in keycloak.", e);
@@ -240,11 +240,19 @@ public class ServiceController extends EntityController<Service> {
                     } catch (DuplicatedKeycloakEntry dke) {
                         throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                     }
-                    if ("confidential".equals(service.getOidcAccessType())) {
+                    if ("confidential".equals(input.getOidcAccessType())) {
                         service.setOidcClientSecret(clientSecret);
                     } else {
                         service.setOidcClientSecret(null);
                     }
+                } else if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
+                    // Delete the keycloak client since the updated service does not use it
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    keycloakAU.deleteClient(service.getOidcClientId());
+                    service.setOidcAccessType(null);
+                    service.setOidcClientId(null);
+                    service.setOidcClientSecret(null);
+                    service.setOidcRedirectUri(null);
                 }
                 input.selectiveCopyTo(service);
                 try {
@@ -284,8 +292,7 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
                 // Delete the keycloak client for the service if needed
-                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()
-                        && service.getOidcRedirectUri() != null && !service.getOidcRedirectUri().trim().isEmpty()) {
+                if (service.getOidcClientId() != null && !service.getOidcClientId().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     keycloakAU.deleteClient(service.getOidcClientId());
                 }

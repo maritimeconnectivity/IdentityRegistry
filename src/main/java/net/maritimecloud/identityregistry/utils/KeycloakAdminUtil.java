@@ -585,7 +585,7 @@ public class KeycloakAdminUtil {
         }
         // Update client
         getBrokerRealm().clients().get(client.getId()).update(client);
-        if (!type.equals("public")) {
+        if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
             String secret = getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
             return secret;
