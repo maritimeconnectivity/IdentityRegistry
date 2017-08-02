@@ -1,4 +1,4 @@
-/* Obtained from https://github.com/springfox/springfox/issues/755#issuecomment-262416232 */
+/* Obtained from https://github.com/springfox/springfox/issues/755#issuecomment-288987588 */
 
 package net.maritimecloud.identityregistry.config;
 
@@ -89,7 +89,9 @@ public class OperationPageableParameterReader implements OperationBuilderPlugin 
     }
 
     private Function<ResolvedType, ? extends ModelReference> createModelRefFactory(ParameterContext context) {
-        ModelContext modelContext = inputParam(context.resolvedMethodParameter().getParameterType().getErasedType(),
+        ModelContext modelContext = inputParam(
+                context.getGroupName(),
+                context.resolvedMethodParameter().getParameterType(),
                 context.getDocumentationType(),
                 context.getAlternateTypeProvider(),
                 context.getGenericNamingStrategy(),
