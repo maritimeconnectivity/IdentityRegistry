@@ -98,9 +98,10 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
+            input.setMrn(input.getMrn().toLowerCase());
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                 String password = PasswordUtil.generatePassword();
@@ -160,20 +161,20 @@ public class UserController extends EntityController<User> {
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        if (!userMrn.equals(input.getMrn())) {
+        if (!userMrn.equalsIgnoreCase(input.getMrn())) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            if (!user.getMrn().equals(input.getMrn()) || user.getIdOrganization().compareTo(org.getId()) != 0) {
+            if (!user.getMrn().equalsIgnoreCase(input.getMrn()) || user.getIdOrganization().compareTo(org.getId()) != 0) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Update user in keycloak if created there.
@@ -208,7 +209,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equals(MrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
@@ -299,7 +300,7 @@ public class UserController extends EntityController<User> {
         if (org == null && orgAddress != null && orgName != null) {
             // Check that the org shortname is the same for the orgMrn and originalErrorMessage
             String orgShortname = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-            if (!orgShortname.equals(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!orgShortname.equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Since the permissions of this user will be used as a template for administrator permissions, it must be

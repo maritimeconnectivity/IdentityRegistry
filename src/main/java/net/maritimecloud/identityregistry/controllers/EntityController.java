@@ -73,6 +73,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             }
             input.setIdOrganization(org.getId());
             try {
+                input.setMrn(input.getMrn().toLowerCase());
                 T newEntity = this.entityService.save(input);
                 return new ResponseEntity<>(newEntity, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {

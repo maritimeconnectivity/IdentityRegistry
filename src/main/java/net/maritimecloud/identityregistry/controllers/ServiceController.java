@@ -87,6 +87,7 @@ public class ServiceController extends EntityController<Service> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
+            input.setMrn(input.getMrn().toLowerCase());
             // Setup a keycloak client for the service if needed
             if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                 // Check if the redirect uri is set if access type is not "bearer-only"
