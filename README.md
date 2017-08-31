@@ -78,6 +78,7 @@ The MaritimeCloud and ProjectTestUsers realm includes each an adminstrative user
 
 The MaritimeCloud realm also contains a client called "setupclient" used in the bootstrap process mentioned below.
 
+If setting up keycloak in a clustered environment remember to hmac-keystore provider for the realms you have created.
 
 ## Available REST API
 The API is documented using Swagger/OpenAPI 2.0, and can be obtained from http://localhost:8443/v2/api-docs.
@@ -215,3 +216,12 @@ The command will (mostly) return an echo of the json posted to the api:
 }
 
 ```
+
+## Building javadocs and UML diagrams
+It is possible to build javadocs and UML diagrams for the project by running the command below. Note that it might require some non-java/maven dependencies. 
+```sh
+mvn javadoc:javadoc
+```
+The apidocs and UML diagrams are placed in `target/site/apidocs/`.
+
+Some key UML diagrams has been manually placed in the `uml` folder for easy access. Remember to update those if you update the data model.
