@@ -4,10 +4,13 @@
 # A customized conf file (application.yaml) must be available in the folder mounted to /conf.
 # When using in non-local environment it is recommened to generate new trust and keystores and place them in
 # the conf-folder and point to them in application.yaml.
-FROM java:8
+FROM openjdk:8-jre
 
 RUN mkdir -p /conf
 ADD mc-identityregistry-core-latest.war .
+
+#set locales for image to support UTF-8
+ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 EXPOSE 8443
 
