@@ -22,15 +22,9 @@ import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
 import org.hibernate.validator.constraints.NotBlank;
-import org.hibernate.validator.constraints.URL;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import javax.persistence.*;
 import javax.validation.constraints.Pattern;
-import java.util.List;
 import java.util.Set;
 
 /**
@@ -62,7 +56,6 @@ public class Service extends NonHumanEntityModel {
 
     @ApiModelProperty(value = "The OpenId Connect redirect uri of service.")
     @Column(name = "oidc_redirect_uri")
-    @URL
     private String oidcRedirectUri;
 
     @ApiModelProperty(value = "The domain name the service will be available on. Used in the issued certificates for the service.")
