@@ -61,11 +61,9 @@ public class ServiceValidatorTests {
         invalidService.setMrn("urn:mrn:mcl:org:test:service:test:instance:test-service");
         // Invalid access type
         invalidService.setOidcAccessType("just rubish");
-        // Invalid URL format
-        invalidService.setOidcRedirectUri("test-redirect-url-to-service.net");
         // Invalid version format
         invalidService.setInstanceVersion("0.3.4/4");
         Set<ConstraintViolation<Service>> violations = validator.validate(invalidService);
-        assertEquals(4, violations.size());
+        assertEquals(3, violations.size());
     }
 }
