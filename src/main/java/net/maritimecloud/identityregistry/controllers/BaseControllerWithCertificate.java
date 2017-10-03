@@ -16,6 +16,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
+import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.Certificate;
@@ -26,6 +27,7 @@ import net.maritimecloud.identityregistry.model.database.entities.NonHumanEntity
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import net.maritimecloud.pki.CertificateBuilder;
 import net.maritimecloud.pki.CertificateHandler;
 import net.maritimecloud.pki.PKIConstants;
@@ -39,6 +41,7 @@ import java.math.BigInteger;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
@@ -53,7 +56,7 @@ public abstract class BaseControllerWithCertificate {
     @Autowired
     protected CertificateUtil certificateUtil;
 
-    protected PemCertificate issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
+    protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         // Generate keypair for user
         KeyPair userKeyPair = CertificateBuilder.generateKeyPair();
         // Find special MC attributes to put in the certificate
@@ -83,6 +86,13 @@ public abstract class BaseControllerWithCertificate {
         String pemPrivateKey = CertificateHandler.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
         PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
 
+        // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
+        String keystorePassword = PasswordUtil.generatePassword();
+        byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
+        byte[] pkcs12Keystore = CertificateHandler.createOutputKeystore("PKCS12", name, keystorePassword, userKeyPair.getPrivate(), userCert);
+        Base64.Encoder encoder = Base64.getEncoder();
+        CertificateBundle certificateBundle = new CertificateBundle(ret, new String(encoder.encode(jksKeystore)), new String(encoder.encode(pkcs12Keystore)), keystorePassword);
+
         // Create the certificate
         Certificate newMCCert = new Certificate();
         certOwner.assignToCert(newMCCert);
@@ -95,7 +105,7 @@ public abstract class BaseControllerWithCertificate {
         newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
         newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
         this.certificateService.saveCertificate(newMCCert);
-        return ret;
+        return certificateBundle;
     }
 
     protected void revokeCertificate(BigInteger certId, CertificateRevocation input, HttpServletRequest request) throws McBasicRestException {

@@ -53,6 +53,7 @@ import static org.springframework.security.test.web.servlet.request.SecurityMock
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 
@@ -86,6 +87,37 @@ public class UserControllerTests {
                 .build();
     }
 
+    @Test
+    public void testGenerateCertificateBundle() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setIdOrganization(1l);
+        user.setEmail("thcc@dma.dk");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:sma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new")
+            .header("Origin", "bla")).andExpect(status().isOk()).andExpect(jsonPath("$."))
+        }
+    }
 
     /**
      * Try to get a user without being authenticated
