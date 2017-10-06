@@ -13,16 +13,20 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.services;
+package net.maritimecloud.identityregistry.model.data;
 
-import org.springframework.data.repository.CrudRepository;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import net.maritimecloud.identityregistry.model.JsonSerializable;
 
-public interface BaseService<T> {
-    T getById(Long id);
-
-    T save(T entity);
-
-    void delete(Long id);
-
-    CrudRepository<T, Long> getRepository();
+/**
+ * Object that bundles a PEM certificate with keystores in JKS and PKCS12 format and a password for the keystores
+ */
+@AllArgsConstructor
+@Getter
+public class CertificateBundle implements JsonSerializable {
+    private PemCertificate pemCertificate;
+    private String jksKeystore;
+    private String pkcs12Keystore;
+    private String keystorePassword;
 }

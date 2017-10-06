@@ -29,7 +29,7 @@ import javax.annotation.PostConstruct;
 @Slf4j
 public class CertificateUtil {
 
-    // Values below are loaded from application.yaml
+    // Values below are loaded from application.test
     @Value("${net.maritimecloud.idreg.certs.sub-ca-keystore-path}")
     private String subCaKeystorePath;
 
