@@ -70,7 +70,6 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
             if (org != null) {
                 if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
                     ArrayList<String> usersPermissions = (ArrayList<String>) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
-                    //String[] permissionList = usersPermissions.split(",");
                     for (String permission : usersPermissions) {
                         String[] auths = permission.split(",");
                         for (String auth : auths) {
