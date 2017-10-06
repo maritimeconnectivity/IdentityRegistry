@@ -37,7 +37,6 @@ import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import javax.validation.Valid;
-import java.util.List;
 import java.util.Set;
 
 /**

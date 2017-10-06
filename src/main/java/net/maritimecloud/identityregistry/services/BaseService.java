@@ -17,8 +17,6 @@ package net.maritimecloud.identityregistry.services;
 
 import org.springframework.data.repository.CrudRepository;
 
-import java.util.List;
-
 public interface BaseService<T> {
     T getById(Long id);
 

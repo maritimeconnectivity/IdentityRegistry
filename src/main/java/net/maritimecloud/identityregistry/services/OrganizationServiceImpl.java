@@ -25,8 +25,6 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
-import java.util.List;
-
 @Service
 public class OrganizationServiceImpl extends BaseServiceImpl<Organization> implements OrganizationService {
     private static final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
