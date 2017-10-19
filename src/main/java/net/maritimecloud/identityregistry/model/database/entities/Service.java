@@ -26,6 +26,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
@@ -76,6 +78,10 @@ public class Service extends NonHumanEntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
 
+    @ManyToOne
+    @JoinColumn(name = "id_vessel")
+    private Vessel vessel;
+
     /** Copies this service into the other */
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
@@ -87,6 +93,7 @@ public class Service extends NonHumanEntityModel {
         service.setInstanceVersion(instanceVersion);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
+        service.setVessel(vessel);
         service.setChildIds();
         return service;
     }

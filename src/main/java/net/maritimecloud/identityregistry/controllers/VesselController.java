@@ -20,9 +20,12 @@ import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
+import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import net.maritimecloud.identityregistry.validators.VesselValidator;
 import net.maritimecloud.pki.PKIConstants;
@@ -31,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -48,6 +52,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigInteger;
 import java.util.HashMap;
+import java.util.Set;
 
 @RestController
 public class VesselController extends EntityController<Vessel> {
@@ -97,6 +102,28 @@ public class VesselController extends EntityController<Vessel> {
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
         return this.getEntity(request, orgMrn, vesselMrn);
+    }
+
+    /**
+     * Returns the set of services that has a relation with a specific vessel
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/services",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8"
+    )
+    @ResponseBody
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Set<Service>> getVesselServices(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+        if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        }
+        Vessel vessel = this.entityService.getByMrn(vesselMrn);
+        Set<Service> services = vessel.getServices();
+        return new ResponseEntity<>(services, HttpStatus.OK);
     }
 
     /**
