@@ -105,6 +105,7 @@ public class Service extends NonHumanEntityModel {
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
+        service.setVessel(vessel);
         service.setChildIds();
         return service;
     }

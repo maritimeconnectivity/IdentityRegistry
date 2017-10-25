@@ -39,7 +39,7 @@ import java.util.Set;
 @Table(name = "vessels")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "services")
 public class Vessel extends NonHumanEntityModel {
 
     public Vessel() {
@@ -53,7 +53,7 @@ public class Vessel extends NonHumanEntityModel {
     private Set<Certificate> certificates;
 
     @JsonIgnore
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval = true)
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
     private Set<Service> services;
 
     /** Copies this vessel into the other */
