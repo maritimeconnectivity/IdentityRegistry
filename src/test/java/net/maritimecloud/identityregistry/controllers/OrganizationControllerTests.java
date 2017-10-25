@@ -76,8 +76,6 @@ public class OrganizationControllerTests {
     private EntityService<Service> serviceService;
     @MockBean
     private EntityService<User> userService;
-    @MockBean
-    private EntityService<Vessel> vesselService;
 
     @MockBean
     private RoleService roleService;
