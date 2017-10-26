@@ -1,7 +1,9 @@
 [![Build Status](https://travis-ci.org/MaritimeCloud/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeCloud/IdentityRegistry)
 
-# Maritime Cloud Identity Registry
-This is the implementation of the Maritime Cloud Identity Registry. It is under the Apache 2.0 License.
+# Maritime Connectivity Platform Identity Registry
+This is the implementation of the MCP Identity Registry. It is under the Apache 2.0 License.
+
+The Maritime Connectivity Platform was formerly known as the Maritime Cloud and therefore there might still be references to that in this project.  
 
 ## Setup Database
 A MySQL/MariaDB is used as datastore, it can be setup running this commands from the console:

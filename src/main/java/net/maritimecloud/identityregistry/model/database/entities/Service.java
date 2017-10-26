@@ -52,11 +52,11 @@ public class Service extends NonHumanEntityModel {
     @InPredefinedList(acceptedValues = {"public", "bearer-only", "confidential"})
     private String oidcAccessType;
 
-    @ApiModelProperty(value = "The client id of the service in Maritime Cloud. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client id of the service in MCP. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_id")
     private String oidcClientId;
 
-    @ApiModelProperty(value = "The client secret of the service in Maritime Cloud. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client secret of the service in MCP. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
@@ -78,6 +78,7 @@ public class Service extends NonHumanEntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
 
+    @ApiModelProperty(value = "The vessel that is linked to this service.")
     @ManyToOne
     @JoinColumn(name = "id_vessel")
     private Vessel vessel;
