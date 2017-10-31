@@ -107,6 +107,7 @@ public class UserController extends EntityController<User> {
                 String password = PasswordUtil.generatePassword();
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
+                    keycloakAU.checkUserExistence(input.getEmail());
                     keycloakAU.createUser(input.getMrn(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgMrn, input.getPermissions(), true);
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());

@@ -400,6 +400,22 @@ public class KeycloakAdminUtil {
         log.debug("created user");
     }
 
+    /**
+     * Check the existence of user with email.
+     *
+     * @param email         email of the user
+     * @throws IOException
+     */
+    public void checkUserExistence(String email) throws IOException, DuplicatedKeycloakEntry{
+        // Find the user by searching for the username
+        List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
+
+        String errMsg = "";
+        // If we found one, it already has the user
+        if (users.size()>0){
+            throw new DuplicatedKeycloakEntry("User with email: " +email + " already exists.", errMsg);
+        }
+    }
 
     /**
      * Updates the user in keycloak
