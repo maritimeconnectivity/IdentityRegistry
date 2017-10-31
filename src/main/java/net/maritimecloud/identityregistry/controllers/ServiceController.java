@@ -24,13 +24,15 @@ import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
+import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.ServiceService;
+import net.maritimecloud.identityregistry.services.VesselServiceImpl;
+import net.maritimecloud.identityregistry.utils.AttributesUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
-import net.maritimecloud.pki.PKIConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -61,6 +63,9 @@ public class ServiceController extends EntityController<Service> {
     private KeycloakAdminUtil keycloakAU;
 
     @Autowired
+    private VesselServiceImpl vesselService;
+
+    @Autowired
     public void setEntityService(EntityService<Service> entityService) {
         this.entityService = entityService;
     }
@@ -88,6 +93,8 @@ public class ServiceController extends EntityController<Service> {
             }
             input.setIdOrganization(org.getId());
             input.setMrn(input.getMrn().toLowerCase());
+            // If the service requested to be created contains a vessel, add it to the service
+            this.addVesselToServiceIfPresent(input, orgMrn, request);
             // Setup a keycloak client for the service if needed
             if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                 // Check if the redirect uri is set if access type is not "bearer-only"
@@ -255,6 +262,7 @@ public class ServiceController extends EntityController<Service> {
                     service.setOidcClientSecret(null);
                     service.setOidcRedirectUri(null);
                 }
+                this.addVesselToServiceIfPresent(input, orgMrn, request);
                 input.selectiveCopyTo(service);
                 try {
                     this.entityService.save(service);
@@ -485,17 +493,22 @@ public class ServiceController extends EntityController<Service> {
         return name;
     }
 
+    private void addVesselToServiceIfPresent(Service input, String orgMrn, HttpServletRequest request) throws McBasicRestException {
+        if (input.getVessel() != null) {
+            String vesselMrn = input.getVessel().getMrn();
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Vessel vessel = this.vesselService.getByMrn(vesselMrn);
+            input.setVessel(vessel);
+        }
+    }
+
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = super.getAttr(certOwner);
         // Find special MC attributes to put in the certificate
-        Service service = (Service) certOwner;
-        String certDomainName = service.getCertDomainName();
-        if (certDomainName != null && !certDomainName.trim().isEmpty()) {
-            String[] domainNames = certDomainName.split(",");
-            for (String domainName : domainNames) {
-                attrs.put(PKIConstants.X509_SAN_DNSNAME, domainName.trim());
-            }
-        }
+        attrs.putAll(AttributesUtil.getAttributes(certOwner));
+
         return attrs;
     }
 }

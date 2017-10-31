@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -38,7 +39,7 @@ import java.util.Set;
 @Table(name = "vessels")
 @Getter
 @Setter
-@ToString
+@ToString(exclude = "services")
 public class Vessel extends NonHumanEntityModel {
 
     public Vessel() {
@@ -50,6 +51,10 @@ public class Vessel extends NonHumanEntityModel {
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
     private Set<Certificate> certificates;
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
+    private Set<Service> services;
 
     /** Copies this vessel into the other */
     public Vessel copyTo(EntityModel target) {

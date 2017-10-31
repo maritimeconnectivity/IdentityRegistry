@@ -25,12 +25,12 @@
 	<packaging>war</packaging>
 
 	<name>mc-identityregistry-core</name>
-	<description>MC Identity Registry Core</description>
+	<description>MCP Identity Registry Core</description>
 
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>1.5.7.RELEASE</version>
+		<version>1.5.8.RELEASE</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -161,7 +161,7 @@
 		<dependency>
 			<groupId>net.maritimecloud.pki</groupId>
 			<artifactId>mc-pki</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
+			<version>0.7.0-SNAPSHOT</version>
 		</dependency>
 	</dependencies>
 	<build>

@@ -26,6 +26,8 @@ import org.hibernate.validator.constraints.NotBlank;
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Pattern;
@@ -50,11 +52,11 @@ public class Service extends NonHumanEntityModel {
     @InPredefinedList(acceptedValues = {"public", "bearer-only", "confidential"})
     private String oidcAccessType;
 
-    @ApiModelProperty(value = "The client id of the service in Maritime Cloud. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client id of the service in MCP. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_id")
     private String oidcClientId;
 
-    @ApiModelProperty(value = "The client secret of the service in Maritime Cloud. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client secret of the service in MCP. Will be generated.", readOnly = true)
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
@@ -76,6 +78,11 @@ public class Service extends NonHumanEntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
 
+    @ApiModelProperty(value = "The vessel that is linked to this service.")
+    @ManyToOne
+    @JoinColumn(name = "id_vessel")
+    private Vessel vessel;
+
     /** Copies this service into the other */
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
@@ -87,6 +94,7 @@ public class Service extends NonHumanEntityModel {
         service.setInstanceVersion(instanceVersion);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
+        service.setVessel(vessel);
         service.setChildIds();
         return service;
     }
@@ -98,6 +106,7 @@ public class Service extends NonHumanEntityModel {
         service.setOidcAccessType(oidcAccessType);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
+        service.setVessel(vessel);
         service.setChildIds();
         return service;
     }

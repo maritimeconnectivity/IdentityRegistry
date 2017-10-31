@@ -74,37 +74,37 @@ net:
             email:
                 from: no-reply@maritimecloud.net
                 admin-email: admin@maritimecloud.net
-                org-awaiting-approval-subject: "%s is awaiting approval for being added to the Maritime Cloud"
-                created-user-subject: A login for the Maritime Cloud has been created for you
+                org-awaiting-approval-subject: "%s is awaiting approval for being added to MCP"
+                created-user-subject: A login for the Maritime Connectivity Platform has been created for you
                 portal-url: https://management.maritimecloud.net
                 project-IDP-name: ProjectTestUsers
                 org-awaiting-approval-text: |
-                    Thank you for applying for %1$s to be added to the Maritime Cloud!
+                    Thank you for applying for %1$s to be added to MCP!
                     
                     The information you have provided will now be manually evaluated and you might get contacted if more information is needed.
                     
                     Best regards,
-                    The Maritime Cloud
+                    The Maritime Connectivity Platform Team
                 admin-org-awaiting-approval-text: |
-                    Dear Maritime Cloud Administrator,
+                    Dear MCP Administrator,
                     
-                    %1$s has applied for membership in the Maritime Cloud. Please review the application as soon as possible!
+                    %1$s has applied for membership in MCP. Please review the application as soon as possible!
                     
                     Best regards,
-                    The Maritime Cloud
+                    The Maritime Connectivity Platform Team
                 created-user-text: |
                     Dear %1$s,
                     
-                    Welcome to the Maritime Cloud!
-                    It is with great pleasure that we can welcome you to the Maritime Cloud!
+                    Welcome to the Maritime Connectivity Platform!
+                    It is with great pleasure that we can welcome you to MCP!
                     
-                    To log in using the Maritime Cloud go to a webpage that supports Maritime Cloud login (for example the Maritime Cloud Management Portal: %4$s), click the Maritime Cloud logo which will redirect you to a new page. Here you must click the on the button reading "%5$s". This will redirect you to a new page where you can log in using the credentials below.
+                    To log in using MCP go to a webpage that supports MCP login (for example the MCP Management Portal: %4$s), click the MCP logo which will redirect you to a new page. Here you must click the on the button reading "%5$s". This will redirect you to a new page where you can log in using the credentials below.
                     
                     The login credentials for %1$s is: %2$s / %3$s
                     You will be asked to update your credentials on first login - please keep your credentials save!
                     
                     Best regards,
-                    The Maritime Cloud
+                    The Maritime Connectivity Platform Team
                 bug-report-email: bug-report@maritimecloud.net
 
 # Set alternative keycloak conf file
