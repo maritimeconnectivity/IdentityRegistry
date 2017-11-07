@@ -407,10 +407,17 @@ public class KeycloakAdminUtil {
      * @throws IOException
      */
     public void checkUserExistence(String email) throws IOException, DuplicatedKeycloakEntry{
-        // Find the user by searching for the username
+        // First try: Find the user by searching for the username field
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
 
         String errMsg = "";
+        // If we found one, it already has the user
+        if (users.size()>0){
+            throw new DuplicatedKeycloakEntry("User with username: " +email + " already exists.", errMsg);
+        }
+
+        // Second try: Find the user by searching for the email field
+        users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
         // If we found one, it already has the user
         if (users.size()>0){
             throw new DuplicatedKeycloakEntry("User with email: " +email + " already exists.", errMsg);
@@ -495,11 +502,19 @@ public class KeycloakAdminUtil {
      * @param email  email of the user to delete
      */
     public void deleteUser(String email) {
-        // Find the user by searching for the username
+        // First try: Find the user by searching for the username
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
             getProjectUserRealm().users().get(users.get(0).getId()).remove();
+            return ;
+        }
+        // Second try: Find the user by searching for the email
+        users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
+        // If we found one, delete it
+        if (!users.isEmpty()) {
+            getProjectUserRealm().users().get(users.get(0).getId()).remove();
+            return ;
         }
     }
 
