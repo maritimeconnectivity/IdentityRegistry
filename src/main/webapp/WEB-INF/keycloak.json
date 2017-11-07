@@ -1,6 +1,5 @@
 {
   "realm": "MaritimeCloud",
-  "realm-public-key": "MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEArRx3NwqDL7vt/24bnvzxBRLkuGukmppZzJEFNs1PLQG1G9OM3qT+TB4IbRwPtyWeGcsLUUx7CTlr2f0f/dRgkDGvZrA1AxVADxbb+z7ZITSbnvk6mmh4qhJljGQwk1q+qjZeLn/QIgEt2WEIv8h+yamsRLRx3Epj3Uqh3SsRuMbnXvyYzn4h3z4a4/p8183L3nE3ukJspDUruPgP9HUDlrmMwpwc+1avmH3cUfPyoq9Py66ociCMz4flT1rZKt60riamAWblZQRX4+nZ3S1c2v82ZSh5EpIPwfweSlZ15p5QKlhJFxjQv+mi7GO9PFUDtE7TJ624ZwUWbez7G8ROYwIDAQAB",
   "bearer-only": true,
   "auth-server-url": "http://localhost:8080/auth",
   "ssl-required": "external",

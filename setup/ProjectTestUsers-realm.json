@@ -764,7 +764,8 @@
         "id.token.claim" : "true",
         "access.token.claim" : "true",
         "claim.name" : "permissions",
-        "jsonType.label" : "String"
+        "jsonType.label" : "String",
+        "multivalued" : true
       }
     }, {
       "id" : "2c3af8eb-f6d8-4132-8e57-b1b96b15acbe",

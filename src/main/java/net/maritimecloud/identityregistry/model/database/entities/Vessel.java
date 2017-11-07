@@ -21,11 +21,14 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.VesselImage;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
+import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
+import javax.persistence.OneToOne;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
@@ -56,11 +59,17 @@ public class Vessel extends NonHumanEntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
     private Set<Service> services;
 
+    @JsonIgnore
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @JoinColumn(name="id_image")
+    private VesselImage image;
+
     /** Copies this vessel into the other */
     public Vessel copyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.copyTo(target);
         vessel.getAttributes().clear();
         vessel.getAttributes().addAll(attributes);
+        vessel.setImage(this.image);
         vessel.getCertificates().clear();
         vessel.getCertificates().addAll(certificates);
         vessel.setChildIds();

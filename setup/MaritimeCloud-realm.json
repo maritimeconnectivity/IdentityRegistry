@@ -1270,7 +1270,8 @@
         "id.token.claim" : "false",
         "access.token.claim" : "true",
         "claim.name" : "permissions",
-        "jsonType.label" : "String"
+        "jsonType.label" : "String",
+        "multivalued" : true
       }
     }, {
       "id" : "f00d4f26-b3f7-490f-bb83-e810eac8b9db",
@@ -1450,7 +1451,8 @@
         "user.attribute" : "permissions",
         "access.token.claim" : "true",
         "claim.name" : "permissions",
-        "jsonType.label" : "String"
+        "jsonType.label" : "String",
+        "multivalued" : true
       }
     }, {
       "id" : "127fd4cb-a34c-4a14-af4d-8c745a1693d7",
