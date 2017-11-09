@@ -24,6 +24,7 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,6 +41,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+import org.subethamail.wiser.Wiser;
 
 import java.io.IOException;
 import java.util.HashSet;
@@ -55,6 +57,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -314,7 +317,138 @@ public class UserControllerTests {
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcl:user:DMA@dma:thc");
     }
 
+    @Test
+    public void testCreateUserForFederatedOrg() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1l);
 
+        User newUser = new User();
+        newUser.setMrn("urn:mrn:mcl:user");
+
+        try {
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user").with(authentication(auth))
+            .header("Origin", "Bla")
+            .content(userJson)
+            .contentType("application/json")).andExpect(status().is4xxClientError());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+
+    }
+
+    @Test
+    public void testCreateUserForNonFederatedOrg() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("test-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1l);
+
+        User newUser = new User();
+        newUser.setMrn("urn:mrn:mcl:user");
+
+        // setup mock SMTP server
+        Wiser wiser = new Wiser(1025);
+        wiser.start();
+
+        try {
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user").with(authentication(auth))
+                    .header("Origin", "Bla")
+                    .content(userJson)
+                    .contentType("application/json")).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            wiser.stop();
+            assertTrue(false);
+        }
+
+        assertTrue(wiser.getMessages().size() > 0);
+        wiser.stop();
+    }
+
+    @Test
+    public void testUpdateUserFederatedOrg() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(userJson)
+                    .contentType("application/json")
+            ).andExpect(status().is4xxClientError());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
 
     /**
      * Helper function to serialize a user to json

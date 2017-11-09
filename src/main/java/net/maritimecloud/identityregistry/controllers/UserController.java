@@ -116,6 +116,8 @@ public class UserController extends EntityController<User> {
                 }
                 // Send email to user with credentials
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
+            } else if ("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) {
+                throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
             try {
@@ -186,6 +188,8 @@ public class UserController extends EntityController<User> {
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                 }
+            } else if ("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) {
+                throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.selectiveCopyTo(user);
             this.entityService.save(user);
