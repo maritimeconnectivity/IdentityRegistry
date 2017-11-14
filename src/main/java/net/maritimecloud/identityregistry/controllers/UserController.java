@@ -67,6 +67,8 @@ public class UserController extends EntityController<User> {
     private String userSyncOU;
     @Value("${net.maritimecloud.idreg.user-sync.mrn}")
     private String userSyncMRN;
+    @Value("${net.maritimecloud.idreg.allow-create-user-for-federated-org:true}")
+    private boolean allowCreateUserForFederatedOrg;
 
     @Autowired
     public void setUserService(EntityService<User> userService) {
@@ -116,7 +118,7 @@ public class UserController extends EntityController<User> {
                 }
                 // Send email to user with credentials
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
-            } else if ("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) {
+            } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
@@ -188,7 +190,7 @@ public class UserController extends EntityController<User> {
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                 }
-            } else if ("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) {
+            } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.selectiveCopyTo(user);
