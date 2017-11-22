@@ -42,7 +42,7 @@ public class EmailUtil {
     private String from;
 
     @Value("${net.maritimecloud.idreg.email.admin-email}")
-    private String adminEmail;
+    private String[] adminEmail;
 
     @Value("${net.maritimecloud.idreg.email.org-awaiting-approval-subject}")
     private String orgAwaitingApprovalSubject;
