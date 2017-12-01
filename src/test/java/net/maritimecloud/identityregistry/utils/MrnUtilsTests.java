@@ -50,7 +50,7 @@ public class MrnUtilsTests {
     public void extractOrgValidatorFromOrgShortname2() {
         String orgMrn = "bimco";
         String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
-        assertEquals("Org validator should be 'mcl'","mcl", ret);
+        assertEquals("Org validator should be 'maritimecloud-idreg'","maritimecloud-idreg", ret);
     }
 
     @Test
