@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/MaritimeCloud/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeCloud/IdentityRegistry)
+[![Build Status](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry)
 
 # Maritime Connectivity Platform Identity Registry
 This is the implementation of the MCP Identity Registry. It is under the Apache 2.0 License.
