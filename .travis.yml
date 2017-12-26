@@ -17,7 +17,7 @@ install:
     - mvn -U -Dspring.profiles.active=test clean install && cp target/mc-identityregistry-core-latest.war docker/
 
 before_script:  
-    - docker login -e="$DOCKER_EMAIL" -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
+    - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
 
 script:
     # Build the docker image
