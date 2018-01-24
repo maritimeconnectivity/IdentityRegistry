@@ -22,6 +22,8 @@ import org.springframework.data.domain.Pageable;
 public interface OrganizationService extends BaseService<Organization>{
     Organization getOrganizationByMrn(String mrn);
 
+    Organization getOrganizationById(Long id);
+
     Organization getOrganizationByMrnDisregardApproved(String mrn);
     /* Does not filter sensitive data from the result! */
     Organization getOrganizationByMrnNoFilter(String mrn);

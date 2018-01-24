@@ -15,7 +15,6 @@
  */
 package net.maritimecloud.identityregistry.model.database.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
@@ -33,7 +32,6 @@ import java.util.Objects;
 @ToString
 public abstract class EntityModel extends CertificateModel {
 
-    @JsonIgnore
     @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 

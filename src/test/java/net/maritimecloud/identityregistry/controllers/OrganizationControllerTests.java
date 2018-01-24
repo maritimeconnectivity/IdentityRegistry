@@ -352,6 +352,66 @@ public class OrganizationControllerTests {
         }
     }
 
+    /**
+     * Try to access an organization with the appropriate role
+     */
+    @Test
+    public void testAccessGetOrgByIdWithRights() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationById(0L)).willReturn(org);
+        try {
+            mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    /**
+     * Try to access an organization with the appropriate role as SITE_ADMIN
+     */
+    @Test
+    public void testAccessGetOrgByIdWithRights2() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_SITE_ADMIN", "");
+        given(this.organizationService.getOrganizationById(0L)).willReturn(org);
+        try {
+            mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
 
     /**
      * Helper function to serialize an organization to json

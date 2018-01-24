@@ -25,6 +25,8 @@ public interface OrganizationRepository extends PagingAndSortingRepository<Organ
 
     Organization findByMrn(String mrn);
 
+    Organization findById(Long id);
+
     Page<Organization> findByApprovedFalse(Pageable pageable);
 
     Page<Organization> findByApprovedTrue(Pageable pageable);

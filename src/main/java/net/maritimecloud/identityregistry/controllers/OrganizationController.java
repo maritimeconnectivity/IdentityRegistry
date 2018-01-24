@@ -187,6 +187,25 @@ public class OrganizationController extends BaseControllerWithCertificate {
     }
 
     /**
+     * Returns info about the organization identified by the given ID
+     *
+     * @return a reply
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/id/{orgId}",
+            method = RequestMethod.GET,
+            produces = "application/json;charset=UTF-8"
+    )
+    public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationById(orgId);
+        if (org == null) {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+        return new ResponseEntity<>(org, HttpStatus.OK);
+    }
+
+    /**
      * Returns list of all organizations
      * 
      * @return a reply...
