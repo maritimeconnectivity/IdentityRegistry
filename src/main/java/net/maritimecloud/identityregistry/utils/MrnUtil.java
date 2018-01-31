@@ -41,7 +41,7 @@ public class MrnUtil {
 
     /**
      * Returns the org shortname of the organization responsible for validating the organization that is
-     * identified by the given shortname. If MaritimeCloud is the validator "mcl" is returned.
+     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
      * @param orgShortname
      * @return
      */
