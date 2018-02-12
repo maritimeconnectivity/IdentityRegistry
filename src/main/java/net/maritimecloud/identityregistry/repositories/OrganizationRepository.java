@@ -20,12 +20,14 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
+import java.util.Optional;
+
 public interface OrganizationRepository extends PagingAndSortingRepository<Organization, Long> {
     Organization findByMrnAndApprovedTrue(String mrn);
 
     Organization findByMrn(String mrn);
 
-    Organization findById(Long id);
+    Optional<Organization> findById(Long id);
 
     Page<Organization> findByApprovedFalse(Pageable pageable);
 

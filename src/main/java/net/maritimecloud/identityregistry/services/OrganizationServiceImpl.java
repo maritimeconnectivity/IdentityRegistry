@@ -43,7 +43,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     public Organization getOrganizationById(Long id) {
-        return this.filterResult(organizationRepository.findById(id));
+        return this.filterResult(organizationRepository.findById(id).orElse(null));
     }
 
     @Override

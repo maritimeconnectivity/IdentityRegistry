@@ -19,6 +19,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
+import org.hibernate.annotations.GenericGenerator;
 
 import javax.persistence.Column;
 import javax.persistence.GeneratedValue;
@@ -35,7 +36,8 @@ import java.util.Date;
 @ToString
 public abstract class TimestampModel implements JsonSerializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
+    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
+    @GenericGenerator(name = "native", strategy = "native")
     @Column(name = "id", nullable = false)
     protected Long id;
 
