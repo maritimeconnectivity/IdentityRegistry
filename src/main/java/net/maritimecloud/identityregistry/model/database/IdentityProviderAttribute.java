@@ -23,13 +23,13 @@ import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
-import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
