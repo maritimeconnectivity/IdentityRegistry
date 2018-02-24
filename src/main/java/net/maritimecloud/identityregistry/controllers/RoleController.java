@@ -48,6 +48,8 @@ public class RoleController {
     private RoleService roleService;
     @Autowired
     private OrganizationService organizationService;
+    @Autowired
+    private AccessControlUtil accessControlUtil;
 
     /**
      * Returns a list of rolemappings for this organization
@@ -79,6 +81,10 @@ public class RoleController {
     public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Role input, BindingResult bindingResult) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
+            if ((input.getRoleName().equals("ROLE_SITE_ADMIN") || input.getRoleName().equals("ROLE_APPROVE_ORG"))
+                    && !accessControlUtil.hasRole("ROLE_SITE_ADMIN")) {
+                throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
             input.setIdOrganization(org.getId());
             Role newRole = this.roleService.save(input);
             return new ResponseEntity<>(newRole, HttpStatus.OK);
