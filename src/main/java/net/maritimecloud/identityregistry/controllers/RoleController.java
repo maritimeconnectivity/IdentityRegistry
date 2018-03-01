@@ -144,6 +144,10 @@ public class RoleController {
             if (role.getIdOrganization().compareTo(org.getId()) != 0) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
+            if ((input.getRoleName().equals("ROLE_SITE_ADMIN") || input.getRoleName().equals("ROLE_APPROVE_ORG"))
+                    && !accessControlUtil.hasRole("ROLE_SITE_ADMIN")) {
+                throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
             input.copyTo(role);
             this.roleService.save(role);
             return new ResponseEntity<>(HttpStatus.OK);
