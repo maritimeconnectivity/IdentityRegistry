@@ -113,7 +113,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
         // Send email to admin saying that an Organization is awaiting approval
-        emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName());
+        emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName(), newOrg.getMrn());
         return new ResponseEntity<>(newOrg, HttpStatus.OK);
     }
 

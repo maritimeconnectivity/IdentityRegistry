@@ -77,12 +77,12 @@ public class EmailUtil {
         this.mailSender.send(msg);
     }
 
-    public void sendAdminOrgAwaitingApprovalEmail(String orgName) throws MailException {
+    public void sendAdminOrgAwaitingApprovalEmail(String orgName, String orgMrn) throws MailException {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(adminEmail);
         msg.setFrom(from);
         msg.setSubject(String.format(orgAwaitingApprovalSubject, orgName));
-        msg.setText(String.format(adminOrgAwaitingApprovalText, orgName));
+        msg.setText(String.format(adminOrgAwaitingApprovalText, orgName, orgMrn));
         this.mailSender.send(msg);
     }
 
