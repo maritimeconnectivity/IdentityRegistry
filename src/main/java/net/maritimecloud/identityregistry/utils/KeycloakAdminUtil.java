@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -32,6 +33,7 @@ import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
 
 import javax.ws.rs.NotFoundException;
@@ -433,8 +435,12 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @throws IOException 
      */
-    public void updateUser(String userMrn,  String firstName, String lastName, String email, String newPermissions, boolean enabled) throws IOException {
+    public void updateUser(String userMrn,  String firstName, String lastName, String email, String newPermissions, boolean enabled, String path) throws IOException, McBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
+        if (userReps.size() == 0) {
+            log.debug("Skipped user update");
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
+        }
         if (userReps.size() != 1) {
             log.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
