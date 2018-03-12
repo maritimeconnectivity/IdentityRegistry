@@ -21,7 +21,6 @@ import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
-import org.hibernate.validator.constraints.NotBlank;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -30,6 +29,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.Set;
 
