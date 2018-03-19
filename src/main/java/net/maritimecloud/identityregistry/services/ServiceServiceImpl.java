@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 @org.springframework.stereotype.Service
 public class ServiceServiceImpl extends EntityServiceImpl<Service> implements ServiceService {
@@ -70,13 +71,13 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     @Override
     @Transactional
     public void delete(Long id) {
-        repository.delete(id);
+        repository.deleteById(id);
     }
 
     @Override
     public Service getById(Long id) {
-        Service ret = repository.findOne(id);
-        return filterResult(ret);
+        Optional<Service> ret = repository.findById(id);
+        return filterResult(ret.orElse(null));
     }
 
 }

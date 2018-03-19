@@ -25,6 +25,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 
 @Transactional(readOnly = true)
 public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseService<T> {
@@ -79,8 +80,9 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
     }
 
     public T getById(Long id) {
-        T ret = getRepository().findOne(id);
-        return filterResult(ret);
+        Optional<T> ret = getRepository().findById(id);
+
+        return filterResult(ret.orElse(null));
     }
 
     @Transactional
@@ -91,6 +93,6 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     @Transactional
     public void delete(Long id) {
-        getRepository().delete(id);
+        getRepository().deleteById(id);
     }
 }

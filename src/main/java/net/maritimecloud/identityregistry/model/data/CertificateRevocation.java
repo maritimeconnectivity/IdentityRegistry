@@ -21,8 +21,8 @@ import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
-import org.hibernate.validator.constraints.NotBlank;
 
+import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
