@@ -90,7 +90,7 @@ net:
                 admin-org-awaiting-approval-text: |
                     Dear MCP Administrator,
                     
-                    %1$s has applied for membership in MCP. Please review the application as soon as possible!
+                    %1$s has applied for membership in MCP with MRN %2$s. Please review the application as soon as possible!
                     
                     Best regards,
                     The Maritime Connectivity Platform Team

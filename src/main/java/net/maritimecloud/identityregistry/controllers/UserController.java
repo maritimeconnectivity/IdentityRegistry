@@ -186,11 +186,13 @@ public class UserController extends EntityController<User> {
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
-                    keycloakAU.updateUser(input.getMrn(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true);
+                    keycloakAU.updateUser(input.getMrn(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), true, request.getServletPath());
                 } catch (IOException e) {
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                 }
-            } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
+            }
+            // If the org is federated they should only update their users in their own identity provider
+            else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.selectiveCopyTo(user);

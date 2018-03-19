@@ -17,6 +17,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.User;
@@ -270,8 +271,11 @@ public class UserControllerTests {
             assertTrue(false);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", true);
+            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", true, "");
         } catch (IOException e) {
+            e.printStackTrace();
+            fail();
+        } catch (McBasicRestException e) {
             e.printStackTrace();
             fail();
         }

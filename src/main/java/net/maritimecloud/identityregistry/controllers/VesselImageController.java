@@ -126,8 +126,7 @@ public class VesselImageController {
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
-            method = RequestMethod.GET,
-            produces = MediaType.IMAGE_PNG_VALUE
+            method = RequestMethod.GET
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
