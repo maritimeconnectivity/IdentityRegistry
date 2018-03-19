@@ -131,7 +131,7 @@ spring.mail:
     test-connection: false
 
 # Do not "leak" internal setup details in http X-Application-Context header
-management.add-application-context-header: false
+management.server.add-application-context-header: false
 ---
 spring:
     profiles: development
@@ -141,8 +141,8 @@ spring:
         username: idreg
         password: idreg
         driverClassName: com.mysql.jdbc.Driver
-flyway:
-    baseline-on-migrate: true
+    flyway:
+      baseline-on-migrate: true
 
 ---
 spring:
@@ -151,5 +151,4 @@ spring:
        url: jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;database_to_upper=false;DB_CLOSE_DELAY=-1
        #url: jdbc:h2:tcp://localhost/~/test;USER=sa;MODE=MySQL
        driverClassName: org.h2.Driver
-
-flyway.enabled: false
+    flyway.enabled: false
