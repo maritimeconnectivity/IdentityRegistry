@@ -22,6 +22,7 @@ import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import org.springframework.data.repository.CrudRepository;
 
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
@@ -29,6 +30,6 @@ public interface CertificateRepository extends CrudRepository<Certificate, Long>
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
     List<Certificate> findByuser(User user);
-    List<Certificate> findByCertificateAuthorityIgnoreCaseAndRevokedTrue(String caAlias);
+    List<Certificate> findByCertificateAuthorityIgnoreCaseAndRevokedTrueAndRevokedAtIsBefore(String caAlias, Date date);
 }
 

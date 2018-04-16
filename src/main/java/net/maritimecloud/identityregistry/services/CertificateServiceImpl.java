@@ -24,6 +24,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigInteger;
+import java.util.Date;
 import java.util.List;
 
 @Service
@@ -67,7 +68,8 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public List<Certificate> listRevokedCertificate(String caAlias) {
-        return CertificateRepository.findByCertificateAuthorityIgnoreCaseAndRevokedTrue(caAlias);
+        Date now = new Date();
+        return CertificateRepository.findByCertificateAuthorityIgnoreCaseAndRevokedTrueAndRevokedAtIsBefore(caAlias, now);
     }
 
 }
