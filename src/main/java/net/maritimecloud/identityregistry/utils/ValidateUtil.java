@@ -21,19 +21,17 @@ import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
 
 import javax.servlet.http.HttpServletRequest;
+import java.util.StringJoiner;
 
 public class ValidateUtil {
 
     public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McBasicRestException{
         if (bindingResult.hasErrors()) {
-            String combinedErrMsg = "";
+            StringJoiner stringJoiner = new StringJoiner(", ");
             for (ObjectError err : bindingResult.getAllErrors()) {
-                if (combinedErrMsg.length() != 0) {
-                    combinedErrMsg += ", ";
-                }
-                combinedErrMsg += err.getDefaultMessage();
+                stringJoiner.add(err.getDefaultMessage());
             }
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, combinedErrMsg, request.getServletPath());
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, stringJoiner.toString(), request.getServletPath());
         }
     }
 }

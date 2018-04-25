@@ -46,6 +46,7 @@ import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.cert.CRLException;
@@ -86,7 +87,7 @@ public class CertificateController {
         // If looking for the root CRL we load that from a file and return it.
         if (PKIConstants.ROOT_CERT_ALIAS.equals(caAlias)) {
             try {
-                String rootCrl = new String(Files.readAllBytes(Paths.get(certUtil.getRootCrlPath())));
+                String rootCrl = new String(Files.readAllBytes(Paths.get(certUtil.getRootCrlPath())), StandardCharsets.UTF_8);
                 return new ResponseEntity<>(rootCrl, HttpStatus.OK);
             } catch (IOException e) {
                 log.error("Unable to get load root crl file", e);

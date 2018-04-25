@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -91,7 +92,7 @@ public abstract class BaseControllerWithCertificate {
         byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         byte[] pkcs12Keystore = CertificateHandler.createOutputKeystore("PKCS12", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         Base64.Encoder encoder = Base64.getEncoder();
-        CertificateBundle certificateBundle = new CertificateBundle(ret, new String(encoder.encode(jksKeystore)), new String(encoder.encode(pkcs12Keystore)), keystorePassword);
+        CertificateBundle certificateBundle = new CertificateBundle(ret, new String(encoder.encode(jksKeystore), StandardCharsets.UTF_8), new String(encoder.encode(pkcs12Keystore), StandardCharsets.UTF_8), keystorePassword);
 
         // Create the certificate
         Certificate newMCCert = new Certificate();

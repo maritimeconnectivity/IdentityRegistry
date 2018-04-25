@@ -34,6 +34,7 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.net.URI;
+import java.nio.charset.StandardCharsets;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -68,7 +69,7 @@ public class CertificateControllerTests {
 
     @Test
     public void testGetOSCP() {
-        byte[] ret = "fake OCSP reply".getBytes();
+        byte[] ret = "fake OCSP reply".getBytes(StandardCharsets.UTF_8);
         try {
             doReturn(ret).when(this.certificateController).handleOCSP(any(), any());
         } catch (IOException e) {

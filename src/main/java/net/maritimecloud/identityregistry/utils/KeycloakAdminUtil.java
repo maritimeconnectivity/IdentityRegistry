@@ -41,6 +41,7 @@ import javax.ws.rs.core.Response;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -716,7 +717,7 @@ public class KeycloakAdminUtil {
                 os.write(c);
             }
             byte[] bytes = os.toByteArray();
-            String data = new String(bytes);
+            String data = new String(bytes, StandardCharsets.UTF_8);
             return data;
         } finally {
             try {
