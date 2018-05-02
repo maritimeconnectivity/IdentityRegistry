@@ -18,13 +18,11 @@ package net.maritimecloud.identityregistry;
 
 import com.deepoove.swagger.diff.SwaggerDiff;
 import com.deepoove.swagger.diff.output.HtmlRender;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.test.context.web.WebAppConfiguration;
 
 import java.io.FileWriter;
 import java.io.IOException;
@@ -40,7 +38,7 @@ public class SwaggerChanges {
 
     @Test
     public void testSwagger() {
-        String currentSwagger = "swagger.json";
+        String currentSwagger = "https://api.maritimecloud.net/v2/api-docs";
         String newSwagger = "http://127.0.0.1:" + port + "/v2/api-docs";
 
         SwaggerDiff diff = SwaggerDiff.compareV2(currentSwagger, newSwagger);
