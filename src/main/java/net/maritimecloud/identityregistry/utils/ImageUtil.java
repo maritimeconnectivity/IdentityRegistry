@@ -35,6 +35,9 @@ public class ImageUtil {
     public static final float MAX_WIDTH = 800.0f;
     public static final String OUTPUT_FORMAT = "png";
 
+    private ImageUtil() {
+    }
+
     public static ByteArrayOutputStream resize(InputStream inputStream) throws IOException {
         ByteArrayOutputStream outputImageStream = new ByteArrayOutputStream();
         BufferedImage inputImage = ImageIO.read(inputStream);

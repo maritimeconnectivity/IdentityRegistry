@@ -65,6 +65,7 @@ public class Vessel extends NonHumanEntityModel {
     private VesselImage image;
 
     /** Copies this vessel into the other */
+    @Override
     public Vessel copyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.copyTo(target);
         vessel.getAttributes().clear();
@@ -87,6 +88,7 @@ public class Vessel extends NonHumanEntityModel {
         return vessel;
     }
 
+    @Override
     @PostPersist
     @PostUpdate
     public void setChildIds() {

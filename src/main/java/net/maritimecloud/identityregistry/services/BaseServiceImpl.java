@@ -41,12 +41,10 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
     }
 
     protected T filterResult(T data) {
-        if (data != null && data.hasSensitiveFields()) {
+        if (data != null && data.hasSensitiveFields() && !isAuthorized()) {
             // If not authorized to see all we clean the object for sensitive data.
-            if (!isAuthorized()) {
-                logger.debug("Clearing Sensitive Fields");
-                data.clearSensitiveFields();
-            }
+            logger.debug("Clearing Sensitive Fields");
+            data.clearSensitiveFields();
         }
         return data;
     }

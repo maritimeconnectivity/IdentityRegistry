@@ -29,8 +29,8 @@ public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleServic
     protected RoleRepository repository;
 
     @Autowired
-    public void setRoleRepository(RoleRepository RoleRepository) {
-        this.repository = RoleRepository;
+    public void setRoleRepository(RoleRepository roleRepository) {
+        this.repository = roleRepository;
     }
 
     @Override

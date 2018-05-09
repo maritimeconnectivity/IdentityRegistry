@@ -504,6 +504,7 @@ public class ServiceController extends EntityController<Service> {
         }
     }
 
+    @Override
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = super.getAttr(certOwner);
         // Find special MC attributes to put in the certificate

@@ -695,7 +695,7 @@ public class KeycloakAdminUtil {
                 client.close();
             } catch (IOException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                log.error("Failed GET from Keycloak", e);
             }
         }
     }

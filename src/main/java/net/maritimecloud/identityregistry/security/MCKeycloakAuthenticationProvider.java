@@ -29,7 +29,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
-import org.springframework.security.core.AuthenticationException;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 
@@ -55,16 +54,16 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
     }
 
     @Override
-    public Authentication authenticate(Authentication authentication) throws AuthenticationException {
-        List<GrantedAuthority> grantedAuthorities = new ArrayList<GrantedAuthority>();
+    public Authentication authenticate(Authentication authentication) {
+        List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) authentication;
         KeycloakSecurityContext ksc = (KeycloakSecurityContext)token.getCredentials();
         Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
 
-        Organization org = null;
+        Organization org;
         if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME)) {
             String orgMrn = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
-            logger.debug("Found org mrn: " + orgMrn);
+            logger.debug("Found org mrn: {}", orgMrn);
             org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
 
             if (org != null) {
@@ -73,11 +72,11 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
                     for (String permission : usersPermissions) {
                         String[] auths = permission.split(",");
                         for (String auth : auths) {
-                            logger.debug("Looking up role: " + auth);
+                            logger.debug("Looking up role: {}", auth);
                             List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth);
                             if (foundRoles != null) {
                                 for (Role foundRole : foundRoles) {
-                                    logger.debug("Replacing role " + auth + ", with: " + foundRole.getRoleName());
+                                    logger.debug("Replacing role {}, with: {}", auth, foundRole.getRoleName());
                                     grantedAuthorities.add(new KeycloakRole(foundRole.getRoleName()));
                                 }
                             }
@@ -89,10 +88,10 @@ public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProv
                 }
             }
         }
-        return new KeycloakAuthenticationToken(token.getAccount(), mapAuthorities(grantedAuthorities));
+        return new KeycloakAuthenticationToken(token.getAccount(), mapTheAuthorities(grantedAuthorities));
     }
 
-    private Collection<? extends GrantedAuthority> mapAuthorities(
+    private Collection<? extends GrantedAuthority> mapTheAuthorities(
             Collection<? extends GrantedAuthority> authorities) {
         return grantedAuthoritiesMapper != null
                 ? grantedAuthoritiesMapper.mapAuthorities(authorities)

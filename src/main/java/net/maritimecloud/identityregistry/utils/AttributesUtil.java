@@ -8,9 +8,14 @@ import net.maritimecloud.identityregistry.model.database.entities.VesselAttribut
 import net.maritimecloud.pki.PKIConstants;
 
 import java.util.HashMap;
+import java.util.Map;
 
 @Slf4j
 public class AttributesUtil {
+
+    private AttributesUtil() {
+
+    }
 
     /**
      * Get the special attributes of an entity
@@ -18,7 +23,7 @@ public class AttributesUtil {
      * @param certOwner
      * @return the attributes of an entity
      */
-    public static HashMap<String, String> getAttributes(CertificateModel certOwner) {
+    public static Map<String, String> getAttributes(CertificateModel certOwner) {
         HashMap<String, String> attrs = new HashMap<>();
         if (certOwner instanceof Vessel) {
             attrs = getAttributesVessel((Vessel) certOwner);

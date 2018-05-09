@@ -35,6 +35,7 @@ public abstract class NonHumanEntityModel extends EntityModel {
     private String name;
 
     /** Copies this entity into the other */
+    @Override
     public NonHumanEntityModel copyTo(EntityModel target) {
         NonHumanEntityModel entity = (NonHumanEntityModel) super.copyTo(target);
         entity.setName(name);
@@ -43,6 +44,7 @@ public abstract class NonHumanEntityModel extends EntityModel {
 
     /** Copies this entity into the other
      * Only update things that are allowed to change on update */
+    @Override
     public NonHumanEntityModel selectiveCopyTo(EntityModel target) {
         NonHumanEntityModel entity = (NonHumanEntityModel) super.selectiveCopyTo(target);
         entity.setName(name);

@@ -23,8 +23,8 @@ import org.springframework.stereotype.Service;
 @Service
 public class VesselServiceImpl extends EntityServiceImpl<Vessel> implements EntityService<Vessel> {
     @Autowired
-    public void setVesselRepository(VesselRepository VesselRepository) {
-        this.repository = VesselRepository;
+    public void setVesselRepository(VesselRepository vesselRepository) {
+        this.repository = vesselRepository;
     }
 
 }

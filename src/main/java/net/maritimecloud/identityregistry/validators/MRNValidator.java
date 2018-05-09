@@ -30,8 +30,7 @@ public class MRNValidator implements ConstraintValidator<MRN, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
-            boolean ret = MrnUtil.validateMrn(value);
-            return ret;
+            return MrnUtil.validateMrn(value);
         } catch (IllegalArgumentException e) {
             context.disableDefaultConstraintViolation();
             context

@@ -195,7 +195,7 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) {
         List<String> roles = AccessControlUtil.getMyRoles();
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
@@ -211,7 +211,7 @@ public class RoleController {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) {
         // See net.maritimecloud.identityregistry.security.MultiSecurityConfig for the role hierarchy
         List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
                                            "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN",

@@ -131,7 +131,7 @@ public class LogoController {
                 this.updateLogo(org, inputLogo);
                 organizationService.save(org);
             } catch (IOException e) {
-                e.printStackTrace();
+                log.error("Unable to create or update logo", e);
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
             return new ResponseEntity<>(HttpStatus.CREATED);

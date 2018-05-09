@@ -23,6 +23,9 @@ import java.security.SecureRandom;
 
 public class PasswordUtil {
 
+    private PasswordUtil() {
+    }
+
     public static String generatePassword() {
         SecureRandom secRandom = new SecureRandom();
         return new BigInteger(130, secRandom).toString(32);

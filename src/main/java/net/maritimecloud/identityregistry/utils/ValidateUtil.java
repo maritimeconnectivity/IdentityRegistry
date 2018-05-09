@@ -25,6 +25,9 @@ import java.util.StringJoiner;
 
 public class ValidateUtil {
 
+    private ValidateUtil() {
+    }
+
     public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McBasicRestException{
         if (bindingResult.hasErrors()) {
             StringJoiner stringJoiner = new StringJoiner(", ");

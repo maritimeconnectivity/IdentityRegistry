@@ -33,6 +33,8 @@ public class MrnUtil {
     public final static Pattern MRN_VESSEL_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:vessel:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_DEVICE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:device:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
 
+    private MrnUtil() {
+    }
 
     public static String getOrgShortNameFromOrgMrn(String orgMrn) {
         int idx = orgMrn.lastIndexOf(":") + 1;

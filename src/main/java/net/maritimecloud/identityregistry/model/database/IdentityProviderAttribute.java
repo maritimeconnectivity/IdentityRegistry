@@ -150,6 +150,6 @@ public class IdentityProviderAttribute extends TimestampModel {
                 return false;
             }
         }
-        return secondCopy.size() == 0;
+        return secondCopy.isEmpty();
     }
 }

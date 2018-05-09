@@ -102,7 +102,7 @@ public abstract class BaseControllerWithCertificate {
         newMCCert.setCertificateAuthority(org.getCertificateAuthority());
         // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
         Calendar cal = Calendar.getInstance();
-        long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+        int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
         newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
         newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
         this.certificateService.saveCertificate(newMCCert);

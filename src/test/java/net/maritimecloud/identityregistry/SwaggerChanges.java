@@ -38,7 +38,7 @@ public class SwaggerChanges {
 
     @Test
     public void testSwagger() {
-        String currentSwagger = "https://api.maritimecloud.net/v2/api-docs";
+        String currentSwagger = "https://api.maritimecloud.net/v2/api-docs"; // TODO: needs to be changed when migrating to new url
         String newSwagger = "http://127.0.0.1:" + port + "/v2/api-docs";
 
         SwaggerDiff diff = SwaggerDiff.compareV2(currentSwagger, newSwagger);

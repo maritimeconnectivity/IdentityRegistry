@@ -65,6 +65,7 @@ public class User extends EntityModel {
     private Set<Certificate> certificates;
 
     /** Copies this user into the other */
+    @Override
     public User copyTo(EntityModel target) {
         User user = (User) super.copyTo(target);
         user.setEmail(email);
@@ -78,6 +79,7 @@ public class User extends EntityModel {
 
     /** Copies this user into the other
      * Only update things that are allowed to change on update */
+    @Override
     public User selectiveCopyTo(EntityModel target) {
         User user = (User) super.selectiveCopyTo(target);
         user.setEmail(email);

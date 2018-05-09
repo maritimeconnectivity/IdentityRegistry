@@ -28,8 +28,6 @@ import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import net.maritimecloud.identityregistry.validators.VesselValidator;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -55,7 +53,6 @@ import java.util.Set;
 
 @RestController
 public class VesselController extends EntityController<Vessel> {
-    private static final Logger logger = LoggerFactory.getLogger(VesselController.class);
 
     @Autowired
     public void setVesselService(EntityService<Vessel> vesselService) {
@@ -201,6 +198,7 @@ public class VesselController extends EntityController<Vessel> {
         return this.revokeEntityCert(request, orgMrn, vesselMrn, certId, input);
     }
 
+    @Override
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = super.getAttr(certOwner);
         // Find special MC attributes to put in the certificate

@@ -84,6 +84,7 @@ public class Service extends NonHumanEntityModel {
     private Vessel vessel;
 
     /** Copies this service into the other */
+    @Override
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
         service.setOidcAccessType(oidcAccessType);
@@ -101,6 +102,7 @@ public class Service extends NonHumanEntityModel {
 
     /** Copies this service into the other
      * Only update things that are allowed to change on update */
+    @Override
     public Service selectiveCopyTo(EntityModel target) {
         Service service = (Service) super.selectiveCopyTo(target);
         service.setOidcAccessType(oidcAccessType);
@@ -115,10 +117,12 @@ public class Service extends NonHumanEntityModel {
         cert.setService(this);
     }
 
+    @Override
     public boolean hasSensitiveFields() {
         return true;
     }
 
+    @Override
     public void clearSensitiveFields() {
         this.setOidcAccessType(null);
         this.setOidcClientId(null);

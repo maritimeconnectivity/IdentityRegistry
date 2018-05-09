@@ -43,7 +43,7 @@ public abstract class CertificateModel extends TimestampModel {
         if (getCertificates() != null) {
             // Dates are converted to UTC before saving into the DB
             Calendar cal = Calendar.getInstance();
-            long offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+            int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
             Date now = new Date(cal.getTimeInMillis() - offset);
             for (Certificate cert : getCertificates()) {
                 // Revoke certificates

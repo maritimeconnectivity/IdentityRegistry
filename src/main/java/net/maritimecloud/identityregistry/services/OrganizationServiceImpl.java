@@ -32,8 +32,8 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     private OrganizationRepository organizationRepository;
 
     @Autowired
-    public void setOrganizationRepository(OrganizationRepository OrganizationRepository) {
-        this.organizationRepository = OrganizationRepository;
+    public void setOrganizationRepository(OrganizationRepository organizationRepository) {
+        this.organizationRepository = organizationRepository;
     }
 
     @Override
@@ -69,12 +69,10 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     protected Organization filterResult(Organization data) {
-        if (data != null && data.hasSensitiveFields()) {
+        if (data != null && data.hasSensitiveFields() && (!isAuthorized() || !AccessControlUtil.hasAccessToOrg(data.getMrn()))) {
             // If not authorized to see all we clean the object for sensitive data.
-            if (!isAuthorized() || !AccessControlUtil.hasAccessToOrg(data.getMrn())) {
-                logger.debug("Clearing Sensitive Fields");
-                data.clearSensitiveFields();
-            }
+            logger.debug("Clearing Sensitive Fields");
+            data.clearSensitiveFields();
         }
         return data;
     }

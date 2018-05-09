@@ -148,6 +148,7 @@ public class Organization extends CertificateModel {
         return org;
     }
 
+    @Override
     @PostPersist
     @PostUpdate
     public void setChildIds() {

@@ -68,7 +68,7 @@ public class MultiSecurityConfig {
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth) throws Exception {
+        public void configureGlobal(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(mcKeycloakAuthenticationProvider());
         }
 

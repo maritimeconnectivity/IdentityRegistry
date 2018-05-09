@@ -29,6 +29,6 @@ public class HasRoleUtil {
 
     @PreAuthorize("hasRole(#role)")
     public void testRole(String role) {
-        logger.debug("should have role: " + role);
+        logger.debug("should have role: {}", role);
     }
 }

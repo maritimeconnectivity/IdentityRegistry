@@ -29,21 +29,21 @@ import java.util.List;
 
 @Service
 public class CertificateServiceImpl implements CertificateService {
-    private CertificateRepository CertificateRepository;
+    private CertificateRepository certificateRepository;
 
     @Autowired
-    public void setCertificateRepository(CertificateRepository CertificateRepository) {
-        this.CertificateRepository = CertificateRepository;
+    public void setCertificateRepository(CertificateRepository certificateRepository) {
+        this.certificateRepository = certificateRepository;
     }
 
     @Override
     public Certificate getCertificateBySerialNumber(BigInteger serialNumber) {
-        return CertificateRepository.getBySerialNumber(serialNumber);
+        return certificateRepository.getBySerialNumber(serialNumber);
     }
 
     @Override
     public Certificate saveCertificate(Certificate certificate) {
-        return CertificateRepository.save(certificate);
+        return certificateRepository.save(certificate);
     }
 
     @Override
@@ -53,23 +53,23 @@ public class CertificateServiceImpl implements CertificateService {
 
     @Override
     public List<Certificate> listVesselCertificate(Vessel vessel) {
-        return CertificateRepository.findByvessel(vessel);
+        return certificateRepository.findByvessel(vessel);
     }
     
     @Override
     public List<Certificate> listUserCertificate(User user) {
-        return CertificateRepository.findByuser(user);
+        return certificateRepository.findByuser(user);
     }
     
     @Override
     public List<Certificate> listDeviceCertificate(Device device) {
-        return CertificateRepository.findBydevice(device);
+        return certificateRepository.findBydevice(device);
     }
 
     @Override
     public List<Certificate> listRevokedCertificate(String caAlias) {
         Date now = new Date();
-        return CertificateRepository.findByCertificateAuthorityIgnoreCaseAndRevokedTrueAndRevokedAtIsBefore(caAlias, now);
+        return certificateRepository.findByCertificateAuthorityIgnoreCaseAndRevokedTrueAndRevokedAtIsBefore(caAlias, now);
     }
 
 }

@@ -40,6 +40,7 @@ public class Device extends NonHumanEntityModel {
     private Set<Certificate> certificates;
 
     /** Copies this device into the other */
+    @Override
     public Device copyTo(EntityModel target) {
         Device device = (Device) super.copyTo(target);
         device.getCertificates().clear();
@@ -50,6 +51,7 @@ public class Device extends NonHumanEntityModel {
 
     /** Copies this device into the other
      * Only update things that are allowed to change on update */
+    @Override
     public Device selectiveCopyTo(EntityModel target) {
         Device device = (Device) super.selectiveCopyTo(target);
         device.setChildIds();

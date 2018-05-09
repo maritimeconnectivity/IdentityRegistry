@@ -204,17 +204,9 @@
 				</configuration>
 			</plugin>
 			<plugin>
-				<groupId>com.github.spotbugs</groupId>
-				<artifactId>spotbugs-maven-plugin</artifactId>
-				<version>3.1.1</version>
-				<dependencies>
-					<!-- overwrite dependency on spotbugs if you want to specify the version of spotbugs -->
-					<dependency>
-						<groupId>com.github.spotbugs</groupId>
-						<artifactId>spotbugs</artifactId>
-						<version>3.1.1</version>
-					</dependency>
-				</dependencies>
+				<groupId>org.sonarsource.scanner.maven</groupId>
+				<artifactId>sonar-maven-plugin</artifactId>
+				<version>3.4.0.905</version>
 			</plugin>
 		</plugins>
 	</build>
