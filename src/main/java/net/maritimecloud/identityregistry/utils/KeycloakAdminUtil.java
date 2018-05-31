@@ -507,21 +507,26 @@ public class KeycloakAdminUtil {
      * Delete a user from Keycloak
      * 
      * @param email  email of the user to delete
+     * @param mrn    mrn of the user to delete
      */
-    public void deleteUser(String email) {
+    public void deleteUser(String email, String mrn) {
         // First try: Find the user by searching for the username
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
             getProjectUserRealm().users().get(users.get(0).getId()).remove();
-            return ;
+        } else {
+            // Second try: Find the user by searching for the email
+            users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
+            // If we found one, delete it
+            if (!users.isEmpty()) {
+                getProjectUserRealm().users().get(users.get(0).getId()).remove();
+            }
         }
-        // Second try: Find the user by searching for the email
-        users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
-        // If we found one, delete it
+        // delete the user in the broker realm
+        users = getBrokerRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
-            getProjectUserRealm().users().get(users.get(0).getId()).remove();
-            return ;
+            getBrokerRealm().users().get(users.get(0).getId()).remove();
         }
     }
 
@@ -549,17 +554,7 @@ public class KeycloakAdminUtil {
         client.setEnabled(true);
         client.setConsentRequired(false);
         client.setClientTemplate(keycloakClientTemplate); // the template includes the mappers needed
-        if ("public".equals(type)) {
-            client.setBearerOnly(false);
-            client.setPublicClient(true);
-        } else if ("bearer-only".equals(type)) {
-            client.setBearerOnly(true);
-            client.setPublicClient(false);
-        } else {
-            // Fallback to "confidential"
-            client.setBearerOnly(false);
-            client.setPublicClient(false);
-        }
+        setClientType(type, client);
         // Create the client
         Response ret = getBrokerRealm().clients().create(client);
         String errMsg = ret.readEntity(String.class);
@@ -579,6 +574,20 @@ public class KeycloakAdminUtil {
             return secret;
         } else {
             return "";
+        }
+    }
+
+    private void setClientType(String type, ClientRepresentation client) {
+        if ("public".equals(type)) {
+            client.setBearerOnly(false);
+            client.setPublicClient(true);
+        } else if ("bearer-only".equals(type)) {
+            client.setBearerOnly(true);
+            client.setPublicClient(false);
+        } else {
+            // Fallback to "confidential"
+            client.setBearerOnly(false);
+            client.setPublicClient(false);
         }
     }
 
@@ -608,21 +617,11 @@ public class KeycloakAdminUtil {
         } else {
             client.setRedirectUris(null);
         }
-        if ("public".equals(type)) {
-            client.setBearerOnly(false);
-            client.setPublicClient(true);
-        } else if ("bearer-only".equals(type)) {
-            client.setBearerOnly(true);
-            client.setPublicClient(false);
-        } else {
-            // Fallback to "confidential"
-            client.setBearerOnly(false);
-            client.setPublicClient(false);
-        }
+        setClientType(type, client);
         // Update client
         getBrokerRealm().clients().get(client.getId()).update(client);
         if (!"public".equals(type)) {
-            // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
+            // The client secret can't be retrieved by the ClientRepresentation (bug?), so we need to use the ClientResource
             String secret = getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
             return secret;
         } else {

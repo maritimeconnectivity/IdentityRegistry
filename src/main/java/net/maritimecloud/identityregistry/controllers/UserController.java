@@ -128,7 +128,7 @@ public class UserController extends EntityController<User> {
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the user from keycloak if it was created.
                 if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
-                    keycloakAU.deleteUser(input.getEmail());
+                    keycloakAU.deleteUser(input.getEmail(), input.getMrn());
                 }
                 throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
@@ -230,7 +230,7 @@ public class UserController extends EntityController<User> {
                 // Remove user from keycloak if created there.
                 if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    keycloakAU.deleteUser(user.getEmail());
+                    keycloakAU.deleteUser(user.getEmail(), user.getMrn());
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
             }
