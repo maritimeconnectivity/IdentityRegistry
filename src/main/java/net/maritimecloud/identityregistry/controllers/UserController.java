@@ -230,6 +230,7 @@ public class UserController extends EntityController<User> {
                 // Remove user from keycloak if created there.
                 if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                     keycloakAU.deleteUser(user.getEmail(), user.getMrn());
                 }
                 return new ResponseEntity<>(HttpStatus.OK);
