@@ -287,6 +287,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             } else {
                 // Remove any users from the shared project IDP
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
+                keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
                 for (User user : this.userService.listAllFromOrg(org.getId())) {
                     keycloakAU.deleteUser(user.getEmail(), user.getMrn());
                 }
