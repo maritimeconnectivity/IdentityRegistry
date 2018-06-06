@@ -279,10 +279,11 @@
       "config" : { }
     } ],
     "disableableCredentialTypes" : [ "password" ],
-    "requiredActions" : [ "UPDATE_PASSWORD" ],
+    "requiredActions" : [ ],
     "realmRoles" : [ "offline_access", "uma_authorization" ],
     "clientRoles" : {
-      "account" : [ "view-profile" ]
+      "realm-management" : [ "view-users", "manage-users" ],
+      "account" : [ "view-profile", "manage-account" ]
     },
     "groups" : [ ]
   } ],
