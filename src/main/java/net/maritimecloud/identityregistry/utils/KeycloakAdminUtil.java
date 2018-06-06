@@ -76,7 +76,7 @@ public class KeycloakAdminUtil {
     private String keycloakProjectUsersBaseUrl;
 
     // Load the info needed to log into the Keycloak instance that is used as to host certificates
-    @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-user")
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-user}")
     private String keycloakCertificatesAdminUser;
     @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-password}")
     private String keycloakCertificatesAdminPassword;
