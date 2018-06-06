@@ -46,6 +46,13 @@ net:
             keycloak-project-users-realm: ProjectTestUsers
             keycloak-project-users-base-url: http://localhost:8080/auth/
 
+            # Login info for the keycloak used for certificates
+            keycloak-certificates-admin-user: idreg-cert-admin
+            keycloak-certificates-admin-password: idreg-cert-admin
+            keycloak-certificates-admin-client: security-admin-console
+            keycloak-certificates-realm: Certificates
+            keycloak-certificates-base-url: http://localhost:8080/auth/
+
             keycloak-client-template: mc-client-template
 
             auto-approve-organizations: true

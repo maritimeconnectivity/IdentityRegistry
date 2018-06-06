@@ -259,6 +259,33 @@
   "otpPolicyDigits" : 6,
   "otpPolicyLookAheadWindow" : 1,
   "otpPolicyPeriod" : 30,
+  "users" : [ {
+    "id" : "380874f8-1ca0-4248-b265-fcfbd0097a61",
+    "createdTimestamp" : 1528290620970,
+    "username" : "idreg-cert-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "type" : "password",
+      "hashedSaltedValue" : "OluFFenibro4Atg5xAYmRRqHooiq3tfHXMWGtem7PEbKCss0gQ2IVG4Qe0vhKm4MVfHzIB+zaqKZ6DnXQ65wTQ==",
+      "salt" : "LgiMaCTBSXz2RwHNVldvgQ==",
+      "hashIterations" : 20000,
+      "counter" : 0,
+      "algorithm" : "pbkdf2-sha256",
+      "digits" : 0,
+      "period" : 0,
+      "createdDate" : 1528290634098,
+      "config" : { }
+    } ],
+    "disableableCredentialTypes" : [ "password" ],
+    "requiredActions" : [ "UPDATE_PASSWORD" ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "account" : [ "view-profile" ]
+    },
+    "groups" : [ ]
+  } ],
   "clientScopeMappings" : {
     "realm-management" : [ {
       "client" : "admin-cli",
