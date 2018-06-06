@@ -59,7 +59,7 @@ public class Organization extends CertificateModel {
     @Length(max = 64)
     @NotBlank
     @MRN
-    @ApiModelProperty(value = "The Maritime Resource Name", required = true, readOnly = true)
+    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 

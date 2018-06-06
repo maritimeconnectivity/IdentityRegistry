@@ -225,14 +225,9 @@ public class UserController extends EntityController<User> {
             if (user == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
-            if (user.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (user.getIdOrganization().equals(org.getId())) {
                 this.entityService.delete(user.getId());
-                // Remove user from keycloak if created there.
-                if (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) {
-                    keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
-                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    keycloakAU.deleteUser(user.getEmail(), user.getMrn());
-                }
+                keycloakAU.deleteUser(user.getEmail(), user.getMrn());
                 return new ResponseEntity<>(HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());

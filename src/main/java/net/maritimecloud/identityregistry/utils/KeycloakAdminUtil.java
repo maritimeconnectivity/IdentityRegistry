@@ -75,6 +75,18 @@ public class KeycloakAdminUtil {
     @Value("${net.maritimecloud.idreg.keycloak-project-users-base-url}")
     private String keycloakProjectUsersBaseUrl;
 
+    // Load the info needed to log into the Keycloak instance that is used as to host certificates
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-user")
+    private String keycloakCertificatesAdminUser;
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-password}")
+    private String keycloakCertificatesAdminPassword;
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-admin-client}")
+    private String keycloakCertificatesAdminClient;
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-realm}")
+    private String keycloakCertificatesRealm;
+    @Value("${net.maritimecloud.idreg.keycloak-certificates-base-url}")
+    private String keycloakCertificatesBaseUrl;
+
     // Load client template name used when creating clients in keycloak
     @Value("${net.maritimecloud.idreg.keycloak-client-template}")
     private String keycloakClientTemplate;
@@ -86,9 +98,11 @@ public class KeycloakAdminUtil {
     // Type of instance 
     public static final int BROKER_INSTANCE = 0;
     public static final int USER_INSTANCE = 1;
+    public static final int CERTIFICATES_INSTANCE = 2;
 
     private Keycloak keycloakBrokerInstance = null;
     private Keycloak keycloakUserInstance = null;
+    private Keycloak keycloakCertificatesInstance = null;
 
     // Used in createIdpMapper
     private static final Map<String, String> oidcDefaultMappers = new HashMap<>();
@@ -127,12 +141,24 @@ public class KeycloakAdminUtil {
      * @param type  The type of instance to initialize.
      */
     public void init(int type) {
-        //keycloakInstance = Keycloak.getInstance(deployment.getAuthServerBaseUrl(), deployment.getRealm(), "idreg-admin", "idreg-admin", "mcidreg", "1b1f1686-1391-4b25-b770-906a2ffc7db9");
-        //keycloakInstance = Keycloak.getInstance(keycloakBaseUrl, keycloakRealm, "idreg-admin", "idreg-admin", "security-admin-console");
         if (type == BROKER_INSTANCE) {
             keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
         } else if (type == USER_INSTANCE) {
             keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
+        } else if(type == CERTIFICATES_INSTANCE) {
+            keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+        }
+    }
+
+    private void initAll() {
+        if (keycloakBrokerInstance == null) {
+            init(BROKER_INSTANCE);
+        }
+        if (keycloakUserInstance == null) {
+            init(USER_INSTANCE);
+        }
+        if (keycloakCertificatesInstance == null) {
+            init(CERTIFICATES_INSTANCE);
         }
     }
     
@@ -142,6 +168,10 @@ public class KeycloakAdminUtil {
 
     private RealmResource getProjectUserRealm() {
         return keycloakUserInstance.realm(keycloakProjectUsersRealm);
+    }
+
+    private RealmResource getCertificatesRealm() {
+        return keycloakCertificatesInstance.realm(keycloakCertificatesRealm);
     }
 
     /**
@@ -510,6 +540,7 @@ public class KeycloakAdminUtil {
      * @param mrn    mrn of the user to delete
      */
     public void deleteUser(String email, String mrn) {
+        this.initAll();
         // First try: Find the user by searching for the username
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         // If we found one, delete it
@@ -527,6 +558,11 @@ public class KeycloakAdminUtil {
         users = getBrokerRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
             getBrokerRealm().users().get(users.get(0).getId()).remove();
+        }
+        // delete the user in the ceritificates realm
+        users = getCertificatesRealm().users().search(mrn, null, null, null, -1, -1);
+        if (!users.isEmpty()) {
+            getCertificatesRealm().users().get(users.get(0).getId()).remove();
         }
     }
 
