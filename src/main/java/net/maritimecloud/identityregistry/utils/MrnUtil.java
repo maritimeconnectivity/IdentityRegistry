@@ -22,11 +22,6 @@ import java.util.regex.Pattern;
  */
 public class MrnUtil {
 
-    public final static String MC_MRN_PREFIX = "urn:mrn";
-    // TODO: "mcl" probably shouldn't be hardcoded...
-    public final static String MC_MRN_OWNER_PREFIX = MC_MRN_PREFIX + ":mcl";
-    public final static String MC_MRN_ORG_PREFIX = MC_MRN_OWNER_PREFIX + ":org";
-    public final static Pattern URN_PATTERN = Pattern.compile("^urn:[a-z0-9][a-z0-9-]{0,31}:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_SERVICE_INSTANCE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:service:instance:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
     public final static Pattern MRN_USER_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:user:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
@@ -98,7 +93,8 @@ public class MrnUtil {
         return serviceMrn.substring(startIdx, endIdx);
     }
 
-    public static String generateMrnForEntity(String orgMrn, String type, String entityId) {
+    // not used right now
+    /*public static String generateMrnForEntity(String orgMrn, String type, String entityId) {
         // clean entity id, replace reserved URN characters with "_"
         // others: "()+,-.:=@;$_!*'"   reserved: "%/?#"
         entityId = entityId.replaceAll("[()+,-.:=@;$_!*'%/??#]", "_"); // double questionmark as escape
@@ -111,7 +107,7 @@ public class MrnUtil {
             mrn = getMrnPrefix(orgMrn) + ":" + type + ":" + getOrgShortNameFromOrgMrn(orgMrn) + ":" + entityId;
         }
         return mrn;
-    }
+    }*/
 
     public static boolean validateMrn(String mrn) {
         if (mrn == null || mrn.trim().isEmpty()) {
