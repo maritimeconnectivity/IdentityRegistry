@@ -133,6 +133,7 @@ public class KeycloakAdminUtil {
      * Constructor.
      */
     public KeycloakAdminUtil() {
+        // empty constructor
     }
 
     /**
@@ -437,9 +438,8 @@ public class KeycloakAdminUtil {
      * Check the existence of user with email.
      *
      * @param email         email of the user
-     * @throws IOException
      */
-    public void checkUserExistence(String email) throws IOException, DuplicatedKeycloakEntry{
+    public void checkUserExistence(String email) throws DuplicatedKeycloakEntry{
         // First try: Find the user by searching for the username field
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
 
@@ -466,7 +466,7 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @throws IOException 
      */
-    public void updateUser(String userMrn,  String firstName, String lastName, String email, String newPermissions, boolean enabled, String path) throws IOException, McBasicRestException {
+    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         if (userReps.size() == 0) {
             log.debug("Skipped user update");
@@ -744,8 +744,7 @@ public class KeycloakAdminUtil {
      */
     private static String getContent(HttpEntity entity) throws IOException {
         if (entity == null) return null;
-        InputStream is = entity.getContent();
-        try {
+        try (InputStream is = entity.getContent()) {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             int c;
             while ((c = is.read()) != -1) {
@@ -754,11 +753,6 @@ public class KeycloakAdminUtil {
             byte[] bytes = os.toByteArray();
             String data = new String(bytes, StandardCharsets.UTF_8);
             return data;
-        } finally {
-            try {
-                is.close();
-            } catch (IOException ignored) {
-            }
         }
     }
 }

@@ -37,6 +37,7 @@ public class SwaggerConfig {
         return new Docket(DocumentationType.SWAGGER_2)
           .apiInfo(getApiInfo())
           .directModelSubstitute(BigInteger.class, String.class)
+            .forCodeGeneration(true)
           .select()
             .apis(RequestHandlerSelectors.any())
             .paths(PathSelectors.regex("/(oidc|x509)/api/.*"))

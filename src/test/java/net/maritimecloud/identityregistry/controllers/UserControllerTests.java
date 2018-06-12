@@ -25,7 +25,6 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -271,7 +270,7 @@ public class UserControllerTests {
             assertTrue(false);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", true, "");
+            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
         } catch (IOException e) {
             e.printStackTrace();
             fail();
