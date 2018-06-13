@@ -625,7 +625,6 @@ public class KeycloakAdminUtil {
             client.setBearerOnly(false);
             client.setPublicClient(false);
         }
-        client.setClientAuthenticatorType(type);
     }
 
     /**
@@ -648,7 +647,7 @@ public class KeycloakAdminUtil {
             }
         }
         ClientRepresentation client = clients.get(0);
-        client.setClientAuthenticatorType(type);
+        client.setClientAuthenticatorType("client-secret");
         if (redirectUri != null && !redirectUri.trim().isEmpty()) {
             client.setRedirectUris(Collections.singletonList(redirectUri));
         } else {
