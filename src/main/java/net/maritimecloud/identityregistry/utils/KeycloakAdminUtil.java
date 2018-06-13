@@ -625,6 +625,7 @@ public class KeycloakAdminUtil {
             client.setBearerOnly(false);
             client.setPublicClient(false);
         }
+        client.setClientAuthenticatorType(type);
     }
 
     /**
