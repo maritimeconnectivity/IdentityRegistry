@@ -43,6 +43,7 @@ public class MCIdRegConstants {
     public static final String VESSEL_IMAGE_NOT_FOUND = "This vessel does not have an image!";
     public static final String ORG_IS_FEDERATED = "Users need to be created and updated through their own identity provider for federated organizations!";
     public static final String USER_EMAIL_UPDATE_NOT_ALLOWED = "No users with given email were found. This might be due to trying to update a user with a new email address with is not currently possible.";
+    public static final String AGENT_NOT_FOUND = "The agent could not be found.";
 
     private MCIdRegConstants() {
     }

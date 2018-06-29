@@ -111,6 +111,7 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
                     .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/service/**").denyAll()
             ;
         }
 
@@ -199,6 +200,7 @@ public class MultiSecurityConfig {
                     .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
                     .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
+                    .antMatchers(HttpMethod.GET, "/service/**").authenticated()
             ;
 
             if (!useStandardSSL) {
