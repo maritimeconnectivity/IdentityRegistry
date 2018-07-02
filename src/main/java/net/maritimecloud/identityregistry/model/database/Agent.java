@@ -19,7 +19,6 @@ package net.maritimecloud.identityregistry.model.database;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
-import net.maritimecloud.identityregistry.validators.InPredefinedList;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -46,21 +45,11 @@ public class Agent extends TimestampModel {
     @Column(name = "id_on_behalf_of", nullable = false)
     private Long idOnBehalfOfOrganization;
 
-    /**
-     * The role that the acting organization is allowed to perform
-     */
-    @ApiModelProperty(required = true, value = "The role that should be given to the agent")
-    @Column(name = "role_name", nullable = false)
-    @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
-            "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_USER", "ROLE_APPROVE_ORG"})
-    private String roleName;
-
     /** Copies this agent into the other */
     public Agent copyTo(Agent agent) {
         Objects.requireNonNull(agent);
         agent.setIdActingOrganization(this.idActingOrganization);
         agent.setIdOnBehalfOfOrganization(this.idOnBehalfOfOrganization);
-        agent.setRoleName(this.roleName);
         agent.setId(this.id);
         return agent;
     }

@@ -22,7 +22,6 @@ import net.maritimecloud.identityregistry.model.database.Agent;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.services.AgentService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -48,9 +47,6 @@ public class AgentController {
 
     @Autowired
     private OrganizationService organizationService;
-
-    @Autowired
-    private AccessControlUtil accessControlUtil;
 
     @Autowired
     private AgentService agentService;
@@ -144,10 +140,6 @@ public class AgentController {
         Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
         Organization actingOrg = this.organizationService.getOrganizationById(input.getIdActingOrganization());
         if (organization != null && actingOrg != null) {
-            if ((input.getRoleName().equals("ROLE_SITE_ADMIN") || input.getRoleName().equals("ROLE_APPROVE_ORG"))
-                    && !accessControlUtil.hasRole("ROLE_SITE_ADMIN")) {
-                throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            }
             input.setIdOnBehalfOfOrganization(organization.getId());
             Agent agent = this.agentService.save(input);
             return new ResponseEntity<>(agent, HttpStatus.OK);
@@ -175,10 +167,6 @@ public class AgentController {
             Agent agent = this.agentService.getById(agentId);
             if (agent == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.AGENT_NOT_FOUND, request.getServletPath());
-            }
-            if ((input.getRoleName().equals("ROLE_SITE_ADMIN") || input.getRoleName().equals("ROLE_APPROVE_ORG"))
-                    && !accessControlUtil.hasRole("ROLE_SITE_ADMIN")) {
-                throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             if (!input.getIdOnBehalfOfOrganization().equals(agent.getIdOnBehalfOfOrganization()) || !org.getId().equals(input.getIdOnBehalfOfOrganization())) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
