@@ -40,6 +40,7 @@ public class AgentServiceImpl extends BaseServiceImpl<Agent> implements AgentSer
     @Override
     public void deleteByOrg(Long id) {
         this.repository.deleteByIdOnBehalfOfOrganization(id);
+        this.repository.deleteByIdActingOrganization(id);
     }
 
     @Override
@@ -55,6 +56,11 @@ public class AgentServiceImpl extends BaseServiceImpl<Agent> implements AgentSer
     @Override
     public Page<Agent> getAgentsByIdOnBehalfOfOrg(Long id, Pageable pageable) {
         return this.repository.findByIdOnBehalfOfOrganization(id, pageable);
+    }
+
+    @Override
+    public List<Agent> getAgentsByIdOnBehalfOfOrgAndIdActingOrg(Long idOnBehalfOf, Long idActing) {
+        return this.repository.findByIdOnBehalfOfOrganizationAndIdActingOrganization(idOnBehalfOf, idActing);
     }
 
     @Override

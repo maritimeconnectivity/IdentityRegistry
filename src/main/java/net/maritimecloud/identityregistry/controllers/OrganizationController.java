@@ -26,6 +26,7 @@ import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.services.AgentService;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
@@ -82,6 +83,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Autowired
     private CertificateService certificateService;
+
+    @Autowired
+    private AgentService agentService;
 
     /**
      * Receives an application for a new organization and root-user
@@ -295,6 +299,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             this.vesselService.deleteByOrg(org.getId());
             this.roleService.deleteByOrg(org.getId());
             this.organizationService.delete(org.getId());
+            this.agentService.deleteByOrg(org.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

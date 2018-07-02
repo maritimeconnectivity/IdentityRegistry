@@ -31,4 +31,6 @@ public interface AgentService extends BaseService<Agent> {
     List<Agent> getAgentsByIdActingOrg(Long id);
 
     Page<Agent> getAgentsByIdOnBehalfOfOrg(Long id, Pageable pageable);
+
+    List<Agent> getAgentsByIdOnBehalfOfOrgAndIdActingOrg(Long idOnBehalfOf, Long idActing);
 }

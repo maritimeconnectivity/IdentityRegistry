@@ -16,6 +16,10 @@
 package net.maritimecloud.identityregistry.utils;
 
 import lombok.extern.slf4j.Slf4j;
+import net.maritimecloud.identityregistry.model.database.Agent;
+import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.services.AgentService;
+import net.maritimecloud.identityregistry.services.OrganizationService;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +45,20 @@ public class AccessControlUtil {
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
+    private static OrganizationService organizationService;
+
+    private static AgentService agentService;
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService1) {
+        organizationService = organizationService1;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService1) {
+        agentService = agentService1;
+    }
+
     public static boolean hasAccessToOrg(String orgMrn) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
             log.debug("The orgMrn was empty!");
@@ -63,10 +81,21 @@ public class AccessControlUtil {
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME) &&
-                    ((String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME)).equalsIgnoreCase(orgMrn)) {
-                log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
-                return true;
+            if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME)) {
+                String org = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
+                if (org.equalsIgnoreCase(orgMrn)) {
+                    log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
+                    return true;
+                }
+                Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(org);
+                if (organization != null && agentOrganization != null) {
+                    List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
+                    if (!agents.isEmpty()) {
+                        log.debug("Entity from org: " + org + " is an agent for " + orgMrn);
+                        return true;
+                    }
+                }
             }
             log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
@@ -80,6 +109,15 @@ public class AccessControlUtil {
             if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
                 log.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
                 return true;
+            }
+            Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+            Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(certOrgMrn);
+            if (organization != null && agentOrganization != null) {
+                List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
+                if (!agents.isEmpty()) {
+                    log.debug("Entity with O=" + certOrgMrn + " is an agent for " + orgMrn);
+                    return true;
+                }
             }
             log.debug("Entity with O=" + certOrgMrn + " is not in " + orgMrn);
         } else {

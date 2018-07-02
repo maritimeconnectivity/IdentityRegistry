@@ -31,7 +31,9 @@ public interface AgentRepository extends CrudRepository<Agent, Long> {
 
     List<Agent> findByIdActingOrganization(Long orgId);
 
-    Page<Agent> findByIdOnBehalfOfOrganizationAndIdActingOrganization(Long onBehalfOfId, Long actingId, Pageable pageable);
+    List<Agent> findByIdOnBehalfOfOrganizationAndIdActingOrganization(Long onBehalfOfId, Long actingId);
 
     void deleteByIdOnBehalfOfOrganization(Long id);
+
+    void deleteByIdActingOrganization(Long id);
 }
