@@ -55,11 +55,6 @@ import org.springframework.security.web.firewall.HttpFirewall;
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 public class MultiSecurityConfig {
 
-    @Bean
-    public AccessControlUtil accessControlUtil() {
-        return new AccessControlUtil();
-    }
-
     @Configuration
     @Order(1)
     public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter

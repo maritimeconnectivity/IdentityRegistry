@@ -25,7 +25,6 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.ServiceService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
@@ -86,8 +85,6 @@ public class ServiceControllerTests {
     @MockBean
     private CertificateService certificateService;
 
-    @MockBean
-    private AccessControlUtil accessControlUtil;
     @Before
     public void setup() {
         mvc = MockMvcBuilders

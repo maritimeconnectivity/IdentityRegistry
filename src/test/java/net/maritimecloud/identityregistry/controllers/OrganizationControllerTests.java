@@ -16,29 +16,29 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import net.maritimecloud.identityregistry.model.database.Agent;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.User;
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.services.AgentService;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
-import net.maritimecloud.identityregistry.utils.AccessControlUtil;
 import net.maritimecloud.identityregistry.utils.EmailUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
-import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -47,11 +47,13 @@ import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -61,7 +63,6 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @RunWith(SpringRunner.class)
 @SpringBootTest
-@ContextConfiguration
 @WebAppConfiguration
 public class OrganizationControllerTests {
 
@@ -93,7 +94,7 @@ public class OrganizationControllerTests {
     private CertificateService certificateService;
 
     @MockBean
-    private AccessControlUtil accessControlUtil;
+    private AgentService agentService;
 
     @Before
     public void setup() {
@@ -102,6 +103,7 @@ public class OrganizationControllerTests {
                 //.alwaysDo(print())
                 .apply(SecurityMockMvcConfigurers.springSecurity())
                 .build();
+        MockitoAnnotations.initMocks(this);
     }
 
     /**
@@ -219,6 +221,57 @@ public class OrganizationControllerTests {
                             .content(orgJson)
                             .contentType("application/json")
                         ).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testAccessUpdateOrgAsAgent() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+
+        // Build the agent org object
+        Organization agentOrg = new Organization();
+        agentOrg.setMrn("urn:mrn:mcl:org:agent");
+        agentOrg.setAddress("Agent Street 21");
+        agentOrg.setCountry("Agent Country");
+        agentOrg.setUrl("http://agent.org");
+        agentOrg.setEmail("agent@agent.org");
+        org.setName("The Agent Organization");
+        agentOrg.setIdentityProviderAttributes(identityProviderAttributes);
+
+        // Create agent object
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:agent", "ROLE_ORG_ADMIN", "");
+        Organization mock1 = mock(Organization.class);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:dma")).willReturn(mock1);
+        Organization mock2 = mock(Organization.class);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:agent")).willReturn(mock2);
+        List<Agent> agentList = (List<Agent>) mock(List.class);
+        given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
+        given(agentList.isEmpty()).willReturn(false);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+                .header("Origin", "bla")
+                .content(orgJson)
+                .contentType("application/json")
+            ).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);

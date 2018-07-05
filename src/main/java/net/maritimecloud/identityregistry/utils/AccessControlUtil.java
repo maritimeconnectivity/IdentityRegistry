@@ -45,21 +45,13 @@ public class AccessControlUtil {
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
-    private static OrganizationService organizationService;
-
-    private static AgentService agentService;
+    @Autowired
+    private OrganizationService organizationService;
 
     @Autowired
-    public void setOrganizationService(OrganizationService organizationService1) {
-        organizationService = organizationService1;
-    }
+    private AgentService agentService;
 
-    @Autowired
-    public void setAgentService(AgentService agentService1) {
-        agentService = agentService1;
-    }
-
-    public static boolean hasAccessToOrg(String orgMrn) {
+    public boolean hasAccessToOrg(String orgMrn) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
             log.debug("The orgMrn was empty!");
             return false;
