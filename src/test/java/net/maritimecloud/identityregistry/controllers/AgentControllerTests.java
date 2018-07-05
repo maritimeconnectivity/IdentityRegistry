@@ -94,7 +94,7 @@ public class AgentControllerTests {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:dma/agent").with(authentication(auth))
                 .header("Origin", "bla")
                 .content(agentJson)
-                .contentType("application/json")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+                .contentType("application/json")).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
