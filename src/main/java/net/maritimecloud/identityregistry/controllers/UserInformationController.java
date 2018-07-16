@@ -38,6 +38,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -82,16 +83,19 @@ public class UserInformationController {
         }
 
         User user = this.userService.getByMrn(userMrn);
-        List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).collect(Collectors.toList());
+        if (user.getPermissions() != null) {
+            List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).collect(Collectors.toList());
 
-        List<String> userRoles = new ArrayList<>();
-        userPermissions.forEach(permission -> roleService.getRolesByIdOrganizationAndPermission(user.getIdOrganization(), permission).forEach(role -> userRoles.add(role.getRoleName())));
+            List<String> userRoles = new ArrayList<>();
+            userPermissions.forEach(permission -> roleService.getRolesByIdOrganizationAndPermission(user.getIdOrganization(), permission).forEach(role -> userRoles.add(role.getRoleName())));
 
-        return new ResponseEntity<>(userRoles, HttpStatus.OK);
+            return new ResponseEntity<>(userRoles, HttpStatus.OK);
+        }
+        return new ResponseEntity<>(Collections.singletonList("ROLE_USER"), HttpStatus.OK);
     }
 
     @RequestMapping(
-            value = "/{userMrn}/orgs",
+            value = "/{userMrn}/acting-on-behalf-of",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8"
     )

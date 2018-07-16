@@ -278,6 +278,57 @@ public class OrganizationControllerTests {
         }
     }
 
+    @Test
+    public void testAccessUpdateOrgAsAgentWithoutRights() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+
+        // Build the agent org object
+        Organization agentOrg = new Organization();
+        agentOrg.setMrn("urn:mrn:mcl:org:agent");
+        agentOrg.setAddress("Agent Street 21");
+        agentOrg.setCountry("Agent Country");
+        agentOrg.setUrl("http://agent.org");
+        agentOrg.setEmail("agent@agent.org");
+        org.setName("The Agent Organization");
+        agentOrg.setIdentityProviderAttributes(identityProviderAttributes);
+
+        // Create agent object
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:agent", "ROLE_USER", "");
+        Organization mock1 = mock(Organization.class);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:dma")).willReturn(mock1);
+        Organization mock2 = mock(Organization.class);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:agent")).willReturn(mock2);
+        List<Agent> agentList = (List<Agent>) mock(List.class);
+        given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
+        given(agentList.isEmpty()).willReturn(false);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isForbidden());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
     /**
      * Try to update an organization with data mismatch between json and url
      */

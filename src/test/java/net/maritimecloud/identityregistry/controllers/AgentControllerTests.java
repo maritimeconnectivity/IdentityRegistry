@@ -41,8 +41,10 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -151,6 +153,106 @@ public class AgentControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:dma/agent/3").with(authentication(auth))
             .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testUpdateAgentWithRights() {
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+
+        Organization organization = mock(Organization.class);
+
+        String agentJson = JSONSerializer.serialize(agent);
+
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
+        given(this.agentService.getById(3l)).willReturn(agent);
+        given(organization.getId()).willReturn(1l);
+
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_ORG_ADMIN", "");
+
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:dma/agent/3").with(authentication(auth))
+                    .header("Origin", "bla").contentType("application/json").content(agentJson))
+                    .andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testUpdateAgentWithoutRights() {
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+
+        Organization organization = mock(Organization.class);
+
+        String agentJson = JSONSerializer.serialize(agent);
+
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
+        given(this.agentService.getById(3l)).willReturn(agent);
+        given(organization.getId()).willReturn(1l);
+
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_USER", "");
+
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:dma/agent/3").with(authentication(auth))
+                    .header("Origin", "bla").contentType("application/json").content(agentJson))
+                    .andExpect(status().isForbidden());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testDeleteAgentWithRights() {
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+
+        Organization organization = mock(Organization.class);
+
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
+        given(this.agentService.getById(3l)).willReturn(agent);
+        given(organization.getId()).willReturn(1l);
+
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_ORG_ADMIN", "");
+
+        try {
+            mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:dma/agent/3")
+                    .with(authentication(auth))
+                    .header("Origin", "bla")).andExpect(status().isOk());
+        } catch (Exception e) {
+            e.printStackTrace();
+            assertTrue(false);
+        }
+    }
+
+    @Test
+    public void testDeleteAgentWithoutRights() {
+        Agent agent = new Agent();
+        agent.setIdOnBehalfOfOrganization(1l);
+        agent.setIdActingOrganization(2l);
+
+        Organization organization = mock(Organization.class);
+
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
+        given(this.agentService.getById(3l)).willReturn(agent);
+        given(organization.getId()).willReturn(1l);
+
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_USER", "");
+
+        try {
+            mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:dma/agent/3")
+                    .with(authentication(auth))
+                    .header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
