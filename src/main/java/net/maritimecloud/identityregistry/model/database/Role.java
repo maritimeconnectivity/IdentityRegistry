@@ -15,7 +15,6 @@
  */
 package net.maritimecloud.identityregistry.model.database;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.annotations.ApiModelProperty;
 import net.maritimecloud.identityregistry.validators.InPredefinedList;
 
@@ -25,7 +24,7 @@ import javax.persistence.Table;
 import java.util.Objects;
 
 /**
- * Model object representing a certificate
+ * Model object representing a role
  */
 
 @Entity
@@ -46,7 +45,6 @@ public class Role extends TimestampModel {
     @Column(name = "permission", nullable = false)
     private String permission;
 
-    @JsonIgnore
     @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
