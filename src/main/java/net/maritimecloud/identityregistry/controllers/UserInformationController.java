@@ -83,7 +83,7 @@ public class UserInformationController {
         }
 
         User user = this.userService.getByMrn(userMrn);
-        if (user.getPermissions() != null) {
+        if (user != null && user.getPermissions() != null) {
             List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).collect(Collectors.toList());
 
             List<String> userRoles = new ArrayList<>();
@@ -106,19 +106,24 @@ public class UserInformationController {
 
         User user = this.userService.getByMrn(userMrn);
 
-        Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
+        if (user != null) {
 
-        List<Agent> agents = this.agentService.getAgentsByIdActingOrg(organization.getId());
+            Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
 
-        if (agents != null) {
-            List<String> orgs = new ArrayList<>();
-            agents.forEach(agent -> {
-                Organization org = this.organizationService.getOrganizationById(agent.getIdOnBehalfOfOrganization());
-                if (org != null) {
-                    orgs.add(org.getMrn());
+            if (organization != null) {
+                List<Agent> agents = this.agentService.getAgentsByIdActingOrg(organization.getId());
+
+                if (agents != null) {
+                    List<String> orgs = new ArrayList<>();
+                    agents.forEach(agent -> {
+                        Organization org = this.organizationService.getOrganizationById(agent.getIdOnBehalfOfOrganization());
+                        if (org != null) {
+                            orgs.add(org.getMrn());
+                        }
+                    });
+                    return new ResponseEntity<>(orgs, HttpStatus.OK);
                 }
-            });
-            return new ResponseEntity<>(orgs, HttpStatus.OK);
+            }
         }
 
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
