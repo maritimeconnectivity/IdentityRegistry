@@ -64,16 +64,4 @@ public abstract class CertificateModel extends TimestampModel {
     @JsonIgnore
     public abstract void assignToCert(Certificate cert); // Do something like cert.set<ModelName>(this)
 
-    @JsonIgnore
-    @Override
-    public Long getId() {
-        return id;
-    }
-
-    @JsonIgnore
-    @Override
-    protected void setId(Long id) {
-        this.id = id;
-    }
-
 }
