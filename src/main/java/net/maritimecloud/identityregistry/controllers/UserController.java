@@ -105,7 +105,7 @@ public class UserController extends EntityController<User> {
             }
             input.setMrn(input.getMrn().toLowerCase());
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
-            if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
+            if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
                 String password = PasswordUtil.generatePassword();
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
