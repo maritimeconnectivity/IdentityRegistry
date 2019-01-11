@@ -21,7 +21,7 @@
 
 	<groupId>net.maritimecloud.identityregistry</groupId>
 	<artifactId>mc-identityregistry-core</artifactId>
-	<version>0.8.0-SNAPSHOT</version>
+	<version>0.9.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>mc-identityregistry-core</name>
