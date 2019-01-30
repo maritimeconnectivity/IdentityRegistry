@@ -31,6 +31,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.UUID;
 
 /**
  * Helper class to generate fake tokens for use when testing controllers.
@@ -52,7 +53,9 @@ public class TokenGenerator {
         if (permissions != null && !permissions.isEmpty()) {
             accessToken.setOtherClaims(AccessControlUtil.PERMISSIONS_PROPERTY_NAME, permissions);
         }
-        RefreshableKeycloakSecurityContext ksc = new RefreshableKeycloakSecurityContext(null, null, "accessTokenString", accessToken, "idTokenString", null, "refreshTokenString");
+        String bearerTokenString = UUID.randomUUID().toString();
+
+        RefreshableKeycloakSecurityContext ksc = new RefreshableKeycloakSecurityContext(null, null, bearerTokenString, accessToken, null, null, null);
         Set<String> rolesSet = new HashSet<>();
         String[] roleArr = roles.split(",");
         for(String role : roleArr) {
@@ -61,7 +64,7 @@ public class TokenGenerator {
         KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>("name", ksc);
         SimpleKeycloakAccount account = new SimpleKeycloakAccount(principal, rolesSet, ksc);
         Collection<GrantedAuthority> authorities = generateGrantedAuthority(roles);
-        return new KeycloakAuthenticationToken(account, authorities);
+        return new KeycloakAuthenticationToken(account, false, authorities);
     }
 
     /**

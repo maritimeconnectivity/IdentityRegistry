@@ -589,7 +589,7 @@ public class KeycloakAdminUtil {
         client.setProtocol("openid-connect");
         client.setEnabled(true);
         client.setConsentRequired(false);
-        client.setClientTemplate(keycloakClientTemplate); // the template includes the mappers needed
+        client.setDefaultClientScopes(Collections.singletonList(keycloakClientTemplate)); // the template includes the mappers needed
         setClientType(type, client);
         // Create the client
         Response ret = getBrokerRealm().clients().create(client);
