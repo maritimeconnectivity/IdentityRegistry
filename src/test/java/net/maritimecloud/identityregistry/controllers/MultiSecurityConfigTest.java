@@ -1,21 +1,8 @@
-/*
- * Copyright 2017 Danish Maritime Authority.
- *
- *  Licensed under the Apache License, Version 2.0 (the "License");
- *  you may not use this file except in compliance with the License.
- *  You may obtain a copy of the License at
- *
- *      http://www.apache.org/licenses/LICENSE-2.0
- *
- *  Unless required by applicable law or agreed to in writing, software
- *  distributed under the License is distributed on an "AS IS" BASIS,
- *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- *  See the License for the specific language governing permissions and
- *  limitations under the License.
- */
-package net.maritimecloud.identityregistry.security;
+package net.maritimecloud.identityregistry.controllers;
 
 import net.maritimecloud.identityregistry.config.SimpleCorsFilter;
+import net.maritimecloud.identityregistry.security.MCKeycloakAuthenticationProvider;
+import net.maritimecloud.identityregistry.security.MultiSecurityConfig;
 import net.maritimecloud.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimecloud.identityregistry.security.x509.X509UserDetailsService;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -26,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
+import org.springframework.context.annotation.Primary;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.SecurityExpressionHandler;
@@ -53,13 +40,13 @@ import org.springframework.security.web.firewall.HttpFirewall;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-@Profile("!test")
-public class MultiSecurityConfig {
+@Primary
+public class MultiSecurityConfigTest {
 
     @Configuration
     @Order(1)
-    @Profile("!test")
-    public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
+    @Primary
+    public static class OIDCWebSecurityConfigurationAdapterTest extends KeycloakWebSecurityConfigurerAdapter
     {
         /**
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
@@ -89,14 +76,13 @@ public class MultiSecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception
         {
-            super.configure(http);
             http
-                .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
-                .csrf().disable()
-                .requestMatchers()
+                    .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
+                    .csrf().disable()
+                    .requestMatchers()
                     .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
-            .and()
-                .authorizeRequests()
+                    .and()
+                    .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
@@ -134,16 +120,16 @@ public class MultiSecurityConfig {
             // If the hierarchy is changed, remember to update the hierarchy below and the list in
             // net.maritimecloud.identityregistry.controllers.RoleController:getAvailableRoles()
             roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_APPROVE_ORG\n" +
-                                        "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
-                                        "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
-                                        "ROLE_USER_ADMIN > ROLE_USER\n" +
-                                        "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
-                                        "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
-                                        "ROLE_DEVICE_ADMIN > ROLE_USER");
+                    "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+                    "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                    "ROLE_USER_ADMIN > ROLE_USER\n" +
+                    "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
+                    "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
+                    "ROLE_DEVICE_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 
@@ -157,15 +143,15 @@ public class MultiSecurityConfig {
     // See https://docs.spring.io/spring-security/site/docs/4.0.x/reference/html/x509.html
     @Configuration
     @Order(2)
-    @Profile("!test")
-    public static class X509WebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+    @Primary
+    public static class X509WebSecurityConfigurationAdapterTest extends WebSecurityConfigurerAdapter {
 
         @Value("${server.ssl.enabled:false}")
         private boolean useStandardSSL;
         private X509HeaderUserDetailsService userDetailsService;
         private PreAuthenticatedAuthenticationProvider preAuthenticatedProvider;
 
-        public X509WebSecurityConfigurationAdapter() {
+        public X509WebSecurityConfigurationAdapterTest() {
             super();
             if (!useStandardSSL) {
                 userDetailsService = new X509HeaderUserDetailsService();
@@ -185,8 +171,8 @@ public class MultiSecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                .csrf().disable()
-                .authorizeRequests()
+                    .csrf().disable()
+                    .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
@@ -212,7 +198,7 @@ public class MultiSecurityConfig {
                 // Using this approach is not recommended since we don't extract all the information from
                 // the certificate, as done in the approach above.
                 http
-                    .x509()
+                        .x509()
                         .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
                         .userDetailsService(x509UserDetailsService())
                 ;
@@ -223,7 +209,7 @@ public class MultiSecurityConfig {
         public X509HeaderUserDetailsService x509HeaderUserDetailsService() {
             return userDetailsService;
         }
-        
+
         @Bean
         public X509UserDetailsService x509UserDetailsService() {
             return new X509UserDetailsService();
@@ -235,16 +221,16 @@ public class MultiSecurityConfig {
             // If the hierarchy is changed, remember to update the hierarchy above and the list in
             // net.maritimecloud.identityregistry.controllers.RoleController:getAvailableRoles()
             roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_APPROVE_ORG\n" +
-                                        "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
-                                        "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
-                                        "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
-                                        "ROLE_USER_ADMIN > ROLE_USER\n" +
-                                        "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
-                                        "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
-                                        "ROLE_DEVICE_ADMIN > ROLE_USER");
+                    "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
+                    "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
+                    "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                    "ROLE_USER_ADMIN > ROLE_USER\n" +
+                    "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
+                    "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
+                    "ROLE_DEVICE_ADMIN > ROLE_USER");
             return roleHierarchy;
         }
 

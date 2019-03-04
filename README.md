@@ -27,6 +27,8 @@ $ mvn clean install
 ## Run
 Before starting the Identity Registry API there are a few requirements to setup.
 
+First it is recommended to either run the application with a custom application.yaml or to change the value of spring.profile.active to development. 
+
 It is recommended to have a SMTP server running since emails are send when creating new Organizations or Users. For testing [FakeSMTP](https://nilhcem.github.io/FakeSMTP/) is recommended. See `src/main/resources/application.yaml` for email configuration.
 
 It is recommended to run the Identity Registry behind a dedicated http server, we recommend nginx, with a configuration similar to this:
@@ -61,7 +63,7 @@ Run using you favorite IDE or using the console:
 ```sh
 $ java -jar target/mc-identityregistry-core-latest.war
 ```
-Change the version number as needed. The Identity Registry will now be running and requests to https://localhost/api/... will forwarded through nginx to the spring boot application on http://localhost:8443/api/... that wraps the API.
+Change the version number as needed. The Identity Registry will now be running and requests to https://localhost/api/... will be forwarded through nginx to the spring boot application on http://localhost:8443/api/... that wraps the API.
 
 The first time the application is started it creates the database tables needed. You should now insert an organization used for bootstraping by running this script:
 
