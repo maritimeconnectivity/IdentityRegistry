@@ -24,3 +24,5 @@ script:
     - docker build --no-cache -t dmadk/mc-identity-registry-api docker
     # Push the image to the repository
     - docker push dmadk/mc-identity-registry-api
+    # Logout of docker
+    - docker logout
