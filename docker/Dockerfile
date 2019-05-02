@@ -14,4 +14,4 @@ ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
 
 EXPOSE 8443
 
-CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mc-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.config.file=/conf/keycloak.conf"]
+CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mc-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.configuration.file=/conf/keycloak.json"]
