@@ -325,6 +325,34 @@
     "FreeOTP",
     "Google Authenticator"
   ],
+  "users" : [ {
+    "id" : "380874f8-1ca0-4248-b265-fcfbd0097a61",
+    "createdTimestamp" : 1528290620970,
+    "username" : "idreg-cert-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "type" : "password",
+      "hashedSaltedValue" : "OluFFenibro4Atg5xAYmRRqHooiq3tfHXMWGtem7PEbKCss0gQ2IVG4Qe0vhKm4MVfHzIB+zaqKZ6DnXQ65wTQ==",
+      "salt" : "LgiMaCTBSXz2RwHNVldvgQ==",
+      "hashIterations" : 20000,
+      "counter" : 0,
+      "algorithm" : "pbkdf2-sha256",
+      "digits" : 0,
+      "period" : 0,
+      "createdDate" : 1528290634098,
+      "config" : { }
+    } ],
+    "disableableCredentialTypes" : [ "password" ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access", "uma_authorization" ],
+    "clientRoles" : {
+      "realm-management" : [ "view-users", "manage-users" ],
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "groups" : [ ]
+  } ],
   "scopeMappings": [
     {
       "clientScope": "offline_access",
@@ -1696,23 +1724,6 @@
         "providerId": "aes-generated",
         "subComponents": {},
         "config": {
-          "priority": [
-            "100"
-          ]
-        }
-      },
-      {
-        "id": "63779d75-d55c-4810-8f4e-f01bd230f887",
-        "name": "rsa",
-        "providerId": "rsa",
-        "subComponents": {},
-        "config": {
-          "privateKey": [
-            "**********"
-          ],
-          "certificate": [
-            "MIICpzCCAY8CBgFXQtdR+TANBgkqhkiG9w0BAQsFADAXMRUwEwYDVQQDDAxDZXJ0aWZpY2F0ZXMwHhcNMTYwOTE5MTQyNDUwWhcNMjYwOTE5MTQyNjMwWjAXMRUwEwYDVQQDDAxDZXJ0aWZpY2F0ZXMwggEiMA0GCSqGSIb3DQEBAQUAA4IBDwAwggEKAoIBAQCgmbJ+5ZJws76vESve1HKVxJSMYICrOpsw4yhsMEQcz3JClpux7m5fEKDph/V7cJU8zg+aCG7yu8E8E8X5iuprenaBJUdazpnmWtJH1JjGE/ZhnJYAR08FRhSVhQTrDmp7WSeJCmAtGlnFIELlZ0c94/6Qb9/c1vGBG/nvqhO44X/i5FKQBVpfaDiQgVeO7Qr/ADVyxak04m4JkHexuNOjih1E6ySsg2RurzekAF51bk7JPnKMIKrugWY7CT9swVEboZsMUqDk+wvlXR3GJCxmNt4riUi0ZhfCMRkSeCkahz8xZBJaKRuakkNOLJtchel4qXepQkxFS6m6RExwhc/jAgMBAAEwDQYJKoZIhvcNAQELBQADggEBADwliXminfdUIV+tOQtku+4q1sXLSx6bAEVwuSgv1hr74VRN9OORdci7r/lSuuT0WUbbJR4xAdqRE9SRhLH0Y0mxSbLhcsYqfNCGGuxPfAqEs37+/2uUWg1o6Qilxvel5GKF4qM3XL3PadpKSZySKDKGK2LdnFuxbRclQ4BJFLRvI96MzV/z/f8Xta45NxjoR0IDhDIvHDFrjseMjEABEwXfi93W+WEltKElDsePbDLe5MEqlDDU02WXTeeIlmF4Y+LG653uQu0npVmTSivJpXRsoz2VKJtu9HCt/BB9pTRfVxufFZ8Wb90QWaTNRy1Zf/cbEIK/HfdvAe63+stWLZQ="
-          ],
           "priority": [
             "100"
           ]

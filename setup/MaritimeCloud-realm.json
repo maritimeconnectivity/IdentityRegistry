@@ -336,6 +336,68 @@
       ]
     }
   ],
+"users" : [ {
+    "id" : "30a9f13d-a993-4032-9b70-e949348df2cd",
+    "createdTimestamp" : 1457608501158,
+    "username" : "idreg-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "credentials" : [ {
+      "type" : "password",
+      "hashedSaltedValue" : "PApWr2C99t/HlMTBUMfq1PUPSfTBZ+TzAnBHtHcSEvMOiUNfsQAKRceWLbM48J5s4JSrc/mOH7RsFds9dHqVbQ==",
+      "salt" : "5bcfGTtMjreWe8vFzgz3Xg==",
+      "hashIterations" : 20000,
+      "counter" : 0,
+      "algorithm" : "pbkdf2",
+      "digits" : 0,
+      "period" : 0,
+      "createdDate" : 1457608510000,
+      "config" : { }
+    } ],
+    "disableableCredentialTypes" : [ "password" ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "offline_access" ],
+    "clientRoles" : {
+      "realm-management" : [ "manage-clients", "manage-users", "manage-identity-providers", "view-identity-providers", "create-client", "view-clients", "view-users" ],
+      "account" : [ "view-profile", "manage-account" ]
+    },
+    "groups" : [ ]
+  }, {
+    "id" : "86d78c7e-be86-4bc4-82de-8122dab8caa8",
+    "createdTimestamp" : 1478079917738,
+    "username" : "urn:mrn:mcl:user:maritimecloud:mc-admin",
+    "enabled" : true,
+    "totp" : false,
+    "emailVerified" : false,
+    "firstName" : "Admin",
+    "lastName" : "Adminson",
+    "email" : "mc-admin@maritimecloud.net",
+    "attributes" : {
+      "mrn" : [ "urn:mrn:mcl:user:maritimecloud:mc-admin" ],
+      "org" : [ "urn:mrn:mcl:org:maritimecloud" ],
+      "permissions" : [ "MCADMIN" ]
+    },
+    "credentials" : [ {
+      "type" : "password",
+      "hashedSaltedValue" : "ervT0wNcffpoJYNTZPRziWDp+QcCJZtkkr8IBzoeMFG9HXa+Q2Mtg88VdEyMJ8ff7zv0/BCr8YJCuOFwhDQ4Dw==",
+      "salt" : "voxoVpjVh+nxdY/P03qSaQ==",
+      "hashIterations" : 20000,
+      "counter" : 0,
+      "algorithm" : "pbkdf2",
+      "digits" : 0,
+      "period" : 0,
+      "createdDate" : 1478079929590,
+      "config" : { }
+    } ],
+    "disableableCredentialTypes" : [ "password" ],
+    "requiredActions" : [ ],
+    "realmRoles" : [ "uma_authorization", "offline_access" ],
+    "clientRoles" : {
+      "account" : [ "view-profile" ]
+    },
+    "groups" : [ ]
+  } ],
   "clients": [
     {
       "id": "28c0f3a2-ef5a-4dc1-bd73-974cc8913786",
@@ -2349,23 +2411,6 @@
       }
     ],
     "org.keycloak.keys.KeyProvider": [
-      {
-        "id": "14a2d8c6-3d45-43da-8fd0-179921b2488d",
-        "name": "rsa",
-        "providerId": "rsa",
-        "subComponents": {},
-        "config": {
-          "privateKey": [
-            "**********"
-          ],
-          "certificate": [
-            "MIICqTCCAZECBgFTYDqVSTANBgkqhkiG9w0BAQsFADAYMRYwFAYDVQQDDA1NYXJpdGltZUNsb3VkMB4XDTE2MDMxMDExMTEwNVoXDTI2MDMxMDExMTI0NVowGDEWMBQGA1UEAwwNTWFyaXRpbWVDbG91ZDCCASIwDQYJKoZIhvcNAQEBBQADggEPADCCAQoCggEBAK0cdzcKgy+77f9uG5788QUS5LhrpJqaWcyRBTbNTy0BtRvTjN6k/kweCG0cD7clnhnLC1FMewk5a9n9H/3UYJAxr2awNQMVQA8W2/s+2SE0m575OppoeKoSZYxkMJNavqo2Xi5/0CIBLdlhCL/IfsmprES0cdxKY91Kod0rEbjG5178mM5+Id8+GuP6fNfNy95xN7pCbKQ1K7j4D/R1A5a5jMKcHPtWr5h93FHz8qKvT8uuqHIgjM+H5U9a2SretK4mpgFm5WUEV+Pp2d0tXNr/NmUoeRKSD8H8HkpWdeaeUCpYSRcY0L/pouxjvTxVA7RO0yetuGcFFm3s+xvETmMCAwEAATANBgkqhkiG9w0BAQsFAAOCAQEAJVMMjzRBDT/o6eYfZqFOWeZ7WYgGh1V37bvzrBD6v5R4sdoKZ9iRwocoQvY7BeMFGNgIp9WZ4GrrAkHBnExTRSQDAnjE75xgTjmi8n+RQbcfgljUb2hxGoxBeDmeBR80BNiqKm+2WtTSqlRY5dsAcxkkBc5u+wruJn6Mwx/4DGrABlPL7yJ2oHDcFHx03lG1yCwXFDsQq9HNrWuvtwFT2i7borlgJf8xZwc2n165yTCW0VQ6BWFf5rTGACWzV+ArTmfHpvMi/WL0py0DDScLBjbUtfkVqlKVqzETnZqqE8T2iJfFv2Eerfzr0Ir5pqYUDr2GfovrRa5aP4xG81gw6w=="
-          ],
-          "priority": [
-            "100"
-          ]
-        }
-      },
       {
         "id": "60fe7bdc-1e95-442d-be43-2a1177d27c16",
         "name": "rsa-generated",
