@@ -1628,6 +1628,22 @@
           }
         },
         {
+          "id": "47e78048-a064-42f1-bed3-e933c790a522",
+          "name": "role mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "false",
+            "user.attribute": "roles",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "roles",
+            "jsonType.label": "String"
+          }
+        },
+        {
           "id": "9d7e9198-97b1-4bb0-ba1d-db1783c28aaa",
           "name": "mrn mapper",
           "protocol": "openid-connect",
@@ -1639,6 +1655,22 @@
             "user.attribute": "mrn",
             "access.token.claim": "true",
             "claim.name": "mrn",
+            "jsonType.label": "String"
+          }
+        },
+        {
+          "id": "29d77e7c-9bc8-4a5d-a602-2bb8362a7d19",
+          "name": "acting_on_behalf_of mapper",
+          "protocol": "openid-connect",
+          "protocolMapper": "oidc-usermodel-attribute-mapper",
+          "consentRequired": false,
+          "config": {
+            "multivalued": "true",
+            "userinfo.token.claim": "false",
+            "user.attribute": "actingOnBehalfOf",
+            "id.token.claim": "false",
+            "access.token.claim": "true",
+            "claim.name": "acting_on_behalf_of",
             "jsonType.label": "String"
           }
         },
