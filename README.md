@@ -169,15 +169,20 @@ $ curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:m
 ```ps1
 > Invoke-RestMethod -Uri https://localhost/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new -Headers @{"Authorization" = "Bearer $token"} -Method Get
 ```
-This will return a public key, and private key and a certificate in PEM format embedded in JSON, looking something like this:
+This will return a JKS keystore, a PKCS#12 keystore, a password for the keystores, a public key and private key and a certificate in PEM format embedded in JSON, looking something like this:
 ```json
 {
-    "certificate": "-----BEGIN CERTIFICATE-----\\nMIID4zCCA2igAwIBAgIBATAKBggqhkjOPQQ...",
-    "privateKey": "-----BEGIN PRIVATE KEY-----\\nMIG/AgEAMBAGByqGSM49AgEGBSuBBAAiBIGn...",
-    "publicKey": "-----BEGIN PUBLIC KEY-----\\nMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAECysC+u..."
+    "jksKeystore": "/u3+7QAA...",
+    "keystorePassword": "fg3543s...",
+    "pemCertificate": {
+          "certificate": "-----BEGIN CERTIFICATE-----\\nMIID4zCCA2igAwIBAgIBATAKBggqhkjOPQQ...",
+          "privateKey": "-----BEGIN PRIVATE KEY-----\\nMIG/AgEAMBAGByqGSM49AgEGBSuBBAAiBIGn...",
+          "publicKey": "-----BEGIN PUBLIC KEY-----\\nMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAECysC+u..."
+    },
+    "pkcs12Keystore": "MIIGmAIB..."   
 }
 ```
-Note that this is the only time the private key is available, so make sure to save it. Save the output into separate files, it is assumed that they will be saved into `public.pem`, `private.pem` and `certificate.pem`. Make sure to replac "\\\\n" with linebreaks!
+Note that this is the only time the private key is available, so make sure to save it. Save the output into separate files. Make sure to replace "\\\\n" with linebreaks!
 
 The certificate can now be used to authenticate the user. For example we can use it to create a vessel as shown below. Notice that we use https://localhost/x509/api/... instead of https://localhost/oidc/api/... when relying on certificate authentication.
 
