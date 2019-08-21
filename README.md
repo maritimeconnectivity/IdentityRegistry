@@ -169,7 +169,7 @@ $ curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:m
 ```ps1
 > Invoke-RestMethod -Uri https://localhost/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new -Headers @{"Authorization" = "Bearer $token"} -Method Get
 ```
-This will return a JKS keystore, a PKCS#12 keystore, a password for the keystores, a public key and private key and a certificate in PEM format embedded in JSON, looking something like this:
+This will return a BASE64 encoded JKS keystore, a BASE64 encoded PKCS#12 keystore, a password for the keystores, a public key and private key and a certificate in PEM format embedded in JSON, looking something like this:
 ```json
 {
     "jksKeystore": "/u3+7QAA...",
