@@ -5,6 +5,8 @@ This is the implementation of the MCP Identity Registry. It is under the Apache 
 
 The Maritime Connectivity Platform was formerly known as the Maritime Cloud and therefore there might still be references to that in this project.  
 
+A detailed guide on how to setup the Identity Registry that should be used in conjunction with this README can be found in the document [MIR Setup](./setup/guide/MIR_setup.pdf). 
+
 ## Setup Database
 A MySQL/MariaDB is used as datastore, it can be setup running this commands from the console:
 ```sh
