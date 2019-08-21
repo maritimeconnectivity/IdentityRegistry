@@ -1,4 +1,5 @@
 [![Build Status](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry)
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMaritimeConnectivityPlatform%2FIdentityRegistry.svg?type=shield)](https://app.fossa.io/projects/git%2Bgithub.com%2FMaritimeConnectivityPlatform%2FIdentityRegistry?ref=badge_shield)
 
 # Maritime Connectivity Platform Identity Registry
 This is the implementation of the MCP Identity Registry. It is under the Apache 2.0 License.
@@ -236,3 +237,7 @@ mvn javadoc:javadoc
 The apidocs and UML diagrams are placed in `target/site/apidocs/`.
 
 Some key UML diagrams has been manually placed in the `uml` folder for easy access. Remember to update those if you update the data model.
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2FMaritimeConnectivityPlatform%2FIdentityRegistry.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2FMaritimeConnectivityPlatform%2FIdentityRegistry?ref=badge_large)
