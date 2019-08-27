@@ -31,6 +31,11 @@ import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import net.maritimecloud.pki.CertificateBuilder;
 import net.maritimecloud.pki.CertificateHandler;
 import net.maritimecloud.pki.PKIConstants;
+import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.OperatorCreationException;
+import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
+import org.bouncycastle.pkcs.PKCSException;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -39,7 +44,10 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.NoSuchAlgorithmException;
+import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.Base64;
@@ -107,6 +115,53 @@ public abstract class BaseControllerWithCertificate {
         newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
         this.certificateService.saveCertificate(newMCCert);
         return certificateBundle;
+    }
+
+    protected String signCertificate(JcaPKCS10CertificationRequest csr, CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
+        PublicKey publicKey;
+        try {
+            publicKey = csr.getPublicKey();
+        } catch (InvalidKeyException | NoSuchAlgorithmException e) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
+        }
+        JcaContentVerifierProviderBuilder contentVerifierProviderBuilder = new JcaContentVerifierProviderBuilder();
+        ContentVerifierProvider contentVerifierProvider;
+        try {
+            contentVerifierProvider = contentVerifierProviderBuilder.build(publicKey);
+        } catch (OperatorCreationException e) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
+        }
+        try {
+            if (csr.isSignatureValid(contentVerifierProvider)) {
+                // Find special MC attributes to put in the certificate
+                HashMap<String, String> attrs = getAttr(certOwner);
+
+                String o = org.getMrn();
+                String name = getName(certOwner);
+                String email = getEmail(certOwner);
+                String uid = getUid(certOwner);
+                if (uid == null || uid.trim().isEmpty()) {
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
+                }
+                BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber();
+                X509Certificate userCert;
+                try {
+                    userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
+                } catch (Exception e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+                String pemCertificate;
+                try {
+                    pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
+                    return pemCertificate;
+                } catch (CertificateEncodingException e) {
+                    throw new RuntimeException(e.getMessage(), e);
+                }
+            }
+        } catch (PKCSException e) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
+        }
+        throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
     }
 
     protected void revokeCertificate(BigInteger certId, CertificateRevocation input, HttpServletRequest request) throws McBasicRestException {
