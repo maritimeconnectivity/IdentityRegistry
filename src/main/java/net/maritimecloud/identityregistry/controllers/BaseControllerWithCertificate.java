@@ -153,6 +153,20 @@ public abstract class BaseControllerWithCertificate {
                 String pemCertificate;
                 try {
                     pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
+
+                    // Create the certificate
+                    Certificate newMCCert = new Certificate();
+                    certOwner.assignToCert(newMCCert);
+                    newMCCert.setCertificate(pemCertificate);
+                    newMCCert.setSerialNumber(serialNumber);
+                    newMCCert.setCertificateAuthority(org.getCertificateAuthority());
+                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
+                    Calendar cal = Calendar.getInstance();
+                    int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+                    newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
+                    newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
+                    this.certificateService.saveCertificate(newMCCert);
+
                     return pemCertificate;
                 } catch (CertificateEncodingException e) {
                     throw new RuntimeException(e.getMessage(), e);

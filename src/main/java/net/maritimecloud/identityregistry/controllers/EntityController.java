@@ -185,6 +185,11 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         }
     }
 
+    /**
+     * Receives a CSR and returns a signed and PEM encoded certificate
+     * @return a PEM encoded certificate
+     * @throws McBasicRestException
+     */
     protected ResponseEntity<String> signEntityCert(HttpServletRequest request, JcaPKCS10CertificationRequest csr, String orgMrn, String entityMrn, String type) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
