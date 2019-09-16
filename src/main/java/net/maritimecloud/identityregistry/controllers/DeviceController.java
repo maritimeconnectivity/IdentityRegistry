@@ -18,6 +18,7 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.CertificationRequest;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.services.EntityService;
@@ -139,6 +140,21 @@ public class DeviceController extends EntityController<Device> {
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<CertificateBundle> newDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McBasicRestException {
         return this.newEntityCert(request, orgMrn, deviceMrn, "device");
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            produces = "application/x-pem-file"
+    )
+    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody CertificationRequest csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr.getPkcs10Csr(), orgMrn, deviceMrn, "device");
     }
 
     /**

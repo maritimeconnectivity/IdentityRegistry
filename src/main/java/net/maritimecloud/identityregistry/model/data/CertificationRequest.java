@@ -28,8 +28,8 @@ import net.maritimecloud.identityregistry.model.JsonSerializable;
 public class CertificationRequest implements JsonSerializable {
 
     /**
-     * A BASE64 encoded BER/DER encoded PKCS#10 certificate signing request
+     * A PEM encoded PKCS#10 certificate signing request
      */
-    @ApiModelProperty(required = true, value = "The BASE64 encoded BER/DER encoded PKCS#10 certificate signing request that is to be signed by the CA")
+    @ApiModelProperty(required = true, value = "The PEM encoded PKCS#10 certificate signing request that is to be signed by the CA")
     private String pkcs10Csr;
 }

@@ -27,6 +27,7 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.identityregistry.utils.CsrUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
@@ -190,7 +191,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a PEM encoded certificate
      * @throws McBasicRestException
      */
-    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, JcaPKCS10CertificationRequest csr, String orgMrn, String entityMrn, String type) throws McBasicRestException {
+    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
@@ -202,7 +203,8 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                String cert = this.signCertificate(csr, entity, org, type, request);
+                JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
+                String cert = this.signCertificate(pkcs10CertificationRequest, entity, org, type, request);
                 return new ResponseEntity<>(cert, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());

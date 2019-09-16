@@ -46,6 +46,7 @@ public class MCIdRegConstants {
     public static final String AGENT_NOT_FOUND = "The agent could not be found.";
     public static final String PUBLIC_KEY_INVALID = "The public key supplied is invalid.";
     public static final String CSR_SIGNATURE_INVALID = "The signature on the CSR could not be validated.";
+    public static final String ERROR_HANDLING_CSR = "An error occurred while handling the CSR";
 
     private MCIdRegConstants() {
     }
