@@ -278,6 +278,7 @@ public class UserController extends EntityController<User> {
             method = RequestMethod.POST,
             produces = "application/x-pem-file"
     )
+    @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @RequestBody CertificationRequest csr) throws McBasicRestException {
         return this.signEntityCert(request, csr.getPkcs10Csr(), orgMrn, userMrn, "user");
     }

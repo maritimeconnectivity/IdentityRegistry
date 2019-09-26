@@ -20,6 +20,7 @@ import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.CertificationRequest;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Organization;
@@ -359,6 +360,22 @@ public class ServiceController extends EntityController<Service> {
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            produces = "application/x-pem-file"
+    )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @RequestBody CertificationRequest csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr.getPkcs10Csr(), orgMrn, serviceMrn, "service");
     }
 
     /**

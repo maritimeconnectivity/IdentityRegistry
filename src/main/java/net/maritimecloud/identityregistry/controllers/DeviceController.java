@@ -153,6 +153,7 @@ public class DeviceController extends EntityController<Device> {
             method = RequestMethod.POST,
             produces = "application/x-pem-file"
     )
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody CertificationRequest csr) throws McBasicRestException {
         return this.signEntityCert(request, csr.getPkcs10Csr(), orgMrn, deviceMrn, "device");
     }
