@@ -48,7 +48,7 @@ public class MrnUtil {
             String[] dividedShotname = orgShortname.split("@", 2);
             return dividedShotname[1];
         } else {
-            // this shouldn't be hardcoded
+            // TODO this shouldn't be hardcoded
             return "maritimecloud-idreg";
         }
     }
