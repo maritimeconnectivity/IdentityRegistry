@@ -1,3 +1,4 @@
+USE identity_registry;
 #--- Create the Maritime Cloud organization
 INSERT INTO `organizations` (name, mrn, email, address, country, url, approved, federation_type, certificate_authority, created_at, updated_at) VALUES
     ('Maritime Cloud', 'urn:mrn:mcl:org:maritimecloud', 'info@maritimecloud.net', '1 Martime Street, The Eight Ocean', 'Denmark', 'http://maritimecloud.net', 1, 'external-idp', 'urn:mrn:mcl:ca:maritimecloud-idreg', NOW(), NOW());
