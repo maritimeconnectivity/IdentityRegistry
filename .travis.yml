@@ -18,7 +18,7 @@ cache:
 
 install:
     # Build the spring boot app and copy the result to the docker folder
-    - mvn -Dspring.profiles.active=test clean install && cp target/mc-identityregistry-core-latest.war docker/
+    - mvn -B -Dspring.profiles.active=test clean install && cp target/mc-identityregistry-core-latest.war docker/
 
 before_script:  
     - docker login -u="$DOCKER_USERNAME" -p="$DOCKER_PASSWORD"
