@@ -1,3 +1,5 @@
+USE identity_registry;
+
 CREATE TABLE `logos` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `image` MEDIUMBLOB,
