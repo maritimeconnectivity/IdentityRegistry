@@ -152,7 +152,7 @@ public abstract class BaseControllerWithCertificate {
                 }
                 String pemCertificate;
                 try {
-                    pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
+                    pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
 
                     // Create the certificate
                     Certificate newMCCert = new Certificate();
@@ -167,7 +167,10 @@ public abstract class BaseControllerWithCertificate {
                     newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
                     this.certificateService.saveCertificate(newMCCert);
 
-                    return pemCertificate;
+                    byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCCertificate(org.getCertificateAuthority()).getEncoded();
+                    String certCAPem = CertificateHandler.getPemFromEncoded("CERTIFICATE", certCA);
+
+                    return pemCertificate + certCAPem;
                 } catch (CertificateEncodingException e) {
                     throw new RuntimeException(e.getMessage(), e);
                 }

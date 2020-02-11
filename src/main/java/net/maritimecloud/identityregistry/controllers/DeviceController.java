@@ -15,10 +15,10 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import io.swagger.annotations.ApiParam;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
-import net.maritimecloud.identityregistry.model.data.CertificationRequest;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.services.EntityService;
@@ -26,6 +26,7 @@ import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -151,11 +152,12 @@ public class DeviceController extends EntityController<Device> {
     @RequestMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new/csr",
             method = RequestMethod.POST,
-            produces = "application/x-pem-file"
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = "application/pem-certificate-chain"
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody CertificationRequest csr) throws McBasicRestException {
-        return this.signEntityCert(request, csr.getPkcs10Csr(), orgMrn, deviceMrn, "device");
+    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr, orgMrn, deviceMrn, "device");
     }
 
     /**
