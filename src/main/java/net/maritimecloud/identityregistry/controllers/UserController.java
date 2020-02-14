@@ -280,7 +280,7 @@ public class UserController extends EntityController<User> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = "application/pem-certificate-chain"
     )
-    @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, "user");
     }

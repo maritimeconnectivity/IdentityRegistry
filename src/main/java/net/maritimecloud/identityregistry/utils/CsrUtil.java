@@ -18,20 +18,21 @@ package net.maritimecloud.identityregistry.utils;
 
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.bouncycastle.util.io.pem.PemObject;
+import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.http.HttpStatus;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.util.Base64;
+import java.io.StringReader;
 
 public class CsrUtil {
 
     public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, String pemCsr) throws McBasicRestException {
-        pemCsr = pemCsr.replaceAll("-----BEGIN CERTIFICATE REQUEST-----", "")
-                .replaceAll("-----END CERTIFICATE REQUEST-----", "").replaceAll("[\\n\\t ]", "");
-        byte[] encoded = Base64.getDecoder().decode(pemCsr);
+        PemReader pemReader = new PemReader(new StringReader(pemCsr));
         try {
-            return new JcaPKCS10CertificationRequest(encoded);
+            PemObject pemObject = pemReader.readPemObject();
+            return new JcaPKCS10CertificationRequest(pemObject.getContent());
         } catch (IOException e) {
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_HANDLING_CSR, request.getServletPath());
         }
