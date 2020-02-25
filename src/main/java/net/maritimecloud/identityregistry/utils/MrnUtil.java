@@ -36,22 +36,22 @@ public class MrnUtil {
         return orgMrn.substring(idx);
     }
 
-    /**
-     * Returns the org shortname of the organization responsible for validating the organization that is
-     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
-     * @param orgShortname
-     * @return
-     */
-    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
-        if (orgShortname.contains("@")) {
-            // This handles the nested validators
-            String[] dividedShotname = orgShortname.split("@", 2);
-            return dividedShotname[1];
-        } else {
-            // TODO this shouldn't be hardcoded
-            return "maritimecloud-idreg";
-        }
-    }
+//    /**
+//     * Returns the org shortname of the organization responsible for validating the organization that is
+//     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
+//     * @param orgShortname
+//     * @return
+//     */
+//    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
+//        if (orgShortname.contains("@")) {
+//            // This handles the nested validators
+//            String[] dividedShotname = orgShortname.split("@", 2);
+//            return dividedShotname[1];
+//        } else {
+//            // TODO this shouldn't be hardcoded
+//            return "maritimecloud-idreg";
+//        }
+//    }
 
     public static String getOrgShortNameFromEntityMrn(String entityMrn) {
         // An entity MRN looks like this: urn:mrn:mcl:user:<org-shortname>:<user-id>

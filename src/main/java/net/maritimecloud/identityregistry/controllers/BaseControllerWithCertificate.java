@@ -167,7 +167,7 @@ public abstract class BaseControllerWithCertificate {
                     newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
                     this.certificateService.saveCertificate(newMCCert);
 
-                    byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCCertificate(org.getCertificateAuthority()).getEncoded();
+                    byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCPCertificate(org.getCertificateAuthority()).getEncoded();
                     String certCAPem = CertificateHandler.getPemFromEncoded("CERTIFICATE", certCA);
 
                     return pemCertificate + certCAPem;

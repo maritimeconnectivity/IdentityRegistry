@@ -333,9 +333,9 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             // Check validators?
-            String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
+            //String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
             // The org validator is also CA
-            String orgCa = "urn:mrn:mcl:ca:" + orgValidator;
+            String orgCa = certificateUtil.getDefaultSubCa();
             // Create the new org based on given info
             org = new Organization();
             org.setName(orgName);
