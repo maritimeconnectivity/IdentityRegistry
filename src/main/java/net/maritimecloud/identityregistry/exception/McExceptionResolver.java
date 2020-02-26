@@ -16,6 +16,8 @@
 package net.maritimecloud.identityregistry.exception;
 
 import net.maritimecloud.identityregistry.model.data.ExceptionModel;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -27,6 +29,8 @@ public class McExceptionResolver {
     public ResponseEntity<ExceptionModel> processRestError(McBasicRestException ex) {
         // mimics the standard spring error structure on exceptions 
         ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
-        return new ResponseEntity<>(exp, ex.getStatus());
+        HttpHeaders httpHeaders = new HttpHeaders();
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        return new ResponseEntity<>(exp, httpHeaders, ex.getStatus());
     }
 }
