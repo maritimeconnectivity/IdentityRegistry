@@ -35,7 +35,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -205,7 +207,9 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
                 JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
                 String cert = this.signCertificate(pkcs10CertificationRequest, entity, org, type, request);
-                return new ResponseEntity<>(cert, HttpStatus.OK);
+                HttpHeaders httpHeaders = new HttpHeaders();
+                httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
+                return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
             }
             throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {

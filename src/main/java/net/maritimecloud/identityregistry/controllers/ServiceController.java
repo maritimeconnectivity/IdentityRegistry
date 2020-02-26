@@ -372,7 +372,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new/csr",
             method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = "application/pem-certificate-chain"
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {

@@ -42,6 +42,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -341,7 +342,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/issue-new/csr",
             method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = "application/pem-certificate-chain"
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
@@ -349,7 +350,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (org != null) {
             JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
             String cert = this.signCertificate(pkcs10CertificationRequest, org, org, "organization", request);
-            return new ResponseEntity<>(cert, HttpStatus.OK);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
+            return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

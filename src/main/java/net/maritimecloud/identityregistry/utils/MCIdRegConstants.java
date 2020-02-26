@@ -44,7 +44,7 @@ public class MCIdRegConstants {
     public static final String ORG_IS_FEDERATED = "Users need to be created and updated through their own identity provider for federated organizations!";
     public static final String USER_EMAIL_UPDATE_NOT_ALLOWED = "No users with given email were found. This might be due to trying to update a user with a new email address with is not currently possible.";
     public static final String AGENT_NOT_FOUND = "The agent could not be found.";
-    public static final String PUBLIC_KEY_INVALID = "The public key supplied is invalid.";
+    public static final String PUBLIC_KEY_INVALID = "The public key supplied is invalid or not supported.";
     public static final String CSR_SIGNATURE_INVALID = "The signature on the CSR could not be validated.";
     public static final String ERROR_HANDLING_CSR = "An error occurred while handling the CSR";
 

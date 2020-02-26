@@ -278,7 +278,7 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new/csr",
             method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = "application/pem-certificate-chain"
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
