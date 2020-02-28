@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.maritimecloud.identityregistry.validators.MCPMRN;
 import net.maritimecloud.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
@@ -58,8 +59,8 @@ public class Organization extends CertificateModel {
     // Due to limitation in the X509, Organization MRN must not be longer than 64 characters
     @Length(max = 64)
     @NotBlank
-    @MRN
-    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
+    @MCPMRN
+    @ApiModelProperty(value = "Maritime Connectivity Platform Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 

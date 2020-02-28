@@ -116,17 +116,24 @@ public class MrnUtil {
         if (!MRN_PATTERN.matcher(mrn).matches()) {
             throw new IllegalArgumentException("MRN is not in a valid format");
         }
-        // validate mrn based on the entity type
-        if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
-        } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a user");
-        } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
-        } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a device");
-        }
         return true;
+    }
+
+    public static boolean validateMCPMrn(String mrn) {
+        if(validateMrn(mrn)){
+            // validate mrn based on the entity type
+            if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
+            } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a user");
+            } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
+            } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a device");
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

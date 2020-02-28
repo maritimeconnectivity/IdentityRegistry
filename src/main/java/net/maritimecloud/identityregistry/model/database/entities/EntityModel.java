@@ -20,10 +20,13 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.validators.MCPMRN;
 import net.maritimecloud.identityregistry.validators.MRN;
+import org.hibernate.validator.constraints.Length;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
+import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @MappedSuperclass
@@ -35,8 +38,8 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
-    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
-    @MRN
+    @MCPMRN
+    @ApiModelProperty(value = "Maritime Connectivity Platform Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
