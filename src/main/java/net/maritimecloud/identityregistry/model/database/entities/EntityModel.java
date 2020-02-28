@@ -23,6 +23,7 @@ import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.validators.MCPMRN;
 import net.maritimecloud.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Length;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
@@ -43,6 +44,16 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
+    @MRN
+    @ApiModelProperty(value = "Subsidiary Maritime Resource Name")
+    @Column(name = "mrn_subsidiary")
+    private String mrnSubsidiary;
+
+    @URL(regexp = "^(http|https).*")
+    @ApiModelProperty(value = "URL of MMS that the identity is registered")
+    @Column(name = "home_mms_url")
+    private String homeMMSUrl;
+
     @ApiModelProperty(value = "Permissions as assigned from the organization")
     @Column(name = "permissions")
     private String permissions;
@@ -54,6 +65,8 @@ public abstract class EntityModel extends CertificateModel {
         entity.setIdOrganization(idOrganization);
         entity.setMrn(mrn);
         entity.setPermissions(permissions);
+        entity.setMrnSubsidiary(mrnSubsidiary);
+        entity.setHomeMMSUrl(homeMMSUrl);
         return entity;
     }
 
@@ -63,6 +76,8 @@ public abstract class EntityModel extends CertificateModel {
         Objects.requireNonNull(entity);
         entity.setMrn(mrn);
         entity.setPermissions(permissions);
+        entity.setMrnSubsidiary(mrnSubsidiary);
+        entity.setHomeMMSUrl(homeMMSUrl);
         return entity;
     }
 

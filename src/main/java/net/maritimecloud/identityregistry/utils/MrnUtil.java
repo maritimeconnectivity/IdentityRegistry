@@ -109,18 +109,22 @@ public class MrnUtil {
         return mrn;
     }*/
 
-    public static boolean validateMrn(String mrn) {
+    public static boolean isNotMrnEmpty(String mrn) {
         if (mrn == null || mrn.trim().isEmpty()) {
             throw new IllegalArgumentException("MRN is empty");
         }
-        if (!MRN_PATTERN.matcher(mrn).matches()) {
+        return true;
+    }
+
+    public static boolean validateMrn(String mrn) {
+        if (mrn != null && !MRN_PATTERN.matcher(mrn).matches()) {
             throw new IllegalArgumentException("MRN is not in a valid format");
         }
         return true;
     }
 
     public static boolean validateMCPMrn(String mrn) {
-        if(validateMrn(mrn)){
+        if(isNotMrnEmpty(mrn) && validateMrn(mrn)){
             // validate mrn based on the entity type
             if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
                 throw new IllegalArgumentException("MRN is not in a valid format for a service instances");

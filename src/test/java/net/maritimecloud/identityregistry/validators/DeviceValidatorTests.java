@@ -62,4 +62,40 @@ public class DeviceValidatorTests {
         assertEquals(violations.size(), 1);
     }
 
+    @Test
+    public void validateValidDeviceWithMMS() {
+        Device validDevice = new Device();
+        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setName("Test Device");
+        validDevice.setMrnSubsidiary("urn:mrn:kr:device:testorg:test-device1");
+        validDevice.setHomeMMSUrl("https://mms.smartnav.org");
+
+        Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
+        assertTrue(violations.isEmpty());
+    }
+
+    @Test
+    public void validateInvalidMMSUrlOfDeviceWithMMS() {
+        Device validDevice = new Device();
+        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setName("Test Device");
+        validDevice.setMrnSubsidiary("urn:mrn:kr:device:testorg:test-device1");
+        validDevice.setHomeMMSUrl("ftp://mms.smartnav.org");
+
+        Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
+        assertEquals(violations.size(), 1);
+    }
+
+    @Test
+    public void validateInvalidSubMRNOfDeviceWithMMS() {
+        Device validDevice = new Device();
+        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setName("Test Device");
+        validDevice.setMrnSubsidiary("urn:mcp:kr:device:testorg:test-device1");
+        validDevice.setHomeMMSUrl("https://mms.smartnav.org");
+
+        Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
+        assertEquals(violations.size(), 1);
+    }
+
 }

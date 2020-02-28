@@ -64,6 +64,15 @@ public class Organization extends CertificateModel {
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
+    @MRN
+    @ApiModelProperty(value = "Subsidiary Maritime Resource Name")
+    @Column(name = "mrn_subsidiary")
+    private String mrnSubsidiary;
+
+    @ApiModelProperty(value = "URL of MMS that the identity is registered")
+    @Column(name = "home_mms_url")
+    private String homeMMSUrl;
+
     @Column(name = "email", nullable = false)
     @Email
     @ApiModelProperty(required = true)
@@ -127,6 +136,8 @@ public class Organization extends CertificateModel {
         org.setLogo(logo);
         org.setFederationType(federationType);
         org.setApproved(approved);
+        org.setMrnSubsidiary(mrnSubsidiary);
+        org.setHomeMMSUrl(homeMMSUrl);
         org.getCertificates().clear();
         org.getCertificates().addAll(certificates);
         org.getIdentityProviderAttributes().clear();
@@ -143,6 +154,8 @@ public class Organization extends CertificateModel {
         org.setUrl(url);
         org.setAddress(address);
         org.setCountry(country);
+        org.setMrnSubsidiary(mrnSubsidiary);
+        org.setHomeMMSUrl(homeMMSUrl);
         org.getIdentityProviderAttributes().clear();
         org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
         org.setChildIds();
