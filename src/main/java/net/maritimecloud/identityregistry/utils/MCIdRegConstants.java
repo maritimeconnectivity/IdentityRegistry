@@ -46,7 +46,10 @@ public class MCIdRegConstants {
     public static final String AGENT_NOT_FOUND = "The agent could not be found.";
     public static final String PUBLIC_KEY_INVALID = "The public key supplied is invalid or not supported.";
     public static final String CSR_SIGNATURE_INVALID = "The signature on the CSR could not be validated.";
-    public static final String ERROR_HANDLING_CSR = "An error occurred while handling the CSR";
+    public static final String ERROR_HANDLING_CSR = "An error occurred while handling the CSR.";
+    public static final String RSA_KEY_TOO_SHORT = "RSA and DSA keys need to be at least 2048 bits.";
+    public static final String EC_KEY_TOO_SHORT = "EC keys need to be at least 224 bits.";
+    public static final String WEAK_HASH = "Hashing algorithm used for CSR is not secure.";
 
     private MCIdRegConstants() {
     }

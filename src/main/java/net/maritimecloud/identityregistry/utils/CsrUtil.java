@@ -28,6 +28,9 @@ import java.io.StringReader;
 
 public class CsrUtil {
 
+    private CsrUtil() {
+    }
+
     public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, String pemCsr) throws McBasicRestException {
         PemReader pemReader = new PemReader(new StringReader(pemCsr));
         try {

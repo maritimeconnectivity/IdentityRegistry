@@ -31,7 +31,9 @@ import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import net.maritimecloud.pki.CertificateBuilder;
 import net.maritimecloud.pki.CertificateHandler;
 import net.maritimecloud.pki.PKIConstants;
+import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.operator.ContentVerifierProvider;
+import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
 import org.bouncycastle.operator.OperatorCreationException;
 import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCSException;
@@ -50,6 +52,9 @@ import java.security.NoSuchAlgorithmException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
+import java.security.interfaces.DSAPublicKey;
+import java.security.interfaces.ECPublicKey;
+import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
 import java.util.Calendar;
 import java.util.Date;
@@ -64,6 +69,8 @@ public abstract class BaseControllerWithCertificate {
 
     @Autowired
     protected CertificateUtil certificateUtil;
+
+    private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         // Generate keypair for user
@@ -124,6 +131,10 @@ public abstract class BaseControllerWithCertificate {
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
         }
+        this.checkPublicKey(publicKey, request);
+
+        this.checkSignatureAlgorithm(csr, request);
+
         JcaContentVerifierProviderBuilder contentVerifierProviderBuilder = new JcaContentVerifierProviderBuilder();
         ContentVerifierProvider contentVerifierProvider;
         try {
@@ -179,6 +190,42 @@ public abstract class BaseControllerWithCertificate {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
         }
         throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
+    }
+
+    private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McBasicRestException {
+        DefaultAlgorithmNameFinder algorithmNameFinder = new DefaultAlgorithmNameFinder();
+        String algoName = algorithmNameFinder.getAlgorithmName(csr.getSignatureAlgorithm());
+        for (String insecureHash : this.insecureHashes) {
+            if (algoName.contains(insecureHash)) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.WEAK_HASH, request.getServletPath());
+            }
+        }
+    }
+
+    private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McBasicRestException {
+        String algorithm;
+        int keyLength;
+        if (publicKey instanceof RSAPublicKey) {
+            keyLength = ((RSAPublicKey) publicKey).getPublicExponent().bitLength();
+            algorithm = "RSA";
+        } else if (publicKey instanceof ECPublicKey) {
+            keyLength = ((ECPublicKey) publicKey).getParams().getCurve().getField().getFieldSize();
+            algorithm = "EC";
+        } else if (publicKey instanceof DSAPublicKey) {
+            keyLength = ((DSAPublicKey) publicKey).getParams().getP().bitLength();
+            algorithm = "DSA";
+        } else if (publicKey instanceof BCEdDSAPublicKey) {
+            keyLength = 256;
+            algorithm = "EdDSA";
+        } else {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
+        }
+
+        if ((algorithm.equals("RSA") || algorithm.equals("DSA")) && keyLength < 2048) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.RSA_KEY_TOO_SHORT, request.getServletPath());
+        } else if ((algorithm.equals("EC") || algorithm.equals("EdDSA")) && keyLength < 224) {
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.EC_KEY_TOO_SHORT, request.getServletPath());
+        }
     }
 
     protected void revokeCertificate(BigInteger certId, CertificateRevocation input, HttpServletRequest request) throws McBasicRestException {
