@@ -1,4 +1,4 @@
-CREATE TABLE `mms` (
+CREATE TABLE `mmses` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `id_organization` INT,
   `name` VARCHAR(255),

@@ -19,8 +19,10 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.util.Set;
 
 /**
@@ -28,15 +30,17 @@ import java.util.Set;
  */
 
 @Entity
-@Table(name = "mms")
+@Table(name = "mmses")
 @Getter
 @Setter
 public class MMS extends NonHumanEntityModel {
     public MMS() {
     }
 
-    @ApiModelProperty(value = "URL of MMS instance")
-    @Column(name = "url")
+    @NotNull
+    @URL(regexp = "^(http|https).*")
+    @ApiModelProperty(value = "URL of MMS instance", required = true)
+    @Column(name = "url", nullable = false)
     private String url;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "mms")
