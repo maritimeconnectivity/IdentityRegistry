@@ -13,12 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.repositories;
+
+package net.maritimecloud.identityregistry.services;
 
 import net.maritimecloud.identityregistry.model.database.entities.MMS;
 
-import java.util.List;
-
-public interface MMSRepository extends EntityRepository<MMS> {
+public interface MMSService extends EntityService<MMS>{
     MMS getByUrl(String url);
 }

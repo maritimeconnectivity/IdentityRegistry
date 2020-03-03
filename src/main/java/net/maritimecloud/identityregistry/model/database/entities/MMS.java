@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -18,6 +18,7 @@ package net.maritimecloud.identityregistry.model.database.entities;
 import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
+import lombok.ToString;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import org.hibernate.validator.constraints.URL;
 
@@ -33,6 +34,7 @@ import java.util.Set;
 @Table(name = "mmses")
 @Getter
 @Setter
+@ToString
 public class MMS extends NonHumanEntityModel {
     public MMS() {
     }

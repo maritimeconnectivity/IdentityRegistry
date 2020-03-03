@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -21,11 +21,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class MMSServiceImpl extends EntityServiceImpl<MMS> implements EntityService<MMS> {
+public class MMSServiceImpl extends EntityServiceImpl<MMS> implements MMSService {
     @Autowired
-    public void setDeviceRepository(MMSRepository mmsRepository) {
-        this.repository = mmsRepository;
+    private MMSRepository repository;
+
+    @Override
+    public MMS getByUrl(String url) {
+        return this.repository.getByUrl(url);
     }
 
+    public MMS getByMrn(String mrn) {
+        return this.repository.getByMrnIgnoreCase(mrn);
+    }
+
+    public MMS getByMrnSubsidiary(String mrn) {
+        return this.repository.getByMrnSubsidiaryIgnoreCase(mrn);
+    }
 }
 
