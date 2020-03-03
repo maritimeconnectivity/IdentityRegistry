@@ -16,17 +16,21 @@
 package net.maritimecloud.identityregistry.model.database.entities;
 
 import io.swagger.annotations.ApiModelProperty;
+import lombok.Getter;
+import lombok.Setter;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 
 import javax.persistence.*;
 import java.util.Set;
 
 /**
- * Model object representing mms
+ * Model object representing Maritime Messaging Service (MMS) instance
  */
 
 @Entity
 @Table(name = "mms")
+@Getter
+@Setter
 public class MMS extends NonHumanEntityModel {
     public MMS() {
     }
@@ -39,23 +43,25 @@ public class MMS extends NonHumanEntityModel {
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     private Set<Certificate> certificates;
 
-    /** Copies this device into the other */
+    /** Copies this mms into the other */
     @Override
     public MMS copyTo(EntityModel target) {
         MMS mms = (MMS) super.copyTo(target);
         mms.getCertificates().clear();
         mms.getCertificates().addAll(certificates);
         mms.setChildIds();
+        mms.setUrl(url);
         return mms;
     }
 
-    /** Copies this device into the other
+    /** Copies this mms into the other
      * Only update things that are allowed to change on update */
     @Override
     public MMS selectiveCopyTo(EntityModel target) {
-        MMS device = (MMS) super.selectiveCopyTo(target);
-        device.setChildIds();
-        return device;
+        MMS mms = (MMS) super.selectiveCopyTo(target);
+        mms.setChildIds();
+        mms.setUrl(url);
+        return mms;
     }
 
     public void assignToCert(Certificate cert){
