@@ -17,6 +17,7 @@ package net.maritimecloud.identityregistry.model.data;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimecloud.identityregistry.model.JsonSerializable;
@@ -24,6 +25,7 @@ import net.maritimecloud.identityregistry.model.JsonSerializable;
 @Setter
 @ToString
 @AllArgsConstructor
+@NoArgsConstructor
 public class ExceptionModel  implements JsonSerializable {
     private long timestamp;
     private int status;

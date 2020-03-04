@@ -19,7 +19,7 @@ server:
         enabled: false
         # Keystore
         # key-store: classpath:keystore.jks
-        key-store: mc-it-keystore.jks
+        key-store: mc-sub-ca-keystore.jks
         # key-store: /etc/ssl/certs/java/cacerts
         # key-alias: rootcert
         key-store-password: changeit

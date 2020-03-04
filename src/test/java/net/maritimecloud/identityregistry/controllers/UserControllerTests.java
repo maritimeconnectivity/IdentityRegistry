@@ -18,6 +18,7 @@ package net.maritimecloud.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
+import net.maritimecloud.identityregistry.model.data.ExceptionModel;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.User;
@@ -25,6 +26,7 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
+import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -32,6 +34,7 @@ import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
@@ -39,14 +42,19 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 import org.subethamail.wiser.Wiser;
 
+import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
@@ -271,10 +279,7 @@ public class UserControllerTests {
         }
         try {
             verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
-        } catch (IOException e) {
-            e.printStackTrace();
-            fail();
-        } catch (McBasicRestException e) {
+        } catch (IOException | McBasicRestException e) {
             e.printStackTrace();
             fail();
         }
@@ -315,7 +320,7 @@ public class UserControllerTests {
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcl:user:DMA@dma:thc");
     }
@@ -453,6 +458,143 @@ public class UserControllerTests {
         }
     }
 
+    @Test
+    public void testIssueCertificateUsingCsr() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().isOk()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            assertNotNull(content);
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testIssueCertificateUsingCsrWithWeakRSAKey() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakRSA.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().is4xxClientError()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            ExceptionModel exceptionModel = deserializeError(content);
+            assertEquals("Message is not as expected", MCIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
+    @Test
+    public void testIssueCertificateUsingCsrWithWeakECKey() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakEC.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().is4xxClientError()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            ExceptionModel exceptionModel = deserializeError(content);
+            assertEquals("Message is not as expected", MCIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     /**
      * Helper function to serialize a user to json
      * @param user
@@ -470,6 +612,15 @@ public class UserControllerTests {
             //System.out.println(jsonInString);
 
             return jsonInString;
+        } catch (IOException e) {
+            throw new RuntimeException(e.getMessage(), e);
+        }
+    }
+
+    private ExceptionModel deserializeError(String content) {
+        ObjectMapper mapper = new ObjectMapper();
+        try {
+            return mapper.readValue(content, ExceptionModel.class);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
