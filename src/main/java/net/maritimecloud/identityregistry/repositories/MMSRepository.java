@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -15,22 +15,10 @@
  */
 package net.maritimecloud.identityregistry.repositories;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.repository.NoRepositoryBean;
-import org.springframework.data.repository.PagingAndSortingRepository;
+import net.maritimecloud.identityregistry.model.database.entities.MMS;
 
 import java.util.List;
 
-@NoRepositoryBean
-public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long> {
-    List<T> findByIdOrganization(Long orgId);
-
-    Page<T> findByidOrganization(Long orgId, Pageable pageable);
-
-    void deleteByidOrganization(Long orgId);
-
-    T getByMrnIgnoreCase(String mrn);
-
-    T getByMrnSubsidiaryIgnoreCase(String subMrn);
+public interface MMSRepository extends EntityRepository<MMS> {
+    MMS getByUrl(String url);
 }
