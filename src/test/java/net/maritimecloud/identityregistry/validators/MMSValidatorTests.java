@@ -15,8 +15,6 @@
  */
 package net.maritimecloud.identityregistry.validators;
 
-
-import net.maritimecloud.identityregistry.model.database.entities.Device;
 import net.maritimecloud.identityregistry.model.database.entities.MMS;
 import org.junit.Before;
 import org.junit.Test;
