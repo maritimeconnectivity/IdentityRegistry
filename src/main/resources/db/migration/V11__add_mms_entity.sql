@@ -14,4 +14,4 @@ CREATE TABLE `mmses` (
 
 ALTER TABLE `certificates` ADD COLUMN `id_mms` INT;
 
-ALTER TABLE `certificates` ADD FOREIGN KEY (`id_mms`) REFERENCES mms(`id`);
+ALTER TABLE `certificates` ADD FOREIGN KEY (`id_mms`) REFERENCES mmses(`id`);
