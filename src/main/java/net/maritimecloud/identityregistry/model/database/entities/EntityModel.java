@@ -27,7 +27,6 @@ import org.hibernate.validator.constraints.URL;
 
 import javax.persistence.Column;
 import javax.persistence.MappedSuperclass;
-import javax.validation.constraints.NotBlank;
 import java.util.Objects;
 
 @MappedSuperclass

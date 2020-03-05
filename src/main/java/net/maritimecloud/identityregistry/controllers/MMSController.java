@@ -20,8 +20,10 @@ import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
 import net.maritimecloud.identityregistry.model.database.Certificate;
+import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.entities.MMS;
 import net.maritimecloud.identityregistry.services.EntityService;
+import net.maritimecloud.identityregistry.utils.AttributesUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -35,6 +37,7 @@ import org.springframework.web.bind.annotation.*;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.math.BigInteger;
+import java.util.HashMap;
 
 @RestController
 public class MMSController extends EntityController<MMS> {
@@ -168,6 +171,15 @@ public class MMSController extends EntityController<MMS> {
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> revokeMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
         return this.revokeEntityCert(request, orgMrn, mmsMrn, certId, input);
+    }
+
+    @Override
+    protected HashMap<String, String> getAttr(CertificateModel certOwner) {
+        HashMap<String, String> attrs = super.getAttr(certOwner);
+        // Find special MC attributes to put in the certificate
+        attrs.putAll(AttributesUtil.getAttributes(certOwner));
+
+        return attrs;
     }
 
     @Override
