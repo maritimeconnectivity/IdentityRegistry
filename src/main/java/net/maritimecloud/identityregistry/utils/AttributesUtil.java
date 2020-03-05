@@ -2,6 +2,7 @@ package net.maritimecloud.identityregistry.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
+import net.maritimecloud.identityregistry.model.database.entities.MMS;
 import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.model.database.entities.Vessel;
 import net.maritimecloud.identityregistry.model.database.entities.VesselAttribute;
@@ -29,6 +30,8 @@ public class AttributesUtil {
             attrs = getAttributesVessel((Vessel) certOwner);
         } else if (certOwner instanceof Service) {
             attrs = getAttributesService((Service) certOwner);
+        } else if (certOwner instanceof MMS) {
+            attrs = getAttributeMMS((MMS) certOwner);
         }
         return attrs;
     }
@@ -88,6 +91,21 @@ public class AttributesUtil {
         if (vessel != null) {
             attrs.putAll(getAttributesVessel(vessel));
             attrs.put(PKIConstants.MC_OID_SHIP_MRN, vessel.getMrn());
+        }
+        return attrs;
+    }
+
+    /**
+     * Get the url attributes of a mms
+     *
+     * @param mms
+     * @return the url attributes of a mms
+     */
+    private static HashMap<String, String> getAttributeMMS(MMS mms) {
+        HashMap<String, String> attrs = new HashMap<>();
+        String mmsUrl = mms.getUrl();
+        if (mmsUrl != null && !mmsUrl.isEmpty()) {
+            attrs.put(PKIConstants.MC_OID_URL, mmsUrl);
         }
         return attrs;
     }

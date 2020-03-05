@@ -20,6 +20,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
+import net.maritimecloud.identityregistry.validators.MCPMRN;
 import net.maritimecloud.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
@@ -58,10 +59,19 @@ public class Organization extends CertificateModel {
     // Due to limitation in the X509, Organization MRN must not be longer than 64 characters
     @Length(max = 64)
     @NotBlank
-    @MRN
-    @ApiModelProperty(value = "The Maritime Resource Name", required = true)
+    @MCPMRN
+    @ApiModelProperty(value = "Maritime Connectivity Platform Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
+
+    @MRN
+    @ApiModelProperty(value = "Subsidiary Maritime Resource Name")
+    @Column(name = "mrn_subsidiary")
+    private String mrnSubsidiary;
+
+    @ApiModelProperty(value = "URL of MMS that the identity is registered")
+    @Column(name = "home_mms_url")
+    private String homeMMSUrl;
 
     @Column(name = "email", nullable = false)
     @Email
@@ -126,6 +136,8 @@ public class Organization extends CertificateModel {
         org.setLogo(logo);
         org.setFederationType(federationType);
         org.setApproved(approved);
+        org.setMrnSubsidiary(mrnSubsidiary);
+        org.setHomeMMSUrl(homeMMSUrl);
         org.getCertificates().clear();
         org.getCertificates().addAll(certificates);
         org.getIdentityProviderAttributes().clear();
@@ -142,6 +154,8 @@ public class Organization extends CertificateModel {
         org.setUrl(url);
         org.setAddress(address);
         org.setCountry(country);
+        org.setMrnSubsidiary(mrnSubsidiary);
+        org.setHomeMMSUrl(homeMMSUrl);
         org.getIdentityProviderAttributes().clear();
         org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
         org.setChildIds();
