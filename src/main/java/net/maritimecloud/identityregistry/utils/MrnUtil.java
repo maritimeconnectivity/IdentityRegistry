@@ -70,6 +70,10 @@ public class MrnUtil {
             startIdx = tmpIdx + 18;
         }
         if (tmpIdx < 0) {
+            tmpIdx = entityMrn.indexOf(":mms:");
+            startIdx = tmpIdx + 5;
+        }
+        if (tmpIdx < 0) {
             throw new IllegalArgumentException("MRN is not a valid entity MRN!");
         }
         int endIdx = entityMrn.indexOf(":", startIdx);

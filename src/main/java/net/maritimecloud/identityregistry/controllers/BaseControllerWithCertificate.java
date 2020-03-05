@@ -218,6 +218,12 @@ public abstract class BaseControllerWithCertificate {
         if (entity.getPermissions() != null) {
             attrs.put(PKIConstants.MC_OID_PERMISSIONS, entity.getPermissions());
         }
+        if (entity.getMrnSubsidiary() != null) {
+            attrs.put(PKIConstants.MC_OID_MRN_SUBSIDIARY, entity.getMrnSubsidiary());
+        }
+        if (entity.getHomeMMSUrl() != null) {
+            attrs.put(PKIConstants.MC_OID_HOME_MMS_URL, entity.getHomeMMSUrl());
+        }
         return attrs;
     }
 }

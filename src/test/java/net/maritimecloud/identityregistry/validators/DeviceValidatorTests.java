@@ -80,7 +80,7 @@ public class DeviceValidatorTests {
         validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
         validDevice.setName("Test Device");
         validDevice.setMrnSubsidiary("urn:mrn:kr:device:testorg:test-device1");
-        validDevice.setHomeMMSUrl("ftp://mms.smartnav.org");
+        validDevice.setHomeMMSUrl("ftp://mms.smartnav.org"); // wrong use of ftp
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
         assertEquals(violations.size(), 1);
@@ -91,7 +91,7 @@ public class DeviceValidatorTests {
         Device validDevice = new Device();
         validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
         validDevice.setName("Test Device");
-        validDevice.setMrnSubsidiary("urn:mcp:kr:device:testorg:test-device1");
+        validDevice.setMrnSubsidiary("urn:mcp:kr:device:testorg:test-device1"); // does not contain the mrn suffix
         validDevice.setHomeMMSUrl("https://mms.smartnav.org");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
