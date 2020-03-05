@@ -134,7 +134,7 @@
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.8</version>
+			<version>1.18.12</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Needed to avoid using an older version that conflicts with a newer version from mc-pki -->
