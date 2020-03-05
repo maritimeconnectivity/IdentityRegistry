@@ -17,14 +17,10 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimecloud.identityregistry.model.database.Organization;
 import net.maritimecloud.identityregistry.model.database.entities.MMS;
-import net.maritimecloud.identityregistry.model.database.entities.Service;
 import net.maritimecloud.identityregistry.services.*;
-import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +35,6 @@ import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
@@ -48,7 +43,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.*;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
@@ -71,12 +65,6 @@ public class MMSControllerTests {
     @MockBean
     private OrganizationService organizationService;
 
-    @MockBean
-    private KeycloakAdminUtil keycloakAU;
-
-    @MockBean
-    private CertificateService certificateService;
-
     @Before
     public void setup() {
         mvc = MockMvcBuilders
@@ -87,7 +75,7 @@ public class MMSControllerTests {
     }
 
     /**
-     * Try to get a service without being authenticated
+     * Try to get a mms without being authenticated
      */
     @WithMockUser()
     @Test
@@ -102,7 +90,7 @@ public class MMSControllerTests {
     }
 
     /**
-     * Try to get a service with the appropriate association
+     * Try to get a mms with the appropriate association
      */
     @Test
     public void testAccessGetMMSWithRights() {
