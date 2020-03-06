@@ -140,6 +140,7 @@ public class MultiSecurityConfig {
                                         "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_MMS_ADMIN\n" +
                                         "ROLE_USER_ADMIN > ROLE_USER\n" +
                                         "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
                                         "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
@@ -241,6 +242,7 @@ public class MultiSecurityConfig {
                                         "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
                                         "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
+                                        "ROLE_ENTITY_ADMIN > ROLE_MMS_ADMIN\n" +
                                         "ROLE_USER_ADMIN > ROLE_USER\n" +
                                         "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
                                         "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
