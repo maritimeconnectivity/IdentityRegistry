@@ -58,7 +58,7 @@ public class CertificateUtil {
     private String defaultSubCa;
 
     @Getter
-    @Value("${net.maritimecloud.idreg.certs.root-ca-alias")
+    @Value("${net.maritimecloud.idreg.certs.root-ca-alias}")
     private String rootCAAlias;
 
     @Getter
