@@ -4,11 +4,14 @@ CREATE TABLE `mmses` (
   `name` VARCHAR(255),
   `permissions` VARCHAR(4000),
   `mrn` VARCHAR(255),
+  `mrn_subsidiary` VARCHAR(255),
   `url` VARCHAR(255) NOT NULL,
+  `home_mms_url` VARCHAR(255),
   `created_at` DATETIME,
   `updated_at` DATETIME,
   PRIMARY KEY (`id`),
   UNIQUE (`mrn`),
+  UNIQUE (`mrn_subsidiary`),
   FOREIGN KEY (`id_organization`) REFERENCES organizations(`id`)
 );
 
