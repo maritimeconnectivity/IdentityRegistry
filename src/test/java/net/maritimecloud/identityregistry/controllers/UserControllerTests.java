@@ -595,6 +595,52 @@ public class UserControllerTests {
         }
     }
 
+    @Test
+    public void testIssueCertificateUsingCsrWithWeakSignature() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1l);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1l);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/RSAWeakSig.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().is4xxClientError()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            ExceptionModel exceptionModel = deserializeError(content);
+            assertEquals("Message is not as expected", MCIdRegConstants.WEAK_HASH, exceptionModel.getMessage());
+        } catch (Exception e) {
+            e.printStackTrace();
+            fail();
+        }
+    }
+
     /**
      * Helper function to serialize a user to json
      * @param user

@@ -50,6 +50,7 @@ public class MCIdRegConstants {
     public static final String RSA_KEY_TOO_SHORT = "RSA and DSA keys need to be at least 2048 bits.";
     public static final String EC_KEY_TOO_SHORT = "EC keys need to be at least 224 bits.";
     public static final String WEAK_HASH = "Hashing algorithm used for CSR is not secure.";
+    public static final String CERT_ISSUING_FAILED = "Something went wrong while issuing certificate";
 
     private MCIdRegConstants() {
     }

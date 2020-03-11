@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
@@ -60,6 +61,7 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.HashMap;
 
+@Slf4j
 @RestController
 @RequestMapping(value={"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
@@ -90,13 +92,15 @@ public abstract class BaseControllerWithCertificate {
         try {
             userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
         } catch (Exception e) {
-            throw new RuntimeException(e.getMessage(), e);
+            log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
+            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
         }
         String pemCertificate;
         try {
             pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
         } catch (CertificateEncodingException e) {
-           throw new RuntimeException(e.getMessage(), e);
+            log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
+            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
         }
         String pemPublicKey = CertificateHandler.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
         String pemPrivateKey = CertificateHandler.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
@@ -131,8 +135,9 @@ public abstract class BaseControllerWithCertificate {
         } catch (InvalidKeyException | NoSuchAlgorithmException e) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
         }
+        // check if public key is long enough
         this.checkPublicKey(publicKey, request);
-
+        // check if csr uses an insecure signature algorithm
         this.checkSignatureAlgorithm(csr, request);
 
         JcaContentVerifierProviderBuilder contentVerifierProviderBuilder = new JcaContentVerifierProviderBuilder();
@@ -159,7 +164,8 @@ public abstract class BaseControllerWithCertificate {
                 try {
                     userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
                 } catch (Exception e) {
-                    throw new RuntimeException(e.getMessage(), e);
+                    log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
                 }
                 String pemCertificate;
                 try {
@@ -183,7 +189,8 @@ public abstract class BaseControllerWithCertificate {
 
                     return pemCertificate + certCAPem;
                 } catch (CertificateEncodingException e) {
-                    throw new RuntimeException(e.getMessage(), e);
+                    log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
+                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
                 }
             }
         } catch (PKCSException e) {
@@ -206,7 +213,7 @@ public abstract class BaseControllerWithCertificate {
         String algorithm;
         int keyLength;
         if (publicKey instanceof RSAPublicKey) {
-            keyLength = ((RSAPublicKey) publicKey).getPublicExponent().bitLength();
+            keyLength = ((RSAPublicKey) publicKey).getModulus().bitLength();
             algorithm = "RSA";
         } else if (publicKey instanceof ECPublicKey) {
             keyLength = ((ECPublicKey) publicKey).getParams().getCurve().getField().getFieldSize();
