@@ -228,6 +228,10 @@ The command will (mostly) return an echo of the json posted to the api:
 
 ```
 
+## Certificate issuing by [Certificate Signing Request](https://en.wikipedia.org/wiki/Certificate_signing_request) (experimental feature)
+In our implementation Certificate Signing Request (CSR) is a block of encoded text that is given to MIR when issuing an MCP certificate. It is usually generated for the entity where the certificate will be stored/owned and contains entity's information such as the organization name, common name (domain name), locality, and country, which will be overwritten by the corresponding information stored in MIR. A CSR also contains the public key that will be included in the certificate. A private key is usually created at the same time that you create the CSR, and expected to be stored and treated securely. The algorithm and bit-length pairs of CSR that MIR supports are *RSA:2048, DSA:2048, EC:224, and EdDSA:2048*.
+
+
 ## Building javadocs and UML diagrams
 It is possible to build javadocs and UML diagrams for the project by running the command below. Note that it might require some non-java/maven dependencies. 
 ```sh
