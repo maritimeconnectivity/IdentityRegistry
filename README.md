@@ -229,8 +229,34 @@ The command will (mostly) return an echo of the json posted to the api:
 ```
 
 ## Certificate issuing by [Certificate Signing Request](https://en.wikipedia.org/wiki/Certificate_signing_request) (experimental feature)
-In our implementation Certificate Signing Request (CSR) is a block of encoded text that is given to MIR when issuing an MCP certificate. It is usually generated for the entity where the certificate will be stored/owned and contains entity's information such as the organization name, common name (domain name), locality, and country, which will be overwritten by the corresponding information stored in MIR. A CSR also contains the public key that will be included in the certificate. A private key is usually created at the same time that you create the CSR, and expected to be stored and treated securely. The algorithm and bit-length pairs of CSR that MIR supports are *RSA:2048, DSA:2048, EC:224, and EdDSA:2048*.
+The MIR supports, as an experimental feature, signing of PEM encoded PKCS#10 certificate signing requests. It is usually generated for the entity where the certificate will be stored/owned and contains entity's information such as the organization name, common name (domain name), locality, and country, which will be overwritten by the corresponding information stored in MIR. A CSR also contains the public key that will be included in the certificate. A private key is usually created at the same time that you create the CSR, and expected to be stored and treated securely. The algorithm and bit-length pairs of CSR that MIR supports are *RSA:>=2048, DSA:>=2048, EC:>=224, and EdDSA:256*.
 
+An example of how a CSR can be generated using an elliptic curve key pair using OpenSSL:
+### Step 1: Generate private key
+```sh
+$ openssl ecparam -out private.key -name secp384r1 -genkey
+```
+This generates an ECC private key using the named curve **secp384r1**. 
+
+### Step 2: Generate CSR
+```sh
+$ openssl req -new -key private.key -out request.csr
+```
+This will prompt you to fill in the attributes of the certificate. For this you can just use dummy data, as they in the end will be replaced with data from the MIR database. 
+
+### Step 3: Send CSR to MIR for signing
+```sh
+$ curl -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: text/plain" --data @request.csr https://localhost/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new/csr
+```
+This will send the CSR to the MIR to be signed for the user with the MRN urn:mrn:mcl:user:dma:dma-employee. The MIR will then return a certificate chain containing the signed certificate followed by the intermediate CA that signed it, looking like this:
+```
+-----BEGIN CERTIFICATE-----
+....
+-----END CERTIFICATE-----
+-----BEGIN CERTIFICATE-----
+....
+-----END CERTIFICATE-----
+```
 
 ## Building javadocs and UML diagrams
 It is possible to build javadocs and UML diagrams for the project by running the command below. Note that it might require some non-java/maven dependencies. 
