@@ -85,7 +85,7 @@ public class CertificateController {
     @ResponseBody
     public ResponseEntity<?> getCRL(@PathVariable String caAlias) {
         // If looking for the root CRL we load that from a file and return it.
-        if (PKIConstants.ROOT_CERT_ALIAS.equals(caAlias)) {
+        if (certUtil.getRootCAAlias().equals(caAlias)) {
             try {
                 String rootCrl = new String(Files.readAllBytes(Paths.get(certUtil.getRootCrlPath())), StandardCharsets.UTF_8);
                 return new ResponseEntity<>(rootCrl, HttpStatus.OK);
@@ -94,7 +94,7 @@ public class CertificateController {
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
-        X509Certificate caCert = (X509Certificate) certUtil.getKeystoreHandler().getMCCertificate(caAlias);
+        X509Certificate caCert = (X509Certificate) certUtil.getKeystoreHandler().getMCPCertificate(caAlias);
         if (caCert == null) {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
@@ -160,7 +160,7 @@ public class CertificateController {
         /* TODO: verify signature - needed?
         if (ocspreq.isSigned()) {
         }*/
-        BasicOCSPRespBuilder respBuilder = Revocation.initOCSPRespBuilder(ocspreq, certUtil.getKeystoreHandler().getMCCertificate(certAlias).getPublicKey());
+        BasicOCSPRespBuilder respBuilder = Revocation.initOCSPRespBuilder(ocspreq, certUtil.getKeystoreHandler().getMCPCertificate(certAlias).getPublicKey());
         Req[] requests = ocspreq.getRequestList();
         for (Req req : requests) {
             BigInteger sn = req.getCertID().getSerialNumber();

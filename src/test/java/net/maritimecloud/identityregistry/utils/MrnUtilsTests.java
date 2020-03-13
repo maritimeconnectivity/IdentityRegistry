@@ -39,19 +39,19 @@ public class MrnUtilsTests {
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
     }
 
-    @Test
-    public void extractOrgValidatorFromOrgShortname1() {
-        String orgMrn = "dfds@bimco";
-        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
-        assertEquals("Org validator should be 'bimco'","bimco", ret);
-    }
-
-    @Test
-    public void extractOrgValidatorFromOrgShortname2() {
-        String orgMrn = "bimco";
-        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
-        assertEquals("Org validator should be 'maritimecloud-idreg'","maritimecloud-idreg", ret);
-    }
+//    @Test
+//    public void extractOrgValidatorFromOrgShortname1() {
+//        String orgMrn = "dfds@bimco";
+//        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
+//        assertEquals("Org validator should be 'bimco'","bimco", ret);
+//    }
+//
+//    @Test
+//    public void extractOrgValidatorFromOrgShortname2() {
+//        String orgMrn = "bimco";
+//        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
+//        assertEquals("Org validator should be 'maritimecloud-idreg'","maritimecloud-idreg", ret);
+//    }
 
     @Test
     public void extractOrgShortnameFromUserMRN1() {

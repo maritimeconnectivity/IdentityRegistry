@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import io.swagger.annotations.ApiParam;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
@@ -32,6 +33,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -181,6 +183,23 @@ public class VesselController extends EntityController<Vessel> {
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<CertificateBundle> newVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
         return this.newEntityCert(request, orgMrn, vesselMrn, "vessel");
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+    )
+    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<String> newVesselCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr, orgMrn, vesselMrn, "vessel");
     }
 
     /**

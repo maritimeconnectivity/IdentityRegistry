@@ -36,22 +36,22 @@ public class MrnUtil {
         return orgMrn.substring(idx);
     }
 
-    /**
-     * Returns the org shortname of the organization responsible for validating the organization that is
-     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
-     * @param orgShortname
-     * @return
-     */
-    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
-        if (orgShortname.contains("@")) {
-            // This handles the nested validators
-            String[] dividedShotname = orgShortname.split("@", 2);
-            return dividedShotname[1];
-        } else {
-            // this shouldn't be hardcoded
-            return "maritimecloud-idreg";
-        }
-    }
+//    /**
+//     * Returns the org shortname of the organization responsible for validating the organization that is
+//     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
+//     * @param orgShortname
+//     * @return
+//     */
+//    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
+//        if (orgShortname.contains("@")) {
+//            // This handles the nested validators
+//            String[] dividedShotname = orgShortname.split("@", 2);
+//            return dividedShotname[1];
+//        } else {
+//            // TODO this shouldn't be hardcoded
+//            return "maritimecloud-idreg";
+//        }
+//    }
 
     public static String getOrgShortNameFromEntityMrn(String entityMrn) {
         // An entity MRN looks like this: urn:mrn:mcl:user:<org-shortname>:<user-id>
@@ -68,6 +68,10 @@ public class MrnUtil {
         if (tmpIdx < 0) {
             tmpIdx = entityMrn.indexOf(":service:instance:");
             startIdx = tmpIdx + 18;
+        }
+        if (tmpIdx < 0) {
+            tmpIdx = entityMrn.indexOf(":mms:");
+            startIdx = tmpIdx + 5;
         }
         if (tmpIdx < 0) {
             throw new IllegalArgumentException("MRN is not a valid entity MRN!");
@@ -109,24 +113,35 @@ public class MrnUtil {
         return mrn;
     }*/
 
-    public static boolean validateMrn(String mrn) {
+    public static boolean isNotMrnEmpty(String mrn) {
         if (mrn == null || mrn.trim().isEmpty()) {
             throw new IllegalArgumentException("MRN is empty");
         }
-        if (!MRN_PATTERN.matcher(mrn).matches()) {
+        return true;
+    }
+
+    public static boolean validateMrn(String mrn) {
+        if (mrn != null && !MRN_PATTERN.matcher(mrn).matches()) {
             throw new IllegalArgumentException("MRN is not in a valid format");
         }
-        // validate mrn based on the entity type
-        if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
-        } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a user");
-        } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
-        } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format for a device");
-        }
         return true;
+    }
+
+    public static boolean validateMCPMrn(String mrn) {
+        if(isNotMrnEmpty(mrn) && validateMrn(mrn)){
+            // validate mrn based on the entity type
+            if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
+            } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a user");
+            } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
+            } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
+                throw new IllegalArgumentException("MRN is not in a valid format for a device");
+            }
+            return true;
+        }
+        return false;
     }
 
     /**

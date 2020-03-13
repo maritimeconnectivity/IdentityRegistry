@@ -18,7 +18,9 @@ package net.maritimecloud.identityregistry.utils;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.model.database.Agent;
 import net.maritimecloud.identityregistry.model.database.Organization;
+import net.maritimecloud.identityregistry.model.database.entities.User;
 import net.maritimecloud.identityregistry.services.AgentService;
+import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
@@ -43,6 +45,7 @@ public class AccessControlUtil {
     @Autowired
     private HasRoleUtil hasRoleUtil;
     public static final String ORG_PROPERTY_NAME = "org";
+    public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
 
     @Autowired
@@ -50,6 +53,9 @@ public class AccessControlUtil {
 
     @Autowired
     private AgentService agentService;
+
+    @Autowired
+    private EntityService<User> userService;
 
     public boolean hasAccessToOrg(String orgMrn) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
@@ -134,6 +140,34 @@ public class AccessControlUtil {
             }
             log.debug("This was not the user-sync'er! " + userSyncMRN + "~" + person.getUid() + ", " + userSyncO + "~"
                     + person.getO() + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
+        }
+        return false;
+    }
+
+    public boolean isUser(String userMRN) {
+        User user = this.userService.getByMrn(userMRN);
+        Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth instanceof KeycloakAuthenticationToken) {
+            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
+            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
+            Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
+            String org = (String) otherClaims.get(ORG_PROPERTY_NAME);
+            String mrn = (String) otherClaims.get(MRN_PROPERTY_NAME);
+            if (org != null && mrn != null) {
+                return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
+            }
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
+            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            String mrn = person.getUid();
+            String org = person.getO();
+            if (mrn != null && org != null) {
+                return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
+            }
+        }
+        if (auth != null) {
+            log.debug("Unknown authentication method: " + auth.getClass());
         }
         return false;
     }

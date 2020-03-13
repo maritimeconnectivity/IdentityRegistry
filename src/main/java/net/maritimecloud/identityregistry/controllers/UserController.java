@@ -16,6 +16,7 @@
 package net.maritimecloud.identityregistry.controllers;
 
 import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiParam;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
@@ -40,6 +41,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -267,6 +269,23 @@ public class UserController extends EntityController<User> {
     }
 
     /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+    )
+    @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr, orgMrn, userMrn, "user");
+    }
+
+    /**
      * Revokes certificate for the user identified by the given ID
      * 
      * @return a reply...
@@ -314,9 +333,9 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             // Check validators?
-            String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
+            //String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
             // The org validator is also CA
-            String orgCa = "urn:mrn:mcl:ca:" + orgValidator;
+            String orgCa = certificateUtil.getDefaultSubCa();
             // Create the new org based on given info
             org = new Organization();
             org.setName(orgName);

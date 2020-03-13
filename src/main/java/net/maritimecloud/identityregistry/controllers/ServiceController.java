@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import io.swagger.annotations.ApiParam;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
@@ -359,6 +360,23 @@ public class ServiceController extends EntityController<Service> {
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+    )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+        return this.signEntityCert(request, csr, orgMrn, serviceMrn, "service");
     }
 
     /**

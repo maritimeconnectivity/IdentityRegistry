@@ -18,6 +18,7 @@ package net.maritimecloud.identityregistry.controllers;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
+import net.maritimecloud.identityregistry.model.data.PemCertificate;
 import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.model.database.CertificateModel;
 import net.maritimecloud.identityregistry.model.database.Organization;
@@ -26,13 +27,17 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
+import net.maritimecloud.identityregistry.utils.CsrUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -178,6 +183,35 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             return this.entityService.listPageFromOrg(org.getId(), pageable);
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Receives a CSR and returns a signed and PEM encoded certificate
+     * @return a PEM encoded certificate
+     * @throws McBasicRestException
+     */
+    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            T entity = this.entityService.getByMrn(entityMrn);
+            if (entity == null) {
+                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+                JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
+                String cert = this.signCertificate(pkcs10CertificationRequest, entity, org, type, request);
+                HttpHeaders httpHeaders = new HttpHeaders();
+                httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
+                return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
+            }
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

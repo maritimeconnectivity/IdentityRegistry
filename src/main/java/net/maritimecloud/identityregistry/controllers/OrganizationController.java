@@ -15,6 +15,7 @@
  */
 package net.maritimecloud.identityregistry.controllers;
 
+import io.swagger.annotations.ApiParam;
 import net.maritimecloud.identityregistry.exception.McBasicRestException;
 import net.maritimecloud.identityregistry.model.data.CertificateBundle;
 import net.maritimecloud.identityregistry.model.data.CertificateRevocation;
@@ -31,15 +32,19 @@ import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.services.EntityService;
 import net.maritimecloud.identityregistry.services.OrganizationService;
 import net.maritimecloud.identityregistry.services.RoleService;
+import net.maritimecloud.identityregistry.utils.CsrUtil;
 import net.maritimecloud.identityregistry.utils.EmailUtil;
 import net.maritimecloud.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
@@ -322,6 +327,32 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (org != null) {
             CertificateBundle ret = this.issueCertificate(org, org, "organization", request);
             return new ResponseEntity<>(ret, HttpStatus.OK);
+        } else {
+            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McBasicRestException
+     */
+    @RequestMapping(
+            value = "/api/org/{orgMrn}/certificate/issue-new/csr",
+            method = RequestMethod.POST,
+            consumes = MediaType.TEXT_PLAIN_VALUE,
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+    )
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
+            String cert = this.signCertificate(pkcs10CertificationRequest, org, org, "organization", request);
+            HttpHeaders httpHeaders = new HttpHeaders();
+            httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
+            return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

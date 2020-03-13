@@ -19,7 +19,7 @@ server:
         enabled: false
         # Keystore
         # key-store: classpath:keystore.jks
-        key-store: mc-it-keystore.jks
+        key-store: mc-sub-ca-keystore.jks
         # key-store: /etc/ssl/certs/java/cacerts
         # key-alias: rootcert
         key-store-password: changeit
@@ -78,6 +78,7 @@ net:
                 root-crl-path: root-ca.crl
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
                 default-sub-ca: urn:mrn:mcl:ca:maritimecloud-idreg
+                root-ca-alias: urn:mrn:mcl:ca:maritimecloud
 
             # Email setup
             email:

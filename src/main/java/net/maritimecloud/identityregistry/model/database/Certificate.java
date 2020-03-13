@@ -22,10 +22,7 @@ import io.swagger.annotations.ApiModelProperty;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
-import net.maritimecloud.identityregistry.model.database.entities.Device;
-import net.maritimecloud.identityregistry.model.database.entities.Service;
-import net.maritimecloud.identityregistry.model.database.entities.User;
-import net.maritimecloud.identityregistry.model.database.entities.Vessel;
+import net.maritimecloud.identityregistry.model.database.entities.*;
 import net.maritimecloud.pki.Revocation;
 import net.maritimecloud.pki.RevocationInfo;
 import net.maritimecloud.pki.ocsp.CertStatus;
@@ -47,7 +44,7 @@ import java.util.Date;
 @Table(name="certificates")
 @Getter
 @Setter
-@ToString(exclude = {"vessel", "user", "device", "service", "organization"})
+@ToString(exclude = {"vessel", "user", "device", "service", "organization", "mms"})
 public class Certificate extends TimestampModel {
 
     public Certificate() {
@@ -111,6 +108,11 @@ public class Certificate extends TimestampModel {
     @ManyToOne
     @JoinColumn(name = "id_service")
     private Service service;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_mms")
+    private MMS mms;
 
     @JsonIgnore
     @ManyToOne

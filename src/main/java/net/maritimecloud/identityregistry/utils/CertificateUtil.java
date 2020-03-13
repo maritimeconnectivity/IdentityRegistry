@@ -58,6 +58,10 @@ public class CertificateUtil {
     private String defaultSubCa;
 
     @Getter
+    @Value("${net.maritimecloud.idreg.certs.root-ca-alias}")
+    private String rootCAAlias;
+
+    @Getter
     private KeystoreHandler keystoreHandler;
 
     @Getter
@@ -70,7 +74,7 @@ public class CertificateUtil {
 
     @PostConstruct
     public void setup() {
-        pkiConfiguration = new PKIConfiguration();
+        pkiConfiguration = new PKIConfiguration(rootCAAlias);
         pkiConfiguration.setTruststorePath(truststorePath);
         pkiConfiguration.setTruststorePassword(truststorePassword);
         pkiConfiguration.setSubCaKeystorePath(subCaKeystorePath);

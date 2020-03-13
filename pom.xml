@@ -39,8 +39,9 @@
 		<java.version>1.8</java.version>
 		<maven.compiler.source>1.8</maven.compiler.source>
 		<maven.compiler.target>1.8</maven.compiler.target>
-		<keycloak.version>8.0.2</keycloak.version>
+		<keycloak.version>9.0.0</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
+		<bouncycastle.version>1.64</bouncycastle.version>
 	</properties>
 
 	<dependencies>
@@ -119,24 +120,6 @@
 			<artifactId>keycloak-admin-client</artifactId>
 			<version>${keycloak.version}</version>
 		</dependency>
-		<!-- Needed by keycloak-admin-client, see https://issues.jboss.org/browse/KEYCLOAK-2009 -->
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-client</artifactId>
-			<version>${resteasy.version}</version>
-		</dependency>
-		<!-- Needed by keycloak-admin-client, see https://issues.jboss.org/browse/KEYCLOAK-2009 -->
-		<dependency>
-		   <groupId>org.jboss.resteasy</groupId>
-		   <artifactId>resteasy-jackson2-provider</artifactId>
-			<version>${resteasy.version}</version>
-		</dependency>
-		<!-- Needed by keycloak-admin-client, see https://issues.jboss.org/browse/KEYCLOAK-2009 -->
-		<dependency>
-			<groupId>org.jboss.resteasy</groupId>
-			<artifactId>resteasy-multipart-provider</artifactId>
-			<version>${resteasy.version}</version>
-		</dependency>
 		<dependency>
 			<groupId>io.springfox</groupId>
 			<artifactId>springfox-swagger2</artifactId>
@@ -145,25 +128,29 @@
 		<dependency>
 			<groupId>org.flywaydb</groupId>
 			<artifactId>flyway-core</artifactId>
-			<version>5.0.7</version>
 		</dependency>
 		<!-- Lombok -->
 		<dependency>
 			<groupId>org.projectlombok</groupId>
 			<artifactId>lombok</artifactId>
-			<version>1.18.8</version>
+			<version>1.18.12</version>
 			<scope>provided</scope>
 		</dependency>
 		<!-- Needed to avoid using an older version that conflicts with a newer version from mc-pki -->
 		<dependency>
 			<groupId>org.bouncycastle</groupId>
 			<artifactId>bcprov-jdk15on</artifactId>
-			<version>1.59</version>
+			<version>${bouncycastle.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk15on</artifactId>
+			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.maritimecloud.pki</groupId>
 			<artifactId>mc-pki</artifactId>
-			<version>0.9.0-SNAPSHOT</version>
+			<version>0.10.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>

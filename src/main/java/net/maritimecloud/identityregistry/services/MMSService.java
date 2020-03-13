@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium.
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
@@ -13,24 +13,11 @@
  *  See the License for the specific language governing permissions and
  *  limitations under the License.
  */
-package net.maritimecloud.identityregistry.model.data;
 
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import net.maritimecloud.identityregistry.model.JsonSerializable;
-@Getter
-@Setter
-@ToString
-@AllArgsConstructor
-@NoArgsConstructor
-public class ExceptionModel  implements JsonSerializable {
-    private long timestamp;
-    private int status;
-    private String error;
-    private String message;
-    private String path;
+package net.maritimecloud.identityregistry.services;
 
+import net.maritimecloud.identityregistry.model.database.entities.MMS;
+
+public interface MMSService extends EntityService<MMS>{
+    MMS getByUrl(String url);
 }
