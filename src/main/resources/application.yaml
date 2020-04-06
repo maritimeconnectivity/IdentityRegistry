@@ -118,7 +118,7 @@ net:
                 bug-report-email: bug-report@maritimecloud.net
 
 # Set alternative keycloak conf file
-#keycloak.configuration.file: file:/conf/keycloak.json
+#keycloak.configurationFile: file:/conf/keycloak.json
 
 # Test db-connection before use to avoid connection timeout errors
 spring.datasource:
