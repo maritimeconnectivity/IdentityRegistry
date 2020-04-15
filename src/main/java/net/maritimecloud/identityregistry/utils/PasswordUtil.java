@@ -17,8 +17,12 @@ package net.maritimecloud.identityregistry.utils;
 
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
+import sun.security.pkcs11.SunPKCS11;
+import sun.security.pkcs11.wrapper.PKCS11RuntimeException;
 
 import java.math.BigInteger;
+import java.security.AuthProvider;
+import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
 public class PasswordUtil {
@@ -26,8 +30,17 @@ public class PasswordUtil {
     private PasswordUtil() {
     }
 
-    public static String generatePassword() {
-        SecureRandom secRandom = new SecureRandom();
+    public static String generatePassword(AuthProvider authProvider) {
+        SecureRandom secRandom;
+        if (authProvider instanceof SunPKCS11) {
+            try {
+                secRandom = SecureRandom.getInstance("PKCS11", authProvider);
+            } catch (NoSuchAlgorithmException e) {
+                throw new PKCS11RuntimeException(e.getMessage(), e);
+            }
+        } else {
+            secRandom = new SecureRandom();
+        }
         return new BigInteger(130, secRandom).toString(32);
     }
 

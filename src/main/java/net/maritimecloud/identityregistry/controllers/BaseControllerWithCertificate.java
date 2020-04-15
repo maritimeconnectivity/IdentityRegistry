@@ -32,6 +32,7 @@ import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import net.maritimecloud.pki.CertificateBuilder;
 import net.maritimecloud.pki.CertificateHandler;
 import net.maritimecloud.pki.PKIConstants;
+import net.maritimecloud.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
@@ -47,6 +48,7 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
 import java.nio.charset.StandardCharsets;
+import java.security.AuthProvider;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
 import java.security.NoSuchAlgorithmException;
@@ -75,8 +77,14 @@ public abstract class BaseControllerWithCertificate {
     private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
+        AuthProvider authProvider = null;
+        P11PKIConfiguration p11PKIConfiguration = null;
+        if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+            p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+            authProvider = p11PKIConfiguration.getProvider();
+        }
         // Generate keypair for user
-        KeyPair userKeyPair = CertificateBuilder.generateKeyPair();
+        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(authProvider);
         // Find special MC attributes to put in the certificate
         HashMap<String, String> attrs = getAttr(certOwner);
 
@@ -87,10 +95,16 @@ public abstract class BaseControllerWithCertificate {
         if (uid == null || uid.trim().isEmpty()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
-        BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber();
+        BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
         X509Certificate userCert;
         try {
-            userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
+            if (authProvider != null) {
+                p11PKIConfiguration.providerLogin();
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+                p11PKIConfiguration.providerLogout();
+            } else {
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
+            }
         } catch (Exception e) {
             log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
             throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
@@ -107,7 +121,7 @@ public abstract class BaseControllerWithCertificate {
         PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
 
         // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
-        String keystorePassword = PasswordUtil.generatePassword();
+        String keystorePassword = PasswordUtil.generatePassword(authProvider);
         byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         byte[] pkcs12Keystore = CertificateHandler.createOutputKeystore("PKCS12", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         Base64.Encoder encoder = Base64.getEncoder();
@@ -149,6 +163,12 @@ public abstract class BaseControllerWithCertificate {
         }
         try {
             if (csr.isSignatureValid(contentVerifierProvider)) {
+                AuthProvider authProvider = null;
+                P11PKIConfiguration p11PKIConfiguration = null;
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+                    p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                    authProvider = p11PKIConfiguration.getProvider();
+                }
                 // Find special MC attributes to put in the certificate
                 HashMap<String, String> attrs = getAttr(certOwner);
 
@@ -159,10 +179,16 @@ public abstract class BaseControllerWithCertificate {
                 if (uid == null || uid.trim().isEmpty()) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
-                BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber();
+                BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
                 X509Certificate userCert;
                 try {
-                    userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI());
+                    if (authProvider != null) {
+                        p11PKIConfiguration.providerLogin();
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+                        p11PKIConfiguration.providerLogout();
+                    } else {
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
+                    }
                 } catch (Exception e) {
                     log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
                     throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());

@@ -20,6 +20,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.maritimecloud.pki.CertificateBuilder;
 import net.maritimecloud.pki.KeystoreHandler;
 import net.maritimecloud.pki.PKIConfiguration;
+import net.maritimecloud.pki.pkcs11.P11PKIConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -62,11 +63,22 @@ public class CertificateUtil {
     private String rootCAAlias;
 
     @Getter
+    @Value("${net.maritimecloud.idreg.certs.pkcs11.enabled:false}")
+    private boolean isUsingPKCS11;
+
+    @Value("${net.maritimecloud.idreg.certs.pkcs11.config.file:pkcs11.cfg}")
+    private String pkcs11ConfigFile;
+
+    @Value("${net.maritimecloud.idreg.certs.pkcs11.config.pin:1234}")
+    private String pkcs11Pin;
+
+    @Getter
     private KeystoreHandler keystoreHandler;
 
     @Getter
     private CertificateBuilder certificateBuilder;
 
+    @Getter
     private PKIConfiguration pkiConfiguration;
 
     public CertificateUtil() {
@@ -74,13 +86,18 @@ public class CertificateUtil {
 
     @PostConstruct
     public void setup() {
-        pkiConfiguration = new PKIConfiguration(rootCAAlias);
-        pkiConfiguration.setTruststorePath(truststorePath);
-        pkiConfiguration.setTruststorePassword(truststorePassword);
-        pkiConfiguration.setSubCaKeystorePath(subCaKeystorePath);
-        pkiConfiguration.setSubCaKeystorePassword(subCaKeystorePassword);
-        pkiConfiguration.setSubCaKeyPassword(subCaKeyPassword);
-
+        if (isUsingPKCS11) {
+            pkiConfiguration = new P11PKIConfiguration(rootCAAlias, pkcs11ConfigFile, pkcs11Pin);
+            pkiConfiguration.setTruststorePath(truststorePath);
+            pkiConfiguration.setTruststorePassword(truststorePassword);
+        } else {
+            pkiConfiguration = new PKIConfiguration(rootCAAlias);
+            pkiConfiguration.setTruststorePath(truststorePath);
+            pkiConfiguration.setTruststorePassword(truststorePassword);
+            pkiConfiguration.setSubCaKeystorePath(subCaKeystorePath);
+            pkiConfiguration.setSubCaKeystorePassword(subCaKeystorePassword);
+            pkiConfiguration.setSubCaKeyPassword(subCaKeyPassword);
+        }
         keystoreHandler = new KeystoreHandler(pkiConfiguration);
         certificateBuilder = new CertificateBuilder(keystoreHandler);
     }

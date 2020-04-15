@@ -35,6 +35,7 @@ import net.maritimecloud.identityregistry.utils.MCIdRegConstants;
 import net.maritimecloud.identityregistry.utils.MrnUtil;
 import net.maritimecloud.identityregistry.utils.PasswordUtil;
 import net.maritimecloud.identityregistry.utils.ValidateUtil;
+import net.maritimecloud.pki.pkcs11.P11PKIConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,6 +58,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
 import java.math.BigInteger;
+import java.security.AuthProvider;
 
 @RestController
 public class UserController extends EntityController<User> {
@@ -82,6 +84,7 @@ public class UserController extends EntityController<User> {
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
+
     @Autowired
     private EmailUtil emailUtil;
 
@@ -108,7 +111,10 @@ public class UserController extends EntityController<User> {
             input.setMrn(input.getMrn().toLowerCase());
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
-                String password = PasswordUtil.generatePassword();
+                AuthProvider authProvider = null;
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration)
+                    authProvider = ((P11PKIConfiguration) certificateUtil.getPkiConfiguration()).getProvider();
+                String password = PasswordUtil.generatePassword(authProvider);
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.checkUserExistence(input.getEmail());

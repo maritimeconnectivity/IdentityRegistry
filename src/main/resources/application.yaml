@@ -82,8 +82,8 @@ net:
 
             # Email setup
             email:
-                from: no-reply@maritimecloud.net
-                admin-email: admin@maritimecloud.net
+                from: no-reply@maritimeconnectivity.net
+                admin-email: admin@maritimeconnectivity.net
                 org-awaiting-approval-subject: "%s is awaiting approval for being added to MCP"
                 created-user-subject: A login for the Maritime Connectivity Platform has been created for you
                 portal-url: https://management.maritimecloud.net
@@ -115,7 +115,7 @@ net:
                     
                     Best regards,
                     The Maritime Connectivity Platform Team
-                bug-report-email: bug-report@maritimecloud.net
+                bug-report-email: bug-report@maritimeconnectivity.net
 
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
