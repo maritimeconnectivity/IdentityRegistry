@@ -82,6 +82,7 @@ public abstract class BaseControllerWithCertificate {
         if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
             p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
             authProvider = p11PKIConfiguration.getProvider();
+            p11PKIConfiguration.providerLogin();
         }
         // Generate keypair for user
         KeyPair userKeyPair = CertificateBuilder.generateKeyPair(authProvider);
@@ -99,9 +100,7 @@ public abstract class BaseControllerWithCertificate {
         X509Certificate userCert;
         try {
             if (authProvider != null) {
-                p11PKIConfiguration.providerLogin();
                 userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
-                p11PKIConfiguration.providerLogout();
             } else {
                 userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
             }
@@ -122,6 +121,9 @@ public abstract class BaseControllerWithCertificate {
 
         // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
         String keystorePassword = PasswordUtil.generatePassword(authProvider);
+        if (authProvider != null) {
+            p11PKIConfiguration.providerLogout();
+        }
         byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         byte[] pkcs12Keystore = CertificateHandler.createOutputKeystore("PKCS12", name, keystorePassword, userKeyPair.getPrivate(), userCert);
         Base64.Encoder encoder = Base64.getEncoder();
@@ -168,6 +170,7 @@ public abstract class BaseControllerWithCertificate {
                 if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
                     p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
                     authProvider = p11PKIConfiguration.getProvider();
+                    p11PKIConfiguration.providerLogin();
                 }
                 // Find special MC attributes to put in the certificate
                 HashMap<String, String> attrs = getAttr(certOwner);
@@ -183,7 +186,6 @@ public abstract class BaseControllerWithCertificate {
                 X509Certificate userCert;
                 try {
                     if (authProvider != null) {
-                        p11PKIConfiguration.providerLogin();
                         userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
                         p11PKIConfiguration.providerLogout();
                     } else {
