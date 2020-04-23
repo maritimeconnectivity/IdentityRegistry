@@ -7,7 +7,7 @@
 FROM openjdk:8-jre
 
 RUN mkdir -p /conf
-ADD mc-identityregistry-core-latest.war .
+ADD mcp-identityregistry-core-latest.war .
 
 # Set locales for image to support UTF-8
 ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
