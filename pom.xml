@@ -19,12 +19,12 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
-	<groupId>net.maritimecloud.identityregistry</groupId>
-	<artifactId>mc-identityregistry-core</artifactId>
+	<groupId>net.maritimeconnectivity.identityregistry</groupId>
+	<artifactId>mcp-identityregistry-core</artifactId>
 	<version>0.11.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 
-	<name>mc-identityregistry-core</name>
+	<name>mcp-identityregistry-core</name>
 	<description>MCP Identity Registry Core</description>
 
 	<parent>
@@ -148,8 +148,8 @@
 			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>net.maritimecloud.pki</groupId>
-			<artifactId>mc-pki</artifactId>
+			<groupId>net.maritimeconnectivity.pki</groupId>
+			<artifactId>mcp-pki</artifactId>
 			<version>0.11.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>

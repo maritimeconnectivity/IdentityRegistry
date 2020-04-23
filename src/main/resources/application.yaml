@@ -4,7 +4,7 @@ spring:
 
 # logging
 logging.level:
-    net.maritimecloud.identityregistry: DEBUG
+    net.maritimeconnectivity.identityregistry: DEBUG
 #    org.springframework.web: DEBUG
 #    org.springframework.security: DEBUG
 #    org.keycloak.adapters: DEBUG
@@ -31,7 +31,7 @@ server:
 
 # Login info for the central keycloak MC ID broker (Used for ID Providers)
 net:
-    maritimecloud:
+    maritimeconnectivity:
         idreg:
             keycloak-broker-admin-user: idreg-admin
             keycloak-broker-admin-password: idreg-admin
