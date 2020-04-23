@@ -112,9 +112,16 @@ public class UserController extends EntityController<User> {
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
                 AuthProvider authProvider = null;
-                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration)
-                    authProvider = ((P11PKIConfiguration) certificateUtil.getPkiConfiguration()).getProvider();
-                String password = PasswordUtil.generatePassword(authProvider);
+                String password;
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+                    P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                    authProvider = p11PKIConfiguration.getProvider();
+                    p11PKIConfiguration.providerLogin();
+                    password = PasswordUtil.generatePassword(authProvider);
+                    p11PKIConfiguration.providerLogout();
+                } else {
+                    password = PasswordUtil.generatePassword(null);
+                }
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.checkUserExistence(input.getEmail());

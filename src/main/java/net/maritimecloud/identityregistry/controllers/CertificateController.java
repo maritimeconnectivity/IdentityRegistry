@@ -20,9 +20,9 @@ import net.maritimecloud.identityregistry.model.database.Certificate;
 import net.maritimecloud.identityregistry.services.CertificateService;
 import net.maritimecloud.identityregistry.utils.CertificateUtil;
 import net.maritimecloud.pki.CertificateHandler;
-import net.maritimecloud.pki.PKIConstants;
 import net.maritimecloud.pki.Revocation;
 import net.maritimecloud.pki.RevocationInfo;
+import net.maritimecloud.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPReq;
@@ -103,7 +103,8 @@ public class CertificateController {
         for (Certificate cert : revokedCerts) {
             revocationInfos.add(cert.toRevocationInfo());
         }
-        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias));
+        P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
+        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), pkiConfiguration.getProvider());
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
             return new ResponseEntity<>(pemCrl, HttpStatus.OK);

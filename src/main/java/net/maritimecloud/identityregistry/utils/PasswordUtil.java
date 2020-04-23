@@ -15,8 +15,6 @@
  */
 package net.maritimecloud.identityregistry.utils;
 
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import sun.security.pkcs11.SunPKCS11;
 import sun.security.pkcs11.wrapper.PKCS11RuntimeException;
 
@@ -44,9 +42,4 @@ public class PasswordUtil {
         return new BigInteger(130, secRandom).toString(32);
     }
 
-    public static String hashPassword(String password) {
-        PasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
-        String hashedPassword = passwordEncoder.encode(password);
-        return hashedPassword;
-    }
 }
