@@ -7,11 +7,8 @@
 FROM openjdk:8-jre
 
 RUN mkdir -p /conf
-ADD mc-identityregistry-core-latest.war .
-
-# Set locales for image to support UTF-8
-ENV LANG='en_US.UTF-8' LANGUAGE='en_US:en' LC_ALL='en_US.UTF-8'
+ADD mcp-identityregistry-core-latest.war .
 
 EXPOSE 8443
 
-CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mc-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.configurationFile=file:/conf/keycloak.json"]
+CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mcp-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.configurationFile=file:/conf/keycloak.json"]

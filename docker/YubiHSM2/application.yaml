@@ -79,6 +79,11 @@ net:
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
                 default-sub-ca: urn:mrn:mcl:ca:maritimecloud-idreg
                 root-ca-alias: urn:mrn:mcl:ca:maritimecloud
+                pkcs11:
+                    enabled: true
+                    config:
+                        file: /conf/pkcs11_yubi.cfg
+                        pin: 0001password
 
             # Email setup
             email:
