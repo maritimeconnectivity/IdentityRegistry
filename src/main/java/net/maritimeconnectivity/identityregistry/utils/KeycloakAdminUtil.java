@@ -269,10 +269,11 @@ public class KeycloakAdminUtil {
         if (oldIdp != null) {
             getBrokerRealm().identityProviders().get(name).update(idp);
         } else {
-            Response ret = getBrokerRealm().identityProviders().create(idp);
-            log.debug("Returned status from creating IDP: " + ret.getStatus());
-            if (ret.getStatus() != 201) {
-                throw new IOException("Could not create IDP");
+            try (Response ret = getBrokerRealm().identityProviders().create(idp)) {
+                log.debug("Returned status from creating IDP: " + ret.getStatus());
+                if (ret.getStatus() != 201) {
+                    throw new IOException("Could not create IDP");
+                }
             }
         }
 
@@ -406,20 +407,20 @@ public class KeycloakAdminUtil {
             attr.put("permissions", Collections.singletonList(permissions));
         }
         user.setAttributes(attr);
-        Response ret = getProjectUserRealm().users().create(user);
-        String errMsg = ret.readEntity(String.class);
-        if (ret.getStatus() != 201) {
-            if (ret.getStatus() == 409) {
-                log.debug("creating user failed due to duplicated user" + errMsg);
-                throw new DuplicatedKeycloakEntry("User with mrn: " +userMrn + " already exists.", errMsg);
-            } else {
-                log.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
-                throw new IOException("User creating failed: " + errMsg);
+        try (Response ret = getProjectUserRealm().users().create(user)) {
+            String errMsg = ret.readEntity(String.class);
+            if (ret.getStatus() != 201) {
+                if (ret.getStatus() == 409) {
+                    log.debug("creating user failed due to duplicated user" + errMsg);
+                    throw new DuplicatedKeycloakEntry("User with mrn: " + userMrn + " already exists.", errMsg);
+                } else {
+                    log.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                    throw new IOException("User creating failed: " + errMsg);
+                }
             }
+            log.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
         }
-        log.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
-        ret.close();
-        
+
         // Set credentials
         CredentialRepresentation cred = new CredentialRepresentation();
         cred.setType(CredentialRepresentation.PASSWORD);
@@ -592,15 +593,16 @@ public class KeycloakAdminUtil {
         client.setDefaultClientScopes(Collections.singletonList(keycloakClientTemplate)); // the template includes the mappers needed
         setClientType(type, client);
         // Create the client
-        Response ret = getBrokerRealm().clients().create(client);
-        String errMsg = ret.readEntity(String.class);
-        if (ret.getStatus() != 201) {
-            if (ret.getStatus() == 409) {
-                log.debug("creating client failed due to duplicated client" + errMsg);
-                throw new DuplicatedKeycloakEntry("Client with mrn: " +clientId + " already exists.", errMsg);
-            } else {
-                log.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
-                throw new IOException("Client creation failed: " + errMsg);
+        try (Response ret = getBrokerRealm().clients().create(client)) {
+            String errMsg = ret.readEntity(String.class);
+            if (ret.getStatus() != 201) {
+                if (ret.getStatus() == 409) {
+                    log.debug("creating client failed due to duplicated client" + errMsg);
+                    throw new DuplicatedKeycloakEntry("Client with mrn: " + clientId + " already exists.", errMsg);
+                } else {
+                    log.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                    throw new IOException("Client creation failed: " + errMsg);
+                }
             }
         }
         if (!"public".equals(type)) {

@@ -52,11 +52,11 @@ public class Service extends NonHumanEntityModel {
     @InPredefinedList(acceptedValues = {"public", "bearer-only", "confidential"})
     private String oidcAccessType;
 
-    @ApiModelProperty(value = "The client id of the service in MCP. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client id of the service in MCP. Will be generated.", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     @Column(name = "oidc_client_id")
     private String oidcClientId;
 
-    @ApiModelProperty(value = "The client secret of the service in MCP. Will be generated.", readOnly = true)
+    @ApiModelProperty(value = "The client secret of the service in MCP. Will be generated.", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 

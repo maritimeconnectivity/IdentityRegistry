@@ -103,7 +103,7 @@ public class Organization extends CertificateModel {
     private boolean approved;
 
     @Column(name = "federation_type", nullable = false)
-    @ApiModelProperty(value = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", readOnly = true)
+    @ApiModelProperty(value = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
     private String federationType;
 
     @JsonIgnore
