@@ -1,0 +1,167 @@
+# https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
+spring:
+    profiles.active: test
+
+# logging
+logging.level:
+    net.maritimeconnectivity.identityregistry: DEBUG
+#    org.springframework.web: DEBUG
+#    org.springframework.security: DEBUG
+#    org.keycloak.adapters: DEBUG
+
+# SSL
+server:
+    port: 8443
+    ssl:
+        # Should be false as default since the api will be placed behind a
+        # nginx reversed proxy, and the code for extracting info from client
+        # certificates rely in this setup.
+        enabled: false
+        # Keystore
+        # key-store: classpath:keystore.jks
+        key-store: mc-sub-ca-keystore.jks
+        # key-store: /etc/ssl/certs/java/cacerts
+        # key-alias: rootcert
+        key-store-password: changeit
+        key-password: changeit
+        # Truststore
+        trust-store: mc-truststore.jks
+        trust-store-password: changeit
+        client-auth: want
+
+# Login info for the central keycloak MC ID broker (Used for ID Providers)
+net:
+    maritimeconnectivity:
+        idreg:
+            keycloak-broker-admin-user: idreg-admin
+            keycloak-broker-admin-password: idreg-admin
+            keycloak-broker-admin-client: security-admin-console
+            keycloak-broker-realm: MaritimeCloud
+            keycloak-broker-base-url: http://localhost:8080/auth/
+
+            # Login info for the keycloak used for project users
+            keycloak-project-users-admin-user: idreg-test-idp-admin
+            keycloak-project-users-admin-password: idreg-test-idp-admin
+            keycloak-project-users-admin-client: security-admin-console
+            keycloak-project-users-realm: ProjectTestUsers
+            keycloak-project-users-base-url: http://localhost:8080/auth/
+
+            # Login info for the keycloak used for certificates
+            keycloak-certificates-admin-user: idreg-cert-admin
+            keycloak-certificates-admin-password: idreg-cert-admin
+            keycloak-certificates-admin-client: security-admin-console
+            keycloak-certificates-realm: Certificates
+            keycloak-certificates-base-url: http://localhost:8080/auth/
+
+            keycloak-client-template: mc-client-template
+
+            auto-approve-organizations: true
+            admin-org: DMA
+            admin-permission: admin
+
+            allow-create-user-for-federated-org: false
+
+            # The DN of the certificate used to sync users from keycloak
+            user-sync:
+                c: DK
+                o: "urn:mrn:mcl:org:dma"
+                ou: device
+                mrn: "urn:mrn:mcl:device:dma:sync"
+
+            # Certificate setup
+            certs:
+                sub-ca-keystore-path: mc-sub-ca-keystore.jks
+                sub-ca-keystore-password: changeit
+                sub-ca-key-password: changeit
+                truststore-path: mc-truststore.jks
+                truststore-password: changeit
+                root-crl-path: root-ca.crl
+                base-crl-ocsp-path: https://localhost/x509/api/certificates/
+                default-sub-ca: urn:mrn:mcl:ca:maritimecloud-idreg
+                root-ca-alias: urn:mrn:mcl:ca:maritimecloud
+                pkcs11:
+                    enabled: true
+                    config:
+                        file: /conf/pkcs11_yubi.cfg
+                        pin: 0001password
+
+            # Email setup
+            email:
+                from: no-reply@maritimeconnectivity.net
+                admin-email: admin@maritimeconnectivity.net
+                org-awaiting-approval-subject: "%s is awaiting approval for being added to MCP"
+                created-user-subject: A login for the Maritime Connectivity Platform has been created for you
+                portal-url: https://management.maritimecloud.net
+                project-IDP-name: ProjectTestUsers
+                org-awaiting-approval-text: |
+                    Thank you for applying for %1$s to be added to MCP!
+                    
+                    The information you have provided will now be manually evaluated and you might get contacted if more information is needed.
+                    
+                    Best regards,
+                    The Maritime Connectivity Platform Team
+                admin-org-awaiting-approval-text: |
+                    Dear MCP Administrator,
+                    
+                    %1$s has applied for membership in MCP with MRN %2$s. Please review the application as soon as possible!
+                    
+                    Best regards,
+                    The Maritime Connectivity Platform Team
+                created-user-text: |
+                    Dear %1$s,
+                    
+                    Welcome to the Maritime Connectivity Platform!
+                    It is with great pleasure that we can welcome you to MCP!
+                    
+                    To log in using MCP go to a webpage that supports MCP login (for example the MCP Management Portal: %4$s), click the MCP logo which will redirect you to a new page. Here you must click the on the button reading "%5$s". This will redirect you to a new page where you can log in using the credentials below.
+                    
+                    The login credentials for %1$s is: %2$s / %3$s
+                    You will be asked to update your credentials on first login - please keep your credentials save!
+                    
+                    Best regards,
+                    The Maritime Connectivity Platform Team
+                bug-report-email: bug-report@maritimeconnectivity.net
+
+# Set alternative keycloak conf file
+#keycloak.configurationFile: file:/conf/keycloak.json
+
+# Test db-connection before use to avoid connection timeout errors
+spring.datasource:
+    test-on-borrow: true
+    validation-query: SELECT 1
+
+# Email setup
+spring.mail:
+    default-encoding: UTF-8
+    host: localhost
+    port: 1025
+    #username: 
+    #password: 
+    # Additional JavaMail session properties.
+    #properties.*= 
+    protocol: smtp
+    # Test that the mail server is available on startup.
+    test-connection: false
+
+# Do not "leak" internal setup details in http X-Application-Context header
+management.server.add-application-context-header: false
+---
+spring:
+    profiles: development
+# Database setup
+    datasource:
+        url: jdbc:mysql://localhost/identity_registry
+        username: idreg
+        password: idreg
+        driverClassName: com.mysql.jdbc.Driver
+    flyway:
+      baseline-on-migrate: true
+
+---
+spring:
+    profiles: test
+    datasource:
+       url: jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;database_to_upper=false;DB_CLOSE_DELAY=-1
+       #url: jdbc:h2:tcp://localhost/~/test;USER=sa;MODE=MySQL
+       driverClassName: org.h2.Driver
+    flyway.enabled: false
