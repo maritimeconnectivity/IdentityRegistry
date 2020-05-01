@@ -55,7 +55,7 @@ public class VesselImageController {
     }
 
     /**
-     * Creates or updates an image for a vessel
+     * Creates an image for a vessel
      * @param request
      * @param orgMrn
      * @param vesselMrn
@@ -71,6 +71,9 @@ public class VesselImageController {
     public ResponseEntity<?> createVesselImagePost(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestParam("image") MultipartFile image) throws McBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
+            if (vessel.getImage() != null) {
+                throw new McBasicRestException(HttpStatus.CONFLICT, MCIdRegConstants.VESSEL_IMAGE_ALREADY_EXISTS, request.getServletPath());
+            }
             try {
                 this.updateVesselImage(vessel, image.getInputStream());
                 vesselService.save(vessel);
@@ -98,7 +101,7 @@ public class VesselImageController {
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> createVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McBasicRestException {
+    public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
             try {
