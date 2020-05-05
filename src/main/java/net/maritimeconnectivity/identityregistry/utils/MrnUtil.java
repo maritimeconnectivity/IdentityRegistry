@@ -15,129 +15,63 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import org.springframework.beans.factory.annotation.Value;
+
 import java.util.regex.Pattern;
 
 /**
- * Utility class to create, validate and extract certain info from MRNs
+ * Utility class to validate and extract certain info from MRNs
  */
 public class MrnUtil {
 
-    public final static Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
-    public final static Pattern MRN_SERVICE_INSTANCE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:service:instance:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
-    public final static Pattern MRN_USER_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:user:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
-    public final static Pattern MRN_VESSEL_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:vessel:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
-    public final static Pattern MRN_DEVICE_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+?:device:([a-z0-9()+,\\-.:=@;$_!*']|%[0-9a-f]{2})+$", Pattern.CASE_INSENSITIVE);
+    private static String ipId;
+
+    public static final Pattern MRN_PATTERN = Pattern.compile("^urn:mrn:([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):([a-z0-9][-a-z0-9]{0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)((\\?\\+((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?(\\?=((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?)?(#(((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?$", Pattern.CASE_INSENSITIVE);
+    public static final Pattern MCP_MRN_PATTERN = Pattern.compile("^urn:mrn:mcp:(device|org|user|vessel|service|mms):([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)$", Pattern.CASE_INSENSITIVE);
 
     private MrnUtil() {
     }
 
-    public static String getOrgShortNameFromOrgMrn(String orgMrn) {
-        int idx = orgMrn.lastIndexOf(":") + 1;
-        return orgMrn.substring(idx);
+    @Value("${net.maritimeconnectivity.idreg.ip-id}")
+    public void setIpIdStatic(String ipId) {
+        MrnUtil.ipId = ipId;
     }
 
-//    /**
-//     * Returns the org shortname of the organization responsible for validating the organization that is
-//     * identified by the given shortname. If MCP is the validator "maritimecloud-idreg" is returned.
-//     * @param orgShortname
-//     * @return
-//     */
-//    public static String getOrgValidatorFromOrgShortname(String orgShortname) {
-//        if (orgShortname.contains("@")) {
-//            // This handles the nested validators
-//            String[] dividedShotname = orgShortname.split("@", 2);
-//            return dividedShotname[1];
-//        } else {
-//            // TODO this shouldn't be hardcoded
-//            return "maritimecloud-idreg";
-//        }
-//    }
+    public static String getOrgShortNameFromOrgMrn(String orgMrn) {
+        return MrnUtil.getEntityIdFromMrn(orgMrn);
+    }
 
     public static String getOrgShortNameFromEntityMrn(String entityMrn) {
-        // An entity MRN looks like this: urn:mrn:mcl:user:<org-shortname>:<user-id>
-        int tmpIdx = entityMrn.indexOf(":user:");
-        int startIdx = tmpIdx + 6;
-        if (tmpIdx < 0) {
-            tmpIdx = entityMrn.indexOf(":device:");
-            startIdx = tmpIdx + 8;
-        }
-        if (tmpIdx < 0) {
-            tmpIdx = entityMrn.indexOf(":vessel:");
-            startIdx = tmpIdx + 8;
-        }
-        if (tmpIdx < 0) {
-            tmpIdx = entityMrn.indexOf(":service:instance:");
-            startIdx = tmpIdx + 18;
-        }
-        if (tmpIdx < 0) {
-            tmpIdx = entityMrn.indexOf(":mms:");
-            startIdx = tmpIdx + 5;
-        }
-        if (tmpIdx < 0) {
-            throw new IllegalArgumentException("MRN is not a valid entity MRN!");
-        }
-        int endIdx = entityMrn.indexOf(":", startIdx);
-        if (endIdx < 0) {
-            throw new IllegalArgumentException("MRN is not a valid entity MRN!");
-        }
-        return entityMrn.substring(startIdx, endIdx);
+        String[] mrnSplit = entityMrn.split(":");
+        return mrnSplit[5];
     }
 
     public static String getEntityIdFromMrn(String entityMrn) {
-        int idx = entityMrn.lastIndexOf(":") + 1;
-        return entityMrn.substring(idx);
+        String[] mrnSplit = entityMrn.split(":");
+        return mrnSplit[mrnSplit.length - 1];
     }
 
     public static String getServiceTypeFromMrn(String serviceMrn) {
         if (!serviceMrn.contains(":instance:") || !serviceMrn.contains(":service:")) {
             throw new IllegalArgumentException("The MRN must belong to a service instance!");
         }
-        int startIdx = serviceMrn.indexOf(":service:instance:") + 18;
-        int endIdx = serviceMrn.indexOf(":", startIdx);
-        return serviceMrn.substring(startIdx, endIdx);
+        String[] mrnSplit = serviceMrn.split(":");
+        return mrnSplit[6];
     }
 
-    // not used right now
-    /*public static String generateMrnForEntity(String orgMrn, String type, String entityId) {
-        // clean entity id, replace reserved URN characters with "_"
-        // others: "()+,-.:=@;$_!*'"   reserved: "%/?#"
-        entityId = entityId.replaceAll("[()+,-.:=@;$_!*'%/??#]", "_"); // double questionmark as escape
-        String mrn = "";
-        if ("service".equals(type)) {
-            // <org-mrn>:service:<service-design-or-spec-id>:instance:<instance-id>
-            // urn:mrn:mcl:org:dma:service:nw-nm:instance:nw-nm2
-            throw new IllegalArgumentException("Generating MRN for services is not supported");
-        } else {
-            mrn = getMrnPrefix(orgMrn) + ":" + type + ":" + getOrgShortNameFromOrgMrn(orgMrn) + ":" + entityId;
-        }
-        return mrn;
-    }*/
-
     public static boolean isNotMrnEmpty(String mrn) {
-        if (mrn == null || mrn.trim().isEmpty()) {
-            throw new IllegalArgumentException("MRN is empty");
-        }
-        return true;
+        return (mrn != null) && !(mrn.trim().isEmpty());
     }
 
     public static boolean validateMrn(String mrn) {
-        if (mrn != null && !MRN_PATTERN.matcher(mrn).matches()) {
-            throw new IllegalArgumentException("MRN is not in a valid format");
-        }
-        return true;
+        return isNotMrnEmpty(mrn) && MRN_PATTERN.matcher(mrn).matches();
     }
 
     public static boolean validateMCPMrn(String mrn) {
-        if(isNotMrnEmpty(mrn) && validateMrn(mrn)){
-            // validate mrn based on the entity type
-            if (mrn.contains(":service:") && !MRN_SERVICE_INSTANCE_PATTERN.matcher(mrn).matches()) {
-                throw new IllegalArgumentException("MRN is not in a valid format for a service instances");
-            } else if (mrn.contains(":user:") && !MRN_USER_PATTERN.matcher(mrn).matches()) {
-                throw new IllegalArgumentException("MRN is not in a valid format for a user");
-            } else if (mrn.contains(":vessel:") && !MRN_VESSEL_PATTERN.matcher(mrn).matches()) {
-                throw new IllegalArgumentException("MRN is not in a valid format for a vessel");
-            } else if (mrn.contains(":device:") && !MRN_DEVICE_PATTERN.matcher(mrn).matches()) {
-                throw new IllegalArgumentException("MRN is not in a valid format for a device");
+        if(validateMrn(mrn) && MCP_MRN_PATTERN.matcher(mrn).matches()){
+            String[] parts = mrn.split(":");
+            if (!parts[4].equals(ipId)) {
+                throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider provider ID");
             }
             return true;
         }
@@ -151,7 +85,7 @@ public class MrnUtil {
      */
     public static String getMrnPrefix(String mrn) {
         // mrn always starts with 'urn:mrn:<sub-namespace>'
-        int prefixEnd = mrn.indexOf(":", 8);
+        int prefixEnd = mrn.indexOf(':', 8);
         return mrn.substring(0, prefixEnd);
     }
 

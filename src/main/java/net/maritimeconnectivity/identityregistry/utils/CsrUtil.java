@@ -38,7 +38,7 @@ public class CsrUtil {
      * @param request a HTTP request
      * @param pemCsr a PEM encoded CSR
      * @return an object containing a PKCS#10 CSR
-     * @throws McBasicRestException
+     * @throws McBasicRestException is thrown if given CSR cannot be parsed
      */
     public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, @NonNull String pemCsr) throws McBasicRestException {
         PemReader pemReader = new PemReader(new StringReader(pemCsr));
