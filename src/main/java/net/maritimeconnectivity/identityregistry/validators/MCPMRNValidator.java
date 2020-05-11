@@ -17,11 +17,15 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
+
+    @Autowired
+    private MrnUtil mrnUtil;
 
     @Override
     public void initialize(MCPMRN constraintAnnotation) {
@@ -30,12 +34,12 @@ public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
-            return MrnUtil.validateMCPMrn(value);
+            return mrnUtil.validateMCPMrn(value);
         } catch (IllegalArgumentException e) {
             context.disableDefaultConstraintViolation();
             context
-                .buildConstraintViolationWithTemplate(e.getMessage())
-                .addConstraintViolation();
+                    .buildConstraintViolationWithTemplate(e.getMessage())
+                    .addConstraintViolation();
             return false;
         }
     }

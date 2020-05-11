@@ -17,141 +17,149 @@ package net.maritimeconnectivity.identityregistry.utils;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.web.context.WebApplicationContext;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration
+@WebAppConfiguration
 public class MrnUtilsTests {
+
+    @Autowired
+    private MrnUtil mrnUtil;
 
     @Test
     public void extractOrgShortnameFromOrgMRN1() {
-        String orgMrn = "urn:mrn:mcl:org:dma";
-        String ret = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+        String orgMrn = "urn:mrn:mcp:org:idp1:dma";
+        String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         assertEquals("Org shortname should be 'dma'","dma", ret);
     }
 
     @Test
     public void extractOrgShortnameFromOrgMRN2() {
-        String orgMrn = "urn:mrn:mcl:org:dfds@bimco";
-        String ret = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+        String orgMrn = "urn:mrn:mcp:org:idp1:dfds@bimco";
+        String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
     }
 
 //    @Test
 //    public void extractOrgValidatorFromOrgShortname1() {
 //        String orgMrn = "dfds@bimco";
-//        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
+//        String ret = mrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
 //        assertEquals("Org validator should be 'bimco'","bimco", ret);
 //    }
 //
 //    @Test
 //    public void extractOrgValidatorFromOrgShortname2() {
 //        String orgMrn = "bimco";
-//        String ret = MrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
+//        String ret = mrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
 //        assertEquals("Org validator should be 'maritimecloud-idreg'","maritimecloud-idreg", ret);
 //    }
 
     @Test
     public void extractOrgShortnameFromUserMRN1() {
-        String userMrn = "urn:mrn:mcl:user:dma:b00345";
-        String ret = MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
+        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
         assertEquals("Org shortname should be 'dma'","dma", ret);
     }
 
     @Test
     public void extractOrgShortnameFromUserMRN2() {
-        String userMrn = "urn:mrn:mcl:user:dfds@bimco:fiskerfinn";
-        String ret = MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:fiskerfinn";
+        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
     }
 
     @Test(expected=IllegalArgumentException.class)
     public void extractOrgShortnameFromUserMRN3() {
         String userMrn = "urn:mrn:mcl:user:thc";
-        MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
     }
 
     @Test
     public void extractOrgShortnameFromVesselMRN1() {
-        String userMrn = "urn:mrn:mcl:vessel:dma:poul-loewenoern";
-        String ret = MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
+        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
         assertEquals("Org shortname should be 'dma'","dma", ret);
     }
 
     @Test
     public void extractOrgShortnameFromVesselMRN2() {
-        String userMrn = "urn:mrn:mcl:user:dfds@bimco:crown-seaways";
-        String ret = MrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:crown-seaways";
+        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
     }
 
     @Test
     public void extractUserIdFromUserMRN1() {
-        String userMrn = "urn:mrn:mcl:user:dma:b00345";
-        String ret = MrnUtil.getEntityIdFromMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
+        String ret = mrnUtil.getEntityIdFromMrn(userMrn);
         assertEquals("User id should be 'b00345'","b00345", ret);
     }
 
-    @Test(expected=IllegalArgumentException.class)
-    public void extractServiceTypeFromServiceMRN1() {
-        String userMrn = "urn:mrn:mcl:service:specification:dma:nw-nm-spec";
-        MrnUtil.getServiceTypeFromMrn(userMrn);
-    }
-
     @Test
-    public void extractServiceTypeFromServiceMRN2() {
-        String userMrn = "urn:mrn:mcl:org:dma:service:instance:nw-nm-design:nw-nm-prod";
-        String ret = MrnUtil.getServiceTypeFromMrn(userMrn);
-        assertEquals("Service type should be 'nw-nm-design'","nw-nm-design", ret);
+    public void extractUserIdFromUserMRN2() {
+        String userMrn = "urn:mrn:mcp:user:idp1:dma:secretary:bob";
+        String ret = mrnUtil.getEntityIdFromMrn(userMrn);
+        assertEquals("User id should be 'secretary:bob'","secretary:bob", ret);
     }
 
     @Test
     public void validatingServiceInstanceMRN1() {
-        String userMrn = "urn:mrn:mcl:org:dma:service:instance:nw-nm-design:nw-nm-prod";
-        boolean ret = MrnUtil.validateMrn(userMrn);
+        String userMrn = "urn:mrn:mcp:service:idp1:dma:instance:nw-nm-design:nw-nm-prod";
+        boolean ret = mrnUtil.validateMCPMrn(userMrn);
         assertTrue("Service MRN should be valid", ret);
     }
 
     @Test
     public void validatingOrgMRN1() {
-        String orgMrn = "urn:mrn:mcl:org:dma";
-        boolean ret = MrnUtil.validateMrn(orgMrn);
+        String orgMrn = "urn:mrn:mcp:org:idp1:dma";
+        boolean ret = mrnUtil.validateMCPMrn(orgMrn);
         assertTrue("Org MRN should be valid", ret);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void validatingOrgMRN2() {
         String orgMrn = "urn:x-mrn:mcl:org:dma";
-        MrnUtil.validateMrn(orgMrn);
+        boolean result = mrnUtil.validateMCPMrn(orgMrn);
+        assertFalse("The MRN should not be valid", result);
     }
 
     @Test
     public void validatingVesselMRN1() {
-        String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-loewenoern";
-        boolean ret = MrnUtil.validateMrn(vesselMrn);
+        String vesselMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
+        boolean ret = mrnUtil.validateMCPMrn(vesselMrn);
         assertTrue("Vessel MRN should be valid", ret);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void validatingVesselMRN2() {
         // Invalid mrn - special characters like "ø" are not allowed
-        String vesselMrn = "urn:mrn:mcl:org:dma:vessel:poul-løwenørn";
-        MrnUtil.validateMrn(vesselMrn);
+        String vesselMrn = "urn:mrn:mcp:org:idp1:dma:vessel:poul-løwenørn";
+        boolean result = mrnUtil.validateMrn(vesselMrn);
+        assertFalse("The MRN should not be valid", result);
     }
 
     @Test
     public void extractPrefixFromMRN() {
         String userMrn = "urn:mrn:mcl:service:instance:dma:nw-nm-prod";
-        String prefix = MrnUtil.getMrnPrefix(userMrn);
+        String prefix = mrnUtil.getMrnPrefix(userMrn);
         assertEquals("Prefix should be 'urn:mrn:mcl'","urn:mrn:mcl", prefix);
     }
 
     @Test
     public void extractPrefixFromMRN2() {
         String userMrn = "urn:mrn:iala:device:iala:device6";
-        String prefix = MrnUtil.getMrnPrefix(userMrn);
+        String prefix = mrnUtil.getMrnPrefix(userMrn);
         assertEquals("Prefix should be 'urn:mrn:iala'","urn:mrn:iala", prefix);
     }
 

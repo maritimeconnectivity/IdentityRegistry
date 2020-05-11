@@ -31,6 +31,7 @@ import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
@@ -48,6 +49,7 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration
+@WebAppConfiguration
 public class LogoControllerTest {
 
     @Autowired
@@ -65,7 +67,7 @@ public class LogoControllerTest {
         assertNumberOfLogos(0);
 
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
