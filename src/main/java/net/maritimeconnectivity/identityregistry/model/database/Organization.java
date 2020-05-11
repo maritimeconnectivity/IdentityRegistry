@@ -24,6 +24,7 @@ import net.maritimeconnectivity.identityregistry.validators.MCPMRN;
 import net.maritimeconnectivity.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -49,6 +50,7 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@Validated
 public class Organization extends CertificateModel {
 
     @ApiModelProperty(value = "The name of the organization", required = true)

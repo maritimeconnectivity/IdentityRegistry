@@ -101,9 +101,9 @@ public class ServiceControllerTests {
     @WithMockUser()
     @Test
     public void testAccessGetServiceWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn(new Service());
+        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -117,14 +117,14 @@ public class ServiceControllerTests {
     public void testAccessGetServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -133,20 +133,20 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
         }
-        verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4");
+        verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
     }
 
     /**
@@ -156,13 +156,13 @@ public class ServiceControllerTests {
     public void testAccessGetServiceWithRights2() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -171,14 +171,14 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:sma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -195,14 +195,14 @@ public class ServiceControllerTests {
     public void testAccessUpdateServiceWithoutRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -211,13 +211,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -235,7 +235,7 @@ public class ServiceControllerTests {
     public void testAccessUpdateServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
@@ -244,7 +244,7 @@ public class ServiceControllerTests {
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -253,13 +253,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -269,7 +269,7 @@ public class ServiceControllerTests {
             assertTrue(false);
         }
         try {
-            verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm", "bearer-only", "https://localhost");
+            verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "bearer-only", "https://localhost");
         } catch (IOException | DuplicatedKeycloakEntry e) {
             e.printStackTrace();
             fail();
@@ -283,14 +283,14 @@ public class ServiceControllerTests {
     public void testCreateServiceWithVersionNull() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion(null);
         service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -299,12 +299,12 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/service").with(authentication(auth))
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -322,7 +322,7 @@ public class ServiceControllerTests {
     public void testAccessServiceJBossXMLWithRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
@@ -331,7 +331,7 @@ public class ServiceControllerTests {
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -340,14 +340,14 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
-        given(this.keycloakAU.getClientJbossXml("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
+        given(this.keycloakAU.getClientJbossXml("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4/jbossxml").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -363,7 +363,7 @@ public class ServiceControllerTests {
     public void testAccessServiceJBossXMLWithRightsNoConf() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
@@ -371,7 +371,7 @@ public class ServiceControllerTests {
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -380,13 +380,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(service);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4/jbossxml").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isNotFound());
         } catch (Exception e) {
@@ -402,7 +402,7 @@ public class ServiceControllerTests {
     public void testUpdateServiceWithValidOIDC() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
@@ -411,15 +411,15 @@ public class ServiceControllerTests {
         String serviceJson = serialize(service);
         // Old service that we want to update
         Service oldService = new Service();
-        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
         oldService.setIdOrganization(1l);
         oldService.setOidcAccessType("bearer-only");
-        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -428,13 +428,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -444,7 +444,7 @@ public class ServiceControllerTests {
             assertTrue(false);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm", "public", "https://localhost");
+            verify(this.keycloakAU, times(1)).updateClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "public", "https://localhost");
         } catch (IOException e) {
             e.printStackTrace();
             fail();
@@ -458,7 +458,7 @@ public class ServiceControllerTests {
     public void testUpdateServiceWithInvalidOIDC() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
@@ -467,15 +467,15 @@ public class ServiceControllerTests {
         String serviceJson = serialize(service);
         // Old service that we want to update
         Service oldService = new Service();
-        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
         oldService.setIdOrganization(1l);
         oldService.setOidcAccessType("bearer-only");
-        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -484,13 +484,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
         when(org.getId()).thenReturn(1l);
         try {
-            MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -510,22 +510,22 @@ public class ServiceControllerTests {
     public void testUpdateServiceRemoveOIDC() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1l);
         String serviceJson = serialize(service);
         // Old service that we want to update
         Service oldService = new Service();
-        oldService.setMrn("urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
         oldService.setIdOrganization(1l);
         oldService.setOidcAccessType("bearer-only");
-        oldService.setOidcClientId("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -534,13 +534,13 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcl:service:instance:dma:nw-nm", "0.3.4")).willReturn(oldService);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/service/urn:mrn:mcl:service:instance:dma:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -549,7 +549,7 @@ public class ServiceControllerTests {
             e.printStackTrace();
             assertTrue(false);
         }
-        verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcl:service:instance:dma:nw-nm");
+        verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }
 
 

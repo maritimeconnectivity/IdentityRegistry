@@ -28,6 +28,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.NonHuma
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.CertificateHandler;
@@ -73,6 +74,9 @@ public abstract class BaseControllerWithCertificate {
 
     @Autowired
     protected CertificateUtil certificateUtil;
+
+    @Autowired
+    protected MrnUtil mrnUtil;
 
     private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 

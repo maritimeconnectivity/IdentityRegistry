@@ -27,12 +27,18 @@ public class MRNValidator implements ConstraintValidator<MRN, String> {
     @Autowired
     private MrnUtil mrnUtil;
 
+    private boolean nullable;
+
     @Override
     public void initialize(MRN constraintAnnotation) {
+        this.nullable = constraintAnnotation.nullable();
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (nullable && value == null) {
+            return true;
+        }
         try {
             return mrnUtil.validateMrn(value);
         } catch (IllegalArgumentException e) {
