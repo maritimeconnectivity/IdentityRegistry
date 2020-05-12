@@ -17,14 +17,18 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.model.database.entities.VesselAttribute;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.validation.BeanPropertyBindingResult;
 import org.springframework.validation.Errors;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import java.util.Arrays;
 import java.util.HashSet;
@@ -32,12 +36,23 @@ import java.util.HashSet;
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest
+@ContextConfiguration
 @WebAppConfiguration
 public class VesselValidatorTests {
 
     @Autowired
     private VesselValidator vesselValidator;
+
+    @Autowired
+    private WebApplicationContext context;
+
+    private LocalValidatorFactoryBean validator;
+
+    @Before
+    public void init() {
+        validator = context.getBean(LocalValidatorFactoryBean.class);
+    }
 
     @Test
     public void validateInvalidVesselNoVesselOrgId() {

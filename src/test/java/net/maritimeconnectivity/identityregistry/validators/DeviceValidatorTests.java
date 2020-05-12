@@ -20,31 +20,39 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration
+@WebAppConfiguration
 public class DeviceValidatorTests {
-    private Validator validator;
+    @Autowired
+    private WebApplicationContext context;
+
+    private LocalValidatorFactoryBean validator;
 
     @Before
     public void init() {
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
+        validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
     public void validateValidDevice() {
         Device validDevice = new Device();
-        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
@@ -65,7 +73,7 @@ public class DeviceValidatorTests {
     @Test
     public void validateValidDeviceWithMMS() {
         Device validDevice = new Device();
-        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
         validDevice.setMrnSubsidiary("urn:mrn:kr:device:testorg:test-device1");
         validDevice.setHomeMMSUrl("https://mms.smartnav.org");
@@ -77,7 +85,7 @@ public class DeviceValidatorTests {
     @Test
     public void validateInvalidMMSUrlOfDeviceWithMMS() {
         Device validDevice = new Device();
-        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
         validDevice.setMrnSubsidiary("urn:mrn:kr:device:testorg:test-device1");
         validDevice.setHomeMMSUrl("ftp://mms.smartnav.org"); // wrong use of ftp
@@ -89,7 +97,7 @@ public class DeviceValidatorTests {
     @Test
     public void validateInvalidSubMRNOfDeviceWithMMS() {
         Device validDevice = new Device();
-        validDevice.setMrn("urn:mrn:mcl:device:testorg:test-device1");
+        validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
         validDevice.setMrnSubsidiary("urn:mcp:kr:device:testorg:test-device1"); // does not contain the mrn suffix
         validDevice.setHomeMMSUrl("https://mms.smartnav.org");

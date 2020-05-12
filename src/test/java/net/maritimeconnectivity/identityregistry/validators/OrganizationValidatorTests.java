@@ -21,12 +21,15 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
@@ -36,21 +39,25 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration
+@WebAppConfiguration
 public class OrganizationValidatorTests {
+    @Autowired
+    private WebApplicationContext context;
 
-    private Validator validator;
+    private LocalValidatorFactoryBean validator;
 
     @Before
     public void init() {
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
+        validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
     public void validateValidOrg() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setMrn("urn:mrn:mcl:org:test");
+        validOrg.setMrn("urn:mrn:mcp:org:idp1:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -64,7 +71,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrg1() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setMrn("urn:mrn:mcl:org:test");
+        invalidOrg.setMrn("urn:mrn:mcp:org:idp1:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         // Invalid email!
@@ -81,7 +88,7 @@ public class OrganizationValidatorTests {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
         // Invalid MRN - only 64 chars
-        invalidOrg.setMrn("urn:mrn:mcl:test:org:that:is:toooooooooooooooooooooooooooooooo:long");
+        invalidOrg.setMrn("urn:mrn:mcp:org:idp1:that:is:toooooooooooooooooooooooooooooooo:long");
         invalidOrg.setAddress("Test address");
         // Invalid country - must not be empty
         invalidOrg.setCountry(null);
@@ -96,7 +103,7 @@ public class OrganizationValidatorTests {
     public void validateValidOrgWithIDP() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
-        validOrg.setMrn("urn:mrn:mcl:org:test");
+        validOrg.setMrn("urn:mrn:mcp:org:idp1:test");
         validOrg.setAddress("Test address");
         validOrg.setCountry("Test Country");
         validOrg.setEmail("email@test.org");
@@ -114,7 +121,7 @@ public class OrganizationValidatorTests {
     public void validateInvalidOrgWithIDP() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
-        invalidOrg.setMrn("urn:mrn:mcl:org:test");
+        invalidOrg.setMrn("urn:mrn:mcp:org:idp1:test");
         invalidOrg.setAddress("Test address");
         invalidOrg.setCountry("Test Country");
         invalidOrg.setEmail("email@test.org");

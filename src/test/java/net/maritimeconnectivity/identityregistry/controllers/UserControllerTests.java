@@ -125,7 +125,7 @@ public class UserControllerTests {
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setEmail("thcc@dma.dk");
         String userJson = serialize(user);
         // Build org object to test with
@@ -143,7 +143,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -165,7 +165,7 @@ public class UserControllerTests {
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setEmail("thcc@dma.dk");
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -183,7 +183,7 @@ public class UserControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -223,7 +223,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -247,7 +247,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -266,7 +266,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -295,7 +295,7 @@ public class UserControllerTests {
         user.setMrn("urn:mrn:mcp:user:idp1:dma@dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setEmail("thcc@dma.dk");
         String userJson = serialize(user);
         // Build org object to test with
@@ -313,7 +313,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma@dma/user/urn:mrn:mcp:user:idp1:DMA@dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -333,7 +333,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -351,7 +351,7 @@ public class UserControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         User newUser = new User();
         newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
@@ -376,7 +376,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -394,7 +394,7 @@ public class UserControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         User newUser = new User();
         newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
@@ -426,7 +426,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -445,7 +445,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -466,7 +466,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -486,7 +486,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
@@ -511,7 +511,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -531,7 +531,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakRSA.csr").toPath()));
@@ -557,7 +557,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -577,7 +577,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakEC.csr").toPath()));
@@ -603,7 +603,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
@@ -623,7 +623,7 @@ public class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/RSAWeakSig.csr").toPath()));
