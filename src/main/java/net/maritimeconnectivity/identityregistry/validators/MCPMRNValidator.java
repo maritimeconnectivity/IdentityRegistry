@@ -29,6 +29,11 @@ public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
 
     @Override
     public void initialize(MCPMRN constraintAnnotation) {
+        // This should only be relevant in unit tests where bean injection sometimes doesn't work
+        if (mrnUtil == null) {
+            mrnUtil = new MrnUtil();
+            mrnUtil.setIpId("idp1");
+        }
     }
 
     @Override
