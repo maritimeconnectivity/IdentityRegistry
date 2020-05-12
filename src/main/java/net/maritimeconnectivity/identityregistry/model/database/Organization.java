@@ -50,7 +50,6 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
-@Validated
 public class Organization extends CertificateModel {
 
     @ApiModelProperty(value = "The name of the organization", required = true)

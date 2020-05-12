@@ -106,9 +106,9 @@ public class UserControllerTests {
     @WithMockUser()
     @Test
     public void testAccessGetUserWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(new User());
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(new User());
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").header("Origin", "bla")).andExpect(status().isForbidden());
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -122,7 +122,7 @@ public class UserControllerTests {
     public void testAccessGetUserWithRights() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setIdOrganization(1l);
@@ -130,7 +130,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -139,20 +139,20 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
         }
-        verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcl:user:dma:thc");
+        verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:dma:thc");
     }
 
     /**
@@ -162,14 +162,14 @@ public class UserControllerTests {
     public void testAccessGetUserWithRights2() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setIdOrganization(1l);
         user.setEmail("thcc@dma.dk");
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -178,14 +178,14 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:sma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -202,7 +202,7 @@ public class UserControllerTests {
     public void testAccessUpdateUserWithoutRights() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -210,7 +210,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -219,13 +219,13 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(userJson)
                     .contentType("application/json")
@@ -243,7 +243,7 @@ public class UserControllerTests {
     public void testAccessUpdateUserWithRights() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -252,7 +252,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -262,13 +262,13 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(userJson)
                     .contentType("application/json")
@@ -278,7 +278,7 @@ public class UserControllerTests {
             assertTrue(false);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcl:user:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
+            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
         } catch (IOException | McBasicRestException e) {
             e.printStackTrace();
             fail();
@@ -292,7 +292,7 @@ public class UserControllerTests {
     public void testAccessGetUserWithRightsOrgMrnDiffCase() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma@dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma@dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setIdOrganization(1l);
@@ -300,7 +300,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma@dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma@dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -309,27 +309,27 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma@dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma@dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma@dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:DMA@dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma@dma/user/urn:mrn:mcl:user:DMA@dma:thc").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma@dma/user/urn:mrn:mcp:user:idp1:DMA@dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
             e.printStackTrace();
             fail();
         }
-        verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcl:user:DMA@dma:thc");
+        verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc");
     }
 
     @Test
     public void testCreateUserForFederatedOrg() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -338,7 +338,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -348,16 +348,16 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1l);
 
         User newUser = new User();
-        newUser.setMrn("urn:mrn:mcl:user");
+        newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
 
         try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user").with(authentication(auth))
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user").with(authentication(auth))
             .header("Origin", "Bla")
             .content(userJson)
             .contentType("application/json")).andExpect(status().is4xxClientError());
@@ -372,7 +372,7 @@ public class UserControllerTests {
     public void testCreateUserForNonFederatedOrg() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -381,7 +381,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -391,20 +391,20 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1l);
 
         User newUser = new User();
-        newUser.setMrn("urn:mrn:mcl:user");
+        newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
 
         // setup mock SMTP server
         Wiser wiser = new Wiser(1025);
         wiser.start();
 
         try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user").with(authentication(auth))
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user").with(authentication(auth))
                     .header("Origin", "Bla")
                     .content(userJson)
                     .contentType("application/json")).andExpect(status().isOk());
@@ -422,7 +422,7 @@ public class UserControllerTests {
     public void testUpdateUserFederatedOrg() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -431,7 +431,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -441,13 +441,13 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(userJson)
                     .contentType("application/json")
@@ -462,7 +462,7 @@ public class UserControllerTests {
     public void testIssueCertificateUsingCsr() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -471,7 +471,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -480,17 +480,17 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
-            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
                     .header("Origin", "bla")
                     .contentType(MediaType.TEXT_PLAIN)
                     .content(csr)
@@ -507,7 +507,7 @@ public class UserControllerTests {
     public void testIssueCertificateUsingCsrWithWeakRSAKey() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -516,7 +516,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -525,17 +525,17 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakRSA.csr").toPath()));
-            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
                     .header("Origin", "bla")
                     .contentType(MediaType.TEXT_PLAIN)
                     .content(csr)
@@ -553,7 +553,7 @@ public class UserControllerTests {
     public void testIssueCertificateUsingCsrWithWeakECKey() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -562,7 +562,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -571,17 +571,17 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakEC.csr").toPath()));
-            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
                     .header("Origin", "bla")
                     .contentType(MediaType.TEXT_PLAIN)
                     .content(csr)
@@ -599,7 +599,7 @@ public class UserControllerTests {
     public void testIssueCertificateUsingCsrWithWeakSignature() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcl:user:dma:thc");
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
@@ -608,7 +608,7 @@ public class UserControllerTests {
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -617,17 +617,17 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcl:ca:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcl:user:dma:thc")).willReturn(user);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1l);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/RSAWeakSig.csr").toPath()));
-            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
                     .header("Origin", "bla")
                     .contentType(MediaType.TEXT_PLAIN)
                     .content(csr)

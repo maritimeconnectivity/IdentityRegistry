@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.ToString;
+import org.springframework.validation.annotation.Validated;
 
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PostPersist;
@@ -28,6 +29,7 @@ import java.util.Set;
 
 @MappedSuperclass
 @ToString
+@Validated
 public abstract class CertificateModel extends TimestampModel {
 
     @PostPersist
