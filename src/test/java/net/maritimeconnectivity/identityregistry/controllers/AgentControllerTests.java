@@ -81,8 +81,8 @@ public class AgentControllerTests {
         onBehalfOfOrg.setMrn("urn:mrn:mcp:org:dma");
 
         Agent agent = new Agent();
-        agent.setIdActingOrganization(1l);
-        agent.setIdOnBehalfOfOrganization(2l);
+        agent.setIdActingOrganization(1L);
+        agent.setIdOnBehalfOfOrganization(2L);
 
         String agentJson = JSONSerializer.serialize(agent);
 
@@ -90,7 +90,7 @@ public class AgentControllerTests {
 
         given(this.organizationService.getOrganizationById(any())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(onBehalfOfOrg);
-        given(onBehalfOfOrg.getId()).willReturn(2l);
+        given(onBehalfOfOrg.getId()).willReturn(2L);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:dma/agent").with(authentication(auth))
@@ -111,8 +111,8 @@ public class AgentControllerTests {
         onBehalfOfOrg.setMrn("urn:mrn:mcp:org:dma");
 
         Agent agent = new Agent();
-        agent.setIdActingOrganization(1l);
-        agent.setIdOnBehalfOfOrganization(2l);
+        agent.setIdActingOrganization(1L);
+        agent.setIdOnBehalfOfOrganization(2L);
 
         String agentJson = JSONSerializer.serialize(agent);
 
@@ -120,7 +120,7 @@ public class AgentControllerTests {
 
         given(this.organizationService.getOrganizationById(any())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(onBehalfOfOrg);
-        given(onBehalfOfOrg.getId()).willReturn(2l);
+        given(onBehalfOfOrg.getId()).willReturn(2L);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:dma/agent").with(authentication(auth))
@@ -136,16 +136,16 @@ public class AgentControllerTests {
     @Test
     public void testGetAgentWithRights() {
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
 
         Organization organization = mock(Organization.class);
 
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
-        given(this.agentService.getById(3l)).willReturn(agent);
-        given(organization.getId()).willReturn(1l);
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_USER", "");
@@ -162,16 +162,16 @@ public class AgentControllerTests {
     @Test
     public void testUpdateAgentWithRights() {
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
 
         Organization organization = mock(Organization.class);
 
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
-        given(this.agentService.getById(3l)).willReturn(agent);
-        given(organization.getId()).willReturn(1l);
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_ORG_ADMIN", "");
 
@@ -188,16 +188,16 @@ public class AgentControllerTests {
     @Test
     public void testUpdateAgentWithoutRights() {
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
 
         Organization organization = mock(Organization.class);
 
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
-        given(this.agentService.getById(3l)).willReturn(agent);
-        given(organization.getId()).willReturn(1l);
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_USER", "");
 
@@ -214,14 +214,14 @@ public class AgentControllerTests {
     @Test
     public void testDeleteAgentWithRights() {
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
 
         Organization organization = mock(Organization.class);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
-        given(this.agentService.getById(3l)).willReturn(agent);
-        given(organization.getId()).willReturn(1l);
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_ORG_ADMIN", "");
 
@@ -238,14 +238,14 @@ public class AgentControllerTests {
     @Test
     public void testDeleteAgentWithoutRights() {
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
 
         Organization organization = mock(Organization.class);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(organization);
-        given(this.agentService.getById(3l)).willReturn(agent);
-        given(organization.getId()).willReturn(1l);
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_USER", "");
 

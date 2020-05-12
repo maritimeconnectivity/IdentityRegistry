@@ -28,6 +28,7 @@ import javax.persistence.Entity;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
+import javax.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -47,10 +48,12 @@ public class VesselAttribute extends TimestampModel {
     @ApiModelProperty(value = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
     @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
+    @NotNull
     private String attributeName;
 
     @ApiModelProperty(value = "Vessel attribute value", required = true)
     @Column(name = "attribute_value", nullable = false)
+    @NotNull
     private String attributeValue;
 
     @Column(name = "start")

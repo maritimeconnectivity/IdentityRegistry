@@ -120,7 +120,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -137,7 +137,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -159,7 +159,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -176,7 +176,7 @@ public class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -198,7 +198,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -215,7 +215,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -238,7 +238,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         service.setOidcAccessType("bearer-only");
         service.setOidcRedirectUri("https://localhost");
         String serviceJson = serialize(service);
@@ -257,7 +257,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -286,7 +286,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion(null);
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -302,7 +302,7 @@ public class ServiceControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").with(authentication(auth))
                     .header("Origin", "bla")
@@ -325,7 +325,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         service.setOidcAccessType("bearer-only");
         service.generateOidcClientId();
         String serviceJson = serialize(service);
@@ -344,7 +344,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         given(this.keycloakAU.getClientJbossXml("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
@@ -366,7 +366,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         service.setOidcAccessType(null);
         String serviceJson = serialize(service);
         // Build org object to test with
@@ -384,7 +384,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
@@ -405,7 +405,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         service.setOidcAccessType("public");
         service.setOidcRedirectUri("https://localhost");
         String serviceJson = serialize(service);
@@ -414,7 +414,7 @@ public class ServiceControllerTests {
         oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
-        oldService.setIdOrganization(1l);
+        oldService.setIdOrganization(1L);
         oldService.setOidcAccessType("bearer-only");
         oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
@@ -432,7 +432,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -461,7 +461,7 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         service.setOidcAccessType("public");
         //service.setOidcRedirectUri("https://localhost");
         String serviceJson = serialize(service);
@@ -470,7 +470,7 @@ public class ServiceControllerTests {
         oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
-        oldService.setIdOrganization(1l);
+        oldService.setIdOrganization(1L);
         oldService.setOidcAccessType("bearer-only");
         oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
@@ -488,7 +488,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -513,14 +513,14 @@ public class ServiceControllerTests {
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
-        service.setIdOrganization(1l);
+        service.setIdOrganization(1L);
         String serviceJson = serialize(service);
         // Old service that we want to update
         Service oldService = new Service();
         oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         oldService.setName("NW NM Service");
         oldService.setInstanceVersion("0.3.4");
-        oldService.setIdOrganization(1l);
+        oldService.setIdOrganization(1L);
         oldService.setOidcAccessType("bearer-only");
         oldService.setOidcClientId("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
         // Build org object to test with
@@ -538,7 +538,7 @@ public class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")

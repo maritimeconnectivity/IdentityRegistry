@@ -206,7 +206,7 @@ public class UserControllerTests {
         user.setFirstName("Thomas");
         user.setLastName("Christensen");
         user.setEmail("thcc@dma.dk");
-        user.setIdOrganization(1l);
+        user.setIdOrganization(1L);
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);

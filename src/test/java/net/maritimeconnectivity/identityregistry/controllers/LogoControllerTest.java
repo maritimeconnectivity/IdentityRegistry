@@ -30,7 +30,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
+import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
 
 import javax.persistence.EntityManager;
@@ -46,7 +46,7 @@ import static org.mockito.Mockito.when;
  * @author Klaus Groenbaek
  *         Created 03/03/17.
  */
-@RunWith(SpringJUnit4ClassRunner.class)
+@RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration

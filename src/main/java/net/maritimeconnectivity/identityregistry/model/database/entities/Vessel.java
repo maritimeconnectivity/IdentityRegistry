@@ -32,6 +32,7 @@ import javax.persistence.OneToOne;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.Table;
+import javax.validation.Valid;
 import java.util.Set;
 
 /**
@@ -49,7 +50,7 @@ public class Vessel extends NonHumanEntityModel {
     }
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
-    private Set<VesselAttribute> attributes;
+    private Set<@Valid VesselAttribute> attributes;
 
     @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")

@@ -107,7 +107,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -124,7 +124,7 @@ public class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -147,7 +147,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -164,7 +164,7 @@ public class MMSControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
         given(((MMSService) this.entityService).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -186,7 +186,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -203,7 +203,7 @@ public class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -227,7 +227,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -244,7 +244,7 @@ public class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -268,7 +268,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl(null);
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
@@ -284,7 +284,7 @@ public class MMSControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms").with(authentication(auth))
                     .header("Origin", "bla")
@@ -308,7 +308,7 @@ public class MMSControllerTests {
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Old service that we want to update
         MMS existingMms = new MMS();
@@ -316,7 +316,7 @@ public class MMSControllerTests {
         existingMms.setMrnSubsidiary(null);
         existingMms.setName("MMS test instance 1");
         existingMms.setUrl("https://maritimeconnectivity.net/");
-        existingMms.setIdOrganization(1l);
+        existingMms.setIdOrganization(1L);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -332,7 +332,7 @@ public class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((MMSService) this.entityService).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
-        when(org.getId()).thenReturn(1l);
+        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")

@@ -254,8 +254,8 @@ public class OrganizationControllerTests {
 
         // Create agent object
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
         Organization mock1 = mock(Organization.class);
@@ -305,8 +305,8 @@ public class OrganizationControllerTests {
 
         // Create agent object
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_USER", "");
         Organization mock1 = mock(Organization.class);
