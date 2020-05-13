@@ -53,7 +53,7 @@ public class CertificateRevocationTests {
         cr.setRevokedAt(null);
         // Try to validate the CR
         Set<ConstraintViolation<CertificateRevocation>> violations = validator.validate(cr);
-        assertEquals(violations.size(), 2);
+        assertEquals(2, violations.size());
     }
 
     @Test

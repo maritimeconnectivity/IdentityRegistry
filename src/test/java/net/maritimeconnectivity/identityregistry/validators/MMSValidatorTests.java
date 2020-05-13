@@ -68,7 +68,7 @@ public class MMSValidatorTests {
         invalidMms.setUrl(null);
 
         Set<ConstraintViolation<MMS>> violations = validator.validate(invalidMms);
-        assertEquals(violations.size(), 1);
+        assertEquals(1, violations.size());
     }
 
 }

@@ -356,13 +356,13 @@ public class UserController extends EntityController<User> {
             org.setEmail(input.getEmail());
             org.setCertificateAuthority(orgCa);
             // Extract domain-name from the user email and use that for org url.
-            int at = input.getEmail().indexOf("@");
+            int at = input.getEmail().indexOf('@');
             String url = "http://" + input.getEmail().substring(at+1);
             org.setUrl(url);
             // Extract country from address
             String country;
             String address;
-            int lastComma = orgAddress.lastIndexOf(",");
+            int lastComma = orgAddress.lastIndexOf(',');
             if (lastComma > 0) {
                 country = orgAddress.substring(lastComma+1).trim();
                 address = orgAddress.substring(0, lastComma).trim();

@@ -67,7 +67,7 @@ public class DeviceValidatorTests {
         invalidDevice.setName("Test Device");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(invalidDevice);
-        assertEquals(violations.size(), 1);
+        assertEquals(1, violations.size());
     }
 
     @Test
@@ -91,7 +91,7 @@ public class DeviceValidatorTests {
         validDevice.setHomeMMSUrl("ftp://mms.smartnav.org"); // wrong use of ftp
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
-        assertEquals(violations.size(), 1);
+        assertEquals(1, violations.size());
     }
 
     @Test
@@ -103,7 +103,7 @@ public class DeviceValidatorTests {
         validDevice.setHomeMMSUrl("https://mms.smartnav.org");
 
         Set<ConstraintViolation<Device>> violations = validator.validate(validDevice);
-        assertEquals(violations.size(), 1);
+        assertEquals(1, violations.size());
     }
 
 }
