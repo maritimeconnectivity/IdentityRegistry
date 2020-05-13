@@ -41,7 +41,7 @@ public class MrnUtil {
 
     public String getOrgShortNameFromOrgMrn(String orgMrn) {
         String[] mrnSplit = orgMrn.split(":");
-        if (mrnSplit.length != 6) {
+        if (!mcpMrnPattern.matcher(orgMrn).matches()) {
             throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
         }
         return mrnSplit[mrnSplit.length - 1];
@@ -49,7 +49,7 @@ public class MrnUtil {
 
     public String getOrgShortNameFromEntityMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
-        if (mrnSplit.length < 7) {
+        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
             throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
         }
         return mrnSplit[5];
