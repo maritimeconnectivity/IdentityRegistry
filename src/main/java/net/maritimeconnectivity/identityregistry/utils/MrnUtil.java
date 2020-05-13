@@ -57,7 +57,7 @@ public class MrnUtil {
 
     public String getEntityIdFromMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
-        if (mrnSplit.length < 7) {
+        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
             throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
         }
         if (mrnSplit.length > 7) {
