@@ -22,7 +22,6 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.web.context.WebApplicationContext;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -81,7 +80,7 @@ public class MrnUtilsTests {
 
     @Test(expected=IllegalArgumentException.class)
     public void extractOrgShortnameFromUserMRN3() {
-        String userMrn = "urn:mrn:mcl:user:thc";
+        String userMrn = "urn:mrn:mcp:user:thc";
         mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
     }
 
@@ -130,7 +129,7 @@ public class MrnUtilsTests {
     @Test
     public void validatingOrgMRN2() {
         String orgMrn = "urn:x-mrn:mcl:org:dma";
-        boolean result = mrnUtil.validateMCPMrn(orgMrn);
+        boolean result = mrnUtil.validateMrn(orgMrn);
         assertFalse("The MRN should not be valid", result);
     }
 
@@ -144,7 +143,7 @@ public class MrnUtilsTests {
     @Test
     public void validatingVesselMRN2() {
         // Invalid mrn - special characters like "ø" are not allowed
-        String vesselMrn = "urn:mrn:mcp:org:idp1:dma:vessel:poul-løwenørn";
+        String vesselMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-løwenørn";
         boolean result = mrnUtil.validateMrn(vesselMrn);
         assertFalse("The MRN should not be valid", result);
     }
