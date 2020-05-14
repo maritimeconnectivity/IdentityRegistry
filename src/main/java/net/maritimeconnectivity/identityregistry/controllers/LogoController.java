@@ -56,7 +56,7 @@ public class LogoController {
     }
 
     /**
-     * Creates or updates a logo for an organization
+     * Creates a logo for an organization
      * @param request request to get servletPath
      * @param orgMrn resource location for organization
      * @param logo the log encoded as a MultipartFile
@@ -70,6 +70,9 @@ public class LogoController {
     public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
+            if (org.getLogo() != null) {
+                throw new McBasicRestException(HttpStatus.CONFLICT, MCIdRegConstants.LOGO_ALREADY_EXISTS, request.getServletPath());
+            }
             try {
                 this.updateLogo(org, logo.getInputStream());
                 organizationService.save(org);
@@ -123,7 +126,7 @@ public class LogoController {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> createLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McBasicRestException {
+    public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             try {

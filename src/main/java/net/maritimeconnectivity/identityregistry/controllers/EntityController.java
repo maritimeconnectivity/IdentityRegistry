@@ -28,7 +28,6 @@ import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
-import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -72,7 +71,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
@@ -81,7 +80,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 T newEntity = this.entityService.save(input);
                 return new ResponseEntity<>(newEntity, HttpStatus.OK);
             } catch (DataIntegrityViolationException e) {
-                throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McBasicRestException(HttpStatus.CONFLICT, e.getMessage(), request.getServletPath());
             }
         } else {
             throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -98,7 +97,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -127,7 +126,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -155,7 +154,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -196,7 +195,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -227,7 +226,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -254,7 +253,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn.toLowerCase());
@@ -284,4 +283,3 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
 }
-

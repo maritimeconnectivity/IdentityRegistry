@@ -32,6 +32,7 @@ import org.keycloak.representations.idm.CredentialRepresentation;
 import org.keycloak.representations.idm.IdentityProviderMapperRepresentation;
 import org.keycloak.representations.idm.IdentityProviderRepresentation;
 import org.keycloak.representations.idm.UserRepresentation;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
@@ -51,7 +52,7 @@ import java.util.Set;
 @Component
 @Slf4j
 public class KeycloakAdminUtil {
-    // Load the info needed to log into the Keycloak instance that is used as ID Broker (hosts ID Providers) 
+    // Load the info needed to log into the Keycloak instance that is used as ID Broker (hosts ID Providers)
     @Value("${net.maritimeconnectivity.idreg.keycloak-broker-admin-user}")
     private String keycloakBrokerAdminUser;
     @Value("${net.maritimeconnectivity.idreg.keycloak-broker-admin-password}")
@@ -94,8 +95,8 @@ public class KeycloakAdminUtil {
     // Type of user
     public static final int NORMAL_USER = 0;
     public static final int ADMIN_USER = 1;
-    
-    // Type of instance 
+
+    // Type of instance
     public static final int BROKER_INSTANCE = 0;
     public static final int USER_INSTANCE = 1;
     public static final int CERTIFICATES_INSTANCE = 2;
@@ -129,6 +130,9 @@ public class KeycloakAdminUtil {
         attrNames2Keycloak.put("permissionsAttr", "permissions");
     }
 
+    @Autowired
+    private MrnUtil mrnUtil;
+
     /**
      * Constructor.
      */
@@ -138,7 +142,7 @@ public class KeycloakAdminUtil {
 
     /**
      * Init the keycloak instance. Will only initialize the instance defined by the type
-     * 
+     *
      * @param type  The type of instance to initialize.
      */
     public void init(int type) {
@@ -162,7 +166,7 @@ public class KeycloakAdminUtil {
             init(CERTIFICATES_INSTANCE);
         }
     }
-    
+
     private RealmResource getBrokerRealm() {
         return keycloakBrokerInstance.realm(keycloakBrokerRealm);
     }
@@ -177,7 +181,7 @@ public class KeycloakAdminUtil {
 
     /**
      * Get IDP info by parsing info from wellKnownUrl json
-     * 
+     *
      * @param infoUrl The url to parse
      * @param providerId The provider type, can be "keycloak-oidc","oidc" or "saml"
      * @return  The IDP
@@ -208,13 +212,13 @@ public class KeycloakAdminUtil {
 
     /**
      * Creates or updates an IDP.
-     * 
+     *
      * @param orgMrn        mrn of the IDP
      * @param input         map containing data about the IDP
      * @throws IOException
      */
     public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException {
-        String name = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+        String name = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         Map<String, String> idpAtrMap = idpAttributes2Map(input);
         // Check for valid input
         String providerType = idpAtrMap.get("providerType");
@@ -307,7 +311,7 @@ public class KeycloakAdminUtil {
         usernameMapper.setIdentityProviderAlias(idpName);
         usernameMapper.setName(usernameMapperName);
         Map<String, String> usernameMapperConf = new HashMap<>();
-        String mrnPrefix = MrnUtil.getMrnPrefix(orgMrn);
+        String mrnPrefix = mrnUtil.getMrnPrefix(orgMrn);
         if ("oidc".equals(providerType)) {
             // Create OIDC specific mapper
             usernameMapper.setIdentityProviderMapper("oidc-username-idp-mapper");
@@ -355,13 +359,13 @@ public class KeycloakAdminUtil {
 
     /**
      * Delete Identity Provider with the given alias
-     * 
+     *
      * @param orgMrn  MRN of the IDP to delete.
      */
     public void deleteIdentityProvider(String orgMrn) {
         // First delete any users associated with the IDP. Find it by username, which is the mrn
-        String alias = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-        String searchStr = MrnUtil.getMrnPrefix(orgMrn) + ":user:" + alias + ":";
+        String alias = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+        String searchStr = mrnUtil.getMrnPrefix(orgMrn) + ":user:" + alias + ":";
         List<UserRepresentation> users = getBrokerRealm().users().search(/* username*/ searchStr, /* firstName */ null, /* lastName */ null, /* email */ null,  /* first */ 0, /* max*/ 0);
         for (UserRepresentation user : users) {
             if (user.getUsername().startsWith(searchStr)) {
@@ -374,7 +378,7 @@ public class KeycloakAdminUtil {
 
     /**
      * Creates a user in keycloak.
-     * 
+     *
      * @param userMrn       MRN of the user
      * @param firstName     first name of user
      * @param lastName      last name of user
@@ -460,12 +464,12 @@ public class KeycloakAdminUtil {
 
     /**
      * Updates the user in keycloak
-     * 
+     *
      * @param userMrn       MRN of the user
      * @param firstName     first name of user
      * @param lastName      last name of user
      * @param email         email of the user
-     * @throws IOException 
+     * @throws IOException
      */
     public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
@@ -536,7 +540,7 @@ public class KeycloakAdminUtil {
 
     /**
      * Delete a user from Keycloak
-     * 
+     *
      * @param email  email of the user to delete
      * @param mrn    mrn of the user to delete
      */

@@ -32,7 +32,6 @@ import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
-import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
@@ -90,10 +89,10 @@ public class UserController extends EntityController<User> {
 
     /**
      * Creates a new User
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
-     */ 
+     * @throws McBasicRestException
+     */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user",
             method = RequestMethod.POST,
@@ -105,7 +104,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setMrn(input.getMrn().toLowerCase());
@@ -154,9 +153,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns info about the user identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
@@ -170,9 +169,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Updates a User
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
@@ -187,7 +186,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
@@ -220,9 +219,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Deletes a User
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
@@ -233,7 +232,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
@@ -253,9 +252,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns a list of users belonging to the organization identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/users",
@@ -268,9 +267,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns new certificate for the user identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new",
@@ -300,9 +299,9 @@ public class UserController extends EntityController<User> {
 
     /**
      * Revokes certificate for the user identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{certId}/revoke",
@@ -315,11 +314,11 @@ public class UserController extends EntityController<User> {
 
     /**
      * Sync user from keycloak, diff from create/update user is that this should only be done by
-     * the keycloak sync-mechanism. 
-     * 
+     * the keycloak sync-mechanism.
+     *
      * @return a reply...
-     * @throws McBasicRestException 
-     */ 
+     * @throws McBasicRestException
+     */
     @ApiOperation(hidden=true, value = "Sync user from keycloak")
     @RequestMapping(
             value = "/api/org/{orgMrn}/user-sync/",
@@ -336,8 +335,8 @@ public class UserController extends EntityController<User> {
         // The organization does not exists - check if this a an organization hosted by an external "validator".
         if (org == null && orgAddress != null && orgName != null) {
             // Check that the org shortname is the same for the orgMrn and originalErrorMessage
-            String orgShortname = MrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-            if (!orgShortname.equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            String orgShortname = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+            if (!orgShortname.equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Since the permissions of this user will be used as a template for administrator permissions, it must be
@@ -346,7 +345,7 @@ public class UserController extends EntityController<User> {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             // Check validators?
-            //String orgValidator = MrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
+            //String orgValidator = mrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
             // The org validator is also CA
             String orgCa = certificateUtil.getDefaultSubCa();
             // Create the new org based on given info
@@ -357,13 +356,13 @@ public class UserController extends EntityController<User> {
             org.setEmail(input.getEmail());
             org.setCertificateAuthority(orgCa);
             // Extract domain-name from the user email and use that for org url.
-            int at = input.getEmail().indexOf("@");
+            int at = input.getEmail().indexOf('@');
             String url = "http://" + input.getEmail().substring(at+1);
             org.setUrl(url);
             // Extract country from address
             String country;
             String address;
-            int lastComma = orgAddress.lastIndexOf(",");
+            int lastComma = orgAddress.lastIndexOf(',');
             if (lastComma > 0) {
                 country = orgAddress.substring(lastComma+1).trim();
                 address = orgAddress.substring(0, lastComma).trim();
@@ -425,4 +424,3 @@ public class UserController extends EntityController<User> {
         return cert.getUser();
     }
 }
-

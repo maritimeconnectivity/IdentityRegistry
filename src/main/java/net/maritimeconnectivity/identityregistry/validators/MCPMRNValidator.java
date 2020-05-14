@@ -17,25 +17,34 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
 
+    @Autowired
+    private MrnUtil mrnUtil;
+
     @Override
     public void initialize(MCPMRN constraintAnnotation) {
+        // This should only be relevant in unit tests where bean injection sometimes doesn't work
+        if (mrnUtil == null) {
+            mrnUtil = new MrnUtil();
+            mrnUtil.setIpId("idp1");
+        }
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
-            return MrnUtil.validateMCPMrn(value);
+            return mrnUtil.validateMCPMrn(value);
         } catch (IllegalArgumentException e) {
             context.disableDefaultConstraintViolation();
             context
-                .buildConstraintViolationWithTemplate(e.getMessage())
-                .addConstraintViolation();
+                    .buildConstraintViolationWithTemplate(e.getMessage())
+                    .addConstraintViolation();
             return false;
         }
     }

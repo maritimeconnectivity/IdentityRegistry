@@ -17,60 +17,68 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.model.database.entities.VesselAttribute;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.context.web.WebAppConfiguration;
-import org.springframework.validation.BeanPropertyBindingResult;
-import org.springframework.validation.Errors;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
+import javax.validation.ConstraintViolation;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.Set;
 
 import static junit.framework.TestCase.assertEquals;
 
 @RunWith(SpringRunner.class)
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
+@SpringBootTest
+@ContextConfiguration
 @WebAppConfiguration
 public class VesselValidatorTests {
-
     @Autowired
-    private VesselValidator vesselValidator;
+    private WebApplicationContext context;
+
+    private LocalValidatorFactoryBean validator;
+
+    @Before
+    public void init() {
+        validator = context.getBean(LocalValidatorFactoryBean.class);
+    }
 
     @Test
     public void validateInvalidVesselNoVesselOrgId() {
         Vessel invalidVessel = new Vessel();
         invalidVessel.setName("Test Vessel");
-        Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
-        this.vesselValidator.validate(invalidVessel, errors);
-        assertEquals(1, errors.getErrorCount());
+        Set<ConstraintViolation<Vessel>> violations = validator.validate(invalidVessel);
+        assertEquals(1, violations.size());
     }
 
     @Test
     public void validateInvalidVesselNoName() {
         Vessel invalidVessel = new Vessel();
-        invalidVessel.setMrn("urn:mrn:mcl:vessel:testorg:vessel:invalid-vessel");
-        Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
-        this.vesselValidator.validate(invalidVessel, errors);
-        assertEquals(1, errors.getErrorCount());
+        invalidVessel.setMrn("urn:mrn:mcp:vessel:idp1:testorg:invalid-vessel");
+        Set<ConstraintViolation<Vessel>> violations = validator.validate(invalidVessel);
+        assertEquals(1, violations.size());
     }
 
     @Test
     public void validateValidVesselNoAttributes() {
         Vessel validVessel = new Vessel();
-        validVessel.setMrn("urn:mrn:mcl:vessel:test-org:valid-vessel");
+        validVessel.setMrn("urn:mrn:mcp:vessel:idp1:test-org:valid-vessel");
         validVessel.setName("Test Vessel");
-        Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
-        this.vesselValidator.validate(validVessel, errors);
-        assertEquals(0, errors.getErrorCount());
+        Set<ConstraintViolation<Vessel>> violations = validator.validate(validVessel);
+        assertEquals(0, violations.size());
     }
 
     @Test
     public void validateValidVesselWithAttributes() {
         Vessel validVessel = new Vessel();
-        validVessel.setMrn("urn:mrn:mcl:org:test:vessel:valid-vessel");
+        validVessel.setMrn("urn:mrn:mcp:vessel:idp1:test:valid-vessel");
         validVessel.setName("Test Vessel");
         VesselAttribute va1 = new VesselAttribute();
         va1.setAttributeName("flagstate");
@@ -79,28 +87,26 @@ public class VesselValidatorTests {
         va2.setAttributeName("imo-number");
         va2.setAttributeValue("1234567");
         validVessel.setAttributes(new HashSet<>(Arrays.asList(va1, va2)));
-        Errors errors = new BeanPropertyBindingResult(validVessel, "validVessel");
-        this.vesselValidator.validate(validVessel, errors);
-        assertEquals(0, errors.getErrorCount());
+        Set<ConstraintViolation<Vessel>> violations = validator.validate(validVessel);
+        assertEquals(0, violations.size());
     }
 
     @Test
     public void validateInvalidVesselWithAttributes() {
         Vessel invalidVessel = new Vessel();
-        invalidVessel.setMrn("urn:mrn:mcl:org:test:vessel:invalid-vessel");
+        invalidVessel.setMrn("urn:mrn:mcp:vessel:idp1:test:invalid-vessel");
         invalidVessel.setName("Test Vessel");
         VesselAttribute va1 = new VesselAttribute();
         // Invalid attribute: value must not be empty
         va1.setAttributeName("flagstate");
-        va1.setAttributeValue("");
+        va1.setAttributeValue(null);
         VesselAttribute va2 = new VesselAttribute();
         // Invalid attribute: must be one of the pre-defined values
         va2.setAttributeName(null);
         va2.setAttributeValue("1234567");
         invalidVessel.setAttributes(new HashSet<>(Arrays.asList(va1, va2)));
-        Errors errors = new BeanPropertyBindingResult(invalidVessel, "invalidVessel");
-        this.vesselValidator.validate(invalidVessel, errors);
-        assertEquals(2, errors.getErrorCount());
+        Set<ConstraintViolation<Vessel>> violations = validator.validate(invalidVessel);
+        assertEquals(2, violations.size());
     }
 
 }

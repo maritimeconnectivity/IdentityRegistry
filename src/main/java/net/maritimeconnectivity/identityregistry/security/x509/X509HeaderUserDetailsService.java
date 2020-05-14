@@ -53,7 +53,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
 
     @Override
-    public UserDetails loadUserByUsername(String certificateHeader) throws UsernameNotFoundException {
+    public UserDetails loadUserByUsername(String certificateHeader) {
         if (certificateHeader == null || certificateHeader.length() < 10) {
             logger.warn("No certificate header found");
             throw new UsernameNotFoundException("No certificate header found");
@@ -107,7 +107,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             }
             String[] permissions = user.getPermissions().split(",");
             for(String permission: permissions) {
-                logger.debug("Looking up role: " + permission);
+                logger.debug("Looking up role: {}", permission);
                 List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
                 if (foundRoles != null) {
                     for (Role foundRole : foundRoles) {

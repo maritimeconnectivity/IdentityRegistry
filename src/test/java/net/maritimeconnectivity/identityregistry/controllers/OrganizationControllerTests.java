@@ -113,7 +113,7 @@ public class OrganizationControllerTests {
     public void testApply() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -144,7 +144,7 @@ public class OrganizationControllerTests {
     @Test
     public void testAccessApproveOrgWithoutRights() {
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/approve").header("Origin", "bla")).andExpect(status().isForbidden());
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -157,9 +157,9 @@ public class OrganizationControllerTests {
     @WithMockUser(roles="SITE_ADMIN")
     @Test
     public void testAccessApproveOrgWithRights() {
-        given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcl:org:dma")).willReturn(new Organization());
+        given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/approve").header("Origin", "bla")).andExpect(status().isOk());
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -173,7 +173,7 @@ public class OrganizationControllerTests {
     @Test
     public void testAccessDeleteOrgWithoutRights() {
         try {
-            mvc.perform(delete("/oidc/api/org/urn:mrn:mcl:org:dma").header("Origin", "bla")).andExpect(status().isForbidden());
+            mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -186,9 +186,9 @@ public class OrganizationControllerTests {
     @WithMockUser(roles="SITE_ADMIN")
     @Test
     public void testAccessDeleteOrgWithRights() {
-        given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcl:org:dma")).willReturn(new Organization());
+        given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
-            mvc.perform(delete("/oidc/api/org/urn:mrn:mcl:org:dma").header("Origin", "bla")).andExpect(status().isOk());
+            mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -202,7 +202,7 @@ public class OrganizationControllerTests {
     public void testAccessUpdateOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -213,10 +213,10 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                             .header("Origin", "bla")
                             .content(orgJson)
                             .contentType("application/json")
@@ -231,7 +231,7 @@ public class OrganizationControllerTests {
     public void testAccessUpdateOrgAsAgent() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -244,7 +244,7 @@ public class OrganizationControllerTests {
 
         // Build the agent org object
         Organization agentOrg = new Organization();
-        agentOrg.setMrn("urn:mrn:mcl:org:agent");
+        agentOrg.setMrn("urn:mrn:mcp:org:idp1:agent");
         agentOrg.setAddress("Agent Street 21");
         agentOrg.setCountry("Agent Country");
         agentOrg.setUrl("http://agent.org");
@@ -254,20 +254,20 @@ public class OrganizationControllerTests {
 
         // Create agent object
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:agent", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
         Organization mock1 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:dma")).willReturn(mock1);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:agent")).willReturn(mock2);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
         List<Agent> agentList = (List<Agent>) mock(List.class);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                 .header("Origin", "bla")
                 .content(orgJson)
                 .contentType("application/json")
@@ -282,7 +282,7 @@ public class OrganizationControllerTests {
     public void testAccessUpdateOrgAsAgentWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -295,7 +295,7 @@ public class OrganizationControllerTests {
 
         // Build the agent org object
         Organization agentOrg = new Organization();
-        agentOrg.setMrn("urn:mrn:mcl:org:agent");
+        agentOrg.setMrn("urn:mrn:mcp:org:idp1:agent");
         agentOrg.setAddress("Agent Street 21");
         agentOrg.setCountry("Agent Country");
         agentOrg.setUrl("http://agent.org");
@@ -305,20 +305,20 @@ public class OrganizationControllerTests {
 
         // Create agent object
         Agent agent = new Agent();
-        agent.setIdOnBehalfOfOrganization(1l);
-        agent.setIdActingOrganization(2l);
+        agent.setIdOnBehalfOfOrganization(1L);
+        agent.setIdActingOrganization(2L);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:agent", "ROLE_USER", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_USER", "");
         Organization mock1 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:dma")).willReturn(mock1);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcl:org:agent")).willReturn(mock2);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
         List<Agent> agentList = (List<Agent>) mock(List.class);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(orgJson)
                     .contentType("application/json")
@@ -337,7 +337,7 @@ public class OrganizationControllerTests {
         // Build org object to test with
         Organization org = new Organization();
         // The mrn is deliberately wrong - that is the point of the test
-        org.setMrn("urn:mrn:mcl:org:sma");
+        org.setMrn("urn:mrn:mcp:org:idp1:sma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -348,11 +348,11 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             // Note that the mrn in the url is different from the org mrn - should mean it fails
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(orgJson)
                     .contentType("application/json")
@@ -370,7 +370,7 @@ public class OrganizationControllerTests {
     public void testAccessUpdateOrgWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -381,10 +381,10 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the users orgMrn is different from mrn of the org - means it should fail
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN", "");
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(orgJson)
                     .contentType("application/json")
@@ -403,7 +403,7 @@ public class OrganizationControllerTests {
     public void testAccessGetOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -414,10 +414,10 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -433,7 +433,7 @@ public class OrganizationControllerTests {
     public void testAccessGetOrgWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -444,10 +444,10 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_SITE_ADMIN", "");
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -463,7 +463,7 @@ public class OrganizationControllerTests {
     public void testAccessGetOrgByIdWithRights() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -474,7 +474,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))
@@ -493,7 +493,7 @@ public class OrganizationControllerTests {
     public void testAccessGetOrgByIdWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -504,7 +504,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))

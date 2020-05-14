@@ -36,8 +36,8 @@ public class X509UserDetailsService implements UserDetailsService {
     private static final Logger logger = LoggerFactory.getLogger(X509UserDetailsService.class);
 
     @Override
-    public UserDetails loadUserByUsername(String certDN) throws UsernameNotFoundException {
-        logger.debug("certDN: " + certDN);
+    public UserDetails loadUserByUsername(String certDN) {
+        logger.debug("certDN: {}", certDN);
         SimpleGrantedAuthority role = new SimpleGrantedAuthority("ROLE_USER");
         Collection<GrantedAuthority> roles = new ArrayList<>();
         roles.add(role);
@@ -55,7 +55,7 @@ public class X509UserDetailsService implements UserDetailsService {
         essence.setOu(CertificateHandler.getElement(x500name, BCStyle.OU));
         essence.setAuthorities(roles);
         essence.setDescription(certDN);
-        logger.debug("Parsed certificate, name: " + name);
+        logger.debug("Parsed certificate, name: {}", name);
         return essence.createUserDetails();
     }
 

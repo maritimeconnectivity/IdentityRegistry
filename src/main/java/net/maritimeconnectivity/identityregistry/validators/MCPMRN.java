@@ -28,7 +28,7 @@ import java.lang.annotation.Target;
  */
 @Constraint(validatedBy = MCPMRNValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 @ReportAsSingleViolation
 public @interface MCPMRN {
 

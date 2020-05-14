@@ -33,6 +33,8 @@ server:
 net:
     maritimeconnectivity:
         idreg:
+            ip-id: idp1
+
             keycloak-broker-admin-user: idreg-admin
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console

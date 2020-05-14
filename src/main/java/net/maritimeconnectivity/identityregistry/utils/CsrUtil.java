@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.NonNull;
 import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.io.pem.PemObject;
@@ -31,7 +32,15 @@ public class CsrUtil {
     private CsrUtil() {
     }
 
-    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, String pemCsr) throws McBasicRestException {
+    /**
+     * Function for converting a PEM encoded CSR to an object that can be used by  Java/Bouncy Castle
+     *
+     * @param request a HTTP request
+     * @param pemCsr a PEM encoded CSR
+     * @return an object containing a PKCS#10 CSR
+     * @throws McBasicRestException is thrown if given CSR cannot be parsed
+     */
+    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, @NonNull String pemCsr) throws McBasicRestException {
         PemReader pemReader = new PemReader(new StringReader(pemCsr));
         try {
             PemObject pemObject = pemReader.readPemObject();

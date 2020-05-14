@@ -19,6 +19,7 @@ import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.repositories.OrganizationRepository;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,10 +32,15 @@ import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.persistence.EntityManager;
 import javax.persistence.EntityManagerFactory;
+import javax.validation.ConstraintViolation;
 import java.util.List;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
@@ -48,7 +54,10 @@ import static org.mockito.Mockito.when;
 @RunWith(SpringRunner.class)
 @SpringBootTest
 @ContextConfiguration
+@WebAppConfiguration
 public class LogoControllerTest {
+    @Autowired
+    private WebApplicationContext context;
 
     @Autowired
     LogoController logoController;
@@ -59,13 +68,20 @@ public class LogoControllerTest {
     @Autowired
     EntityManagerFactory emf;
 
+    private LocalValidatorFactoryBean validator;
+
+    @Before
+    public void init() {
+        validator = context.getBean(LocalValidatorFactoryBean.class);
+    }
+
     @Test
     public void deleteLogo() throws Exception {
 
         assertNumberOfLogos(0);
 
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -76,6 +92,8 @@ public class LogoControllerTest {
         Logo logo = new Logo();
         logo.setImage(new byte[]{1, 2, 3});
         org.setLogo(logo);
+        Set<ConstraintViolation<Organization>> violations = validator.validate(org);
+        assertEquals(0, violations.size());
 
         orgRepo.save(org);
 

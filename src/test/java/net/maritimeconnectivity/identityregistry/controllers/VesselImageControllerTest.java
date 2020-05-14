@@ -66,7 +66,7 @@ public class VesselImageControllerTest {
         assertNumberOfImages(0);
 
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -79,7 +79,7 @@ public class VesselImageControllerTest {
 
         Vessel vessel = new Vessel();
         vessel.setIdOrganization(org.getId());
-        vessel.setMrn("urn:mrn:mcl:vessel:dma:poul-loewnoern");
+        vessel.setMrn("urn:mrn:mcp:vessel:idp1:dma:poul-loewnoern");
         vessel.setName("POUL LØWENØRN");
         VesselImage image = new VesselImage();
         image.setImage(new byte[]{1, 2, 3});

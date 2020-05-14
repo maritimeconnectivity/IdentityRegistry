@@ -17,25 +17,35 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
+import org.springframework.beans.factory.annotation.Autowired;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
 
 public class MRNValidator implements ConstraintValidator<MRN, String> {
 
+    @Autowired
+    private MrnUtil mrnUtil;
+
+    private boolean nullable;
+
     @Override
     public void initialize(MRN constraintAnnotation) {
+        this.nullable = constraintAnnotation.nullable();
     }
 
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
+        if (nullable && value == null) {
+            return true;
+        }
         try {
-            return MrnUtil.validateMrn(value);
+            return mrnUtil.validateMrn(value);
         } catch (IllegalArgumentException e) {
             context.disableDefaultConstraintViolation();
             context
-                .buildConstraintViolationWithTemplate(e.getMessage())
-                .addConstraintViolation();
+                    .buildConstraintViolationWithTemplate(e.getMessage())
+                    .addConstraintViolation();
             return false;
         }
     }

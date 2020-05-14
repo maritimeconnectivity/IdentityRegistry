@@ -19,31 +19,39 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration
+@WebAppConfiguration
 public class MMSValidatorTests {
-    private Validator validator;
+    @Autowired
+    private WebApplicationContext context;
+
+    private LocalValidatorFactoryBean validator;
 
     @Before
     public void init() {
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
+        validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
     public void validateValidMMS() {
         MMS validMms = new MMS();
-        validMms.setMrn("urn:mrn:mcl:mms:testorg:test-mms1");
+        validMms.setMrn("urn:mrn:mcp:mms:idp1:testorg:test-mms1");
         validMms.setName("Test mms");
         validMms.setUrl("http://maritimeconnectivity.net");
 
@@ -54,13 +62,13 @@ public class MMSValidatorTests {
     @Test
     public void validateInvalidMMS() {
         MMS invalidMms = new MMS();
-        invalidMms.setMrn("urn:mrn:mcl:mms:testorg:test-mms1");
+        invalidMms.setMrn("urn:mrn:mcp:mms:idp1:testorg:test-mms1");
         invalidMms.setName("Test mms");
         // Invalid url - must be set!
         invalidMms.setUrl(null);
 
         Set<ConstraintViolation<MMS>> violations = validator.validate(invalidMms);
-        assertEquals(violations.size(), 1);
+        assertEquals(1, violations.size());
     }
 
 }

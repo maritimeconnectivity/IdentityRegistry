@@ -28,11 +28,13 @@ import java.lang.annotation.Target;
  */
 @Constraint(validatedBy = MRNValidator.class)
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.FIELD)
+@Target({ElementType.FIELD, ElementType.METHOD})
 @ReportAsSingleViolation
 public @interface MRN {
 
     String message() default "MRN is not valid!";
+
+    boolean nullable() default true;
 
     Class<?>[] groups() default { };
 

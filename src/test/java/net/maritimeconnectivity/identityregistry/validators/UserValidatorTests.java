@@ -19,26 +19,33 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import org.springframework.web.context.WebApplicationContext;
 
 import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
 import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 @RunWith(SpringRunner.class)
+@SpringBootTest
+@ContextConfiguration
+@WebAppConfiguration
 public class UserValidatorTests {
+    @Autowired
+    private WebApplicationContext context;
 
-    private Validator validator;
+    private LocalValidatorFactoryBean validator;
 
     @Before
     public void init() {
-        ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
-        this.validator = vf.getValidator();
+        validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
@@ -47,7 +54,7 @@ public class UserValidatorTests {
         validUser.setFirstName("Firstname");
         validUser.setLastName("Lastname");
         validUser.setEmail("user@test.org");
-        validUser.setMrn("urn:mrn:mcl:user:testorg:test-user");
+        validUser.setMrn("urn:mrn:mcp:user:idp1:testorg:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(validUser);
         assertTrue(violations.isEmpty());
@@ -61,7 +68,7 @@ public class UserValidatorTests {
         invalidUser.setLastName(" ");
         // Invalid email
         invalidUser.setEmail("user-test.org");
-        invalidUser.setMrn("urn:mrn:mcl:user:testorg:test-user");
+        invalidUser.setMrn("urn:mrn:mcp:user:idp1:testorg:test-user");
 
         Set<ConstraintViolation<User>> violations = validator.validate(invalidUser);
         assertEquals(2, violations.size());

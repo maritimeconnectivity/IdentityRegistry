@@ -87,9 +87,9 @@ public class MMSControllerTests {
     @WithMockUser()
     @Test
     public void testAccessGetMMSWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(new MMS());
+        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(new MMS());
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").header("Origin", "bla")).andExpect(status().isForbidden());
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
@@ -103,15 +103,15 @@ public class MMSControllerTests {
     public void testAccessGetMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -120,20 +120,20 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(mmsJson, false));
         } catch (Exception e) {
             e.printStackTrace();
             assertTrue(false);
         }
-        verify(((MMSService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcl:mms:dma:test1");
+        verify(((MMSService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
     }
 
     /**
@@ -143,14 +143,14 @@ public class MMSControllerTests {
     public void testAccessGetMMSWithRights2() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -159,14 +159,14 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:sma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
+        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
@@ -182,15 +182,15 @@ public class MMSControllerTests {
     public void testAccessUpdateMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
-        mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
+        mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -199,13 +199,13 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(mmsJson)
                     .contentType("application/json")
@@ -223,15 +223,15 @@ public class MMSControllerTests {
     public void testAccessUpdateMMSWithoutRights() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -240,13 +240,13 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(mmsJson)
                     .contentType("application/json")
@@ -264,15 +264,15 @@ public class MMSControllerTests {
     public void testCreateMMSWithUrlNull() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
-        mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
+        mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl(null);
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -281,12 +281,12 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcl:org:dma/mms").with(authentication(auth))
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(mmsJson)
                     .contentType("application/json")
@@ -304,22 +304,22 @@ public class MMSControllerTests {
     public void testUpdateMMS() {
         // Build service object to test with
         MMS mms = new MMS();
-        mms.setMrn("urn:mrn:mcl:mms:dma:test1");
-        mms.setMrnSubsidiary("urn:mrn:mcp:mms:dma:test1");
+        mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
+        mms.setMrnSubsidiary("urn:mrn:mcp:mms:idp1:dma:test1");
         mms.setName("MMS test instance 1");
         mms.setUrl("https://maritimeconnectivity.net/");
-        mms.setIdOrganization(1l);
+        mms.setIdOrganization(1L);
         String mmsJson = serialize(mms);
         // Old service that we want to update
         MMS existingMms = new MMS();
-        existingMms.setMrn("urn:mrn:mcl:mms:dma:test1");
+        existingMms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
         existingMms.setMrnSubsidiary(null);
         existingMms.setName("MMS test instance 1");
         existingMms.setUrl("https://maritimeconnectivity.net/");
-        existingMms.setIdOrganization(1l);
+        existingMms.setIdOrganization(1L);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcl:org:dma");
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -328,13 +328,13 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcl:org:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcl:mms:dma:test1")).willReturn(existingMms);
-        when(org.getId()).thenReturn(1l);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
+        when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcl:org:dma/mms/urn:mrn:mcl:mms:dma:test1").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(mmsJson)
                     .contentType("application/json")

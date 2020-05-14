@@ -32,13 +32,14 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.stream.Collectors;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 public class X509HeaderUserDetailsServiceTest {
@@ -96,7 +97,7 @@ public class X509HeaderUserDetailsServiceTest {
         Role role = new Role();
         role.setPermission("routeplanner");
         role.setRoleName("ROLE_ROUTEPLANNER");
-        given(this.roleService.getRolesByIdOrganizationAndPermission(any(Long.class), eq("routeplanner"))).willReturn(Arrays.asList(role));
+        given(this.roleService.getRolesByIdOrganizationAndPermission(any(Long.class), eq("routeplanner"))).willReturn(Collections.singletonList(role));
         // Setup mocked org
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcl:org:dma")).willReturn(new Organization());
         // Try to get user from certificate

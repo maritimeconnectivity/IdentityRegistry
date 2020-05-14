@@ -26,7 +26,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
-import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import net.maritimeconnectivity.identityregistry.validators.VesselValidator;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -71,9 +70,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Creates a new Vessel
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel",
@@ -88,9 +87,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Returns info about the vessel identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
@@ -104,9 +103,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Updates a Vessel
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
@@ -132,7 +131,7 @@ public class VesselController extends EntityController<Vessel> {
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Set<Service>> getVesselServices(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
-        if (!MrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(MrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
+        if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Vessel vessel = this.entityService.getByMrn(vesselMrn);
@@ -142,9 +141,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Deletes a Vessel
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
@@ -157,9 +156,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Returns a list of vessels owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessels",
@@ -172,9 +171,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Returns new certificate for the vessel identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/issue-new",
@@ -204,9 +203,9 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Revokes certificate for the vessel identified by the given ID
-     * 
+     *
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/{certId}/revoke",
