@@ -7,9 +7,6 @@ The Maritime Connectivity Platform was formerly known as the Maritime Cloud and 
 
 A detailed guide on how to setup the Identity Registry that should be used in conjunction with this README can be found in the document [MIR Setup](./setup/guide/MIR_setup.pdf). 
 
-## Prerequisite
-* OpenJDK 8
-
 ## Setup Database
 A MySQL/MariaDB is used as datastore, it can be setup running this commands from the console:
 ```sh
@@ -24,6 +21,8 @@ $ ./setup/drop-db.sh
 ```
 
 ## Build
+* Requirement : OpenJDK 8
+
 Build using you favorite IDE or using the console:
 ```sh
 $ mvn clean install
