@@ -108,9 +108,9 @@ public abstract class BaseControllerWithCertificate {
         X509Certificate userCert;
         try {
             if (authProvider != null) {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider, validityPeriod);
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
             } else {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null, validityPeriod);
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
             }
         } catch (Exception e) {
             log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
@@ -198,10 +198,10 @@ public abstract class BaseControllerWithCertificate {
                 X509Certificate userCert;
                 try {
                     if (authProvider != null) {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider, validityPeriod);
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
                         p11PKIConfiguration.providerLogout();
                     } else {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null, validityPeriod);
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
                     }
                 } catch (Exception e) {
                     log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
