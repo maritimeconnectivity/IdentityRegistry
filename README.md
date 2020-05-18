@@ -21,6 +21,8 @@ $ ./setup/drop-db.sh
 ```
 
 ## Build
+* Requirement : OpenJDK 8
+
 Build using you favorite IDE or using the console:
 ```sh
 $ mvn clean install
