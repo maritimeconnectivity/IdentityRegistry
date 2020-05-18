@@ -12,10 +12,6 @@ services:
     # Enable docker service inside travis
     - docker
 
-cache:
-  directories:
-    - $HOME/.m2
-
 install:
     # Build the spring boot app and copy the result to the docker folder
     - mvn -B -Dspring.profiles.active=test clean install && cp target/mcp-identityregistry-core-latest.war docker/

@@ -81,6 +81,24 @@ public class CertificateUtil {
     @Getter
     private PKIConfiguration pkiConfiguration;
 
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.user}")
+    private int validityPeriodForUser;
+
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.organization}")
+    private int validityPeriodForOrg;
+
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.device}")
+    private int validityPeriodForDevice;
+
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.vessel}")
+    private int validityPeriodForVessel;
+
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.service}")
+    private int validityPeriodForService;
+
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
+    private int validityPeriodForMms;
+
     public CertificateUtil() {
     }
 
@@ -102,4 +120,20 @@ public class CertificateUtil {
         certificateBuilder = new CertificateBuilder(keystoreHandler);
     }
 
+    public int getValidityPeriod(String type){
+        if(type.equals("user"))
+            return validityPeriodForUser;
+        else if(type.equals("org"))
+            return validityPeriodForOrg;
+        else if(type.equals("device"))
+            return validityPeriodForDevice;
+        else if(type.equals("service"))
+            return validityPeriodForService;
+        else if(type.equals("vessel"))
+            return validityPeriodForVessel;
+        else if(type.equals("mms"))
+            return validityPeriodForMms;
+        else
+            return -1;
+    }
 }

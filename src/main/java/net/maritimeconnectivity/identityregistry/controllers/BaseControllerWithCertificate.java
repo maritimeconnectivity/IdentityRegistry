@@ -97,6 +97,10 @@ public abstract class BaseControllerWithCertificate {
         String name = getName(certOwner);
         String email = getEmail(certOwner);
         String uid = getUid(certOwner);
+        int validityPeriod = certificateUtil.getValidityPeriod(type);
+        if(validityPeriod<0)
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_MCP_TYPE, request.getServletPath());
+
         if (uid == null || uid.trim().isEmpty()) {
             throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
@@ -104,9 +108,9 @@ public abstract class BaseControllerWithCertificate {
         X509Certificate userCert;
         try {
             if (authProvider != null) {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
             } else {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
             }
         } catch (Exception e) {
             log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);
@@ -183,6 +187,10 @@ public abstract class BaseControllerWithCertificate {
                 String name = getName(certOwner);
                 String email = getEmail(certOwner);
                 String uid = getUid(certOwner);
+                int validityPeriod = certificateUtil.getValidityPeriod(type);
+                if(validityPeriod<0)
+                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_MCP_TYPE, request.getServletPath());
+
                 if (uid == null || uid.trim().isEmpty()) {
                     throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
@@ -190,10 +198,10 @@ public abstract class BaseControllerWithCertificate {
                 X509Certificate userCert;
                 try {
                     if (authProvider != null) {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
                         p11PKIConfiguration.providerLogout();
                     } else {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
+                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
                     }
                 } catch (Exception e) {
                     log.error(MCIdRegConstants.CERT_ISSUING_FAILED, e);

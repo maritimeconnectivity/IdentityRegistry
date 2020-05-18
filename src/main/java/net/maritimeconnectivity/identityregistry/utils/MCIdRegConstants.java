@@ -54,6 +54,7 @@ public class MCIdRegConstants {
     public static final String LOGO_ALREADY_EXISTS = "This organization already has a logo! Please update using PUT request.";
     public static final String VESSEL_IMAGE_ALREADY_EXISTS = "This vessel already has an image! Please update using PUT request.";
     public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN";
+    public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type";
 
     private MCIdRegConstants() {
     }
