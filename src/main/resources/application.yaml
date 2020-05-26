@@ -88,15 +88,6 @@ net:
                     organization: 24
                     service: 24
                     mms: 24
-                default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
-                root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
-                validity-period: # unit: year
-                    user: 2
-                    device: 2
-                    vessel : 2
-                    organization: 2
-                    service: 2
-                    mms: 2
 
             # Email setup
             email:

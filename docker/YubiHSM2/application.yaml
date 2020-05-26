@@ -86,13 +86,13 @@ net:
                     config:
                         file: /conf/pkcs11_yubi.cfg
                         pin: 0001password
-                validity-period: # unit: year
-                    user: 2
-                    device: 2
-                    vessel : 2
-                    organization: 2
-                    service: 2
-                    mms: 2
+                validity-period: # unit: month
+                    user: 24
+                    device: 24
+                    vessel: 24
+                    organization: 24
+                    service: 24
+                    mms: 24
 
             # Email setup
             email:
