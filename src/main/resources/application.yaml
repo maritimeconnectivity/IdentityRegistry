@@ -81,6 +81,15 @@ net:
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
                 default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
                 root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
+                validity-period: # unit: month
+                    user: 24
+                    device: 24
+                    vessel : 24
+                    organization: 24
+                    service: 24
+                    mms: 24
+                default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
+                root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
                 validity-period: # unit: year
                     user: 2
                     device: 2
