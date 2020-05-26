@@ -1,4 +1,4 @@
 {
-  "permission": "MCADMIN",
+  "permission": "MCPADMIN",
   "roleName": "ROLE_ORG_ADMIN"
 }

@@ -66,9 +66,9 @@ net:
             # The DN of the certificate used to sync users from keycloak
             user-sync:
                 c: DK
-                o: "urn:mrn:mcl:org:dma"
+                o: "urn:mrn:mcp:org:idp1:dma"
                 ou: device
-                mrn: "urn:mrn:mcl:device:dma:sync"
+                mrn: "urn:mrn:mcp:device:idp1:dma:sync"
 
             # Certificate setup
             certs:
