@@ -38,14 +38,14 @@ net:
             keycloak-broker-admin-user: idreg-admin
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console
-            keycloak-broker-realm: MaritimeCloud
+            keycloak-broker-realm: MCP
             keycloak-broker-base-url: http://localhost:8080/auth/
 
             # Login info for the keycloak used for project users
             keycloak-project-users-admin-user: idreg-test-idp-admin
             keycloak-project-users-admin-password: idreg-test-idp-admin
             keycloak-project-users-admin-client: security-admin-console
-            keycloak-project-users-realm: ProjectTestUsers
+            keycloak-project-users-realm: Users
             keycloak-project-users-base-url: http://localhost:8080/auth/
 
             # Login info for the keycloak used for certificates
@@ -55,7 +55,7 @@ net:
             keycloak-certificates-realm: Certificates
             keycloak-certificates-base-url: http://localhost:8080/auth/
 
-            keycloak-client-template: mc-client-template
+            keycloak-client-template: mcp-client-template
 
             auto-approve-organizations: true
             admin-org: DMA
@@ -79,8 +79,8 @@ net:
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
-                default-sub-ca: urn:mrn:mcl:ca:maritimecloud-idreg
-                root-ca-alias: urn:mrn:mcl:ca:maritimecloud
+                default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
+                root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
                 validity-period: # unit: year
                     user: 2
                     device: 2
@@ -95,8 +95,8 @@ net:
                 admin-email: admin@maritimeconnectivity.net
                 org-awaiting-approval-subject: "%s is awaiting approval for being added to MCP"
                 created-user-subject: A login for the Maritime Connectivity Platform has been created for you
-                portal-url: https://management.maritimecloud.net
-                project-IDP-name: ProjectTestUsers
+                portal-url: https://management.maritimeconnectivity.net
+                project-IDP-name: Users
                 org-awaiting-approval-text: |
                     Thank you for applying for %1$s to be added to MCP!
                     
