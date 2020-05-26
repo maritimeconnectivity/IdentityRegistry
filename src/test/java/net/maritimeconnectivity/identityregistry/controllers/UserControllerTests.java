@@ -480,7 +480,7 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
@@ -525,7 +525,7 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
@@ -571,7 +571,7 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
@@ -617,7 +617,7 @@ public class UserControllerTests {
         org.setFederationType("external-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:maritimecloud-idreg");
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
