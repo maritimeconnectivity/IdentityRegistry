@@ -49,6 +49,7 @@ import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.security.AuthProvider;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
@@ -103,8 +104,11 @@ public class CertificateController {
         for (Certificate cert : revokedCerts) {
             revocationInfos.add(cert.toRevocationInfo());
         }
-        P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
-        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), pkiConfiguration.getProvider());
+        AuthProvider provider = null;
+        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+            provider = ((P11PKIConfiguration) certUtil.getPkiConfiguration()).getProvider();
+        }
+        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), provider);
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
             return new ResponseEntity<>(pemCrl, HttpStatus.OK);
