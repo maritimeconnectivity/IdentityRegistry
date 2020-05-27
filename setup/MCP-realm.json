@@ -285,7 +285,7 @@
         "containerId" : "812ead94-18c1-489c-b786-33608ed03e70",
         "attributes" : { }
       } ],
-      "mcidreg" : [ ]
+      "mcpidreg" : [ ]
     }
   },
   "groups" : [ ],
@@ -912,8 +912,8 @@
     "optionalClientScopes" : [ "offline_access", "microprofile-jwt" ]
   }, {
     "id" : "3b5e5ae1-c93e-4935-85e7-9782224d33dd",
-    "clientId" : "mcidreg",
-    "name" : "MaritimeCloud Identity Registry",
+    "clientId" : "mcpidreg",
+    "name" : "Maritime Connectivity Platform Identity Registry",
     "surrogateAuthRequired" : false,
     "enabled" : true,
     "alwaysDisplayInConsole" : false,
