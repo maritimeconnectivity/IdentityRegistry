@@ -4,5 +4,5 @@
   "auth-server-url": "http://localhost:8080/auth",
   "ssl-required": "external",
   "enable-cors": true,
-  "resource": "mcidreg"
+  "resource": "mcpidreg"
 }
