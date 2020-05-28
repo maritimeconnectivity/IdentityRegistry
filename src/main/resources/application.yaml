@@ -134,6 +134,11 @@ spring.datasource:
     test-on-borrow: true
     validation-query: SELECT 1
 
+# Disable Hibernate entity validation as it is already done by Spring
+spring.jpa:
+    properties:
+        javax.persistence.validation.mode: none
+
 # Email setup
 spring.mail:
     default-encoding: UTF-8
@@ -169,3 +174,6 @@ spring:
        #url: jdbc:h2:tcp://localhost/~/test;USER=sa;MODE=MySQL
        driverClassName: org.h2.Driver
     flyway.enabled: false
+    jpa:
+        properties:
+            javax.persistence.validation.mode: auto
