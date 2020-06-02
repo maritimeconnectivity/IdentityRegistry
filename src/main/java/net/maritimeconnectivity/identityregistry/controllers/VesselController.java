@@ -27,7 +27,6 @@ import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
-import net.maritimeconnectivity.identityregistry.validators.VesselValidator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -36,9 +35,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
-import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.ServletRequestDataBinder;
-import org.springframework.web.bind.annotation.InitBinder;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -60,14 +56,6 @@ public class VesselController extends EntityController<Vessel> {
         this.entityService = vesselService;
     }
 
-    @Autowired
-    private VesselValidator vesselValidator;
-
-    @InitBinder("vessel")
-    protected void initBinder(final ServletRequestDataBinder binder) {
-        binder.addValidators(vesselValidator);
-    }
-
     /**
      * Creates a new Vessel
      *
@@ -80,7 +68,7 @@ public class VesselController extends EntityController<Vessel> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<Vessel> createVessel(HttpServletRequest request, @PathVariable String orgMrn, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<Vessel> createVessel(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.createEntity(request, orgMrn, input);
     }
@@ -112,7 +100,7 @@ public class VesselController extends EntityController<Vessel> {
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Validated @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<?> updateVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Valid @RequestBody Vessel input, BindingResult bindingResult) throws McBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.updateEntity(request, orgMrn, vesselMrn, input);
     }
