@@ -40,6 +40,7 @@ public class WebConfig extends WebMvcConfigurationSupport {
 
     @Override
     public void configurePathMatch(PathMatchConfigurer configurer) {
+        // Allow encoded "/" (%2F) in urls without actually interpreting it immediately as a path separator
         UrlPathHelper urlPathHelper = new UrlPathHelper();
         urlPathHelper.setUrlDecode(false);
         configurer.setUrlPathHelper(urlPathHelper);
