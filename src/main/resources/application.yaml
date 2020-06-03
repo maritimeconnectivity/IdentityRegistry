@@ -35,6 +35,8 @@ net:
         idreg:
             ip-id: idp1
 
+            single-org-instance: false # should be set to true if you are planning on only having a single organization in your instance
+
             keycloak-broker-admin-user: idreg-admin
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console

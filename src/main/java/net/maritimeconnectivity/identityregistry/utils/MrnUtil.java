@@ -39,6 +39,11 @@ public class MrnUtil {
     @Value("${net.maritimeconnectivity.idreg.ip-id}")
     private String ipId;
 
+    @Getter
+    @Setter
+    @Value("${net.maritimeconnectivity.idreg.single-org-instance:false}")
+    private boolean isSingleOrgInstance;
+
     public String getOrgShortNameFromOrgMrn(String orgMrn) {
         String[] mrnSplit = orgMrn.split(":");
         if (!mcpMrnPattern.matcher(orgMrn).matches()) {
@@ -49,7 +54,17 @@ public class MrnUtil {
 
     public String getOrgShortNameFromEntityMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
-        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
+        if (!mcpMrnPattern.matcher(entityMrn).matches()) {
+            throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+        }
+        if (isSingleOrgInstance) {
+            if (mrnSplit.length < 6) {
+                throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+            } else {
+                return mrnSplit[4];
+            }
+        }
+        if (mrnSplit.length < 7) {
             throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
         }
         return mrnSplit[5];
@@ -57,7 +72,19 @@ public class MrnUtil {
 
     public String getEntityIdFromMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
-        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
+        if (!mcpMrnPattern.matcher(entityMrn).matches()) {
+            throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+        }
+        if (isSingleOrgInstance) {
+            if (mrnSplit.length < 6) {
+                throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+            }
+            if (mrnSplit.length > 6) {
+                List<String> idList = new ArrayList<>(Arrays.asList(mrnSplit).subList(5, mrnSplit.length));
+                return String.join(":", idList);
+            }
+        }
+        if (mrnSplit.length < 7) {
             throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
         }
         if (mrnSplit.length > 7) {
@@ -89,12 +116,13 @@ public class MrnUtil {
                 case "device":
                 case "vessel":
                 case "mms":
-                    if (parts.length < 7) {
+                    if (!isSingleOrgInstance && parts.length < 7) {
                         throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
                     }
                     break;
                 case "service":
-                    if (parts.length < 8 || !parts[6].equals("instance")) {
+                    if ((!isSingleOrgInstance && (parts.length < 8 || !parts[6].equalsIgnoreCase("instance")))
+                            || (isSingleOrgInstance && (parts.length < 7 || !parts[5].equalsIgnoreCase("instance")))) {
                         throw new IllegalArgumentException("The given MRN is not a valid service instance MRN");
                     }
                     break;

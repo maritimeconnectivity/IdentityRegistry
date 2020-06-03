@@ -39,6 +39,7 @@ import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -92,6 +93,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Autowired
     private AgentService agentService;
 
+    @Value("${net.maritimeconnectivity.idreg.single-org-instance:false}")
+    private boolean isSingleOrgInstance;
+
     /**
      * Receives an application for a new organization and root-user
      * 
@@ -103,6 +107,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McBasicRestException {
+        if (isSingleOrgInstance) {
+            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.APPLY_ORG_NOT_ALLOWED, request.getServletPath());
+        }
         ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
@@ -117,7 +124,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         try {
             newOrg = this.organizationService.save(input);
         } catch (DataIntegrityViolationException e) {
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getMessage(), request.getServletPath());
         }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
