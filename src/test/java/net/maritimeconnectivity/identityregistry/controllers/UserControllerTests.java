@@ -17,6 +17,8 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Getter;
+import lombok.Setter;
 import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.ExceptionModel;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
@@ -32,6 +34,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
@@ -90,6 +93,11 @@ public class UserControllerTests {
 
     @MockBean
     private CertificateService certificateService;
+
+    @Getter
+    @Setter
+    @Value("${spring.mail.port}")
+    private int smtpServerPort;
 
     @Before
     public void setup() {
@@ -400,7 +408,7 @@ public class UserControllerTests {
         newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
 
         // setup mock SMTP server
-        Wiser wiser = new Wiser(1025);
+        Wiser wiser = new Wiser(smtpServerPort);
         wiser.start();
 
         try {
