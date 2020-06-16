@@ -1,7 +1,5 @@
-FROM openjdk:8-jre
+FROM dmadk/mc-identity-registry-api
 
-RUN mkdir -p /conf
-ADD mcp-identityregistry-core-latest.war .
 ADD yubihsm_pkcs11.conf .
 ADD pkcs11_yubi.cfg /conf
 
