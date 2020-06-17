@@ -81,6 +81,12 @@ net:
                 base-crl-ocsp-path: https://localhost/x509/api/certificates/
                 default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
                 root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
+                # Configuration for when an HSM is used using PKCS#11
+                pkcs11:
+                    enabled: false
+                    config:
+                        file: /conf/pkcs11.cfg # https://docs.oracle.com/javase/8/docs/technotes/guides/security/p11guide.html
+                        pin: 0001password # the pin/password for the slot defined in the config file
                 validity-period: # unit: month
                     user: 24
                     device: 24
