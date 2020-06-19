@@ -227,7 +227,7 @@
       "security-admin-console" : [ ],
       "setupclient" : [ ],
       "admin-cli" : [ ],
-      "MaritimeCloudPortal" : [ ],
+      "MCP-Portal" : [ ],
       "account-console" : [ ],
       "broker" : [ {
         "id" : "fbb14b22-7311-48de-995d-8beb18f523f0",
@@ -859,9 +859,9 @@
     "optionalClientScopes" : [ "microprofile-jwt" ]
   }, {
     "id" : "28c0f3a2-ef5a-4dc1-bd73-974cc8913786",
-    "clientId" : "MaritimeCloudPortal",
-    "name" : "Maritime Cloud Portal",
-    "rootUrl" : "https://management.maritimecloud.net",
+    "clientId" : "MCP-Portal",
+    "name" : "MCP Portal",
+    "rootUrl" : "https://management.maritimeconnectivity.net",
     "adminUrl" : "",
     "baseUrl" : "",
     "surrogateAuthRequired" : false,
