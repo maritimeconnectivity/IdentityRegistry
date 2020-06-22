@@ -96,10 +96,6 @@ public class Organization extends CertificateModel {
     private String country;
 
     @JsonIgnore
-    @Column(name = "type")
-    private String type;
-
-    @JsonIgnore
     @Column(name = "approved", nullable = false)
     private boolean approved;
 
