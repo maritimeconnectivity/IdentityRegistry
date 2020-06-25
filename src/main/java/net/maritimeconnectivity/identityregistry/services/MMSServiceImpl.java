@@ -38,8 +38,5 @@ public class MMSServiceImpl extends EntityServiceImpl<MMS> implements MMSService
     public MMS getByMrnSubsidiary(String mrn) {
         return this.repository.getByMrnSubsidiaryIgnoreCase(mrn);
     }
-
-    @Autowired
-    public void setMMSRepository(MMSRepository mmsRepository) { this.repository = mmsRepository; }
 }
 
