@@ -29,12 +29,12 @@ public class MMSServiceImpl extends EntityServiceImpl<MMS> implements MMSService
     }
 
     public MMS getByMrn(String mrn) {
-        return ((MMSRepository) this.getRepository()).getByMrnIgnoreCase(mrn);
+        return this.getRepository().getByMrnIgnoreCase(mrn);
     }
 
     @Override
     public MMS getByMrnSubsidiary(String mrn) {
-        return ((MMSRepository) this.getRepository()).getByMrnSubsidiaryIgnoreCase(mrn);
+        return this.getRepository().getByMrnSubsidiaryIgnoreCase(mrn);
     }
 
     @Autowired
