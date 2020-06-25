@@ -27,6 +27,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
+import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
@@ -73,6 +74,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
     private EntityService<User> userService;
     @Autowired
     private EntityService<Vessel> vesselService;
+    @Autowired
+    private EntityService<MMS> mmsService;
 
     @Autowired
     private RoleService roleService;
@@ -303,6 +306,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             this.userService.deleteByOrg(org.getId());
             this.vesselService.deleteByOrg(org.getId());
             this.roleService.deleteByOrg(org.getId());
+            this.mmsService.deleteByOrg(org.getId());
             this.organizationService.delete(org.getId());
             this.agentService.deleteByOrg(org.getId());
             return new ResponseEntity<>(HttpStatus.OK);

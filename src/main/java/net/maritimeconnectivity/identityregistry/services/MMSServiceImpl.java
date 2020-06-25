@@ -22,21 +22,23 @@ import org.springframework.stereotype.Service;
 
 @Service
 public class MMSServiceImpl extends EntityServiceImpl<MMS> implements MMSService {
-    @Autowired
-    private MMSRepository repository;
 
     @Override
     public MMS getByUrl(String url) {
-        return this.repository.getByUrl(url);
+        return ((MMSRepository) this.getRepository()).getByUrl(url);
     }
 
     public MMS getByMrn(String mrn) {
-        return this.repository.getByMrnIgnoreCase(mrn);
+        return this.getRepository().getByMrnIgnoreCase(mrn);
     }
 
     @Override
     public MMS getByMrnSubsidiary(String mrn) {
-        return this.repository.getByMrnSubsidiaryIgnoreCase(mrn);
+        return this.getRepository().getByMrnSubsidiaryIgnoreCase(mrn);
     }
+
+    @Autowired
+    public void setMMSRepository(MMSRepository mmsRepository) { this.repository = mmsRepository; }
+
 }
 
