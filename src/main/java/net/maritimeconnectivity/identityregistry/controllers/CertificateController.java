@@ -106,9 +106,14 @@ public class CertificateController {
         }
         AuthProvider provider = null;
         if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            provider = ((P11PKIConfiguration) certUtil.getPkiConfiguration()).getProvider();
+            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
+            provider = pkiConfiguration.getProvider();
+            pkiConfiguration.providerLogin();
         }
         X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), provider);
+        if (provider != null) {
+            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
+        }
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
             return new ResponseEntity<>(pemCrl, HttpStatus.OK);
@@ -187,7 +192,16 @@ public class CertificateController {
                 respBuilder.addResponse(req.getCertID(), CertificateStatus.GOOD);
             }
         }
-        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias));
+        AuthProvider provider = null;
+        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
+            provider = pkiConfiguration.getProvider();
+            pkiConfiguration.providerLogin();
+        }
+        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias), provider);
+        if (provider != null) {
+            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
+        }
         return response.getEncoded();
     }
 }
