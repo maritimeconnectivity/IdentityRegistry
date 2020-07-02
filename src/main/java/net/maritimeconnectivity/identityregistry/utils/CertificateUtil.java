@@ -121,19 +121,21 @@ public class CertificateUtil {
     }
 
     public int getValidityPeriod(String type){
-        if(type.equals("user"))
-            return validityPeriodForUser;
-        else if(type.equals("org"))
-            return validityPeriodForOrg;
-        else if(type.equals("device"))
-            return validityPeriodForDevice;
-        else if(type.equals("service"))
-            return validityPeriodForService;
-        else if(type.equals("vessel"))
-            return validityPeriodForVessel;
-        else if(type.equals("mms"))
-            return validityPeriodForMms;
-        else
-            return -1;
+        switch (type) {
+            case "user":
+                return validityPeriodForUser;
+            case "organization":
+                return validityPeriodForOrg;
+            case "device":
+                return validityPeriodForDevice;
+            case "service":
+                return validityPeriodForService;
+            case "vessel":
+                return validityPeriodForVessel;
+            case "mms":
+                return validityPeriodForMms;
+            default:
+                return -1;
+        }
     }
 }
