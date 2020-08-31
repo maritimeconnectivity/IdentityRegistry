@@ -78,7 +78,7 @@ net:
                 truststore-path: mc-truststore.jks
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
-                base-crl-ocsp-path: https://localhost/x509/api/certificates/
+                base-crl-ocsp-path: http://localhost/x509/api/certificates/ # should NOT be HTTPS due to concerns regarding compatibility
                 default-sub-ca: urn:mrn:mcp:ca:idp1:mcp-idreg
                 root-ca-alias: urn:mrn:mcp:ca:idp1:mcp
                 # Configuration for when an HSM is used using PKCS#11
