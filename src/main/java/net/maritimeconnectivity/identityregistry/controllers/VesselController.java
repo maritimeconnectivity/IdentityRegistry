@@ -186,7 +186,7 @@ public class VesselController extends EntityController<Vessel> {
     )
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newVesselCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, vesselMrn, "vessel");
+        return this.signEntityCert(request, csr, orgMrn, vesselMrn, "vessel", null);
     }
 
     /**

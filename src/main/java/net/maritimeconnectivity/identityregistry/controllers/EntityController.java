@@ -25,6 +25,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.EntityM
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
+import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
@@ -191,14 +192,19 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a PEM encoded certificate
      * @throws McBasicRestException
      */
-    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type) throws McBasicRestException {
+    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type, String version) throws McBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            T entity = this.entityService.getByMrn(entityMrn);
+            EntityModel entity;
+            if (type.equals("service")) {
+                entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
+            } else {
+                entity = this.entityService.getByMrn(entityMrn);
+            }
             if (entity == null) {
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
