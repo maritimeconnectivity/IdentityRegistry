@@ -21,11 +21,14 @@ import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocatio
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
+import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.services.ServiceService;
+import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
@@ -42,12 +45,16 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
+import java.util.List;
 
 @RestController
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
     protected EntityService<T> entityService;
     protected OrganizationService organizationService;
     protected CertificateService certificateService;
+    protected RoleService roleService;
+    protected CertificateUtil certUtil;
+    protected AccessControlUtil accessControlUtil;
 
     @Autowired
     public void setCertificateService(CertificateService certificateService) {
@@ -60,7 +67,19 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
     @Autowired
-    protected CertificateUtil certUtil;
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setCertUtil(CertificateUtil certUtil) {
+        this.certUtil = certUtil;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 
     /**
      * Creates a new Entity
@@ -76,6 +95,8 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
+            // check that the requesting user has a role that is equal to or higher than the one given to the new entity
+            checkRoles(request, input, org);
             try {
                 input.setMrn(input.getMrn().toLowerCase());
                 T newEntity = this.entityService.save(input);
@@ -135,6 +156,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+                checkRoles(request, input, org);
                 input.selectiveCopyTo(entity);
                 this.entityService.save(entity);
                 return new ResponseEntity<>(HttpStatus.OK);
@@ -286,6 +308,21 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     protected String getUid(CertificateModel certOwner) {
         return ((EntityModel)certOwner).getMrn();
+    }
+
+    // Checks that the requesting user has a role that is equal to or higher than the ones being given to the input
+    protected void checkRoles(HttpServletRequest request, T input, Organization org) throws McBasicRestException {
+        if (input.getPermissions() != null) {
+            String[] permissions = input.getPermissions().split(",");
+            for (String permission : permissions) {
+                List<Role> roleList = this.roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
+                for (Role role : roleList) {
+                    if (!accessControlUtil.hasRole(role.getRoleName())) {
+                        throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+                    }
+                }
+            }
+        }
     }
 
 }
