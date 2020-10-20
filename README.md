@@ -248,7 +248,7 @@ This will prompt you to fill in the attributes of the certificate. For this you 
 
 ### Step 3: Send CSR to MIR for signing
 ```sh
-$ curl -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: text/plain" --data @request.csr https://localhost/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new/csr
+$ curl -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: text/plain" --data-binary @request.csr https://localhost/oidc/api/org/urn:mrn:mcl:org:dma/user/urn:mrn:mcl:user:dma:dma-employee/certificate/issue-new/csr
 ```
 This will send the CSR to the MIR to be signed for the user with the MRN urn:mrn:mcl:user:dma:dma-employee. The MIR will then return a certificate chain containing the signed certificate followed by the intermediate CA that signed it, looking like this:
 ```
