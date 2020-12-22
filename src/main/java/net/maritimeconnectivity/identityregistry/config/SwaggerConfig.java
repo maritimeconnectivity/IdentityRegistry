@@ -48,7 +48,7 @@ public class SwaggerConfig {
         return new ApiInfoBuilder()
                 .title("Maritime Connectivity Platform Identity Registry API")
                 .description("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.")
-                .version("0.11.0")
+                .version("0.11.1")
                 .contact(new Contact("Maritime Connectivity Platform", "https://maritimeconnectivity.net", "info@maritimeconnectivity.net"))
                 .license("Apache 2.0")
                 .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0")
