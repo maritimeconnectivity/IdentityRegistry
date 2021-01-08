@@ -12,7 +12,7 @@ Write-Host "--"
 Write-Host "-- Token: $token"
 Write-Host "--"
 
-$response=Invoke-RestMethod -Uri http://localhost:8444/oidc/api/org/apply -ContentType "application/json" -InFile "..\dma2.json" -Method Post
+$response=Invoke-RestMethod -Uri http://localhost:8444/oidc/api/org/apply -ContentType "application/json" -InFile "..\dma.json" -Method Post
 Write-Host "--"
 Write-Host "-- Response: $response"
 Write-Host "--"
