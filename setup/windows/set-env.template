@@ -1,0 +1,10 @@
+@set MCP_RUNTIME_HOME=c:/work/mcp/runtime
+@set JAVA_HOME=%MCP_RUNTIME_HOME%\openjdk-8u272-b10
+@set MYSQL_HOME=%MCP_RUNTIME_HOME%\mariadb-10.5.7-winx64
+@set PATH=%JAVA_HOME%\bin;%PATH%
+
+@echo -- JAVA_HOME=%JAVA_HOME%
+@echo -- MCP_RUNTiME_HOME=%MCP_RUNTIME_HOME%
+@echo -- MYSQL_HOME=%MYSQL_HOME%
+
+java -version

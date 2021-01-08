@@ -10,3 +10,6 @@ target
 wildfly-*
 .mvn
 stash
+setup/windows/set-env.bat
+setup/windows/idbroker-updater-password.txt
+setup/windows/idbroker-updater.jks
