@@ -12,7 +12,7 @@ Write-Host "--"
 Write-Host "-- Token: $token"
 Write-Host "--"
 
-$response=Invoke-RestMethod -Uri http://localhost:8444/oidc/api/org/urn:mrn:mcp:org:idp1:dma2/approve -Headers @{"Authorization" = "Bearer $token"} -Method Get
+$response=Invoke-RestMethod -Uri http://localhost:8444/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve -Headers @{"Authorization" = "Bearer $token"} -Method Get
 Write-Host "--"
 Write-Host "-- Response: $response"
 Write-Host "--"
