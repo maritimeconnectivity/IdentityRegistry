@@ -17,6 +17,8 @@ package net.maritimeconnectivity.identityregistry.security.x509;
 
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
+import net.maritimeconnectivity.identityregistry.model.database.entities.User;
+import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.pki.CertificateHandler;
@@ -44,11 +46,8 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private OrganizationService organizationService;
     @Autowired
     private RoleService roleService;
-
-    /*@Autowired
-    private CertificateService certificateService;
     @Autowired
-    private CertificateUtil certUtil;*/
+    private EntityService<User> userService;
 
     private static final Logger logger = LoggerFactory.getLogger(X509HeaderUserDetailsService.class);
 
@@ -63,21 +62,6 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             logger.error("Extracting certificate from header failed");
             throw new UsernameNotFoundException("Extracting certificate from header failed");
         }
-        
-        // Actually authenticate certificate against root cert.
-        // This is actually done by the nginx reverse proxy, so do we really need to do it again?
-        /*try {
-            if (!CertificateHandler.verifyCertificateChain(userCertificate, certUtil.getKeystoreHandler().getTrustStore())) {
-                logger.warn("Certificate could not be verified");
-                throw new UsernameNotFoundException("Certificate could not be verified");
-            }
-        } catch (KeyStoreException | NoSuchAlgorithmException | CertificateException | InvalidAlgorithmParameterException e) {
-            logger.error("Unexpected error during certificate validation!", e);
-            throw new UsernameNotFoundException("Certificate could not be verified due to unexpected error!", e);
-        } catch (CertPathValidatorException e) {
-            logger.warn("Certificate could not be verified");
-            throw new UsernameNotFoundException("Certificate could not be verified");
-        }*/
 
         // Get user details from the certificate
         PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
@@ -97,21 +81,29 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         essence.setCn(new String[] { user.getCn() } );
         essence.setDn(user.getDn());
         essence.setDescription(user.getDn());
-        // Convert the permissions extracted from the certificate to authorities in this API
         Collection<GrantedAuthority> newRoles = new ArrayList<>();
-        if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
+
+        // Check that the user actually exists in the database and get its roles
+        if (user.getMrn() != null && user.getO() != null && user.getOu().equals("user")) {
             Organization org = organizationService.getOrganizationByMrn(user.getO());
             if (org == null) {
                 logger.error("The Organization is unknown!");
                 throw new UsernameNotFoundException("The Organization is unknown!");
             }
-            String[] permissions = user.getPermissions().split(",");
-            for(String permission: permissions) {
-                logger.debug("Looking up role: {}", permission);
-                List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
-                if (foundRoles != null) {
-                    for (Role foundRole : foundRoles) {
-                        newRoles.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
+            User mirUser = userService.getByMrn(user.getMrn());
+            if (mirUser == null || !mirUser.getIdOrganization().equals(org.getId())) {
+                logger.error("The User is unknown!");
+                throw new UsernameNotFoundException("The User is unknown!");
+            }
+            if (mirUser.getPermissions() != null) {
+                String[] permissions = mirUser.getPermissions().split(",");
+                for(String permission: permissions) {
+                    logger.debug("Looking up role: {}", permission);
+                    List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
+                    if (foundRoles != null) {
+                        for (Role foundRole : foundRoles) {
+                            newRoles.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
+                        }
                     }
                 }
             }
