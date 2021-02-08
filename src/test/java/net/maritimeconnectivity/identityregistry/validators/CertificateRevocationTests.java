@@ -18,10 +18,10 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.validation.ConstraintViolation;
 import javax.validation.Validation;
@@ -31,15 +31,16 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
+
+@ExtendWith(SpringExtension.class)
 public class CertificateRevocationTests {
 
     private Validator validator;
 
-    @Before
+    @BeforeEach
     public void init() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();

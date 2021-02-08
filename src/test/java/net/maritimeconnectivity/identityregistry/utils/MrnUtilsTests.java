@@ -15,19 +15,21 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.springframework.test.util.AssertionErrors.assertEquals;
+import static org.springframework.test.util.AssertionErrors.assertFalse;
+import static org.springframework.test.util.AssertionErrors.assertTrue;
 
-@RunWith(SpringRunner.class)
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
@@ -78,10 +80,12 @@ public class MrnUtilsTests {
         assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
     }
 
-    @Test(expected=IllegalArgumentException.class)
+    @Test
     public void extractOrgShortnameFromUserMRN3() {
         String userMrn = "urn:mrn:mcp:user:thc";
-        mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        Assertions.assertThrows(IllegalArgumentException.class, () -> {
+            mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
+        });
     }
 
     @Test

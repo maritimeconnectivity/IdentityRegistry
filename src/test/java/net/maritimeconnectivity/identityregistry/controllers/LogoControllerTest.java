@@ -19,9 +19,9 @@ import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.repositories.OrganizationRepository;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.mock.web.MockHttpServletRequest;
@@ -31,7 +31,7 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
@@ -42,16 +42,16 @@ import javax.validation.ConstraintViolation;
 import java.util.List;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+import static org.springframework.test.util.AssertionErrors.assertEquals;
+import static org.springframework.test.util.AssertionErrors.assertNull;
 
 /**
  * @author Klaus Groenbaek
  *         Created 03/03/17.
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
@@ -70,7 +70,7 @@ public class LogoControllerTest {
 
     private LocalValidatorFactoryBean validator;
 
-    @Before
+    @BeforeEach
     public void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
@@ -93,7 +93,7 @@ public class LogoControllerTest {
         logo.setImage(new byte[]{1, 2, 3});
         org.setLogo(logo);
         Set<ConstraintViolation<Organization>> violations = validator.validate(org);
-        assertEquals(0, violations.size());
+        assertEquals("Number of logos", 0, violations.size());
 
         orgRepo.save(org);
 

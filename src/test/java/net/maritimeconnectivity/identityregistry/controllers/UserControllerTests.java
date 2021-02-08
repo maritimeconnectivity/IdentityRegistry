@@ -29,9 +29,9 @@ import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -42,7 +42,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
@@ -56,10 +56,10 @@ import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -73,7 +73,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
@@ -99,7 +99,7 @@ public class UserControllerTests {
     @Value("${spring.mail.port}")
     private int smtpServerPort;
 
-    @Before
+    @BeforeEach
     public void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
@@ -158,7 +158,7 @@ public class UserControllerTests {
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:dma:thc");
     }
@@ -198,7 +198,7 @@ public class UserControllerTests {
             ).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -240,7 +240,7 @@ public class UserControllerTests {
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -283,7 +283,7 @@ public class UserControllerTests {
             ).andExpect(status().isOk());
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
         try {
             verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
@@ -371,7 +371,7 @@ public class UserControllerTests {
             .contentType("application/json")).andExpect(status().is4xxClientError());
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
 
     }
@@ -419,7 +419,7 @@ public class UserControllerTests {
         } catch (Exception e) {
             e.printStackTrace();
             wiser.stop();
-            assertTrue(false);
+            fail();
         }
 
         assertTrue(wiser.getMessages().size() > 0);
@@ -462,7 +462,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError());
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
     }
 
