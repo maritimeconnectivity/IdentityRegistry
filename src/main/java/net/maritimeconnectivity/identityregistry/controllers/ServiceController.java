@@ -332,6 +332,8 @@ public class ServiceController extends EntityController<Service> {
     /**
      * Returns new certificate for the service identified by the given ID
      *
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
+     *
      * @return a reply...
      * @throws McBasicRestException
      */
@@ -340,25 +342,9 @@ public class ServiceController extends EntityController<Service> {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @Deprecated
     public ResponseEntity<CertificateBundle> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
-        if (org != null) {
-            // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            }
-            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
-            if (service == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                CertificateBundle ret = this.issueCertificate(service, org, "service", request);
-                return new ResponseEntity<>(ret, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        return this.newEntityCert(request, orgMrn, serviceMrn, "service");
     }
 
     /**

@@ -80,6 +80,19 @@ public abstract class BaseControllerWithCertificate {
 
     private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
+    /**
+     * Function for generating key pair and certificate for an entity.
+     *
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
+     *
+     * @param certOwner the entity that the certificate belongs to
+     * @param org the organization that the entity belongs to
+     * @param type the entity type
+     * @param request the HTTP request
+     * @return a bundle containing certificate and key pair in different formats
+     * @throws McBasicRestException
+     */
+    @Deprecated
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McBasicRestException {
         AuthProvider authProvider = null;
         P11PKIConfiguration p11PKIConfiguration = null;

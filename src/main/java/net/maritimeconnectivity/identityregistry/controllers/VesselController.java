@@ -159,6 +159,7 @@ public class VesselController extends EntityController<Vessel> {
 
     /**
      * Returns new certificate for the vessel identified by the given ID
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McBasicRestException
@@ -168,6 +169,7 @@ public class VesselController extends EntityController<Vessel> {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @Deprecated
     public ResponseEntity<CertificateBundle> newVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
         return this.newEntityCert(request, orgMrn, vesselMrn, "vessel");
     }
