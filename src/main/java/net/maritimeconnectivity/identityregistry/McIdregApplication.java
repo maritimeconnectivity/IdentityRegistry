@@ -18,11 +18,12 @@ package net.maritimeconnectivity.identityregistry;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
 
 import java.security.Security;
 
 
-@SpringBootApplication
+@SpringBootApplication(exclude = LdapAutoConfiguration.class)
 public class McIdregApplication {
 
     public static void main(String[] args) {

@@ -58,10 +58,6 @@ import javax.servlet.Filter;
 @Profile("!test")
 public class MultiSecurityConfig {
 
-    private MultiSecurityConfig() {
-        // empty private constructor
-    }
-
     @Bean
     public static RoleHierarchy roleHierarchy() {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
