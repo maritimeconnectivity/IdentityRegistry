@@ -18,16 +18,16 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import org.bouncycastle.util.encoders.DecoderException;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -37,15 +37,15 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.charset.StandardCharsets;
 
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doReturn;
-import static org.mockito.Mockito.spy;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
@@ -62,7 +62,7 @@ public class CertificateControllerTests {
     @InjectMocks
     CertificateController certificateController;
 
-    @Before
+    @BeforeEach
     public void setup() {
         this.certificateController = Mockito.spy(CertificateController.class);
         mvc = MockMvcBuilders.standaloneSetup(certificateController).build();
@@ -75,7 +75,7 @@ public class CertificateControllerTests {
             doReturn(ret).when(this.certificateController).handleOCSP(any(), any());
         } catch (IOException e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
             return;
         }
 
@@ -84,7 +84,7 @@ public class CertificateControllerTests {
                     .andExpect(status().isOk()).andExpect(content().bytes(ret));
         } catch (Exception e) {
             e.printStackTrace();
-            assertTrue(false);
+            fail();
         }
     }
 
@@ -93,7 +93,7 @@ public class CertificateControllerTests {
         try {
             // The encoded OCSP request is missing some chars at the end and is therefore invalid
             mvc.perform(get("/x509/api/certificates/ocsp/urn:mrn:mcl:ca:maritimecloud-idreg/MFUwUzBRME8wTTAJBgUrDgMCGgUABBQ6UIqQ34%2BgN2srrAjL6PckJ0ELZQQUxE5nZxstKKPxT9ruhJjPzxpwfFUCFCPUaD%2Fh4aw7GY%2F7bjSdgGf").header("Origin", "bla"));
-            assertTrue("This shold not be reached, an exception should be thrown!", false);
+            fail("This shold not be reached, an exception should be thrown!");
         } catch (Exception e) {
             assertTrue(e.getCause() instanceof DecoderException);
         }
