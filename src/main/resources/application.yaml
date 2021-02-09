@@ -162,7 +162,9 @@ spring.mail:
 management.server.add-application-context-header: false
 ---
 spring:
-    profiles: development
+    config:
+        activate:
+            on-profile: development
 # Database setup
     datasource:
         url: jdbc:mysql://localhost/identity_registry
@@ -174,7 +176,9 @@ spring:
 
 ---
 spring:
-    profiles: test
+    config:
+        activate:
+            on-profile: test
     datasource:
        url: jdbc:h2:mem:test;DB_CLOSE_ON_EXIT=FALSE;MODE=MySQL;database_to_upper=false;DB_CLOSE_DELAY=-1
        #url: jdbc:h2:tcp://localhost/~/test;USER=sa;MODE=MySQL

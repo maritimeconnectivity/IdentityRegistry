@@ -550,7 +550,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals("Message is not as expected", MCIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage());
+            assertEquals(MCIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -596,7 +596,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals("Message is not as expected", MCIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage());
+            assertEquals(MCIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -642,7 +642,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals("Message is not as expected", MCIdRegConstants.WEAK_HASH, exceptionModel.getMessage());
+            assertEquals(MCIdRegConstants.WEAK_HASH, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();
