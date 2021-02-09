@@ -15,6 +15,7 @@ import springfox.documentation.schema.ModelReference;
 import springfox.documentation.schema.ResolvedTypes;
 import springfox.documentation.schema.TypeNameExtractor;
 import springfox.documentation.service.Parameter;
+import springfox.documentation.service.RequestParameter;
 import springfox.documentation.service.ResolvedMethodParameter;
 import springfox.documentation.spi.DocumentationType;
 import springfox.documentation.spi.schema.contexts.ModelContext;
@@ -44,14 +45,13 @@ public class OperationPageableParameterReader implements OperationBuilderPlugin 
     @Override
     public void apply(OperationContext context) {
         List<ResolvedMethodParameter> methodParameters = context.getParameters();
-        List<Parameter> parameters = newArrayList();
+        List<RequestParameter> parameters = newArrayList();
 
         for (ResolvedMethodParameter methodParameter : methodParameters) {
             ResolvedType resolvedType = methodParameter.getParameterType();
 
             if (pageableType.equals(resolvedType)) {
                 ParameterContext parameterContext = new ParameterContext(methodParameter,
-                        new ParameterBuilder(),
                         context.getDocumentationContext(),
                         context.getGenericsNamingStrategy(),
                         context);
