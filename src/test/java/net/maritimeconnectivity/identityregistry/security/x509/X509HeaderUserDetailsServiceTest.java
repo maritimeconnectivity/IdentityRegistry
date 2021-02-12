@@ -19,6 +19,7 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
+import org.apache.commons.io.IOUtils;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -28,7 +29,9 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
+import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -53,7 +56,7 @@ public class X509HeaderUserDetailsServiceTest {
 
     @BeforeEach
     public void setUp() throws Exception {
-        MockitoAnnotations.initMocks(this);
+        MockitoAnnotations.openMocks(this);
     }
 
     @Test
@@ -61,8 +64,8 @@ public class X509HeaderUserDetailsServiceTest {
         // Load certificate from file
         String certFile = "src/test/resources/Certificate_Myboat.pem";
         String contents = null;
-        try {
-            contents = Files.lines(Paths.get(certFile)).collect(Collectors.joining("\n"));
+        try (FileInputStream fileInputStream = new FileInputStream(certFile)) {
+            contents = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
             e.printStackTrace();
             fail("Loading Certificate from file failed!");

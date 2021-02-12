@@ -33,6 +33,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.stereotype.Service;
 
+import java.io.UnsupportedEncodingException;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -55,7 +56,12 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             log.warn("No certificate header found");
             throw new UsernameNotFoundException("No certificate header found");
         }
-        X509Certificate userCertificate = CertificateHandler.getCertFromNginxHeader(certificateHeader);
+        X509Certificate userCertificate = null;
+        try {
+            userCertificate = CertificateHandler.getCertFromNginxHeader(certificateHeader);
+        } catch (UnsupportedEncodingException e) {
+            log.error("Client certificate could not be decoded", e);
+        }
         if (userCertificate == null) {
             log.error("Extracting certificate from header failed");
             throw new UsernameNotFoundException("Extracting certificate from header failed");
