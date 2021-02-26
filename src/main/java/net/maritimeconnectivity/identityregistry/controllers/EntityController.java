@@ -251,24 +251,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McBasicRestException
      */
     protected ResponseEntity<CertificateBundle> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
-        if (org != null) {
-            // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            }
-            T entity = this.entityService.getByMrn(entityMrn);
-            if (entity == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-            }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
-                CertificateBundle ret = this.issueCertificate(entity, org, type, request);
-                return new ResponseEntity<>(ret, HttpStatus.OK);
-            }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        String oidcOrX509 = request.getServletPath().split("/")[1];
+        String path = String.format("/%s/api/org/%s/%s/%s/certificate/issue-new/csr", oidcOrX509, orgMrn, type, entityMrn);
+        throw new McBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
+                "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
     }
 
     /**

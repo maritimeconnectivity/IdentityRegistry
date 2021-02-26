@@ -16,13 +16,13 @@
 package net.maritimeconnectivity.identityregistry.validators;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ContextConfiguration;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
@@ -30,10 +30,11 @@ import org.springframework.web.context.WebApplicationContext;
 import javax.validation.ConstraintViolation;
 import java.util.Set;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-@RunWith(SpringRunner.class)
+
+@ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
@@ -43,7 +44,7 @@ public class MMSValidatorTests {
 
     private LocalValidatorFactoryBean validator;
 
-    @Before
+    @BeforeEach
     public void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }

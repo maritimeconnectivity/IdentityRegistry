@@ -317,6 +317,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns new certificate for the user identified by the given ID
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McBasicRestException
@@ -326,14 +327,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @Deprecated
     public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
-        if (org != null) {
-            CertificateBundle ret = this.issueCertificate(org, org, "organization", request);
-            return new ResponseEntity<>(ret, HttpStatus.OK);
-        } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        String oidcOrX509 = request.getServletPath().split("/")[1];
+        String path = String.format("/%s/api/org/%s/certificate/issue-new/csr", oidcOrX509, orgMrn);
+        throw new McBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
+                "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
     }
 
     /**

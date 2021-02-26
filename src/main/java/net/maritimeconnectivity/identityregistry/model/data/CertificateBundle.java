@@ -21,9 +21,12 @@ import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 
 /**
  * Object that bundles a PEM certificate with keystores in JKS and PKCS12 format and a password for the keystores
+ *
+ * @deprecated no longer used. Will be removed in the future
  */
 @AllArgsConstructor
 @Getter
+@Deprecated
 public class CertificateBundle implements JsonSerializable {
     private PemCertificate pemCertificate;
     private String jksKeystore;

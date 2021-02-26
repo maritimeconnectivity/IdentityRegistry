@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.validators;
 
+import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
 import javax.validation.ConstraintValidator;
 import javax.validation.ConstraintValidatorContext;
@@ -36,9 +37,11 @@ public class InPredefinedListValidator implements ConstraintValidator<InPredefin
     @Override
     public boolean isValid(String value, ConstraintValidatorContext context) {
         if (value != null && !valueList.contains(value.toLowerCase())) {
+            String message = "The value '" + value + "' is not in the predefined list of accepted values!";
+            String escaped = InterpolationHelper.escapeMessageParameter(message);
             context.disableDefaultConstraintViolation();
             context
-                    .buildConstraintViolationWithTemplate("The value '" + value + "' is not in the predefined list of accepted values!")
+                    .buildConstraintViolationWithTemplate(escaped)
                     .addConstraintViolation();
             return false;
         }

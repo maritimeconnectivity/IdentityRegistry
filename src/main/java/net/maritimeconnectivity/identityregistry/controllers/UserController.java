@@ -269,6 +269,7 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns new certificate for the user identified by the given ID
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McBasicRestException
@@ -278,6 +279,7 @@ public class UserController extends EntityController<User> {
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @Deprecated
     public ResponseEntity<CertificateBundle> newUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McBasicRestException {
         return this.newEntityCert(request, orgMrn, userMrn, "user");
     }
