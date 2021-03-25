@@ -230,7 +230,7 @@ The command will (mostly) return an echo of the json posted to the api:
 
 ```
 
-## Certificate issuing by [Certificate Signing Request](https://en.wikipedia.org/wiki/Certificate_signing_request) (experimental feature)
+## Certificate issuing by [Certificate Signing Request](https://en.wikipedia.org/wiki/Certificate_signing_request)
 The MIR supports, as an experimental feature, signing of PEM encoded PKCS#10 certificate signing requests. It is usually generated for the entity where the certificate will be stored/owned and contains entity's information such as the organization name, common name (domain name), locality, and country, which will be overwritten by the corresponding information stored in MIR. A CSR also contains the public key that will be included in the certificate. A private key is usually created at the same time that you create the CSR, and expected to be stored and treated securely. The algorithm and bit-length pairs of CSR that MIR supports are *RSA:>=2048, DSA:>=2048, EC:>=224, and EdDSA:256*.
 
 An example of how a CSR can be generated using an elliptic curve key pair using OpenSSL:
