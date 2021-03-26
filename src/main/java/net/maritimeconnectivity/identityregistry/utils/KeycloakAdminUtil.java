@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
@@ -51,6 +52,7 @@ import java.util.Set;
 
 @Component
 @Slf4j
+@NoArgsConstructor
 public class KeycloakAdminUtil {
     // Load the info needed to log into the Keycloak instance that is used as ID Broker (hosts ID Providers)
     @Value("${net.maritimeconnectivity.idreg.keycloak-broker-admin-user}")
@@ -132,13 +134,6 @@ public class KeycloakAdminUtil {
 
     @Autowired
     private MrnUtil mrnUtil;
-
-    /**
-     * Constructor.
-     */
-    public KeycloakAdminUtil() {
-        // empty constructor
-    }
 
     /**
      * Init the keycloak instance. Will only initialize the instance defined by the type

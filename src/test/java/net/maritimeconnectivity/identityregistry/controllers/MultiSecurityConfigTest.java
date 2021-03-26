@@ -1,7 +1,7 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import net.maritimeconnectivity.identityregistry.config.SimpleCorsFilter;
-import net.maritimeconnectivity.identityregistry.security.MCKeycloakAuthenticationProvider;
+import net.maritimeconnectivity.identityregistry.security.MCPKeycloakAuthenticationProvider;
 import net.maritimeconnectivity.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimeconnectivity.identityregistry.security.x509.X509UserDetailsService;
 import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
@@ -78,8 +78,8 @@ public class MultiSecurityConfigTest {
         }
 
         @Bean
-        protected MCKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
-            return new MCKeycloakAuthenticationProvider();
+        protected MCPKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
+            return new MCPKeycloakAuthenticationProvider();
         }
 
         /**

@@ -16,6 +16,7 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.KeystoreHandler;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 
 @Component
 @Slf4j
+@NoArgsConstructor
 public class CertificateUtil {
 
     // Values below are loaded from application.test
@@ -102,9 +104,6 @@ public class CertificateUtil {
     @Getter
     @Value("${net.maritimeconnectivity.idreg.certs.enable-server-generated-keys:false}")
     private boolean enableServerGeneratedKeys;
-
-    public CertificateUtil() {
-    }
 
     @PostConstruct
     public void setup() {

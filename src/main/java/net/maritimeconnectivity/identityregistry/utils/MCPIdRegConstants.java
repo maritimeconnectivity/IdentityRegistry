@@ -57,5 +57,6 @@ public class MCPIdRegConstants {
     public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type";
 
     private MCPIdRegConstants() {
+        // empty private constructor as this class should not be instantiated
     }
 }

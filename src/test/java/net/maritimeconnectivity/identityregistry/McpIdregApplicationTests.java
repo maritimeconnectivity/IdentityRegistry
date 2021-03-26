@@ -24,7 +24,7 @@ import org.springframework.test.context.web.WebAppConfiguration;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 @WebAppConfiguration
-public class McIdregApplicationTests {
+public class McpIdregApplicationTests {
 
     @Test
     public void contextLoads() {

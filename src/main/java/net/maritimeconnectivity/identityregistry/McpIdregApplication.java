@@ -24,7 +24,7 @@ import java.security.Security;
 
 
 @SpringBootApplication(exclude = LdapAutoConfiguration.class)
-public class McIdregApplication {
+public class McpIdregApplication {
 
     public static void main(String[] args) {
         // Set awt to be headless to avoid issues when scaling images (logos)
@@ -33,6 +33,6 @@ public class McIdregApplication {
         Security.addProvider(new BouncyCastleProvider());
         // Allow encoded "/" (%2F) in urls. Needed for OCSP encoded GET requests.
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
-        SpringApplication.run(McIdregApplication.class, args);
+        SpringApplication.run(McpIdregApplication.class, args);
     }
 }

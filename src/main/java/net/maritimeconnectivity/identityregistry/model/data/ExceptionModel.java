@@ -33,5 +33,4 @@ public class ExceptionModel  implements JsonSerializable {
     private String error;
     private String message;
     private String path;
-
 }

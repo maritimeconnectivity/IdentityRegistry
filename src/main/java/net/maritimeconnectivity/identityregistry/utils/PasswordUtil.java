@@ -26,6 +26,7 @@ import java.security.SecureRandom;
 public class PasswordUtil {
 
     private PasswordUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
     public static String generatePassword(AuthProvider authProvider) {

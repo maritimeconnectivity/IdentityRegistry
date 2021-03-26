@@ -15,7 +15,7 @@ import java.util.Map;
 public class AttributesUtil {
 
     private AttributesUtil() {
-
+        // empty private constructor as this class should not be instantiated
     }
 
     /**

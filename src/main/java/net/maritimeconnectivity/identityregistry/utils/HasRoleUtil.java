@@ -15,20 +15,18 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Component;
 
 /**
  * This class is only used to help AccessControlUtil detect if a user has a role
  */
+@Slf4j
 @Component
 public class HasRoleUtil {
-    private static final Logger logger = LoggerFactory.getLogger(HasRoleUtil.class);
-
     @PreAuthorize("hasRole(#role)")
     public void testRole(String role) {
-        logger.debug("should have role: {}", role);
+        log.debug("should have role: {}", role);
     }
 }

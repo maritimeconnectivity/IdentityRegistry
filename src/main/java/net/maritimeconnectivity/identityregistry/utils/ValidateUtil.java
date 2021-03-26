@@ -26,6 +26,7 @@ import java.util.StringJoiner;
 public class ValidateUtil {
 
     private ValidateUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
     public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McpBasicRestException {

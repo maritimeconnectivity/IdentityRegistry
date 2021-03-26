@@ -36,6 +36,7 @@ public class ImageUtil {
     public static final String OUTPUT_FORMAT = "png";
 
     private ImageUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
     public static ByteArrayOutputStream resize(InputStream inputStream) throws IOException {

@@ -92,8 +92,8 @@ public class MultiSecurityConfig {
         }
 
         @Bean
-        protected MCKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
-            return new MCKeycloakAuthenticationProvider();
+        protected MCPKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
+            return new MCPKeycloakAuthenticationProvider();
         }
 
         /**

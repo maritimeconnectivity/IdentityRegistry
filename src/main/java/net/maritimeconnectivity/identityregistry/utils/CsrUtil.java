@@ -30,6 +30,7 @@ import java.io.StringReader;
 public class CsrUtil {
 
     private CsrUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
     /**
