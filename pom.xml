@@ -21,7 +21,7 @@
 
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
-	<version>0.12.0-SNAPSHOT</version>
+	<version>0.12.0-KEYS</version>
 	<packaging>war</packaging>
 
 	<name>mcp-identityregistry-core</name>

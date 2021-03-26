@@ -26,7 +26,7 @@ import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -496,7 +496,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isBadRequest()).andReturn();
             String stringResult = result.getResponse().getContentAsString();
-            assertTrue(stringResult.contains(MCIdRegConstants.OIDC_MISSING_REDIRECT_URL));
+            assertTrue(stringResult.contains(MCPIdRegConstants.OIDC_MISSING_REDIRECT_URL));
         } catch (Exception e) {
             e.printStackTrace();
             fail();

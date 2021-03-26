@@ -16,7 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.utils;
 
-public class MCIdRegConstants {
+public class MCPIdRegConstants {
     public static final String MISSING_RIGHTS = "You do not have the needed rights.";
     public static final String ORG_NOT_FOUND = "The organization could not be found.";
     public static final String VESSEL_NOT_FOUND = "The vessel could not be found.";
@@ -30,9 +30,9 @@ public class MCIdRegConstants {
     public static final String ORG_ALREADY_APPROVED = "This organization has already been approved!";
     public static final String COULD_NOT_GET_DATA_FROM_IDP = "Could not read data from Identity Provider!";
     public static final String INVALID_IDP_URL = "The Identity Provider URL is invalid!";
-    public static final String ERROR_CREATING_KC_CLIENT = "An error occured while trying to register the service in the Identity Broker!";
-    public static final String ERROR_CREATING_KC_USER = "An error occured while trying to create user of the Organization on shared Identity Provider!";
-    public static final String ERROR_UPDATING_KC_USER = "An error occured while trying to update user of the Organization on shared Identity Provider!";
+    public static final String ERROR_CREATING_KC_CLIENT = "An error occurred while trying to register the service in the Identity Broker!";
+    public static final String ERROR_CREATING_KC_USER = "An error occurred while trying to create user of the Organization on shared Identity Provider!";
+    public static final String ERROR_UPDATING_KC_USER = "An error occurred while trying to update user of the Organization on shared Identity Provider!";
     public static final String ENTITY_ORG_ID_MISSING = "The organizational id of the entity is missing!";
     public static final String WRONG_ENTITY_ORG_ID_FORMAT = "The organizational id of the entity must be in lowercase and prefixed with the lowercase organization shortname follow by a dot!";
     public static final String INVALID_IMAGE = "Could not read the image format!";
@@ -56,6 +56,6 @@ public class MCIdRegConstants {
     public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN";
     public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type";
 
-    private MCIdRegConstants() {
+    private MCPIdRegConstants() {
     }
 }

@@ -17,7 +17,7 @@ package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
@@ -471,11 +471,11 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @throws IOException
      */
-    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McBasicRestException {
+    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McpBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         if (userReps.size() == 0) {
             log.debug("Skipped user update");
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
         }
         if (userReps.size() != 1) {
             log.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");

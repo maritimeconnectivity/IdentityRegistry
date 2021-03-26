@@ -17,12 +17,12 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.VesselImage;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.services.VesselServiceImpl;
 import net.maritimeconnectivity.identityregistry.utils.ImageUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -60,7 +60,7 @@ public class VesselImageController {
      * @param orgMrn
      * @param vesselMrn
      * @param image
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
@@ -68,11 +68,11 @@ public class VesselImageController {
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> createVesselImagePost(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestParam("image") MultipartFile image) throws McBasicRestException {
+    public ResponseEntity<?> createVesselImagePost(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestParam("image") MultipartFile image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
             if (vessel.getImage() != null) {
-                throw new McBasicRestException(HttpStatus.CONFLICT, MCIdRegConstants.VESSEL_IMAGE_ALREADY_EXISTS, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.VESSEL_IMAGE_ALREADY_EXISTS, request.getServletPath());
             }
             try {
                 this.updateVesselImage(vessel, image.getInputStream());
@@ -80,10 +80,10 @@ public class VesselImageController {
                 return new ResponseEntity<>(HttpStatus.CREATED);
             } catch (IOException e) {
                 log.error("Unable to create vessel image", e);
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -93,7 +93,7 @@ public class VesselImageController {
      * @param orgMrn
      * @param vesselMrn
      * @param image
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
@@ -101,7 +101,7 @@ public class VesselImageController {
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McBasicRestException {
+    public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
             try {
@@ -111,10 +111,10 @@ public class VesselImageController {
                 return new ResponseEntity<>(HttpStatus.CREATED);
             } catch (IOException e) {
                 log.error("Unable to create vessel image", e);
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -124,7 +124,7 @@ public class VesselImageController {
      * @param orgMrn
      * @param vesselMrn
      * @return a PNG image
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
@@ -132,17 +132,17 @@ public class VesselImageController {
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> getVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+    public ResponseEntity<?> getVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
             if (vessel.getImage() != null) {
                 byte[] image = vessel.getImage().getImage();
                 return new ResponseEntity<>(image, HttpStatus.OK);
             } else {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_IMAGE_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_IMAGE_NOT_FOUND, request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -151,7 +151,7 @@ public class VesselImageController {
      * @param request
      * @param orgMrn
      * @param vesselMrn
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
@@ -159,7 +159,7 @@ public class VesselImageController {
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> deleteVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
             if (vessel.getImage() != null) {
@@ -168,7 +168,7 @@ public class VesselImageController {
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
         }
     }
 

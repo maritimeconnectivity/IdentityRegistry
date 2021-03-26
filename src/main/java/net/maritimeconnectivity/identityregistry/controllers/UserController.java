@@ -17,8 +17,9 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.annotations.ApiOperation;
 import io.swagger.annotations.ApiParam;
+import io.swagger.v3.oas.annotations.Operation;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -31,7 +32,7 @@ import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
@@ -91,7 +92,7 @@ public class UserController extends EntityController<User> {
      * Creates a new User
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user",
@@ -99,13 +100,13 @@ public class UserController extends EntityController<User> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             this.checkRoles(request, input, org);
             input.setMrn(input.getMrn().toLowerCase());
@@ -127,14 +128,14 @@ public class UserController extends EntityController<User> {
                     keycloakAU.checkUserExistence(input.getEmail());
                     keycloakAU.createUser(input.getMrn(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgMrn, input.getPermissions(), true);
                 } catch (DuplicatedKeycloakEntry dke) {
-                    throw new McBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                 } catch (IOException e) {
-                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
                 // Send email to user with credentials
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
             } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
-                throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
             try {
@@ -145,10 +146,10 @@ public class UserController extends EntityController<User> {
                 if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                     keycloakAU.deleteUser(input.getEmail(), input.getMrn());
                 }
-                throw new McBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -156,7 +157,7 @@ public class UserController extends EntityController<User> {
      * Returns info about the user identified by the given ID
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
@@ -164,7 +165,7 @@ public class UserController extends EntityController<User> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McBasicRestException {
+    public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
         return this.getEntity(request, orgMrn, userMrn);
     }
 
@@ -172,31 +173,31 @@ public class UserController extends EntityController<User> {
      * Updates a User
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         if (!userMrn.equalsIgnoreCase(input.getMrn())) {
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             this.checkRoles(request, input, org);
             User user = this.entityService.getByMrn(userMrn);
             if (user == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             if (!user.getMrn().equalsIgnoreCase(input.getMrn()) || user.getIdOrganization().compareTo(org.getId()) != 0) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Update user in keycloak if created there.
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
@@ -204,18 +205,18 @@ public class UserController extends EntityController<User> {
                 try {
                     keycloakAU.updateUser(input.getMrn(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), request.getServletPath());
                 } catch (IOException e) {
-                    throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                 }
             }
             // If the org is federated they should only update their users in their own identity provider
             else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
-                throw new McBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.selectiveCopyTo(user);
             this.entityService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -223,32 +224,32 @@ public class UserController extends EntityController<User> {
      * Deletes a User
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}",
             method = RequestMethod.DELETE)
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
             if (user == null) {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             if (user.getIdOrganization().equals(org.getId())) {
                 this.entityService.delete(user.getId());
                 keycloakAU.deleteUser(user.getEmail(), user.getMrn());
                 return new ResponseEntity<>(HttpStatus.OK);
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -256,14 +257,14 @@ public class UserController extends EntityController<User> {
      * Returns a list of users belonging to the organization identified by the given ID
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/users",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public Page<User> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McBasicRestException {
+    public Page<User> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
@@ -272,15 +273,22 @@ public class UserController extends EntityController<User> {
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
+    @Operation(
+            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
+                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
+                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
+                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
+                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
+    )
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
-    public ResponseEntity<CertificateBundle> newUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McBasicRestException {
+    public ResponseEntity<CertificateBundle> newUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
         return this.newEntityCert(request, orgMrn, userMrn, "user");
     }
 
@@ -288,7 +296,7 @@ public class UserController extends EntityController<User> {
      * Takes a certificate signing request and returns a signed certificate with the public key from the csr
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new/csr",
@@ -297,7 +305,7 @@ public class UserController extends EntityController<User> {
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+    public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, "user", null);
     }
 
@@ -305,14 +313,14 @@ public class UserController extends EntityController<User> {
      * Revokes certificate for the user identified by the given ID
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, userMrn, certId, input);
     }
 
@@ -321,7 +329,7 @@ public class UserController extends EntityController<User> {
      * the keycloak sync-mechanism.
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @ApiOperation(hidden=true, value = "Sync user from keycloak")
     @RequestMapping(
@@ -331,9 +339,9 @@ public class UserController extends EntityController<User> {
     @ResponseBody
     public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input,
                                       @RequestParam(value = "org-name", required = false) String orgName,
-                                      @RequestParam(value = "org-address", required = false) String orgAddress) throws McBasicRestException {
+                                      @RequestParam(value = "org-address", required = false) String orgAddress) throws McpBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         // The organization does not exists - check if this a an organization hosted by an external "validator".
@@ -341,12 +349,12 @@ public class UserController extends EntityController<User> {
             // Check that the org shortname is the same for the orgMrn and originalErrorMessage
             String orgShortname = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
             if (!orgShortname.equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Since the permissions of this user will be used as a template for administrator permissions, it must be
             // verified that the user actually has some permissions.
             if (input.getPermissions() == null || input.getPermissions().isEmpty()) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ROLE_NOT_FOUND, request.getServletPath());
             }
             // Check validators?
             //String orgValidator = mrnUtil.getOrgValidatorFromOrgShortname(orgShortname);
@@ -395,7 +403,7 @@ public class UserController extends EntityController<User> {
         if (org != null) {
             String userMrn = input.getMrn();
             if (userMrn == null || userMrn.isEmpty()) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.USER_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.USER_NOT_FOUND, request.getServletPath());
             }
             User oldUser = this.entityService.getByMrn(userMrn);
             // If user does not exists, we create him
@@ -409,7 +417,7 @@ public class UserController extends EntityController<User> {
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 

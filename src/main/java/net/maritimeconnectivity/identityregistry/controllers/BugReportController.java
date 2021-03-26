@@ -17,10 +17,10 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.annotations.ApiOperation;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.BugReport;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -46,11 +46,11 @@ public class BugReportController {
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @ResponseBody
-    public ResponseEntity<?> reportBug(HttpServletRequest request, @RequestBody BugReport report) throws McBasicRestException {
+    public ResponseEntity<?> reportBug(HttpServletRequest request, @RequestBody BugReport report) throws McpBasicRestException {
         try {
             emailUtil.sendBugReport(report);
         } catch (MessagingException e) {
-            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
         }
         return new ResponseEntity<>(HttpStatus.OK);
     }

@@ -19,7 +19,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Getter;
 import lombok.Setter;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.ExceptionModel;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -28,7 +28,7 @@ import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -287,7 +287,7 @@ public class UserControllerTests {
         }
         try {
             verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
-        } catch (IOException | McBasicRestException e) {
+        } catch (IOException | McpBasicRestException e) {
             e.printStackTrace();
             fail();
         }
@@ -550,7 +550,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals(MCIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
+            assertEquals(MCPIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -596,7 +596,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals(MCIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
+            assertEquals(MCPIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();
@@ -642,7 +642,7 @@ public class UserControllerTests {
             ).andExpect(status().is4xxClientError()).andReturn();
             String content = result.getResponse().getContentAsString();
             ExceptionModel exceptionModel = deserializeError(content);
-            assertEquals(MCIdRegConstants.WEAK_HASH, exceptionModel.getMessage(), "Message is not as expected");
+            assertEquals(MCPIdRegConstants.WEAK_HASH, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             e.printStackTrace();
             fail();

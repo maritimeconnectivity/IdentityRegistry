@@ -99,6 +99,10 @@ public class CertificateUtil {
     @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
     private int validityPeriodForMms;
 
+    @Getter
+    @Value("${net.maritimeconnectivity.idreg.certs.enable-server-generated-keys:false}")
+    private boolean enableServerGeneratedKeys;
+
     public CertificateUtil() {
     }
 
@@ -120,7 +124,7 @@ public class CertificateUtil {
         certificateBuilder = new CertificateBuilder(keystoreHandler);
     }
 
-    public int getValidityPeriod(String type){
+    public int getValidityPeriod(String type) {
         switch (type) {
             case "user":
                 return validityPeriodForUser;

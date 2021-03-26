@@ -16,12 +16,12 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.ImageUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
@@ -60,18 +60,18 @@ public class LogoController {
      * @param request request to get servletPath
      * @param orgMrn resource location for organization
      * @param logo the log encoded as a MultipartFile
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.POST)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McBasicRestException {
+    public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (org.getLogo() != null) {
-                throw new McBasicRestException(HttpStatus.CONFLICT, MCIdRegConstants.LOGO_ALREADY_EXISTS, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.LOGO_ALREADY_EXISTS, request.getServletPath());
             }
             try {
                 this.updateLogo(org, logo.getInputStream());
@@ -79,10 +79,10 @@ public class LogoController {
                 return new ResponseEntity<>(HttpStatus.CREATED);
             } catch (IOException e) {
                 log.error("Unable to create logo", e);
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -90,13 +90,13 @@ public class LogoController {
      * Returns info about the logo identified by the given ID
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.GET)
     @ResponseBody
-    public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (org.getLogo() != null) {
@@ -106,10 +106,10 @@ public class LogoController {
                 responseHeaders.setContentType(MediaType.IMAGE_PNG);
                 return new ResponseEntity<>(image, responseHeaders, HttpStatus.OK);
             } else {
-                throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.LOGO_NOT_FOUND, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.LOGO_NOT_FOUND, request.getServletPath());
             }
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
 
     }
@@ -119,14 +119,14 @@ public class LogoController {
      * @param request so we can get the servlet path
      * @param orgMrn the resource
      * @param logo the logo bytes
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McBasicRestException {
+    public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             try {
@@ -135,25 +135,25 @@ public class LogoController {
                 organizationService.save(org);
             } catch (IOException e) {
                 log.error("Unable to create or update logo", e);
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IMAGE, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
             }
             return new ResponseEntity<>(HttpStatus.CREATED);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
     /**
      * Deletes a Logo
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/logo",
             method = RequestMethod.DELETE)
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (org.getLogo() != null) {
@@ -162,7 +162,7 @@ public class LogoController {
             }
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
     // this method belongs to on the Organization class, not as a free function in the controller
