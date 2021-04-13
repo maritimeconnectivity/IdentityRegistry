@@ -16,6 +16,7 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.KeystoreHandler;
@@ -28,6 +29,7 @@ import javax.annotation.PostConstruct;
 
 @Component
 @Slf4j
+@NoArgsConstructor
 public class CertificateUtil {
 
     // Values below are loaded from application.test
@@ -99,8 +101,9 @@ public class CertificateUtil {
     @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
     private int validityPeriodForMms;
 
-    public CertificateUtil() {
-    }
+    @Getter
+    @Value("${net.maritimeconnectivity.idreg.certs.enable-server-generated-keys:false}")
+    private boolean enableServerGeneratedKeys;
 
     @PostConstruct
     public void setup() {
@@ -120,7 +123,7 @@ public class CertificateUtil {
         certificateBuilder = new CertificateBuilder(keystoreHandler);
     }
 
-    public int getValidityPeriod(String type){
+    public int getValidityPeriod(String type) {
         switch (type) {
             case "user":
                 return validityPeriodForUser;

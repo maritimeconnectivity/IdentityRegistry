@@ -26,7 +26,6 @@ import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 @Setter
 @ToString
 public class PemCertificate implements JsonSerializable {
-
     private String privateKey;
     private String publicKey;
     private String certificate;

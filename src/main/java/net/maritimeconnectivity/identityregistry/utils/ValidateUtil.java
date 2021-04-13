@@ -15,7 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.ObjectError;
@@ -26,15 +26,16 @@ import java.util.StringJoiner;
 public class ValidateUtil {
 
     private ValidateUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
-    public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McBasicRestException {
+    public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McpBasicRestException {
         if (bindingResult.hasErrors()) {
             StringJoiner stringJoiner = new StringJoiner(", ");
             for (ObjectError err : bindingResult.getAllErrors()) {
                 stringJoiner.add(err.getDefaultMessage());
             }
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, stringJoiner.toString(), request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, stringJoiner.toString(), request.getServletPath());
         }
     }
 }

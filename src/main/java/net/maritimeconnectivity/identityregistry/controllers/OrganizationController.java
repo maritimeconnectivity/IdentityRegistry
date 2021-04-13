@@ -16,7 +16,8 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.annotations.ApiParam;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import io.swagger.v3.oas.annotations.Operation;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -36,7 +37,7 @@ import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
-import net.maritimeconnectivity.identityregistry.utils.MCIdRegConstants;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -99,13 +100,13 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Receives an application for a new organization and root-user
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/apply",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
@@ -120,7 +121,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         try {
             newOrg = this.organizationService.save(input);
         } catch (DataIntegrityViolationException e) {
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
         }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
@@ -147,20 +148,20 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Approves the organization identified by the given ID
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/approve",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
-    public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
         if (org == null) {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
         if (org.isApproved()) {
-            throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
         }
         // Create the Identity Provider for the org
         if ("own-idp".equals(org.getFederationType()) && org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
@@ -168,9 +169,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             try {
                 keycloakAU.createIdentityProvider(org.getMrn().toLowerCase(), org.getIdentityProviderAttributes());
             } catch (MalformedURLException e) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IDP_URL, request.getServletPath());
             } catch (IOException e) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
             }
         }
         // Enabled the organization and save it
@@ -184,16 +185,16 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Returns info about the organization identified by the given ID
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
-    public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org == null) {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
         return new ResponseEntity<>(org, HttpStatus.OK);
     }
@@ -202,17 +203,17 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Returns info about the organization identified by the given ID
      *
      * @return a reply
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/id/{orgId}",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8"
     )
-    public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McBasicRestException {
+    public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationById(orgId);
         if (org == null) {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
         return new ResponseEntity<>(org, HttpStatus.OK);
     }
@@ -234,19 +235,19 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Updates info about the organization identified by the given ID
      * 
      * @return a http reply
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}",
             method = RequestMethod.PUT)
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
-            @Valid @RequestBody Organization input, BindingResult bindingResult) throws McBasicRestException {
+            @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             if (!orgMrn.equalsIgnoreCase(input.getMrn())) {
-                throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // If a well-known url and client id and secret was supplied, and it is different from the current data we create a new IDP, or update it.
             if ("own-idp".equals(input.getFederationType()) && input.getIdentityProviderAttributes() != null && !input.getIdentityProviderAttributes().isEmpty()) {
@@ -259,9 +260,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 try {
                     keycloakAU.createIdentityProvider(input.getMrn().toLowerCase(), input.getIdentityProviderAttributes());
                 } catch (InternalServerErrorException e) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.INVALID_IDP_URL, request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IDP_URL, request.getServletPath());
                 } catch (IOException e) {
-                    throw new McBasicRestException(HttpStatus.BAD_REQUEST, MCIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
                 }
                 org.setFederationType("own-idp");
             } else if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
@@ -275,7 +276,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             this.organizationService.save(org);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -283,13 +284,13 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Deletes an Organization
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}",
             method = RequestMethod.DELETE)
     @PreAuthorize("hasRole('SITE_ADMIN')")
-    public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
         if (org != null) {
             //  TODO: we need to do some sync'ing with the Service Registry.
@@ -311,7 +312,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             this.agentService.deleteByOrg(org.getId());
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -320,18 +321,34 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
+    @Operation(
+            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
+                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
+                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
+                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
+                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
+    )
     @RequestMapping(
             value = "/api/org/{orgMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
-    public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McBasicRestException {
+    public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
+        if (this.certificateUtil.isEnableServerGeneratedKeys()) {
+            Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+            if (org != null) {
+                CertificateBundle ret = this.issueCertificate(org, org, "organization", request);
+                return new ResponseEntity<>(ret, HttpStatus.OK);
+            } else {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            }
+        }
         String oidcOrX509 = request.getServletPath().split("/")[1];
         String path = String.format("/%s/api/org/%s/certificate/issue-new/csr", oidcOrX509, orgMrn);
-        throw new McBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
+        throw new McpBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
                 "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
     }
 
@@ -339,7 +356,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Takes a certificate signing request and returns a signed certificate with the public key from the csr
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/certificate/issue-new/csr",
@@ -348,7 +365,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
@@ -357,7 +374,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
             return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 
@@ -365,14 +382,14 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * Revokes certificate for the user identified by the given ID
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
@@ -381,9 +398,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 this.revokeCertificate(certId, input, request);
                 return new ResponseEntity<>(HttpStatus.OK);
             }
-            throw new McBasicRestException(HttpStatus.FORBIDDEN, MCIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
-            throw new McBasicRestException(HttpStatus.NOT_FOUND, MCIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
 

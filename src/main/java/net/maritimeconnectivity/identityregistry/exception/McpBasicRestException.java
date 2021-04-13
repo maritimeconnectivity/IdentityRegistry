@@ -25,7 +25,7 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString
-public class McBasicRestException extends Exception {
+public class McpBasicRestException extends Exception {
 
     // mimics the standard spring error structure on exceptions 
     protected HttpStatus status;
@@ -34,7 +34,7 @@ public class McBasicRestException extends Exception {
     protected String path;
     protected long timestamp;
     
-    public McBasicRestException(HttpStatus status, String errorMessage, String path) {
+    public McpBasicRestException(HttpStatus status, String errorMessage, String path) {
         this.status = status;
         this.errorMessage = errorMessage;
         this.path = path;

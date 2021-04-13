@@ -37,9 +37,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
-public class MCKeycloakAuthenticationProvider extends KeycloakAuthenticationProvider {
+public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationProvider {
 
-    private static final Logger logger = LoggerFactory.getLogger(MCKeycloakAuthenticationProvider.class);
+    private static final Logger logger = LoggerFactory.getLogger(MCPKeycloakAuthenticationProvider.class);
 
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 

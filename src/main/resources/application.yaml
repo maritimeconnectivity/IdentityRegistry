@@ -94,6 +94,7 @@ net:
                     organization: 24
                     service: 24
                     mms: 24
+                #enable-server-generated-keys: false # if you want to enable server generated key pairs you need to uncomment this line and set the value to true
 
             # Email setup
             email:

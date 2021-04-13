@@ -23,10 +23,10 @@ import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
 @ControllerAdvice
-public class McExceptionResolver {
+public class McpExceptionResolver {
 
-    @ExceptionHandler(McBasicRestException.class)
-    public ResponseEntity<ExceptionModel> processRestError(McBasicRestException ex) {
+    @ExceptionHandler(McpBasicRestException.class)
+    public ResponseEntity<ExceptionModel> processRestError(McpBasicRestException ex) {
         // mimics the standard spring error structure on exceptions 
         ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
         HttpHeaders httpHeaders = new HttpHeaders();

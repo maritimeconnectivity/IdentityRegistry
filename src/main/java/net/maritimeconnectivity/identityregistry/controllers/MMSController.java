@@ -16,7 +16,8 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.annotations.ApiParam;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import io.swagger.v3.oas.annotations.Operation;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -51,7 +52,7 @@ public class MMSController extends EntityController<MMS> {
      * Creates a new MMS
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */ 
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms",
@@ -59,7 +60,7 @@ public class MMSController extends EntityController<MMS> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<MMS> createMMS(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<MMS> createMMS(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.createEntity(request, orgMrn, input);
     }
@@ -68,7 +69,7 @@ public class MMSController extends EntityController<MMS> {
      * Returns info about the MMS instance identified by the given ID
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}",
@@ -76,7 +77,7 @@ public class MMSController extends EntityController<MMS> {
             produces = "application/json;charset=UTF-8")
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<MMS> getMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McBasicRestException {
+    public ResponseEntity<MMS> getMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.getEntity(request, orgMrn, mmsMrn);
     }
 
@@ -84,14 +85,14 @@ public class MMSController extends EntityController<MMS> {
      * Updates a mms
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}",
             method = RequestMethod.PUT)
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> updateMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McBasicRestException {
+    public ResponseEntity<?> updateMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.updateEntity(request, orgMrn, mmsMrn, input);
     }
@@ -100,14 +101,14 @@ public class MMSController extends EntityController<MMS> {
      * Deletes a mms
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}",
             method = RequestMethod.DELETE)
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> deleteMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McBasicRestException {
+    public ResponseEntity<?> deleteMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.deleteEntity(request, orgMrn, mmsMrn);
     }
 
@@ -115,14 +116,14 @@ public class MMSController extends EntityController<MMS> {
      * Returns a list of mmses owned by the organization identified by the given ID
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mmses",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public Page<MMS> getOrganizationMMSes(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McBasicRestException {
+    public Page<MMS> getOrganizationMMSes(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
@@ -131,15 +132,22 @@ public class MMSController extends EntityController<MMS> {
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
+    @Operation(
+            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
+                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
+                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
+                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
+                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
+    )
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/issue-new",
             method = RequestMethod.GET,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
-    public ResponseEntity<CertificateBundle> newMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McBasicRestException {
+    public ResponseEntity<CertificateBundle> newMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.newEntityCert(request, orgMrn, mmsMrn, "mms");
     }
 
@@ -147,7 +155,7 @@ public class MMSController extends EntityController<MMS> {
      * Takes a certificate signing request and returns a signed certificate with the public key from the csr
      *
      * @return a reply...
-     * @throws McBasicRestException
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/issue-new/csr",
@@ -156,7 +164,7 @@ public class MMSController extends EntityController<MMS> {
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
     )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McBasicRestException {
+    public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, mmsMrn, "mms", null);
     }
 
@@ -164,14 +172,14 @@ public class MMSController extends EntityController<MMS> {
      * Revokes certificate for the mms identified by the given ID
      * 
      * @return a reply...
-     * @throws McBasicRestException 
+     * @throws McpBasicRestException
      */
     @RequestMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{certId}/revoke",
             method = RequestMethod.POST,
             produces = "application/json;charset=UTF-8")
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McBasicRestException {
+    public ResponseEntity<?> revokeMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, mmsMrn, certId, input);
     }
 

@@ -17,7 +17,7 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.NonNull;
-import net.maritimeconnectivity.identityregistry.exception.McBasicRestException;
+import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -30,6 +30,7 @@ import java.io.StringReader;
 public class CsrUtil {
 
     private CsrUtil() {
+        // empty private constructor as this class should not be instantiated
     }
 
     /**
@@ -38,15 +39,15 @@ public class CsrUtil {
      * @param request a HTTP request
      * @param pemCsr a PEM encoded CSR
      * @return an object containing a PKCS#10 CSR
-     * @throws McBasicRestException is thrown if given CSR cannot be parsed
+     * @throws McpBasicRestException is thrown if given CSR cannot be parsed
      */
-    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, @NonNull String pemCsr) throws McBasicRestException {
+    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, @NonNull String pemCsr) throws McpBasicRestException {
         PemReader pemReader = new PemReader(new StringReader(pemCsr));
         try {
             PemObject pemObject = pemReader.readPemObject();
             return new JcaPKCS10CertificationRequest(pemObject.getContent());
         } catch (IOException e) {
-            throw new McBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCIdRegConstants.ERROR_HANDLING_CSR, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_HANDLING_CSR, request.getServletPath());
         }
     }
 }

@@ -42,7 +42,7 @@ public class MrnUtil {
     public String getOrgShortNameFromOrgMrn(String orgMrn) {
         String[] mrnSplit = orgMrn.split(":");
         if (!mcpMrnPattern.matcher(orgMrn).matches()) {
-            throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         return mrnSplit[mrnSplit.length - 1];
     }
@@ -50,7 +50,7 @@ public class MrnUtil {
     public String getOrgShortNameFromEntityMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
         if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
-            throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         return mrnSplit[5];
     }
@@ -58,7 +58,7 @@ public class MrnUtil {
     public String getEntityIdFromMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
         if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
-            throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         if (mrnSplit.length > 7) {
             List<String> idList = new ArrayList<>(Arrays.asList(mrnSplit).subList(6, mrnSplit.length));
@@ -79,7 +79,7 @@ public class MrnUtil {
         if(validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()){
             String[] parts = mrn.split(":");
             if (parts.length < 6) {
-                throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+                throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
             }
             if (!parts[4].equals(ipId)) {
                 throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider ID: " + ipId);
@@ -90,7 +90,7 @@ public class MrnUtil {
                 case "vessel":
                 case "mms":
                     if (parts.length < 7) {
-                        throw new IllegalArgumentException(MCIdRegConstants.MRN_IS_NOT_VALID);
+                        throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
                     }
                     break;
                 case "service":
