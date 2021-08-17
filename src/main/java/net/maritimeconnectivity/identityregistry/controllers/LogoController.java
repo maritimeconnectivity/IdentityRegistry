@@ -28,10 +28,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
@@ -62,9 +65,10 @@ public class LogoController {
      * @param logo the log encoded as a MultipartFile
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/logo",
-            method = RequestMethod.POST)
+            consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McpBasicRestException {
@@ -92,9 +96,10 @@ public class LogoController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/logo",
-            method = RequestMethod.GET)
+            produces = {MediaType.IMAGE_PNG_VALUE, MediaType.APPLICATION_JSON_VALUE}
+    )
     @ResponseBody
     public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -121,9 +126,10 @@ public class LogoController {
      * @param logo the logo bytes
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PutMapping(
             value = "/api/org/{orgMrn}/logo",
-            method = RequestMethod.PUT)
+            consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McpBasicRestException {
@@ -148,9 +154,9 @@ public class LogoController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/logo",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/logo"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {

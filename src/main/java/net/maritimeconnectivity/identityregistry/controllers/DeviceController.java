@@ -15,8 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
@@ -31,10 +31,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -56,10 +58,10 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */ 
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/device",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McpBasicRestException {
@@ -73,10 +75,10 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
@@ -89,9 +91,9 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/device/{deviceMrn}",
-            method = RequestMethod.PUT)
+    @PutMapping(
+            value = "/api/org/{orgMrn}/device/{deviceMrn}"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McpBasicRestException {
@@ -105,9 +107,9 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/device/{deviceMrn}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/device/{deviceMrn}"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
@@ -120,10 +122,10 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/devices",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public Page<Device> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -144,10 +146,10 @@ public class DeviceController extends EntityController<Device> {
                     "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
                     "completely in the future and providers may choose to already disable it now which will result in an error if called."
     )
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
@@ -160,14 +162,13 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new/csr",
-            method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, deviceMrn, "device", null);
     }
 
@@ -177,12 +178,12 @@ public class DeviceController extends EntityController<Device> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{certId}/revoke",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
+    public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, deviceMrn, certId, input);
     }
 

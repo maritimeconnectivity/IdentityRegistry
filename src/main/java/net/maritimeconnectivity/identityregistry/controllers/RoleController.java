@@ -25,10 +25,15 @@ import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -56,10 +61,10 @@ public class RoleController {
      *
      * @return a reply...
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/roles",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<List<Role>> getRoles(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
@@ -72,10 +77,10 @@ public class RoleController {
         }
     }
 
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/role",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Role input, BindingResult bindingResult) throws McpBasicRestException {
@@ -99,10 +104,10 @@ public class RoleController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/role/{roleId}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
@@ -128,9 +133,9 @@ public class RoleController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/role/{roleId}",
-            method = RequestMethod.PUT)
+    @PutMapping(
+            value = "/api/org/{orgMrn}/role/{roleId}"
+    )
     @ResponseBody
     @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId, @Valid @RequestBody Role input, BindingResult bindingResult) throws McpBasicRestException {
@@ -162,9 +167,9 @@ public class RoleController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/role/{roleId}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/role/{roleId}"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
@@ -190,10 +195,10 @@ public class RoleController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/role/myroles",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) {
         List<String> roles = AccessControlUtil.getMyRoles();
@@ -206,10 +211,10 @@ public class RoleController {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/role/available-roles",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) {
         // See net.maritimecloud.identityregistry.security.MultiSecurityConfig for the role hierarchy

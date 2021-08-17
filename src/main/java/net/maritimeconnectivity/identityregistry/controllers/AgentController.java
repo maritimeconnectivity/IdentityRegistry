@@ -30,10 +30,13 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -57,10 +60,9 @@ public class AgentController {
      * @return A page of agents for an organization
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/agents",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -79,10 +81,9 @@ public class AgentController {
      * @return A page of agents
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/acting-on-behalf-of",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -101,10 +102,9 @@ public class AgentController {
      * @return an agent
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/agent/{agentId}",
-            method = RequestMethod.GET,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -129,10 +129,9 @@ public class AgentController {
      * @return the created agent
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/agent",
-            method = RequestMethod.POST,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -154,10 +153,9 @@ public class AgentController {
      * @return the updated agent
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PutMapping(
             value = "/api/org/{orgMrn}/agent/{agentId}",
-            method = RequestMethod.PUT,
-            produces = MediaType.APPLICATION_JSON_UTF8_VALUE
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
@@ -186,9 +184,8 @@ public class AgentController {
      * @return a reply
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/agent/{agentId}",
-            method = RequestMethod.DELETE
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/agent/{agentId}"
     )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")

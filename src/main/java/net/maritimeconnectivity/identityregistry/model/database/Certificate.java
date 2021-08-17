@@ -18,8 +18,9 @@ package net.maritimeconnectivity.identityregistry.model.database;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
@@ -49,12 +50,10 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString(exclude = {"vessel", "user", "device", "service", "organization", "mms"})
+@NoArgsConstructor
 public class Certificate extends TimestampModel {
 
-    public Certificate() {
-    }
-
-    @ApiModelProperty(value = "The certificate on PEM format")
+    @Schema(description = "The certificate on PEM format")
     @Column(name = "certificate", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String certificate;
 

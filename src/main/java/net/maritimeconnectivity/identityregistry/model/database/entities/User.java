@@ -15,8 +15,9 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -39,28 +40,26 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(exclude = "certificates")
+@NoArgsConstructor
 public class User extends EntityModel {
 
-    public User() {
-    }
-
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     @NotBlank
     @Column(name = "first_name")
     private String firstName;
 
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     @NotBlank
     @Email
     @Column(name = "email")
     private String email;
 
-    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Certificate> certificates;
 

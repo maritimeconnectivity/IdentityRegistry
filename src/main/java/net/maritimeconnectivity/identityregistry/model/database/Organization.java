@@ -16,8 +16,9 @@
 package net.maritimeconnectivity.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.validators.MCPMRN;
@@ -33,12 +34,13 @@ import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
 import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
 import java.util.Set;
+
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 /**
  * Model object representing an organization
@@ -49,9 +51,10 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class Organization extends CertificateModel {
 
-    @ApiModelProperty(value = "The name of the organization", required = true)
+    @Schema(description = "The name of the organization", required = true)
     @Column(name = "name", nullable = false)
     @NotBlank
     private String name;
@@ -60,38 +63,38 @@ public class Organization extends CertificateModel {
     @Length(max = 64)
     @NotBlank
     @MCPMRN
-    @ApiModelProperty(value = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
     @MRN
-    @ApiModelProperty(value = "Subsidiary Maritime Resource Name")
+    @Schema(description = "Subsidiary Maritime Resource Name")
     @Column(name = "mrn_subsidiary")
     private String mrnSubsidiary;
 
-    @ApiModelProperty(value = "URL of MMS that the identity is registered")
+    @Schema(description = "URL of MMS that the identity is registered")
     @Column(name = "home_mms_url")
     private String homeMMSUrl;
 
     @Column(name = "email", nullable = false)
     @Email
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     private String email;
 
     @Column(name = "url", nullable = false)
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     @NotBlank
     @URL
     private String url;
 
     @Column(name = "address", nullable = false)
     @NotBlank
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     private String address;
 
     @Column(name = "country")
     @NotBlank
-    @ApiModelProperty(required = true)
+    @Schema(required = true)
     private String country;
 
     @JsonIgnore
@@ -99,7 +102,7 @@ public class Organization extends CertificateModel {
     private boolean approved;
 
     @Column(name = "federation_type", nullable = false)
-    @ApiModelProperty(value = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @Schema(description = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", accessMode = READ_ONLY)
     private String federationType;
 
     @JsonIgnore
@@ -107,7 +110,7 @@ public class Organization extends CertificateModel {
     @JoinColumn(name="id_logo")
     private Logo logo;
 
-    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "organization")
     private Set<Certificate> certificates;
 
@@ -118,9 +121,6 @@ public class Organization extends CertificateModel {
     @JsonIgnore
     @Column(name = "certificate_authority", nullable = false)
     private String certificateAuthority;
-
-    public Organization() {
-    }
 
     /** Copies this organization into the other */
     public Organization copyTo(Organization org) {
@@ -160,7 +160,6 @@ public class Organization extends CertificateModel {
 
     @Override
     @PostPersist
-    @PostUpdate
     public void setChildIds() {
         super.setChildIds();
         if (this.identityProviderAttributes != null) {

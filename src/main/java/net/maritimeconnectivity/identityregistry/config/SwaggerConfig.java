@@ -16,6 +16,7 @@
 package net.maritimeconnectivity.identityregistry.config;
 
 import io.swagger.v3.oas.models.OpenAPI;
+import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
 import org.springdoc.core.GroupedOpenApi;
@@ -39,29 +40,8 @@ public class SwaggerConfig {
                 .info(new Info().title("Maritime Connectivity Platform Identity Registry API")
                         .description("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.")
                         .version("1.0.0")
+                        .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")));
     }
 
-//    @Bean
-//    public Docket api() {
-//        return new Docket(DocumentationType.OAS_30)
-//          .apiInfo(getApiInfo())
-//          .directModelSubstitute(BigInteger.class, String.class)
-//            .forCodeGeneration(true)
-//          .select()
-//            .apis(RequestHandlerSelectors.any())
-//            .paths(PathSelectors.regex("/(oidc|x509)/api/.*"))
-//          .build();
-//    }
-//
-//    private ApiInfo getApiInfo() {
-//        return new ApiInfoBuilder()
-//                .title("Maritime Connectivity Platform Identity Registry API")
-//                .description("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.")
-//                .version("0.12.1")
-//                .contact(new Contact("Maritime Connectivity Platform", "https://maritimeconnectivity.net", "info@maritimeconnectivity.net"))
-//                .license("Apache 2.0")
-//                .licenseUrl("https://www.apache.org/licenses/LICENSE-2.0")
-//                .build();
-//    }
 }

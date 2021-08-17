@@ -16,8 +16,9 @@
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
@@ -40,18 +41,16 @@ import java.util.Date;
 @Getter
 @Setter
 @ToString(exclude = "vessel")
+@NoArgsConstructor
 public class VesselAttribute extends TimestampModel {
 
-    public VesselAttribute() {
-    }
-
-    @ApiModelProperty(value = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
+    @Schema(description = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
     @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
     @NotNull
     private String attributeName;
 
-    @ApiModelProperty(value = "Vessel attribute value", required = true)
+    @Schema(description = "Vessel attribute value", required = true)
     @Column(name = "attribute_value", nullable = false)
     @NotNull
     private String attributeValue;
@@ -79,8 +78,7 @@ public class VesselAttribute extends TimestampModel {
 
     public void setAttributeName(String attributeName) {
         if (attributeName != null) {
-            attributeName = attributeName.toLowerCase();
+            this.attributeName = attributeName.toLowerCase();
         }
-        this.attributeName = attributeName;
     }
 }

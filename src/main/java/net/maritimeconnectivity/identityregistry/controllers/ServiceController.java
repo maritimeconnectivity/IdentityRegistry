@@ -15,8 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
@@ -44,10 +44,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
@@ -78,10 +80,10 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/service",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
@@ -143,10 +145,10 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public Page<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McpBasicRestException {
@@ -175,10 +177,10 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -207,9 +209,9 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
-            method = RequestMethod.PUT)
+    @PutMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
@@ -284,9 +286,9 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -321,10 +323,10 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/services",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
     public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -345,10 +347,10 @@ public class ServiceController extends EntityController<Service> {
                     "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
                     "completely in the future and providers may choose to already disable it now which will result in an error if called."
     )
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -378,14 +380,13 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new/csr",
-            method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, serviceMrn, "service", version);
     }
 
@@ -395,12 +396,12 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{certId}/revoke",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
@@ -431,10 +432,10 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/keycloakjson",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -469,9 +470,9 @@ public class ServiceController extends EntityController<Service> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml",
-            method = RequestMethod.GET)
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {

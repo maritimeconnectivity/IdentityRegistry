@@ -18,6 +18,7 @@ package net.maritimeconnectivity.identityregistry.model.database.entities;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -44,10 +45,8 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString(exclude = "services")
+@NoArgsConstructor
 public class Vessel extends NonHumanEntityModel {
-
-    public Vessel() {
-    }
 
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private Set<@Valid VesselAttribute> attributes;

@@ -15,7 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.data;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -32,13 +32,13 @@ import java.util.Date;
 @ToString
 public class CertificateRevocation implements JsonSerializable {
 
-    @ApiModelProperty(value = "The date the certificate revocation should be activated.", required = true)
+    @Schema(description = "The date the certificate revocation should be activated.", required = true)
     @NotNull
     private Date revokedAt;
 
-    @ApiModelProperty(
+    @Schema(
             required = true,
-            value = "The reason the certificates has been revoked",
+            description = "The reason the certificates has been revoked",
             allowableValues = "unspecified, keycompromise, cacompromise, affiliationchanged, superseded, cessationofoperation, certificatehold, removefromcrl, privilegewithdrawn, aacompromise"
     )
     @InPredefinedList(

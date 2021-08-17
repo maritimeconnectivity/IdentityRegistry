@@ -16,7 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.model.database;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -34,14 +34,14 @@ public class Agent extends TimestampModel {
     /**
      * The organization that is acting on behalf of the other organization
      */
-    @ApiModelProperty(required = true, value = "The id of the organization that should be given agent permissions")
+    @Schema(required = true, description = "The id of the organization that should be given agent permissions")
     @Column(name = "id_acting", nullable = false)
     private Long idActingOrganization;
 
     /**
      * The organization that is being acted on behalf of
      */
-    @ApiModelProperty(value = "The id of the organization that is giving agent permissions")
+    @Schema(description = "The id of the organization that is giving agent permissions")
     @Column(name = "id_on_behalf_of", nullable = false)
     private Long idOnBehalfOfOrganization;
 

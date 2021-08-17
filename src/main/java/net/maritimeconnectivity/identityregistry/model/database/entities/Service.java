@@ -15,8 +15,9 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -33,6 +34,8 @@ import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.Pattern;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 /**
  * Model object representing a service
  */
@@ -42,43 +45,41 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class Service extends NonHumanEntityModel {
 
-    public Service() {
-    }
-
-    @ApiModelProperty(value = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
+    @Schema(description = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
     @Column(name = "oidc_access_type")
     @InPredefinedList(acceptedValues = {"public", "bearer-only", "confidential"})
     private String oidcAccessType;
 
-    @ApiModelProperty(value = "The client id of the service in MCP. Will be generated.", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @Schema(description = "The client id of the service in MCP. Will be generated.", accessMode = READ_ONLY)
     @Column(name = "oidc_client_id")
     private String oidcClientId;
 
-    @ApiModelProperty(value = "The client secret of the service in MCP. Will be generated.", accessMode = ApiModelProperty.AccessMode.READ_ONLY)
+    @Schema(description = "The client secret of the service in MCP. Will be generated.", accessMode = READ_ONLY)
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
-    @ApiModelProperty(value = "The OpenId Connect redirect uri of service.")
+    @Schema(description = "The OpenId Connect redirect uri of service.")
     @Column(name = "oidc_redirect_uri")
     private String oidcRedirectUri;
 
-    @ApiModelProperty(value = "The domain name the service will be available on. Used in the issued certificates for the service.")
+    @Schema(description = "The domain name the service will be available on. Used in the issued certificates for the service.")
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
-    @ApiModelProperty(value = "The version of this service instance.", required = true)
+    @Schema(description = "The version of this service instance.", required = true)
     @NotBlank
     @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be max 32 characters long")
     @Column(name = "instance_version", nullable = false)
     private String instanceVersion;
 
-    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
 
-    @ApiModelProperty(value = "The vessel that is linked to this service.")
+    @Schema(description = "The vessel that is linked to this service.")
     @ManyToOne
     @JoinColumn(name = "id_vessel")
     private Vessel vessel;

@@ -15,7 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 
 import javax.persistence.Entity;
@@ -30,13 +31,11 @@ import java.util.Set;
 
 @Entity
 @Table(name = "devices")
+@NoArgsConstructor
 public class Device extends NonHumanEntityModel {
 
-    public Device() {
-    }
-
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
-    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     private Set<Certificate> certificates;
 
     /** Copies this device into the other */

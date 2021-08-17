@@ -15,8 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import io.swagger.annotations.ApiParam;
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
@@ -25,10 +25,10 @@ import net.maritimeconnectivity.identityregistry.model.database.CertificateModel
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
+import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
-import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
@@ -50,10 +50,12 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -102,10 +104,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/apply",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
@@ -121,7 +123,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         try {
             newOrg = this.organizationService.save(input);
         } catch (DataIntegrityViolationException e) {
-            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, e.getRootCause().getMessage(), request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
         }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
@@ -135,10 +137,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
      *
      * @return a reply...
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/unapprovedorgs",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public Page<Organization> getUnapprovedOrganizations(Pageable pageable) {
         return this.organizationService.getUnapprovedOrganizations(pageable);
@@ -150,10 +152,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/approve",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
@@ -187,10 +189,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org == null) {
@@ -205,10 +207,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/id/{orgId}",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationById(orgId);
@@ -223,10 +224,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * 
      * @return a reply...
      */
-    @RequestMapping(
+    @GetMapping(
             value = "/api/orgs",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     public Page<Organization> getOrganization(Pageable pageable) {
         return this.organizationService.listAllPage(pageable);
     }
@@ -237,9 +238,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a http reply
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}",
-            method = RequestMethod.PUT)
+    @PutMapping(
+            value = "/api/org/{orgMrn}"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
             @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
@@ -286,9 +287,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
-            value = "/api/org/{orgMrn}",
-            method = RequestMethod.DELETE)
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}"
+    )
     @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
@@ -330,10 +331,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
                     "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
                     "completely in the future and providers may choose to already disable it now which will result in an error if called."
     )
-    @RequestMapping(
+    @GetMapping(
             value = "/api/org/{orgMrn}/certificate/issue-new",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
@@ -358,14 +359,13 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/certificate/issue-new/csr",
-            method = RequestMethod.POST,
             consumes = MediaType.TEXT_PLAIN_VALUE,
-            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_UTF8_VALUE}
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
@@ -384,12 +384,12 @@ public class OrganizationController extends BaseControllerWithCertificate {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @RequestMapping(
+    @PostMapping(
             value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
-            method = RequestMethod.POST,
-            produces = "application/json;charset=UTF-8")
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @ApiParam(value = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
+    public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);

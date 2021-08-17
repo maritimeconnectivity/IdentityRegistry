@@ -29,10 +29,11 @@ import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -72,10 +73,9 @@ public class UserInformationController {
         this.userService = userService;
     }
 
-    @RequestMapping(
+    @GetMapping(
             value = "/{userMrn}/roles",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<String>> getUserRoles(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
@@ -94,10 +94,9 @@ public class UserInformationController {
         return new ResponseEntity<>(Collections.singletonList("ROLE_USER"), HttpStatus.OK);
     }
 
-    @RequestMapping(
+    @GetMapping(
             value = "/{userMrn}/acting-on-behalf-of",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<String>> getOrgsToActOnBehalfOf(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {

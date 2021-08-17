@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 
@@ -31,10 +32,8 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString(exclude = "organization")
+@NoArgsConstructor
 public class Logo extends TimestampModel {
-
-    public Logo() {
-    }
 
     @Column(name = "image", nullable = false)
     private byte[] image;

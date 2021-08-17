@@ -18,6 +18,7 @@ package net.maritimeconnectivity.identityregistry.model.database;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
@@ -33,6 +34,7 @@ import java.util.Objects;
 @Getter
 @Setter
 @ToString(exclude = "vessel")
+@NoArgsConstructor
 public class VesselImage extends TimestampModel {
 
     @Column(name = "image", nullable = false)
@@ -41,10 +43,6 @@ public class VesselImage extends TimestampModel {
     @JsonIgnore
     @OneToOne(mappedBy = "image")
     private Vessel vessel;
-
-    public VesselImage() {
-
-    }
 
     public VesselImage copyTo(VesselImage vesselImage) {
         Objects.requireNonNull(vesselImage);

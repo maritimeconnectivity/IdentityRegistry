@@ -15,14 +15,19 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import org.hibernate.validator.constraints.URL;
 
-import javax.persistence.*;
+import javax.persistence.Column;
+import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
@@ -35,18 +40,17 @@ import java.util.Set;
 @Getter
 @Setter
 @ToString
+@NoArgsConstructor
 public class MMS extends NonHumanEntityModel {
-    public MMS() {
-    }
 
     @NotNull
     @URL(regexp = "^(http|https).*")
-    @ApiModelProperty(value = "URL of MMS instance", required = true)
+    @Schema(description = "URL of MMS instance", required = true)
     @Column(name = "url", nullable = false)
     private String url;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "mms")
-    @ApiModelProperty(value = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
     private Set<Certificate> certificates;
 
     /** Copies this mms into the other */
