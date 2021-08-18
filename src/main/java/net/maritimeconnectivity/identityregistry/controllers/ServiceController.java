@@ -132,7 +132,7 @@ public class ServiceController extends EntityController<Service> {
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.deleteClient(input.getOidcClientId());
                 }
-                throw new McpBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
             }
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -271,7 +271,7 @@ public class ServiceController extends EntityController<Service> {
                     this.entityService.save(service);
                     return new ResponseEntity<>(HttpStatus.OK);
                 } catch (DataIntegrityViolationException e) {
-                    throw new McpBasicRestException(HttpStatus.CONFLICT, e.getRootCause().getMessage(), request.getServletPath());
+                    throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
                 }
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
