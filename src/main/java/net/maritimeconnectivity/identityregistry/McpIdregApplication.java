@@ -15,16 +15,21 @@
  */
 package net.maritimeconnectivity.identityregistry;
 
+import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
+import org.springframework.boot.builder.SpringApplicationBuilder;
+import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
+import javax.servlet.ServletContext;
+import javax.servlet.ServletException;
 import java.security.Security;
 
 
 @SpringBootApplication(exclude = LdapAutoConfiguration.class)
-public class McpIdregApplication {
+public class McpIdregApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {
         // Set awt to be headless to avoid issues when scaling images (logos)
@@ -34,5 +39,16 @@ public class McpIdregApplication {
         // Allow encoded "/" (%2F) in urls. Needed for OCSP encoded GET requests.
         System.setProperty("org.apache.tomcat.util.buf.UDecoder.ALLOW_ENCODED_SLASH", "true");
         SpringApplication.run(McpIdregApplication.class, args);
+    }
+
+    @Override
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
+        return application.sources(McpIdregApplication.class);
+    }
+
+    @Override
+    public void onStartup(ServletContext servletContext) throws ServletException {
+        super.onStartup(servletContext);
+        servletContext.addListener(IIOProviderContextListener.class);
     }
 }
