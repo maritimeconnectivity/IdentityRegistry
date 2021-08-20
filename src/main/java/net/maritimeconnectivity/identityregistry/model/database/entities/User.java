@@ -21,6 +21,9 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
+import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.pki.PKIIdentity;
+import org.bouncycastle.asn1.x500.X500Name;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -29,7 +32,10 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.validation.constraints.Email;
 import javax.validation.constraints.NotBlank;
+import java.util.Locale;
 import java.util.Set;
+
+import static net.maritimeconnectivity.pki.CertificateBuilder.escapeSpecialCharacters;
 
 /**
  * Model object representing an user
@@ -90,6 +96,36 @@ public class User extends EntityModel {
 
     public void assignToCert(Certificate cert){
         cert.setUser(this);
+    }
+
+    public PKIIdentity toPkiIdentity(Organization organization) {
+        PKIIdentity pkiIdentity = new PKIIdentity();
+        pkiIdentity.setMrn(getMrn());
+        pkiIdentity.setPermissions(getPermissions());
+        pkiIdentity.setDn(constructDN(organization));
+        pkiIdentity.setMrnSubsidiary(getMrnSubsidiary());
+        pkiIdentity.setHomeMmsUrl(getHomeMMSUrl());
+
+        return pkiIdentity;
+    }
+
+    private String constructDN(Organization organization) {
+        // Try to find the correct country code, else we just use the country name as code
+        String orgCountryCode = organization.getCountry();
+        String[] locales = Locale.getISOCountries();
+        for (String countryCode : locales) {
+            Locale loc = new Locale("", countryCode);
+            if (loc.getDisplayCountry(Locale.ENGLISH).equals(orgCountryCode)) {
+                orgCountryCode = loc.getCountry();
+                break;
+            }
+        }
+        String fullName = firstName + " " + lastName;
+        String dn = String.format("C=%s, O=%s, OU=user, CN=%s, UID=%s, E=%s", escapeSpecialCharacters(orgCountryCode), escapeSpecialCharacters(organization.getMrn()),
+                escapeSpecialCharacters(fullName), escapeSpecialCharacters(getMrn()), escapeSpecialCharacters(getEmail()));
+        // Don't know if we actually need to do this
+        X500Name x500DN = new X500Name(dn);
+        return x500DN.toString();
     }
 }
 

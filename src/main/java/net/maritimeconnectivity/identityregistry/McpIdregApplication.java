@@ -42,8 +42,8 @@ public class McpIdregApplication extends SpringBootServletInitializer {
     }
 
     @Override
-    protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {
-        return application.sources(McpIdregApplication.class);
+    protected SpringApplicationBuilder configure(SpringApplicationBuilder builder) {
+        return builder.sources(McpIdregApplication.class);
     }
 
     @Override
