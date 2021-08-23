@@ -17,22 +17,21 @@
 package net.maritimeconnectivity.identityregistry.exception;
 
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
 import java.util.Date;
+
 @Getter
-@Setter
 @ToString
 public class McpBasicRestException extends Exception {
 
     // mimics the standard spring error structure on exceptions 
-    protected HttpStatus status;
-    protected String error;
-    protected String errorMessage;
-    protected String path;
-    protected long timestamp;
+    protected final HttpStatus status;
+    protected final String error;
+    protected final String errorMessage;
+    protected final String path;
+    protected final long timestamp;
     
     public McpBasicRestException(HttpStatus status, String errorMessage, String path) {
         this.status = status;
@@ -41,6 +40,5 @@ public class McpBasicRestException extends Exception {
         this.timestamp = new Date().getTime();
         this.error = status.getReasonPhrase();
     }
-
 
 }

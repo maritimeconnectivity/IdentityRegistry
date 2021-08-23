@@ -18,18 +18,15 @@ package net.maritimeconnectivity.identityregistry.exception;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-import lombok.Setter;
 import lombok.ToString;
 
 /**
  * Thrown when keycloak returns 409 on conflict due to duplicated entries
  */
 @Getter
-@Setter
 @ToString
 @AllArgsConstructor
 public class DuplicatedKeycloakEntry extends Exception {
-    protected String errorMessage;
-    protected String originalErrorMessage;
-
+    protected final String errorMessage;
+    protected final String originalErrorMessage;
 }
