@@ -43,7 +43,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 
 @RestController
@@ -93,8 +97,11 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             try {
                 input.setMrn(input.getMrn().toLowerCase());
                 T newEntity = this.entityService.save(input);
-                return new ResponseEntity<>(newEntity, HttpStatus.OK);
-            } catch (DataIntegrityViolationException e) {
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), "UTF-8")).toString();
+                HttpHeaders headers = new HttpHeaders();
+                headers.setLocation(new URI(path));
+                return new ResponseEntity<>(newEntity, headers, HttpStatus.CREATED);
+            } catch (DataIntegrityViolationException | URISyntaxException | UnsupportedEncodingException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, e.getMessage(), request.getServletPath());
             }
         } else {

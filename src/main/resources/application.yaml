@@ -12,6 +12,7 @@ logging.level:
 # SSL
 server:
     port: 8443
+    forward-headers-strategy: NATIVE
     ssl:
         # Should be false as default since the api will be placed behind a
         # nginx reversed proxy, and the code for extracting info from client
