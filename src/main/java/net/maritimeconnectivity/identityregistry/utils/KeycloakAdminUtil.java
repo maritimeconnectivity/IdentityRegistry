@@ -383,7 +383,7 @@ public class KeycloakAdminUtil {
      * @throws IOException
      */
     public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        log.debug("creating user: " + userMrn);
+        log.debug("Creating user: " + userMrn);
 
         UserRepresentation user = new UserRepresentation();
         user.setUsername(email);
@@ -410,14 +410,14 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.debug("creating user failed due to duplicated user" + errMsg);
+                    log.error("Creating user failed due to duplicated user" + errMsg);
                     throw new DuplicatedKeycloakEntry("User with mrn: " + userMrn + " already exists.", errMsg);
                 } else {
-                    log.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating user failed, status: " + ret.getStatus() + ", " + errMsg);
                     throw new IOException("User creating failed: " + errMsg);
                 }
             }
-            log.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
+            log.debug("Created user, status: " + ret.getStatus() + ", " + errMsg);
         }
 
         // Set credentials
@@ -429,9 +429,9 @@ public class KeycloakAdminUtil {
         // Find the user by searching for the username
         user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
         user.setCredentials(Collections.singletonList(cred));
-        log.debug("setting password for user: " + user.getId());
+        log.debug("Setting password for user: " + user.getId());
         getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
-        log.debug("created user");
+        log.debug("Created user");
     }
 
     /**
@@ -445,14 +445,14 @@ public class KeycloakAdminUtil {
 
         String errMsg = "";
         // If we found one, it already has the user
-        if (users.size()>0){
+        if (!users.isEmpty()){
             throw new DuplicatedKeycloakEntry("User with username: " +email + " already exists.", errMsg);
         }
 
         // Second try: Find the user by searching for the email field
         users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
         // If we found one, it already has the user
-        if (users.size()>0){
+        if (!users.isEmpty()){
             throw new DuplicatedKeycloakEntry("User with email: " +email + " already exists.", errMsg);
         }
     }
@@ -468,7 +468,7 @@ public class KeycloakAdminUtil {
      */
     public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McpBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
-        if (userReps.size() == 0) {
+        if (userReps.isEmpty()) {
             log.debug("Skipped user update");
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
         }
@@ -559,7 +559,7 @@ public class KeycloakAdminUtil {
         if (!users.isEmpty()) {
             getBrokerRealm().users().get(users.get(0).getId()).remove();
         }
-        // delete the user in the ceritificates realm
+        // delete the user in the certificates realm
         users = getCertificatesRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
             getCertificatesRealm().users().get(users.get(0).getId()).remove();
@@ -596,10 +596,10 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.debug("creating client failed due to duplicated client" + errMsg);
+                    log.error("Creating client failed due to duplicated client" + errMsg);
                     throw new DuplicatedKeycloakEntry("Client with mrn: " + clientId + " already exists.", errMsg);
                 } else {
-                    log.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating client failed, status: " + ret.getStatus() + ", " + errMsg);
                     throw new IOException("Client creation failed: " + errMsg);
                 }
             }
@@ -607,8 +607,7 @@ public class KeycloakAdminUtil {
         if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
             ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).get(0);
-            String secret = getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
-            return secret;
+            return getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
         } else {
             return "";
         }
