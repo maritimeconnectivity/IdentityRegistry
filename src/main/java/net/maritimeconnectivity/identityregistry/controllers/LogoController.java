@@ -23,6 +23,7 @@ import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.ImageUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -45,6 +46,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
@@ -77,14 +80,19 @@ public class LogoController {
             if (org.getLogo() != null) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.LOGO_ALREADY_EXISTS, request.getServletPath());
             }
+            HttpHeaders headers = new HttpHeaders();
             try {
                 this.updateLogo(org, logo.getInputStream());
                 organizationService.save(org);
-                return new ResponseEntity<>(HttpStatus.CREATED);
-            } catch (IOException e) {
+                String path = request.getRequestURL().toString();
+                headers.setLocation(new URI(path));
+            } catch (IOException | DataIntegrityViolationException e) {
                 log.error("Unable to create logo", e);
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
+            } catch (URISyntaxException e) {
+                log.error("Could not create Location header", e);
             }
+            return new ResponseEntity<>(headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

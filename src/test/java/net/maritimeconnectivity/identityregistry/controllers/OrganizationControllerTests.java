@@ -129,7 +129,7 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
                     .content(orgJson)
                     .contentType("application/json")
-            ).andExpect(status().isOk());
+            ).andExpect(status().isCreated());
         } catch (Exception e) {
             e.printStackTrace();
             fail();

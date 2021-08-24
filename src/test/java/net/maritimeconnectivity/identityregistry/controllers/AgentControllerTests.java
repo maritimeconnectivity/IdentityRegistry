@@ -18,6 +18,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -35,6 +36,8 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
+
+import java.lang.reflect.Field;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -74,7 +77,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testCreateAgentWithRights() {
+    public void testCreateAgentWithRights() throws NoSuchFieldException, IllegalAccessException {
         Organization actingOrg = mock(Organization.class);
         actingOrg.setMrn("urn:mrn:mcp:org:agent");
         Organization onBehalfOfOrg = mock(Organization.class);
@@ -84,19 +87,25 @@ public class AgentControllerTests {
         agent.setIdActingOrganization(1L);
         agent.setIdOnBehalfOfOrganization(2L);
 
+        // We need to use reflection to set the id of the agent as the "id" field does not have a public setter
+        Field idField = TimestampModel.class.getDeclaredField("id");
+        idField.setAccessible(true);
+        idField.set(agent, 10L);
+
         String agentJson = JSONSerializer.serialize(agent);
 
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:dma", "ROLE_ORG_ADMIN", "");
 
         given(this.organizationService.getOrganizationById(any())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:dma")).willReturn(onBehalfOfOrg);
+        given(this.agentService.save(any())).willReturn(agent);
         given(onBehalfOfOrg.getId()).willReturn(2L);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:dma/agent").with(authentication(auth))
                 .header("Origin", "bla")
                 .content(agentJson)
-                .contentType("application/json")).andExpect(status().isOk());
+                .contentType("application/json")).andExpect(status().isCreated());
         } catch (Exception e) {
             e.printStackTrace();
             fail();

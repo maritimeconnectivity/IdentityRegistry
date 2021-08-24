@@ -24,6 +24,8 @@ import net.maritimeconnectivity.identityregistry.services.VesselServiceImpl;
 import net.maritimeconnectivity.identityregistry.utils.ImageUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -45,6 +47,8 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
@@ -78,14 +82,19 @@ public class VesselImageController {
             if (vessel.getImage() != null) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.VESSEL_IMAGE_ALREADY_EXISTS, request.getServletPath());
             }
+            HttpHeaders headers = new HttpHeaders();
             try {
                 this.updateVesselImage(vessel, image.getInputStream());
                 vesselService.save(vessel);
-                return new ResponseEntity<>(HttpStatus.CREATED);
-            } catch (IOException e) {
+                String path = request.getRequestURL().toString();
+                headers.setLocation(new URI(path));
+            } catch (IOException | DataIntegrityViolationException e) {
                 log.error("Unable to create vessel image", e);
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IMAGE, request.getServletPath());
+            } catch (URISyntaxException e) {
+                log.error("Could not create Location header", e);
             }
+            return new ResponseEntity<>(headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.VESSEL_NOT_FOUND, request.getServletPath());
         }

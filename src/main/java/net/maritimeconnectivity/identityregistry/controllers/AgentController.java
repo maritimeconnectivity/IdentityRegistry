@@ -24,8 +24,10 @@ import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -42,6 +44,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.net.URI;
+import java.net.URISyntaxException;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
@@ -140,8 +144,18 @@ public class AgentController {
         Organization actingOrg = this.organizationService.getOrganizationById(input.getIdActingOrganization());
         if (organization != null && actingOrg != null) {
             input.setIdOnBehalfOfOrganization(organization.getId());
-            Agent agent = this.agentService.save(input);
-            return new ResponseEntity<>(agent, HttpStatus.OK);
+            Agent agent = null;
+            HttpHeaders headers = new HttpHeaders();
+            try {
+                agent = this.agentService.save(input);
+                String path = request.getRequestURL().append("/").append(agent.getId().toString()).toString();
+                headers.setLocation(new URI(path));
+            } catch (DataIntegrityViolationException e) {
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+            } catch (URISyntaxException e) {
+                log.error("Could not create Location header", e);
+            }
+            return new ResponseEntity<>(agent, headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

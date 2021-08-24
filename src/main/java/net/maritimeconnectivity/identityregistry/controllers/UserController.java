@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
@@ -27,7 +28,6 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
-import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
@@ -40,6 +40,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -58,9 +59,14 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.security.AuthProvider;
 
+@Slf4j
 @RestController
 public class UserController extends EntityController<User> {
     // Data that identifies the User sync'er
@@ -79,9 +85,6 @@ public class UserController extends EntityController<User> {
     public void setUserService(EntityService<User> userService) {
         this.entityService = userService;
     }
-
-    @Autowired
-    private RoleService roleService;
 
     @Autowired
     private KeycloakAdminUtil keycloakAU;
@@ -113,11 +116,10 @@ public class UserController extends EntityController<User> {
             input.setMrn(input.getMrn().toLowerCase());
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
-                AuthProvider authProvider = null;
                 String password;
                 if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
                     P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
-                    authProvider = p11PKIConfiguration.getProvider();
+                    AuthProvider authProvider = p11PKIConfiguration.getProvider();
                     p11PKIConfiguration.providerLogin();
                     password = PasswordUtil.generatePassword(authProvider);
                     p11PKIConfiguration.providerLogout();
@@ -139,16 +141,22 @@ public class UserController extends EntityController<User> {
                 throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
+            User newUser = null;
+            HttpHeaders headers = new HttpHeaders();
             try {
-                User newUser = this.entityService.save(input);
-                return new ResponseEntity<>(newUser, HttpStatus.OK);
+                newUser = this.entityService.save(input);
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
+                headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the user from keycloak if it was created.
                 if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                     keycloakAU.deleteUser(input.getEmail(), input.getMrn());
                 }
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+            } catch (UnsupportedEncodingException | URISyntaxException e) {
+                log.error("Could not create Location header", e);
             }
+            return new ResponseEntity<>(newUser, headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

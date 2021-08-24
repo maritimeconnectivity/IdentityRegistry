@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
@@ -62,10 +63,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
+@Slf4j
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
     // These 4 services are used when deleting an organization
@@ -119,17 +125,26 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
         // Default to the MC IDR CA
         input.setCertificateAuthority(certificateUtil.getDefaultSubCa());
-        Organization newOrg;
+        Organization newOrg = null;
+        HttpHeaders headers = new HttpHeaders();
         try {
             newOrg = this.organizationService.save(input);
+            String path = request.getRequestURL().toString().split("apply")[0] + URLEncoder.encode(newOrg.getMrn(), "UTF-8");
+            headers.setLocation(new URI(path));
         } catch (DataIntegrityViolationException e) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+        } catch (UnsupportedEncodingException | URISyntaxException e) {
+            log.error("Could not create Location header", e);
+        }
+        if (newOrg == null) {
+            log.error("Application for organization with MRN {} was not stored", input.getMrn());
+            throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
         }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
         // Send email to admin saying that an Organization is awaiting approval
         emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName(), newOrg.getMrn());
-        return new ResponseEntity<>(newOrg, HttpStatus.OK);
+        return new ResponseEntity<>(newOrg, headers, HttpStatus.CREATED);
     }
 
     /**
@@ -178,7 +193,13 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
         // Enabled the organization and save it
         org.setApproved(true);
-        Organization approvedOrg =  this.organizationService.save(org);
+        Organization approvedOrg;
+        try {
+            approvedOrg = this.organizationService.save(org);
+        } catch (DataIntegrityViolationException e) {
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+        }
+
         return new ResponseEntity<>(approvedOrg, HttpStatus.OK);
     }
 

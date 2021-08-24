@@ -56,7 +56,11 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.HashMap;
 
 @RestController
@@ -124,16 +128,22 @@ public class ServiceController extends EntityController<Service> {
                 input.setOidcClientSecret(null);
                 input.setOidcRedirectUri(null);
             }
+            Service newService = null;
+            HttpHeaders headers = new HttpHeaders();
             try {
-                Service newService = this.entityService.save(input);
-                return new ResponseEntity<>(newService, HttpStatus.OK);
+                newService = this.entityService.save(input);
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newService.getMrn(), "UTF-8")).toString();
+                headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the client from keycloak if it was created.
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.deleteClient(input.getOidcClientId());
                 }
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+            } catch (URISyntaxException | UnsupportedEncodingException e) {
+                log.error("Could not create Location header", e);
             }
+            return new ResponseEntity<>(newService, headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
