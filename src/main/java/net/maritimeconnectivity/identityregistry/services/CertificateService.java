@@ -24,6 +24,8 @@ import java.math.BigInteger;
 import java.util.List;
 
 public interface CertificateService {
+    int countCertificatesBySerialNumber(BigInteger serialNumber);
+
     Certificate getCertificateBySerialNumber(BigInteger serialNumber);
 
     Certificate saveCertificate(Certificate certificate);

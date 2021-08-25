@@ -117,7 +117,17 @@ public abstract class BaseControllerWithCertificate {
         if (uid == null || uid.trim().isEmpty()) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
         }
-        BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+
+        BigInteger serialNumber = null;
+
+        // Make sure that the serial number is unique
+        boolean isUniqueSerialNumber = false;
+        while (!isUniqueSerialNumber) {
+            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+            if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
+                isUniqueSerialNumber = true;
+        }
+
         X509Certificate userCert;
         try {
             if (authProvider != null) {
@@ -207,53 +217,71 @@ public abstract class BaseControllerWithCertificate {
                 if (uid == null || uid.trim().isEmpty()) {
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
-                BigInteger serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
-                X509Certificate userCert;
-                try {
-                    if (authProvider != null) {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
-                        p11PKIConfiguration.providerLogout();
-                    } else {
-                        userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
-                    }
-                } catch (Exception e) {
-                    log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
-                    throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
+
+                BigInteger serialNumber = null;
+
+                // Make sure that the serial number is unique
+                boolean isUniqueSerialNumber = false;
+                while (!isUniqueSerialNumber) {
+                    serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+                    if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
+                        isUniqueSerialNumber = true;
                 }
-                String pemCertificate;
-                try {
-                    pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
-
-                    // Create the certificate
-                    Certificate newMCCert = new Certificate();
-                    certOwner.assignToCert(newMCCert);
-                    newMCCert.setCertificate(pemCertificate);
-                    newMCCert.setSerialNumber(serialNumber);
-                    newMCCert.setCertificateAuthority(org.getCertificateAuthority());
-                    // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-                    Calendar cal = Calendar.getInstance();
-                    int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-                    newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
-                    newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
-                    this.certificateService.saveCertificate(newMCCert);
-
-                    byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCPCertificate(org.getCertificateAuthority()).getEncoded();
-                    String certCAPem = CertificateHandler.getPemFromEncoded("CERTIFICATE", certCA);
-
-                    Certificate ret = new Certificate();
-                    ret.setCertificate(pemCertificate + certCAPem);
-                    ret.setSerialNumber(serialNumber);
-
-                    return ret;
-                } catch (CertificateEncodingException e) {
-                    log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
-                    throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
-                }
+                X509Certificate userCert = createX509Certificate(org, type, request, publicKey, authProvider, p11PKIConfiguration, attrs, o, name, email, uid, validityPeriod, serialNumber);
+                return createCertificate(certOwner, org, request, serialNumber, userCert);
             }
         } catch (PKCSException e) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
         }
         throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.CSR_SIGNATURE_INVALID, request.getServletPath());
+    }
+
+    private X509Certificate createX509Certificate(Organization org, String type, HttpServletRequest request, PublicKey publicKey, AuthProvider authProvider, P11PKIConfiguration p11PKIConfiguration, HashMap<String, String> attrs, String o, String name, String email, String uid, int validityPeriod, BigInteger serialNumber) throws McpBasicRestException {
+        X509Certificate userCert;
+        try {
+            if (authProvider != null) {
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+                p11PKIConfiguration.providerLogout();
+            } else {
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, publicKey, attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
+            }
+        } catch (Exception e) {
+            log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
+        }
+        return userCert;
+    }
+
+    private Certificate createCertificate(CertificateModel certOwner, Organization org, HttpServletRequest request, BigInteger serialNumber, X509Certificate userCert) throws McpBasicRestException {
+        String pemCertificate;
+        try {
+            pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded());
+
+            // Create the certificate
+            Certificate newMCCert = new Certificate();
+            certOwner.assignToCert(newMCCert);
+            newMCCert.setCertificate(pemCertificate);
+            newMCCert.setSerialNumber(serialNumber);
+            newMCCert.setCertificateAuthority(org.getCertificateAuthority());
+            // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
+            Calendar cal = Calendar.getInstance();
+            int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
+            newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
+            newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
+            this.certificateService.saveCertificate(newMCCert);
+
+            byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCPCertificate(org.getCertificateAuthority()).getEncoded();
+            String certCAPem = CertificateHandler.getPemFromEncoded("CERTIFICATE", certCA);
+
+            Certificate ret = new Certificate();
+            ret.setCertificate(pemCertificate + certCAPem);
+            ret.setSerialNumber(serialNumber);
+
+            return ret;
+        } catch (CertificateEncodingException e) {
+            log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
+        }
     }
 
     private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McpBasicRestException {

@@ -37,6 +37,11 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
+    public int countCertificatesBySerialNumber(BigInteger serialNumber) {
+        return certificateRepository.countBySerialNumber(serialNumber);
+    }
+
+    @Override
     public Certificate getCertificateBySerialNumber(BigInteger serialNumber) {
         return certificateRepository.getBySerialNumber(serialNumber);
     }

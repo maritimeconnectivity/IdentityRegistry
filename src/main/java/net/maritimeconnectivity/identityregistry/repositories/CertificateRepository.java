@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.List;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
+    int countBySerialNumber(BigInteger serialNumber);
     Certificate getBySerialNumber(BigInteger serialNumber);
     List<Certificate> findByvessel(Vessel vessel);
     List<Certificate> findBydevice(Device device);
