@@ -417,7 +417,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 log.error("Could not create Location header", e);
             }
             httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
-            return new ResponseEntity<>(cert.getCertificate(), httpHeaders, HttpStatus.OK);
+            return new ResponseEntity<>(cert.getCertificate(), httpHeaders, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
