@@ -342,7 +342,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil")
     public ResponseEntity<Certificate> getOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
         if (organization != null) {
