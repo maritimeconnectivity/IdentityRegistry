@@ -42,11 +42,12 @@ import java.util.Map;
 @Slf4j
 public class AccessControlUtil {
 
-    @Autowired
-    private HasRoleUtil hasRoleUtil;
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
+
+    @Autowired
+    private HasRoleUtil hasRoleUtil;
 
     @Autowired
     private OrganizationService organizationService;

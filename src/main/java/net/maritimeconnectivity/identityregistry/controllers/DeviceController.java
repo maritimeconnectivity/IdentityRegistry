@@ -47,6 +47,8 @@ import java.math.BigInteger;
 @RestController
 public class DeviceController extends EntityController<Device> {
 
+    private static final String TYPE = "device";
+
     @Autowired
     public void setEntityService(EntityService<Device> entityService) {
         this.entityService = entityService;
@@ -131,6 +133,15 @@ public class DeviceController extends EntityController<Device> {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Certificate> getDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, deviceMrn, TYPE, null, serialNumber);
+    }
+
     /**
      * Returns new certificate for the device identified by the given ID
      *
@@ -153,7 +164,7 @@ public class DeviceController extends EntityController<Device> {
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, deviceMrn, "device");
+        return this.newEntityCert(request, orgMrn, deviceMrn, TYPE);
     }
 
     /**
@@ -169,7 +180,7 @@ public class DeviceController extends EntityController<Device> {
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, deviceMrn, "device", null);
+        return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE, null);
     }
 
     /**

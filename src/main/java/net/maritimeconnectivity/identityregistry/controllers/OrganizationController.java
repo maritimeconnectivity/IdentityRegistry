@@ -338,6 +338,24 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil")
+    public ResponseEntity<Certificate> getOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (organization != null) {
+            Certificate certificate = this.certificateService.getCertificateBySerialNumber(serialNumber);
+            if (certificate != null) {
+                return new ResponseEntity<>(certificate, HttpStatus.OK);
+            }
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
     /**
      * Returns new certificate for the user identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
@@ -390,10 +408,16 @@ public class OrganizationController extends BaseControllerWithCertificate {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
-            String cert = this.signCertificate(pkcs10CertificationRequest, org, org, "organization", request);
+            Certificate cert = this.signCertificate(pkcs10CertificationRequest, org, org, "organization", request);
             HttpHeaders httpHeaders = new HttpHeaders();
+            String path = request.getRequestURL().toString().split("issue-new")[0] + cert.getSerialNumber().toString();
+            try {
+                httpHeaders.setLocation(new URI(path));
+            } catch (URISyntaxException e) {
+                log.error("Could not create Location header", e);
+            }
             httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
-            return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
+            return new ResponseEntity<>(cert.getCertificate(), httpHeaders, HttpStatus.OK);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }

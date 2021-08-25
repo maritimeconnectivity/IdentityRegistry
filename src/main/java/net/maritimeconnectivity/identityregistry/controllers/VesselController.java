@@ -54,6 +54,8 @@ import java.util.Set;
 @RestController
 public class VesselController extends EntityController<Vessel> {
 
+    private static final String TYPE = "vessel";
+
     @Autowired
     public void setVesselService(EntityService<Vessel> vesselService) {
         this.entityService = vesselService;
@@ -159,6 +161,15 @@ public class VesselController extends EntityController<Vessel> {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Certificate> getVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, vesselMrn, TYPE, null, serialNumber);
+    }
+
     /**
      * Returns new certificate for the vessel identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
@@ -180,7 +191,7 @@ public class VesselController extends EntityController<Vessel> {
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, vesselMrn, "vessel");
+        return this.newEntityCert(request, orgMrn, vesselMrn, TYPE);
     }
 
     /**
@@ -196,7 +207,7 @@ public class VesselController extends EntityController<Vessel> {
     )
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newVesselCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, vesselMrn, "vessel", null);
+        return this.signEntityCert(request, csr, orgMrn, vesselMrn, TYPE, null);
     }
 
     /**

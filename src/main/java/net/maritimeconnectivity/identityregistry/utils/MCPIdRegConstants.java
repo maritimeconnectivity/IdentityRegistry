@@ -23,6 +23,7 @@ public class MCPIdRegConstants {
     public static final String USER_NOT_FOUND = "The user could not be found.";
     public static final String DEVICE_NOT_FOUND = "The device could not be found.";
     public static final String ENTITY_NOT_FOUND = "The entity could not be found.";
+    public static final String CERTIFICATE_NOT_FOUND = "The certificate could not be found.";
     public static final String ROLE_NOT_FOUND = "The role could not be found.";
     public static final String URL_DATA_MISMATCH = "There is a mismatch between the url arguments and the data provided!";
     public static final String INVALID_REVOCATION_REASON = "The revocation reason is invalid!";

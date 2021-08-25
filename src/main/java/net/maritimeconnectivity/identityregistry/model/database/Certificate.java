@@ -53,7 +53,7 @@ import java.util.Date;
 @NoArgsConstructor
 public class Certificate extends TimestampModel {
 
-    @Schema(description = "The certificate on PEM format")
+    @Schema(description = "The certificate in PEM format")
     @Column(name = "certificate", columnDefinition = "MEDIUMTEXT", nullable = false)
     private String certificate;
 

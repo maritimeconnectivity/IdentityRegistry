@@ -65,7 +65,7 @@ public class User extends EntityModel {
     @Column(name = "email")
     private String email;
 
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.")
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Certificate> certificates;
 

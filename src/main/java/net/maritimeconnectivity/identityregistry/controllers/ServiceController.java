@@ -72,6 +72,8 @@ public class ServiceController extends EntityController<Service> {
     @Autowired
     private VesselServiceImpl vesselService;
 
+    private static final String TYPE = "service";
+
     @Autowired
     public void setEntityService(EntityService<Service> entityService) {
         this.entityService = entityService;
@@ -342,6 +344,15 @@ public class ServiceController extends EntityController<Service> {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, version, serialNumber);
+    }
+
     /**
      * Returns new certificate for the service identified by the given ID
      *
@@ -375,7 +386,7 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().compareTo(org.getId()) == 0) {
-                CertificateBundle ret = this.issueCertificate(service, org, "service", request);
+                CertificateBundle ret = this.issueCertificate(service, org, TYPE, request);
                 return new ResponseEntity<>(ret, HttpStatus.OK);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -397,7 +408,7 @@ public class ServiceController extends EntityController<Service> {
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, serviceMrn, "service", version);
+        return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, version);
     }
 
     /**

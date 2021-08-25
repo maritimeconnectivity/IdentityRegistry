@@ -50,6 +50,8 @@ import java.util.HashMap;
 @RestController
 public class MMSController extends EntityController<MMS> {
 
+    private static final String TYPE = "mms";
+
     @Autowired
     public void setEntityService(EntityService<MMS> entityService) {
         this.entityService = entityService;
@@ -134,6 +136,15 @@ public class MMSController extends EntityController<MMS> {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Certificate> getMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, mmsMrn, TYPE, null, serialNumber);
+    }
+
     /**
      * Returns new certificate for the mms identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
@@ -155,7 +166,7 @@ public class MMSController extends EntityController<MMS> {
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, mmsMrn, "mms");
+        return this.newEntityCert(request, orgMrn, mmsMrn, TYPE);
     }
 
     /**
@@ -171,7 +182,7 @@ public class MMSController extends EntityController<MMS> {
     )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, mmsMrn, "mms", null);
+        return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE, null);
     }
 
     /**

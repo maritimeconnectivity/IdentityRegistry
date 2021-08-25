@@ -81,6 +81,8 @@ public class UserController extends EntityController<User> {
     @Value("${net.maritimeconnectivity.idreg.allow-create-user-for-federated-org:true}")
     private boolean allowCreateUserForFederatedOrg;
 
+    private static final String TYPE = "user";
+
     @Autowired
     public void setUserService(EntityService<User> userService) {
         this.entityService = userService;
@@ -277,6 +279,15 @@ public class UserController extends EntityController<User> {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 
+    @GetMapping(
+            value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    public ResponseEntity<Certificate> getUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, userMrn, TYPE, null, serialNumber);
+    }
+
     /**
      * Returns new certificate for the user identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
@@ -293,12 +304,12 @@ public class UserController extends EntityController<User> {
     )
     @GetMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new",
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     @Deprecated
     public ResponseEntity<CertificateBundle> newUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, userMrn, "user");
+        return this.newEntityCert(request, orgMrn, userMrn, TYPE);
     }
 
     /**
@@ -314,7 +325,7 @@ public class UserController extends EntityController<User> {
     )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, userMrn, "user", null);
+        return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
     }
 
     /**

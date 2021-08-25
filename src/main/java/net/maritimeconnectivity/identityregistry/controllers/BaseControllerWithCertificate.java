@@ -165,7 +165,7 @@ public abstract class BaseControllerWithCertificate {
         return certificateBundle;
     }
 
-    protected String signCertificate(JcaPKCS10CertificationRequest csr, CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
+    protected Certificate signCertificate(JcaPKCS10CertificationRequest csr, CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
         PublicKey publicKey;
         try {
             publicKey = csr.getPublicKey();
@@ -240,7 +240,11 @@ public abstract class BaseControllerWithCertificate {
                     byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCPCertificate(org.getCertificateAuthority()).getEncoded();
                     String certCAPem = CertificateHandler.getPemFromEncoded("CERTIFICATE", certCA);
 
-                    return pemCertificate + certCAPem;
+                    Certificate ret = new Certificate();
+                    ret.setCertificate(pemCertificate + certCAPem);
+                    ret.setSerialNumber(serialNumber);
+
+                    return ret;
                 } catch (CertificateEncodingException e) {
                     log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
