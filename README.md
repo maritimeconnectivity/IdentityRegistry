@@ -1,5 +1,3 @@
-[![Build Status](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry.svg?branch=master)](https://travis-ci.org/MaritimeConnectivityPlatform/IdentityRegistry)
-
 # Maritime Connectivity Platform Identity Registry
 This is the implementation of the MCP Identity Registry. It is under the Apache 2.0 License.
 
@@ -54,7 +52,7 @@ server {
         proxy_set_header X-Real-IP $remote_addr;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_set_header X-Client-Certificate $ssl_client_cert;
+        proxy_set_header X-Client-Certificate $ssl_client_escaped_cert;
         add_header 'Access-Control-Allow-Headers' 'Content-Type, Accept, X-Requested-With, remember-me, authorization';
     }
 }
@@ -76,11 +74,11 @@ $ ./setup/create-mc-org.sh
 ```
 
 ## Authentication using Openid Connect (Required!) 
-To support login with Openid Connect a [Keycloak](http://keycloak.jboss.org/) instance is needed. Keycloaks [Spring Security Adapter](https://keycloak.gitbooks.io/documentation/securing_apps/topics/oidc/java/spring-security-adapter.html) is used for easy integration. Get a instance up and running by following the [Keycloak manual](https://keycloak.gitbooks.io/documentation/server_installation/index.html), and don't forget to add the special [Maritime Cloud SPI modules](https://github.com/MaritimeCloud/MaritimeCloudKeycloakSpi). Now it is needed to create a few realms in keycloak. Do this by importing the files `setup/maritimecloud-realm.json`, `setup/projecttestusers-realm.json` and `setup/certificates-realm.json`.
+To support login with Openid Connect a [Keycloak](https://www.keycloak.org/) instance is needed. Keycloaks [Spring Security Adapter](https://www.keycloak.org/docs/latest/securing_apps/index.html#_spring_security_adapter) is used for easy integration. Get a instance up and running by following the [Keycloak manual](https://www.keycloak.org/docs/latest/server_installation/), and don't forget to add the special [MCP SPI modules](https://github.com/maritimeconnectivity/MCPKeycloakSpi). Now it is needed to create a few realms in keycloak. Do this by importing the files `setup/MCP-realm.json`, `setup/Users-realm.json` and `setup/Certificates-realm.json`.
 
 You have now created the main "MCP" realm, the "Users" realm that is used to host users for organizations that do not have their own Identity Provider and the "Certificates" realm which is used for converting certificate authentication to OpenId Connect authentication. The "MCP" realm comes with an administrative user for the Organization "Bootstrap Org", which has administrative rights for the entire Identity Registry API. This user should be used for setting up the Identity Registry. The users credentials are mcp-admin@maritimeconnectivity.net / admin. Normally users are not placed in the MCP realm, but in the Users realm or other dedicated Identity Providers, but for bootstrapping purposes the user is placed in the MCP realm. **This user should be deleted when going live.**
 
-The "MaritimeCloud" realm uses a special JavaScript [authenticator](https://keycloak.gitbooks.io/documentation/server_admin/topics/authentication/flows.html) that bypasses Keycloaks normal merging of users that has the same email address. The "Certificates" realm uses a special Certificate authenticator (which is part of the MCP SPI modules](https://github.com/MaritimeCloud/MCPKeycloakSpi), and not related to Keycloak's builtin Certificate authenticator).
+The "MCP" realm uses a special JavaScript [authenticator](https://www.keycloak.org/docs/latest/server_admin/#_authentication-flows) that bypasses Keycloaks normal merging of users that has the same email address. The "Certificates" realm uses a special Certificate authenticator (which is part of the [MCP SPI modules](https://github.com/maritimeconnectivity/MCPKeycloakSpi), and not related to Keycloak's builtin Certificate authenticator).
 
 The MCP and Users realm includes each an administrative user that the API users to create users, clients and identity providers in Keycloak when needed. These are setup in `src/main/resources/application.yaml`, so make sure to keep the settings in there in sync with your setup! **Create new admim users or change their credentials when going live!**
 
