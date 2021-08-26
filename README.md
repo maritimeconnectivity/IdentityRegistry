@@ -1,3 +1,5 @@
+[![Java CI with Maven](https://github.com/maritimeconnectivity/IdentityRegistry/actions/workflows/maven.yml/badge.svg)](https://github.com/maritimeconnectivity/IdentityRegistry/actions/workflows/maven.yml)
+
 # Maritime Connectivity Platform Identity Registry
 This is the implementation of the MCP Identity Registry. It is under the Apache 2.0 License.
 
