@@ -67,8 +67,7 @@ public class X509HeaderUserDetailsServiceTest {
         try (FileInputStream fileInputStream = new FileInputStream(certFile)) {
             contents = IOUtils.toString(fileInputStream, StandardCharsets.UTF_8);
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Loading Certificate from file failed!");
+            fail("Loading Certificate from file failed!", e);
         }
         // Try to get user from certificate
         InetOrgPerson person = (InetOrgPerson) x509HeaderUserDetailsService.loadUserByUsername(contents);
@@ -92,8 +91,7 @@ public class X509HeaderUserDetailsServiceTest {
         try {
             contents = Files.lines(Paths.get(certFile)).collect(Collectors.joining("\n"));
         } catch (IOException e) {
-            e.printStackTrace();
-            fail("Loading Certificate from file failed!");
+            fail("Loading Certificate from file failed!", e);
         }
         // Setup mocked role
         Role role = new Role();

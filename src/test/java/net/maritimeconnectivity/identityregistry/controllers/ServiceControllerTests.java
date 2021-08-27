@@ -180,8 +180,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -221,8 +220,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -263,14 +261,12 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
             verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "bearer-only", "https://localhost");
         } catch (IOException | DuplicatedKeycloakEntry e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -308,8 +304,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isBadRequest());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -436,14 +431,12 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
             verify(this.keycloakAU, times(1)).updateClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "public", "https://localhost");
         } catch (IOException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -494,8 +487,7 @@ public class ServiceControllerTests {
             String stringResult = result.getResponse().getContentAsString();
             assertTrue(stringResult.contains(MCPIdRegConstants.OIDC_MISSING_REDIRECT_URL));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -542,8 +534,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }

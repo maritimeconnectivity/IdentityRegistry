@@ -74,8 +74,7 @@ public class CertificateControllerTests {
         try {
             doReturn(ret).when(this.certificateController).handleOCSP(any(), any());
         } catch (IOException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
             return;
         }
 
@@ -83,8 +82,7 @@ public class CertificateControllerTests {
             mvc.perform(get(new URI("/x509/api/certificates/ocsp/urn:mrn:mcl:ca:maritimecloud-idreg/MFUwUzBRME8wTTAJBgUrDgMCGgUABBQ6UIqQ34%2BgN2srrAjL6PckJ0ELZQQUxE5nZxstKKPxT9ruhJjPzxpwfFUCFCPUaD%2Fh4aw7GY%2F7bjSdgGfC3pt2")).header("Origin", "bla"))
                     .andExpect(status().isOk()).andExpect(content().bytes(ret));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 

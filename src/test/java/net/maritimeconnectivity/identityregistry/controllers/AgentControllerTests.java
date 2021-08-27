@@ -107,8 +107,7 @@ public class AgentControllerTests {
                 .content(agentJson)
                 .contentType("application/json")).andExpect(status().isCreated());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -137,8 +136,7 @@ public class AgentControllerTests {
                     .content(agentJson)
                     .contentType("application/json")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -163,8 +161,7 @@ public class AgentControllerTests {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
             .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -189,8 +186,7 @@ public class AgentControllerTests {
                     .header("Origin", "bla").contentType("application/json").content(agentJson))
                     .andExpect(status().isOk()).andExpect(content().json(agentJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -215,8 +211,7 @@ public class AgentControllerTests {
                     .header("Origin", "bla").contentType("application/json").content(agentJson))
                     .andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -262,8 +257,7 @@ public class AgentControllerTests {
                     .with(authentication(auth))
                     .header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 }

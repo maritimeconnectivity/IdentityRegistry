@@ -119,8 +119,7 @@ public class UserControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -158,8 +157,7 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:dma:thc");
     }
@@ -198,8 +196,7 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -240,8 +237,7 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -283,14 +279,12 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
             verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
         } catch (IOException | McpBasicRestException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -328,8 +322,7 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc");
     }
@@ -371,8 +364,7 @@ public class UserControllerTests {
             .content(userJson)
             .contentType("application/json")).andExpect(status().is4xxClientError());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
 
     }
@@ -416,9 +408,8 @@ public class UserControllerTests {
                     .content(userJson)
                     .contentType("application/json")).andExpect(status().isCreated());
         } catch (Exception e) {
-            e.printStackTrace();
             wiser.stop();
-            fail();
+            fail(e);
         }
 
         assertTrue(wiser.getMessages().size() > 0);
@@ -460,8 +451,7 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().is4xxClientError());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -505,8 +495,7 @@ public class UserControllerTests {
             String content = result.getResponse().getContentAsString();
             assertNotNull(content);
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -551,8 +540,7 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -597,8 +585,7 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -643,8 +630,7 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.WEAK_HASH, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
