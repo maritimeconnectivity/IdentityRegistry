@@ -105,8 +105,7 @@ public class ServiceControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -133,7 +132,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -143,8 +142,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
     }
@@ -171,7 +169,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:sma:user", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
@@ -211,7 +209,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -253,7 +251,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -299,7 +297,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
@@ -340,7 +338,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -351,8 +349,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -380,7 +377,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -390,8 +387,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isNotFound());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -428,7 +424,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
@@ -484,7 +480,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
@@ -534,7 +530,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);

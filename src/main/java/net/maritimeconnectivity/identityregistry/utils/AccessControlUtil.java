@@ -45,6 +45,7 @@ public class AccessControlUtil {
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
+    public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
 
     @Autowired
     private HasRoleUtil hasRoleUtil;
@@ -67,7 +68,7 @@ public class AccessControlUtil {
         // First check if the user is a SITE_ADMIN, in which case he gets access.
         for (GrantedAuthority authority : auth.getAuthorities()) {
             String role = authority.getAuthority();
-            log.debug("User has role: " + role);
+            log.debug("User has role: {}", role);
             if ("ROLE_SITE_ADMIN".equals(role)) {
                 return true;
             }
@@ -80,10 +81,17 @@ public class AccessControlUtil {
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME)) {
-                String org = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
+            if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
+                String mrn = (String) otherClaims.get(AccessControlUtil.MRN_PROPERTY_NAME);
+                String org = "";
+                if (mrn != null) {
+                    String[] mrnParts = mrn.split(":");
+                    if (mrnParts.length < 7)
+                        return false;
+                    org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                }
                 if (org.equalsIgnoreCase(orgMrn)) {
-                    log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is in " + orgMrn);
+                    log.debug("Entity from org: {} is in {}", org, orgMrn);
                     return true;
                 }
                 Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -91,7 +99,7 @@ public class AccessControlUtil {
                 if (organization != null && agentOrganization != null) {
                     List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                     if (!agents.isEmpty()) {
-                        log.debug("Entity from org: " + org + " is an agent for " + orgMrn);
+                        log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
                         return true;
                     }
                 }
@@ -106,7 +114,7 @@ public class AccessControlUtil {
             // The O(rganization) value in the certificate is an MRN
             String certOrgMrn = person.getO();
             if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
-                log.debug("Entity with O=" + certOrgMrn + " is in " + orgMrn);
+                log.debug("Entity with O={} is in {}", certOrgMrn, orgMrn);
                 return true;
             }
             Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -114,13 +122,13 @@ public class AccessControlUtil {
             if (organization != null && agentOrganization != null) {
                 List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                 if (!agents.isEmpty()) {
-                    log.debug("Entity with O=" + certOrgMrn + " is an agent for " + orgMrn);
+                    log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
                     return true;
                 }
             }
-            log.debug("Entity with O=" + certOrgMrn + " is not in " + orgMrn);
+            log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
         } else {
-            log.debug("Unknown authentication method: " + auth.getClass());
+            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
@@ -139,8 +147,8 @@ public class AccessControlUtil {
                 log.debug("User sync'er accepted!");
                 return true;
             }
-            log.debug("This was not the user-sync'er! " + userSyncMRN + "~" + person.getUid() + ", " + userSyncO + "~"
-                    + person.getO() + ", " + userSyncOU + "~" + person.getOu() + ", " + userSyncC + "~" + person.getPostalAddress());
+            log.debug("This was not the user-syncer! {}~{}, {}~{}, {}~{}, {}~{}", userSyncMRN, person.getUid(),
+                    userSyncO, person.getO(), userSyncOU, person.getOu(), userSyncC, person.getPostalAddress());
         }
         return false;
     }
@@ -153,9 +161,12 @@ public class AccessControlUtil {
             KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            String org = (String) otherClaims.get(ORG_PROPERTY_NAME);
             String mrn = (String) otherClaims.get(MRN_PROPERTY_NAME);
-            if (org != null && mrn != null) {
+            if (mrn != null) {
+                String[] mrnParts = mrn.split(":");
+                if (mrnParts.length < 7)
+                    return false;
+                String org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
@@ -168,7 +179,7 @@ public class AccessControlUtil {
             }
         }
         if (auth != null) {
-            log.debug("Unknown authentication method: " + auth.getClass());
+            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
@@ -208,7 +219,7 @@ public class AccessControlUtil {
             }
         } else {
             if (auth != null) {
-                log.debug("Unknown authentication method: " + auth.getClass());
+                log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
             }
         }
         return false;
@@ -240,10 +251,10 @@ public class AccessControlUtil {
             // If the user does not have the role (or a role that is above it in the role hierarchy)
             // an exception will be thrown by Spring Security.
             hasRoleUtil.testRole(role);
-            log.debug("user has role " + role);
+            log.debug("User has role {}", role);
             return true;
         } catch (Exception ade) {
-            log.debug("user does not have role " + role);
+            log.debug("user does not have role {}", role);
             return false;
         }
     }

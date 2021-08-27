@@ -213,7 +213,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))

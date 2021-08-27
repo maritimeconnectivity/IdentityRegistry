@@ -40,15 +40,15 @@ public class TokenGenerator {
 
     /**
      * Helper function of build fake KeycloakAuthenticationToken
-     * @param orgMrn
+     * @param mrn
      * @param roles
      * @param permissions
      * @return
      */
-    public static KeycloakAuthenticationToken generateKeycloakToken(String orgMrn, String roles, String permissions) {
+    public static KeycloakAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
         AccessToken accessToken = new AccessToken();
-        if (orgMrn != null && !orgMrn.isEmpty()) {
-            accessToken.setOtherClaims(AccessControlUtil.ORG_PROPERTY_NAME, orgMrn);
+        if (mrn != null && !mrn.isEmpty()) {
+            accessToken.setOtherClaims(AccessControlUtil.MRN_PROPERTY_NAME, mrn);
         }
         if (permissions != null && !permissions.isEmpty()) {
             accessToken.setOtherClaims(AccessControlUtil.PERMISSIONS_PROPERTY_NAME, permissions);
