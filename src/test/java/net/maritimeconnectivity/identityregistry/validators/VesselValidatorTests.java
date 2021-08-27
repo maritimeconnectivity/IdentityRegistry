@@ -39,19 +39,19 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class VesselValidatorTests {
+class VesselValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateInvalidVesselNoVesselOrgId() {
+    void validateInvalidVesselNoVesselOrgId() {
         Vessel invalidVessel = new Vessel();
         invalidVessel.setName("Test Vessel");
         Set<ConstraintViolation<Vessel>> violations = validator.validate(invalidVessel);
@@ -59,7 +59,7 @@ public class VesselValidatorTests {
     }
 
     @Test
-    public void validateInvalidVesselNoName() {
+    void validateInvalidVesselNoName() {
         Vessel invalidVessel = new Vessel();
         invalidVessel.setMrn("urn:mrn:mcp:vessel:idp1:testorg:invalid-vessel");
         Set<ConstraintViolation<Vessel>> violations = validator.validate(invalidVessel);
@@ -67,7 +67,7 @@ public class VesselValidatorTests {
     }
 
     @Test
-    public void validateValidVesselNoAttributes() {
+    void validateValidVesselNoAttributes() {
         Vessel validVessel = new Vessel();
         validVessel.setMrn("urn:mrn:mcp:vessel:idp1:test-org:valid-vessel");
         validVessel.setName("Test Vessel");
@@ -76,7 +76,7 @@ public class VesselValidatorTests {
     }
 
     @Test
-    public void validateValidVesselWithAttributes() {
+    void validateValidVesselWithAttributes() {
         Vessel validVessel = new Vessel();
         validVessel.setMrn("urn:mrn:mcp:vessel:idp1:test:valid-vessel");
         validVessel.setName("Test Vessel");
@@ -92,7 +92,7 @@ public class VesselValidatorTests {
     }
 
     @Test
-    public void validateInvalidVesselWithAttributes() {
+    void validateInvalidVesselWithAttributes() {
         Vessel invalidVessel = new Vessel();
         invalidVessel.setMrn("urn:mrn:mcp:vessel:idp1:test:invalid-vessel");
         invalidVessel.setName("Test Vessel");

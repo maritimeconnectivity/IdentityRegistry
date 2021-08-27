@@ -43,19 +43,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class OrganizationValidatorTests {
+class OrganizationValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateValidOrg() {
+    void validateValidOrg() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
         validOrg.setMrn("urn:mrn:mcp:org:idp1:test");
@@ -69,7 +69,7 @@ public class OrganizationValidatorTests {
     }
 
     @Test
-    public void validateInvalidOrg1() {
+    void validateInvalidOrg1() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
         invalidOrg.setMrn("urn:mrn:mcp:org:idp1:test");
@@ -85,7 +85,7 @@ public class OrganizationValidatorTests {
     }
 
     @Test
-    public void validateInvalidOrg2() {
+    void validateInvalidOrg2() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
         // Invalid MRN - only 64 chars
@@ -101,7 +101,7 @@ public class OrganizationValidatorTests {
     }
 
     @Test
-    public void validateValidOrgWithIDP() {
+    void validateValidOrgWithIDP() {
         Organization validOrg = new Organization();
         validOrg.setName("Test Org");
         validOrg.setMrn("urn:mrn:mcp:org:idp1:test");
@@ -119,7 +119,7 @@ public class OrganizationValidatorTests {
     }
 
     @Test
-    public void validateInvalidOrgWithIDP() {
+    void validateInvalidOrgWithIDP() {
         Organization invalidOrg = new Organization();
         invalidOrg.setName("Test Org");
         invalidOrg.setMrn("urn:mrn:mcp:org:idp1:test");

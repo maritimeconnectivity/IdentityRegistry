@@ -78,7 +78,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class UserControllerTests {
+class UserControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -101,7 +101,7 @@ public class UserControllerTests {
     private int smtpServerPort;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -114,7 +114,7 @@ public class UserControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetUserWithoutRights() {
+    void testAccessGetUserWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(new User());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").header("Origin", "bla")).andExpect(status().isForbidden());
@@ -127,7 +127,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate association
      */
     @Test
-    public void testAccessGetUserWithRights() {
+    void testAccessGetUserWithRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -166,7 +166,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetUserWithRights2() {
+    void testAccessGetUserWithRights2() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -205,7 +205,7 @@ public class UserControllerTests {
      * Try to update a user without the appropriate association
      */
     @Test
-    public void testAccessUpdateUserWithoutRights() {
+    void testAccessUpdateUserWithoutRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -245,7 +245,7 @@ public class UserControllerTests {
      * Try to update a user with the appropriate association
      */
     @Test
-    public void testAccessUpdateUserWithRights() {
+    void testAccessUpdateUserWithRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -292,7 +292,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate association, but letter casing of orgMrn being different
      */
     @Test
-    public void testAccessGetUserWithRightsOrgMrnDiffCase() {
+    void testAccessGetUserWithRightsOrgMrnDiffCase() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma@dma:thc");
@@ -328,7 +328,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testCreateUserForFederatedOrg() {
+    void testCreateUserForFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -370,7 +370,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testCreateUserForNonFederatedOrg() {
+    void testCreateUserForNonFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -417,7 +417,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testUpdateUserFederatedOrg() {
+    void testUpdateUserFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -456,7 +456,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testIssueCertificateUsingCsr() {
+    void testIssueCertificateUsingCsr() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -500,7 +500,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakRSAKey() {
+    void testIssueCertificateUsingCsrWithWeakRSAKey() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -545,7 +545,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakECKey() {
+    void testIssueCertificateUsingCsrWithWeakECKey() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -590,7 +590,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakSignature() {
+    void testIssueCertificateUsingCsrWithWeakSignature() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");

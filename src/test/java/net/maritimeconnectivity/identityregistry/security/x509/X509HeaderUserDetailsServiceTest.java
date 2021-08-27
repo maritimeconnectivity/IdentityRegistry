@@ -44,7 +44,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(SpringExtension.class)
-public class X509HeaderUserDetailsServiceTest {
+class X509HeaderUserDetailsServiceTest {
 
     @MockBean
     private RoleService roleService;
@@ -55,12 +55,12 @@ public class X509HeaderUserDetailsServiceTest {
     X509HeaderUserDetailsService x509HeaderUserDetailsService;
 
     @BeforeEach
-    public void setUp() throws Exception {
+    void setUp() throws Exception {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    public void loadUserByUsernameVessel1() throws Exception {
+    void loadUserByUsernameVessel1() throws Exception {
         // Load certificate from file
         String certFile = "src/test/resources/Certificate_Myboat.pem";
         String contents = null;
@@ -84,7 +84,7 @@ public class X509HeaderUserDetailsServiceTest {
     }
 
     //@Test
-    public void loadUserByUsernameVessel2() throws Exception {
+    void loadUserByUsernameVessel2() throws Exception {
         // Load certificate from file
         String certFile = "src/test/resources/Certificate_My_vessel.pem";
         String contents = null;

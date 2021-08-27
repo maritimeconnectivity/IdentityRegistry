@@ -42,10 +42,10 @@ import javax.servlet.Filter;
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
 @Primary
-public class MultiSecurityConfigTest {
+class MultiSecurityConfigTest {
 
     @Bean
-    public static RoleHierarchy roleHierarchy() {
+    static RoleHierarchy roleHierarchy() {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         // If the hierarchy is changed, remember to update the hierarchy above and the list in
         // net.maritimecloud.identityregistry.controllers.RoleController:getAvailableRoles()
@@ -67,13 +67,13 @@ public class MultiSecurityConfigTest {
     @Configuration
     @Order(1)
     @Primary
-    public static class OIDCWebSecurityConfigurationAdapterTest extends KeycloakWebSecurityConfigurerAdapter
+    static class OIDCWebSecurityConfigurationAdapterTest extends KeycloakWebSecurityConfigurerAdapter
     {
         /**
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth) {
+        void configureGlobal(AuthenticationManagerBuilder auth) {
             auth.authenticationProvider(mcKeycloakAuthenticationProvider());
         }
 
@@ -120,7 +120,7 @@ public class MultiSecurityConfigTest {
         }
 
         @Bean
-        public FilterRegistrationBean<Filter> keycloakAuthenticationProcessingFilterRegistrationBean(
+        FilterRegistrationBean<Filter> keycloakAuthenticationProcessingFilterRegistrationBean(
                 KeycloakAuthenticationProcessingFilter filter) {
             FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>(filter);
             registrationBean.setEnabled(false);
@@ -128,7 +128,7 @@ public class MultiSecurityConfigTest {
         }
 
         @Bean
-        public FilterRegistrationBean<Filter> keycloakPreAuthActionsFilterRegistrationBean(
+        FilterRegistrationBean<Filter> keycloakPreAuthActionsFilterRegistrationBean(
                 KeycloakPreAuthActionsFilter filter) {
             FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>(filter);
             registrationBean.setEnabled(false);
@@ -146,14 +146,14 @@ public class MultiSecurityConfigTest {
     @Configuration
     @Order(2)
     @Primary
-    public static class X509WebSecurityConfigurationAdapterTest extends WebSecurityConfigurerAdapter {
+    static class X509WebSecurityConfigurationAdapterTest extends WebSecurityConfigurerAdapter {
 
         @Value("${server.ssl.enabled:false}")
         private boolean useStandardSSL;
         private X509HeaderUserDetailsService userDetailsService;
         private PreAuthenticatedAuthenticationProvider preAuthenticatedProvider;
 
-        public X509WebSecurityConfigurationAdapterTest() {
+        X509WebSecurityConfigurationAdapterTest() {
             super();
             if (!useStandardSSL) {
                 userDetailsService = new X509HeaderUserDetailsService();
@@ -208,12 +208,12 @@ public class MultiSecurityConfigTest {
         }
 
         @Bean
-        public X509HeaderUserDetailsService x509HeaderUserDetailsService() {
+        X509HeaderUserDetailsService x509HeaderUserDetailsService() {
             return userDetailsService;
         }
 
         @Bean
-        public X509UserDetailsService x509UserDetailsService() {
+        X509UserDetailsService x509UserDetailsService() {
             return new X509UserDetailsService();
         }
 
@@ -225,7 +225,7 @@ public class MultiSecurityConfigTest {
 
         // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
         @Bean
-        public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
+        HttpFirewall allowUrlEncodedSlashHttpFirewall() {
             DefaultHttpFirewall firewall = new DefaultHttpFirewall();
             firewall.setAllowUrlEncodedSlash(true);
             return firewall;

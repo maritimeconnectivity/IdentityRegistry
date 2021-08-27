@@ -38,19 +38,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class UserValidatorTests {
+class UserValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateValidUser() {
+    void validateValidUser() {
         User validUser = new User();
         validUser.setFirstName("Firstname");
         validUser.setLastName("Lastname");
@@ -62,7 +62,7 @@ public class UserValidatorTests {
     }
 
     @Test
-    public void validateInvalidUser1() {
+    void validateInvalidUser1() {
         User invalidUser = new User();
         invalidUser.setFirstName("Firstname");
         // Invalid lastname - must be filled
@@ -76,7 +76,7 @@ public class UserValidatorTests {
     }
 
     @Test
-    public void validateInvalidUser2() {
+    void validateInvalidUser2() {
         User invalidUser = new User();
         invalidUser.setFirstName("Firstname");
         invalidUser.setLastName("Lastname");

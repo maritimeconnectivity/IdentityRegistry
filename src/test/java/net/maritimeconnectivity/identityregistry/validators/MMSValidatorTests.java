@@ -38,19 +38,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class MMSValidatorTests {
+class MMSValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateValidMMS() {
+    void validateValidMMS() {
         MMS validMms = new MMS();
         validMms.setMrn("urn:mrn:mcp:mms:idp1:testorg:test-mms1");
         validMms.setName("Test mms");
@@ -61,7 +61,7 @@ public class MMSValidatorTests {
     }
 
     @Test
-    public void validateInvalidMMS() {
+    void validateInvalidMMS() {
         MMS invalidMms = new MMS();
         invalidMms.setMrn("urn:mrn:mcp:mms:idp1:testorg:test-mms1");
         invalidMms.setName("Test mms");

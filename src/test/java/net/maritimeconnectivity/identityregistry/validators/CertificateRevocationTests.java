@@ -36,18 +36,18 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @ExtendWith(SpringExtension.class)
-public class CertificateRevocationTests {
+class CertificateRevocationTests {
 
     private Validator validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         ValidatorFactory vf = Validation.buildDefaultValidatorFactory();
         this.validator = vf.getValidator();
     }
 
     @Test
-    public void validateInvalidCR() {
+    void validateInvalidCR() {
         // Set up a CR with invalid reason and date
         CertificateRevocation cr = new CertificateRevocation();
         cr.setRevokationReason("not-valid-reason");
@@ -58,7 +58,7 @@ public class CertificateRevocationTests {
     }
 
     @Test
-    public void validateValidCR() {
+    void validateValidCR() {
         // Set up a CR with valid reason and date
         CertificateRevocation cr = new CertificateRevocation();
         cr.setRevokationReason("certificatehold");

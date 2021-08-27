@@ -68,7 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class ServiceControllerTests {
+class ServiceControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -86,7 +86,7 @@ public class ServiceControllerTests {
     private CertificateService certificateService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -100,7 +100,7 @@ public class ServiceControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetServiceWithoutRights() {
+    void testAccessGetServiceWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
@@ -113,7 +113,7 @@ public class ServiceControllerTests {
      * Try to get a service with the appropriate association
      */
     @Test
-    public void testAccessGetServiceWithRights() {
+    void testAccessGetServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -151,7 +151,7 @@ public class ServiceControllerTests {
      * Try to get a service with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetServiceWithRights2() {
+    void testAccessGetServiceWithRights2() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -189,7 +189,7 @@ public class ServiceControllerTests {
      * Try to update a service without the appropriate association
      */
     @Test
-    public void testAccessUpdateServiceWithoutRights() {
+    void testAccessUpdateServiceWithoutRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -228,7 +228,7 @@ public class ServiceControllerTests {
      * Try to update a service with the appropriate association
      */
     @Test
-    public void testAccessUpdateServiceWithRights() {
+    void testAccessUpdateServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -274,7 +274,7 @@ public class ServiceControllerTests {
      * Try to update a service with the appropriate association but with version set to null
      */
     @Test
-    public void testCreateServiceWithVersionNull() {
+    void testCreateServiceWithVersionNull() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -312,7 +312,7 @@ public class ServiceControllerTests {
      * Try to get a JBoss conf XML for a service
      */
     @Test
-    public void testAccessServiceJBossXMLWithRights() {
+    void testAccessServiceJBossXMLWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -352,7 +352,7 @@ public class ServiceControllerTests {
      * Try to get a JBoss conf XML for a service where it is not available
      */
     @Test
-    public void testAccessServiceJBossXMLWithRightsNoConf() {
+    void testAccessServiceJBossXMLWithRightsNoConf() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -390,7 +390,7 @@ public class ServiceControllerTests {
      * Try to update a service with valid OIDC info
      */
     @Test
-    public void testUpdateServiceWithValidOIDC() {
+    void testUpdateServiceWithValidOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -444,7 +444,7 @@ public class ServiceControllerTests {
      * Try to update a service with invalid OIDC info
      */
     @Test
-    public void testUpdateServiceWithInvalidOIDC() {
+    void testUpdateServiceWithInvalidOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -495,7 +495,7 @@ public class ServiceControllerTests {
      * Try to update a service with valid OIDC info
      */
     @Test
-    public void testUpdateServiceRemoveOIDC() {
+    void testUpdateServiceRemoveOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");

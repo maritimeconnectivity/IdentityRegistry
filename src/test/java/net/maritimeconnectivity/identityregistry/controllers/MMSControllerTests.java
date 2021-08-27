@@ -61,7 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class MMSControllerTests {
+class MMSControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -73,7 +73,7 @@ public class MMSControllerTests {
     private OrganizationService organizationService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -86,7 +86,7 @@ public class MMSControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetMMSWithoutRights() {
+    void testAccessGetMMSWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(new MMS());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").header("Origin", "bla")).andExpect(status().isForbidden());
@@ -99,7 +99,7 @@ public class MMSControllerTests {
      * Try to get a mms with the appropriate association
      */
     @Test
-    public void testAccessGetMMSWithRights() {
+    void testAccessGetMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -138,7 +138,7 @@ public class MMSControllerTests {
      * Try to get a mms with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetMMSWithRights2() {
+    void testAccessGetMMSWithRights2() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -176,7 +176,7 @@ public class MMSControllerTests {
      * Try to update a mms with the appropriate association
      */
     @Test
-    public void testAccessUpdateMMSWithRights() {
+    void testAccessUpdateMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -216,7 +216,7 @@ public class MMSControllerTests {
      * Try to update a mms without the appropriate association
      */
     @Test
-    public void testAccessUpdateMMSWithoutRights() {
+    void testAccessUpdateMMSWithoutRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -256,7 +256,7 @@ public class MMSControllerTests {
      * Try to update a service with the appropriate association but with version set to null
      */
     @Test
-    public void testCreateMMSWithUrlNull() {
+    void testCreateMMSWithUrlNull() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -295,7 +295,7 @@ public class MMSControllerTests {
      * Try to update a mms with a null subsidiary mrn
      */
     @Test
-    public void testUpdateMMS() {
+    void testUpdateMMS() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");

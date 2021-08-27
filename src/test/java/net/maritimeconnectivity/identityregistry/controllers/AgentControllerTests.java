@@ -55,7 +55,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class AgentControllerTests {
+class AgentControllerTests {
 
     @Autowired
     private WebApplicationContext context;
@@ -69,7 +69,7 @@ public class AgentControllerTests {
     private AgentService agentService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 .apply(SecurityMockMvcConfigurers.springSecurity())
@@ -77,7 +77,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testCreateAgentWithRights() throws NoSuchFieldException, IllegalAccessException {
+    void testCreateAgentWithRights() throws NoSuchFieldException, IllegalAccessException {
         Organization actingOrg = mock(Organization.class);
         actingOrg.setMrn("urn:mrn:mcp:org:idp1:agent");
         Organization onBehalfOfOrg = mock(Organization.class);
@@ -87,7 +87,7 @@ public class AgentControllerTests {
         agent.setIdActingOrganization(1L);
         agent.setIdOnBehalfOfOrganization(2L);
 
-        // We need to use reflection to set the id of the agent as the "id" field does not have a public setter
+        // We need to use reflection to set the id of the agent as the "id" field does not have a setter
         Field idField = TimestampModel.class.getDeclaredField("id");
         idField.setAccessible(true);
         idField.set(agent, 10L);
@@ -112,7 +112,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testCreateAgentWithoutRights() {
+    void testCreateAgentWithoutRights() {
         Organization actingOrg = mock(Organization.class);
         actingOrg.setMrn("urn:mrn:mcp:org:idp1:agent");
         Organization onBehalfOfOrg = mock(Organization.class);
@@ -141,7 +141,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testGetAgentWithRights() {
+    void testGetAgentWithRights() {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
@@ -166,7 +166,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testUpdateAgentWithRights() {
+    void testUpdateAgentWithRights() {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
@@ -191,7 +191,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testUpdateAgentWithoutRights() {
+    void testUpdateAgentWithoutRights() {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
@@ -216,7 +216,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testDeleteAgentWithRights() {
+    void testDeleteAgentWithRights() {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
@@ -239,7 +239,7 @@ public class AgentControllerTests {
     }
 
     @Test
-    public void testDeleteAgentWithoutRights() {
+    void testDeleteAgentWithoutRights() {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);

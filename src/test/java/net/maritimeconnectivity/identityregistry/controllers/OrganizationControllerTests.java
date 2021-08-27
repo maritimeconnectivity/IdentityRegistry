@@ -64,7 +64,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @WebAppConfiguration
-public class OrganizationControllerTests {
+class OrganizationControllerTests {
 
     @Autowired
     private WebApplicationContext context;
@@ -97,7 +97,7 @@ public class OrganizationControllerTests {
     private AgentService agentService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -110,7 +110,7 @@ public class OrganizationControllerTests {
      * Try to apply for an organization to be created
      */
     @Test
-    public void testApply() {
+    void testApply() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -141,7 +141,7 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="ORG_ADMIN")
     @Test
-    public void testAccessApproveOrgWithoutRights() {
+    void testAccessApproveOrgWithoutRights() {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
@@ -154,7 +154,7 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="SITE_ADMIN")
     @Test
-    public void testAccessApproveOrgWithRights() {
+    void testAccessApproveOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isOk());
@@ -168,7 +168,7 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="ORG_ADMIN")
     @Test
-    public void testAccessDeleteOrgWithoutRights() {
+    void testAccessDeleteOrgWithoutRights() {
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
@@ -181,7 +181,7 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="SITE_ADMIN")
     @Test
-    public void testAccessDeleteOrgWithRights() {
+    void testAccessDeleteOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isOk());
@@ -194,7 +194,7 @@ public class OrganizationControllerTests {
      * Try to update an organization with the appropriate role
      */
     @Test
-    public void testAccessUpdateOrgWithRights() {
+    void testAccessUpdateOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -222,7 +222,7 @@ public class OrganizationControllerTests {
     }
 
     @Test
-    public void testAccessUpdateOrgAsAgent() {
+    void testAccessUpdateOrgAsAgent() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -272,7 +272,7 @@ public class OrganizationControllerTests {
     }
 
     @Test
-    public void testAccessUpdateOrgAsAgentWithoutRights() {
+    void testAccessUpdateOrgAsAgentWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -325,7 +325,7 @@ public class OrganizationControllerTests {
      * Try to update an organization with data mismatch between json and url
      */
     @Test
-    public void testAccessUpdateOrgWithDataMismatch() {
+    void testAccessUpdateOrgWithDataMismatch() {
         // Build org object to test with
         Organization org = new Organization();
         // The mrn is deliberately wrong - that is the point of the test
@@ -358,7 +358,7 @@ public class OrganizationControllerTests {
      * Try to update an organization without the appropriate association
      */
     @Test
-    public void testAccessUpdateOrgWithoutRights() {
+    void testAccessUpdateOrgWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -390,7 +390,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role
      */
     @Test
-    public void testAccessGetOrgWithRights() {
+    void testAccessGetOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -419,7 +419,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role as SITE_ADMIN
      */
     @Test
-    public void testAccessGetOrgWithRights2() {
+    void testAccessGetOrgWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -448,7 +448,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role
      */
     @Test
-    public void testAccessGetOrgByIdWithRights() {
+    void testAccessGetOrgByIdWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -477,7 +477,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role as SITE_ADMIN
      */
     @Test
-    public void testAccessGetOrgByIdWithRights2() {
+    void testAccessGetOrgByIdWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");

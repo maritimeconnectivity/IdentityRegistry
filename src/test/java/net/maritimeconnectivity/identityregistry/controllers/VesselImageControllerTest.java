@@ -47,7 +47,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
-public class VesselImageControllerTest {
+class VesselImageControllerTest {
 
     @Autowired
     VesselImageController vesselImageController;
@@ -62,7 +62,7 @@ public class VesselImageControllerTest {
     EntityManagerFactory emf;
 
     @Test
-    public void deleteImage() throws Exception {
+    void deleteImage() throws Exception {
         assertNumberOfImages(0);
 
         Organization org = new Organization();

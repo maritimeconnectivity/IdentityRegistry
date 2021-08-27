@@ -36,7 +36,7 @@ import java.util.UUID;
 /**
  * Helper class to generate fake tokens for use when testing controllers.
  */
-public class TokenGenerator {
+class TokenGenerator {
 
     /**
      * Helper function of build fake KeycloakAuthenticationToken
@@ -45,7 +45,7 @@ public class TokenGenerator {
      * @param permissions
      * @return
      */
-    public static KeycloakAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
+    static KeycloakAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
         AccessToken accessToken = new AccessToken();
         if (mrn != null && !mrn.isEmpty()) {
             accessToken.setOtherClaims(AccessControlUtil.MRN_PROPERTY_NAME, mrn);
@@ -74,7 +74,7 @@ public class TokenGenerator {
      * @param permissions
      * @return
      */
-    public static PreAuthenticatedAuthenticationToken generatePreAuthenticatedAuthenticationToken(String orgMrn, String roles, String permissions) {
+    static PreAuthenticatedAuthenticationToken generatePreAuthenticatedAuthenticationToken(String orgMrn, String roles, String permissions) {
         Collection<GrantedAuthority> authorities = generateGrantedAuthority(roles);
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
         String username = "urn:mrn:mcl:user:dma:dmauser";
@@ -89,7 +89,7 @@ public class TokenGenerator {
         return token;
     }
 
-    public static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {
+    static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         String[] roleArr = roles.split(",");
         for(String role : roleArr) {

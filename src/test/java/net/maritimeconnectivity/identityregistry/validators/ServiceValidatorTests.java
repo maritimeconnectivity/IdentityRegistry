@@ -38,19 +38,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class ServiceValidatorTests {
+class ServiceValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateValidService() {
+    void validateValidService() {
         Service validService = new Service();
         validService.setName("Test service");
         validService.setMrn("urn:mrn:mcp:service:idp1:testorg:instance:test-design:test-service-instance");
@@ -62,7 +62,7 @@ public class ServiceValidatorTests {
     }
 
     @Test
-    public void validateInvalidService() {
+    void validateInvalidService() {
         Service invalidService = new Service();
         invalidService.setName("Test service");
         // Invalid MRN service instances format

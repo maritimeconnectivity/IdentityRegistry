@@ -55,7 +55,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class LogoControllerTest {
+class LogoControllerTest {
     @Autowired
     private WebApplicationContext context;
 
@@ -71,12 +71,12 @@ public class LogoControllerTest {
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void deleteLogo() throws Exception {
+    void deleteLogo() throws Exception {
 
         assertNumberOfLogos(0);
 
