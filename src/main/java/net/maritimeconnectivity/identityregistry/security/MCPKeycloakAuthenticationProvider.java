@@ -58,11 +58,17 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
         KeycloakSecurityContext ksc = (KeycloakSecurityContext)token.getCredentials();
         Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
 
-        Organization org;
-        if (otherClaims.containsKey(AccessControlUtil.ORG_PROPERTY_NAME)) {
-            String orgMrn = (String) otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME);
-            log.debug("Found org mrn: {}", orgMrn);
-            org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        Organization org = null;
+        if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
+            String mrn = (String) otherClaims.get(AccessControlUtil.MRN_PROPERTY_NAME);
+            if (mrn != null) {
+                String[] mrnParts = mrn.split(":");
+                if (mrnParts.length >= 7) {
+                    String orgMrn = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                    log.debug("Found org mrn: {}", orgMrn);
+                    org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                }
+            }
 
             if (org != null) {
                 if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
