@@ -123,10 +123,10 @@ public class UserController extends EntityController<User> {
                     P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
                     AuthProvider authProvider = p11PKIConfiguration.getProvider();
                     p11PKIConfiguration.providerLogin();
-                    password = PasswordUtil.generatePassword(authProvider);
+                    password = passwordUtil.generatePassword();
                     p11PKIConfiguration.providerLogout();
                 } else {
-                    password = PasswordUtil.generatePassword(null);
+                    password = passwordUtil.generatePassword();
                 }
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {

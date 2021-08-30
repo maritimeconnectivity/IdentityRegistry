@@ -76,6 +76,9 @@ public abstract class BaseControllerWithCertificate {
     protected CertificateUtil certificateUtil;
 
     @Autowired
+    protected PasswordUtil passwordUtil;
+
+    @Autowired
     protected MrnUtil mrnUtil;
 
     private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
@@ -111,7 +114,7 @@ public abstract class BaseControllerWithCertificate {
         String email = getEmail(certOwner);
         String uid = getUid(certOwner);
         int validityPeriod = certificateUtil.getValidityPeriod(type);
-        if(validityPeriod<0)
+        if (validityPeriod < 0)
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_MCP_TYPE, request.getServletPath());
 
         if (uid == null || uid.trim().isEmpty()) {
@@ -151,7 +154,7 @@ public abstract class BaseControllerWithCertificate {
         PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
 
         // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
-        String keystorePassword = PasswordUtil.generatePassword(authProvider);
+        String keystorePassword = passwordUtil.generatePassword();
         if (authProvider != null) {
             p11PKIConfiguration.providerLogout();
         }

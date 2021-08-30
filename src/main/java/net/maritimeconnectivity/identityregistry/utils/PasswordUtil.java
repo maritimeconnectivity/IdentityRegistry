@@ -15,32 +15,37 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
-import sun.security.pkcs11.SunPKCS11;
-import sun.security.pkcs11.wrapper.PKCS11RuntimeException;
+import net.maritimeconnectivity.pki.PKIConstants;
+import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
 
+import javax.annotation.PostConstruct;
 import java.math.BigInteger;
-import java.security.AuthProvider;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
 
+@Component
 public class PasswordUtil {
 
-    private PasswordUtil() {
-        // empty private constructor as this class should not be instantiated
+    @Autowired
+    private CertificateUtil certificateUtil;
+
+    private SecureRandom secureRandom;
+
+    @PostConstruct
+    public void setup() throws NoSuchAlgorithmException {
+        if (certificateUtil.isUsingPKCS11()
+                && certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
+            secureRandom = SecureRandom.getInstance(PKIConstants.PKCS11,
+                    ((P11PKIConfiguration) certificateUtil.getPkiConfiguration()).getProvider());
+        } else {
+            secureRandom = new SecureRandom();
+        }
     }
 
-    public static String generatePassword(AuthProvider authProvider) {
-        SecureRandom secRandom;
-        if (authProvider instanceof SunPKCS11) {
-            try {
-                secRandom = SecureRandom.getInstance("PKCS11", authProvider);
-            } catch (NoSuchAlgorithmException e) {
-                throw new PKCS11RuntimeException(e.getMessage(), e);
-            }
-        } else {
-            secRandom = new SecureRandom();
-        }
-        return new BigInteger(130, secRandom).toString(32);
+    public String generatePassword() {
+        return new BigInteger(130, secureRandom).toString(32);
     }
 
 }
