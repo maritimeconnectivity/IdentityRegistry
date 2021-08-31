@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -45,6 +46,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "service")
+@Hidden
 public class UserInformationController {
 
     // Data that identifies the User sync'er

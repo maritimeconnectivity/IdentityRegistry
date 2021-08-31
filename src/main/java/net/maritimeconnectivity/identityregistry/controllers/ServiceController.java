@@ -34,6 +34,7 @@ import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -340,7 +341,7 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
+    public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 

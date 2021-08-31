@@ -41,6 +41,7 @@ import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.data.domain.Page;
@@ -157,7 +158,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
-    public Page<Organization> getUnapprovedOrganizations(Pageable pageable) {
+    public Page<Organization> getUnapprovedOrganizations(@ParameterObject Pageable pageable) {
         return this.organizationService.getUnapprovedOrganizations(pageable);
     }
 
@@ -249,7 +250,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/orgs",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    public Page<Organization> getOrganization(Pageable pageable) {
+    public Page<Organization> getOrganization(@ParameterObject Pageable pageable) {
         return this.organizationService.listAllPage(pageable);
     }
 

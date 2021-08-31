@@ -28,6 +28,7 @@ import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
+import org.springdoc.api.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -157,7 +158,7 @@ public class VesselController extends EntityController<Vessel> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
-    public Page<Vessel> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgMrn, Pageable pageable) throws McpBasicRestException {
+    public Page<Vessel> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
 

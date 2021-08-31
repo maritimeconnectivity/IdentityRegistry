@@ -42,6 +42,7 @@
 		<keycloak.version>15.0.2</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.69</bouncycastle.version>
+		<springdoc-openapi.version>1.5.10</springdoc-openapi.version>
 	</properties>
 
 	<dependencies>
@@ -129,7 +130,12 @@
 		<dependency>
 			<groupId>org.springdoc</groupId>
 			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>1.5.10</version>
+			<version>${springdoc-openapi.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.springdoc</groupId>
+			<artifactId>springdoc-openapi-data-rest</artifactId>
+			<version>${springdoc-openapi.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.flywaydb</groupId>
