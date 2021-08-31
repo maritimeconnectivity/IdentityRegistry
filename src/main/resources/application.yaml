@@ -151,7 +151,7 @@ spring.jpa:
 spring.mail:
     default-encoding: UTF-8
     host: localhost
-    port: 10205
+    port: 1025
     #username: 
     #password: 
     # Additional JavaMail session properties.
@@ -188,3 +188,5 @@ spring:
     jpa:
         properties:
             javax.persistence.validation.mode: auto
+    mail:
+        port: 10205
