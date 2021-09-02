@@ -94,10 +94,6 @@ public class KeycloakAdminUtil {
     @Value("${net.maritimeconnectivity.idreg.keycloak-client-template}")
     private String keycloakClientTemplate;
 
-    // Type of user
-    public static final int NORMAL_USER = 0;
-    public static final int ADMIN_USER = 1;
-
     // Type of instance
     public static final int BROKER_INSTANCE = 0;
     public static final int USER_INSTANCE = 1;

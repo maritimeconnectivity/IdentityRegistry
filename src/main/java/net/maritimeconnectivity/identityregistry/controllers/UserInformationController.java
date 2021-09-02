@@ -27,6 +27,7 @@ import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
+import net.maritimeconnectivity.pki.PKIIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
@@ -106,11 +107,8 @@ public class UserInformationController {
         }
 
         User user = this.userService.getByMrn(userMrn);
-
         if (user != null) {
-
             Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
-
             if (organization != null) {
                 List<Agent> agents = this.agentService.getAgentsByIdActingOrg(organization.getId());
 
@@ -129,4 +127,23 @@ public class UserInformationController {
 
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
     }
+
+    @GetMapping(
+            value = "/{userMrn}/pki-identity",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<PKIIdentity> getUserPKIIdentity(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
+        if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        }
+
+        User user = this.userService.getByMrn(userMrn);
+        if (user != null) {
+            Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
+            if (organization != null) {
+                return new ResponseEntity<>(user.toPkiIdentity(organization), HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
+     }
 }

@@ -123,7 +123,7 @@ public class User extends EntityModel {
         String fullName = firstName + " " + lastName;
         String dn = String.format("C=%s, O=%s, OU=user, CN=%s, UID=%s, E=%s", escapeSpecialCharacters(orgCountryCode), escapeSpecialCharacters(organization.getMrn()),
                 escapeSpecialCharacters(fullName), escapeSpecialCharacters(getMrn()), escapeSpecialCharacters(getEmail()));
-        // Don't know if we actually need to do this
+        // Make sure to print out DN correctly. Don't know if we actually need to do this as it seems quite redundant
         X500Name x500DN = new X500Name(dn);
         return x500DN.toString();
     }
