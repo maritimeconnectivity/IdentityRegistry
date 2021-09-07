@@ -126,11 +126,7 @@ public class UserController extends EntityController<User> {
                 String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
-                // If save to DB failed, remove the user from keycloak if it was created.
-                if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
-                    keycloakAU.deleteUser(input.getEmail(), input.getMrn());
-                }
-                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
             } catch (UnsupportedEncodingException | URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
