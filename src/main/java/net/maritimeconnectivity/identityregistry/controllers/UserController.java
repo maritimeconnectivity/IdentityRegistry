@@ -45,6 +45,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -105,6 +106,7 @@ public class UserController extends EntityController<User> {
     )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @Transactional(rollbackFor = McpBasicRestException.class)
     public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -115,6 +117,23 @@ public class UserController extends EntityController<User> {
             }
             this.checkRoles(request, input, org);
             input.setMrn(input.getMrn().toLowerCase());
+            input.setIdOrganization(org.getId());
+
+            HttpHeaders headers = new HttpHeaders();
+            User newUser = null;
+            try {
+                newUser = this.entityService.save(input);
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
+                headers.setLocation(new URI(path));
+            } catch (DataIntegrityViolationException e) {
+                // If save to DB failed, remove the user from keycloak if it was created.
+                if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
+                    keycloakAU.deleteUser(input.getEmail(), input.getMrn());
+                }
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
+            } catch (UnsupportedEncodingException | URISyntaxException e) {
+                log.error("Could not create Location header", e);
+            }
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
                 String password;
@@ -139,22 +158,6 @@ public class UserController extends EntityController<User> {
                 emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
             } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
-            }
-            input.setIdOrganization(org.getId());
-            User newUser = null;
-            HttpHeaders headers = new HttpHeaders();
-            try {
-                newUser = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
-                headers.setLocation(new URI(path));
-            } catch (DataIntegrityViolationException e) {
-                // If save to DB failed, remove the user from keycloak if it was created.
-                if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
-                    keycloakAU.deleteUser(input.getEmail(), input.getMrn());
-                }
-                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
-            } catch (UnsupportedEncodingException | URISyntaxException e) {
-                log.error("Could not create Location header", e);
             }
             return new ResponseEntity<>(newUser, headers, HttpStatus.CREATED);
         } else {
