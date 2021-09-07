@@ -109,7 +109,7 @@ public class User extends EntityModel {
         return pkiIdentity;
     }
 
-    private String constructDN(Organization organization) {
+    public String constructDN(Organization organization) {
         // Try to find the correct country code, else we just use the country name as code
         String orgCountryCode = organization.getCountry();
         String[] locales = Locale.getISOCountries();

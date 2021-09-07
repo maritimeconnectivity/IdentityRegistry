@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
+import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -370,44 +372,50 @@ public class KeycloakAdminUtil {
     /**
      * Creates a user in keycloak.
      *
-     * @param userMrn       MRN of the user
-     * @param firstName     first name of user
-     * @param lastName      last name of user
-     * @param password      password of the user
-     * @param email         email of the user
-     * @param orgMrn        MRN of the org
-     * @throws IOException
+     * @param user                      the user that is going to be created in Keycloak
+     * @param password                  password of the user
+     * @param org                       the organization that the user belongs to
+     * @param enabled                   should the user be enabled after it has been created
+     * @throws IOException              is thrown if user could not be created
+     * @throws DuplicatedKeycloakEntry  is thrown if the user already exists
      */
-    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        log.debug("Creating user: " + userMrn);
+    public void createUser(User user, String password, Organization org, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
+        log.debug("Creating user: " + user.getMrn());
 
-        UserRepresentation user = new UserRepresentation();
-        user.setUsername(email);
-        user.setEnabled(enabled);
-        if (email != null && !email.trim().isEmpty()) {
-            user.setEmail(email);
-            user.setEmailVerified(true);
+        UserRepresentation kcUser = new UserRepresentation();
+        kcUser.setEnabled(enabled);
+        if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+            kcUser.setUsername(user.getEmail());
+            kcUser.setEmail(user.getEmail());
+            kcUser.setEmailVerified(true);
         }
-        if (firstName != null && !firstName.trim().isEmpty()) {
-            user.setFirstName(firstName);
+        if (user.getFirstName() != null && !user.getFirstName().trim().isEmpty()) {
+            kcUser.setFirstName(user.getFirstName());
         }
-        if (lastName != null && !lastName.trim().isEmpty()) {
-            user.setLastName(lastName);
+        if (user.getLastName() != null && !user.getLastName().trim().isEmpty()) {
+            kcUser.setLastName(user.getLastName());
         }
         // Set attributes
         Map<String, List<String>> attr = new HashMap<>();
-        attr.put("org", Collections.singletonList(orgMrn));
-        attr.put("mrn", Collections.singletonList(userMrn));
-        if (permissions != null && !permissions.trim().isEmpty()) {
-            attr.put("permissions", Collections.singletonList(permissions));
+        attr.put("org", Collections.singletonList(org.getMrn()));
+        attr.put("mrn", Collections.singletonList(user.getMrn()));
+        attr.put("uid", Collections.singletonList(user.constructDN(org)));
+        if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
+            attr.put("permissions", Collections.singletonList(user.getPermissions()));
         }
-        user.setAttributes(attr);
-        try (Response ret = getProjectUserRealm().users().create(user)) {
+        if (user.getMrnSubsidiary() != null && !user.getMrnSubsidiary().trim().isEmpty()) {
+            attr.put("subsidiary_mrn", Collections.singletonList(user.getMrnSubsidiary()));
+        }
+        if (user.getHomeMMSUrl() != null && !user.getHomeMMSUrl().trim().isEmpty()) {
+            attr.put("mms_url", Collections.singletonList(user.getHomeMMSUrl()));
+        }
+        kcUser.setAttributes(attr);
+        try (Response ret = getProjectUserRealm().users().create(kcUser)) {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
                     log.error("Creating user failed due to duplicated user" + errMsg);
-                    throw new DuplicatedKeycloakEntry("User with mrn: " + userMrn + " already exists.", errMsg);
+                    throw new DuplicatedKeycloakEntry("User with mrn: " + user.getMrn() + " already exists.", errMsg);
                 } else {
                     log.error("Creating user failed, status: " + ret.getStatus() + ", " + errMsg);
                     throw new IOException("User creating failed: " + errMsg);
@@ -423,10 +431,10 @@ public class KeycloakAdminUtil {
         // Make sure the user updates the password on first login
         cred.setTemporary(true);
         // Find the user by searching for the username
-        user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
-        user.setCredentials(Collections.singletonList(cred));
-        log.debug("Setting password for user: " + user.getId());
-        getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
+        kcUser = getProjectUserRealm().users().search(user.getEmail(), null, null, null, -1, -1).get(0);
+        kcUser.setCredentials(Collections.singletonList(cred));
+        log.debug("Setting password for user: " + kcUser.getId());
+        getProjectUserRealm().users().get(kcUser.getId()).resetPassword(cred);
         log.debug("Created user");
     }
 

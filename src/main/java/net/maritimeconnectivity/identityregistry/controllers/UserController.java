@@ -143,15 +143,15 @@ public class UserController extends EntityController<User> {
                 }
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
-                    keycloakAU.checkUserExistence(input.getEmail());
-                    keycloakAU.createUser(input.getMrn(), password, input.getFirstName(), input.getLastName(), input.getEmail(), orgMrn, input.getPermissions(), true);
+                    keycloakAU.checkUserExistence(newUser.getEmail());
+                    keycloakAU.createUser(newUser, password, org,true);
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
-                } catch (IOException e) {
+                } catch (IOException | NullPointerException e) {
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
                 // Send email to user with credentials
-                emailUtil.sendUserCreatedEmail(input.getEmail(), input.getFirstName() + " " + input.getLastName(), input.getEmail(), password);
+                emailUtil.sendUserCreatedEmail(newUser.getEmail(), newUser.getFirstName() + " " + newUser.getLastName(), newUser.getEmail(), password);
             } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
