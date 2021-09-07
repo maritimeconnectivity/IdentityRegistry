@@ -64,7 +64,6 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
-import java.security.AuthProvider;
 
 @Slf4j
 @RestController
@@ -121,7 +120,6 @@ public class UserController extends EntityController<User> {
                 String password;
                 if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
                     P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
-                    AuthProvider authProvider = p11PKIConfiguration.getProvider();
                     p11PKIConfiguration.providerLogin();
                     password = passwordUtil.generatePassword();
                     p11PKIConfiguration.providerLogout();

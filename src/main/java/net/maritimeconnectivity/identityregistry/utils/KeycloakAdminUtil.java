@@ -442,14 +442,14 @@ public class KeycloakAdminUtil {
         String errMsg = "";
         // If we found one, it already has the user
         if (!users.isEmpty()){
-            throw new DuplicatedKeycloakEntry("User with username: " +email + " already exists.", errMsg);
+            throw new DuplicatedKeycloakEntry("User with username: " + email + " already exists.", errMsg);
         }
 
         // Second try: Find the user by searching for the email field
         users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
         // If we found one, it already has the user
         if (!users.isEmpty()){
-            throw new DuplicatedKeycloakEntry("User with email: " +email + " already exists.", errMsg);
+            throw new DuplicatedKeycloakEntry("User with email: " + email + " already exists.", errMsg);
         }
     }
 
