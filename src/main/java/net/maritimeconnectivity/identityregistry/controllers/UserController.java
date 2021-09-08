@@ -207,11 +207,15 @@ public class UserController extends EntityController<User> {
             if (!user.getMrn().equalsIgnoreCase(input.getMrn()) || user.getIdOrganization().compareTo(org.getId()) != 0) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
+            input.selectiveCopyTo(user);
+            User updatedUser = this.entityService.save(user);
             // Update user in keycloak if created there.
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty())) {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
-                    keycloakAU.updateUser(input.getMrn(), input.getFirstName(), input.getLastName(), input.getEmail(), input.getPermissions(), request.getServletPath());
+                    keycloakAU.updateUser(updatedUser.getMrn(), updatedUser.getFirstName(), updatedUser.getLastName(),
+                            updatedUser.getEmail(), updatedUser.getPermissions(), updatedUser.constructDN(org),
+                            updatedUser.getHomeMMSUrl(), updatedUser.getMrnSubsidiary(), request.getServletPath());
                 } catch (IOException e) {
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_UPDATING_KC_USER, request.getServletPath());
                 }
@@ -220,8 +224,6 @@ public class UserController extends EntityController<User> {
             else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }
-            input.selectiveCopyTo(user);
-            this.entityService.save(user);
             return new ResponseEntity<>(HttpStatus.OK);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());

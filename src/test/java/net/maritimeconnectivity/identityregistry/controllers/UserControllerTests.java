@@ -266,11 +266,13 @@ class UserControllerTests {
         org.setFederationType("test-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
+        String userUid = user.constructDN(org);
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        given(this.entityService.save(any())).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
@@ -282,7 +284,7 @@ class UserControllerTests {
             fail(e);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
+            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", userUid, null, null, "");
         } catch (IOException | McpBasicRestException e) {
             fail(e);
         }

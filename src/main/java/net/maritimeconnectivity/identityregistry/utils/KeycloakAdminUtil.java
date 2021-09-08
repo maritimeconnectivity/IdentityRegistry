@@ -470,7 +470,9 @@ public class KeycloakAdminUtil {
      * @param email         email of the user
      * @throws IOException
      */
-    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McpBasicRestException {
+    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions,
+                           String uid, String homeMmsUrl, String subsidiaryMrn, String path)
+            throws IOException, McpBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         if (userReps.isEmpty()) {
             log.debug("Skipped user update");
@@ -496,45 +498,48 @@ public class KeycloakAdminUtil {
             updated = true;
         }
         Map<String, List<String>> attr = user.getAttributes();
-        if (attr.containsKey("permissions")) {
-            List<String> oldPermissions = attr.get("permissions");
-            if (oldPermissions != null && !oldPermissions.isEmpty()) {
-                String permission = oldPermissions.get(0);
-                if (permission == null || !permission.equals(newPermissions)) {
-                    if (newPermissions != null) {
-                        attr.put("permissions", Collections.singletonList(newPermissions));
+        updated = isUpdated("permissions", newPermissions, user, updated, attr);
+        updated = isUpdated("mrn", userMrn, user, updated, attr);
+        updated = isUpdated("uid", uid, user, updated, attr);
+        updated = isUpdated("mms_url", homeMmsUrl, user, updated, attr);
+        updated = isUpdated("subsidiary_mrn", subsidiaryMrn, user, updated, attr);
+        if (updated) {
+            getProjectUserRealm().users().get(user.getId()).update(user);
+        }
+    }
+
+    /**
+     *
+     * @param attributeName         the name of the attribute we want to update
+     * @param newAttributeValue     the value of the attribute we want to update
+     * @param user                  the user we want to update
+     * @param updated               whether the user has already been updated
+     * @param attr                  the map of attributes of the user
+     * @return                      whether the user has been updated
+     */
+    private boolean isUpdated(String attributeName, String newAttributeValue, UserRepresentation user, boolean updated, Map<String, List<String>> attr) {
+        if (attr.containsKey(attributeName)) {
+            List<String> oldAttributeValue = attr.get(attributeName);
+            if (oldAttributeValue != null && !oldAttributeValue.isEmpty()) {
+                String attributeValue = oldAttributeValue.get(0);
+                if (attributeValue == null || !attributeValue.equals(newAttributeValue)) {
+                    if (newAttributeValue != null) {
+                        attr.put(attributeName, Collections.singletonList(newAttributeValue));
                     } else {
-                        attr.put("permissions", Collections.singletonList(""));
+                        attr.put(attributeName, Collections.singletonList(""));
                     }
                     user.setAttributes(attr);
                     updated = true;
                 }
             }
         } else {
-            if (newPermissions != null && !newPermissions.trim().isEmpty()) {
-                attr.put("permissions", Collections.singletonList(newPermissions));
+            if (newAttributeValue != null && !newAttributeValue.trim().isEmpty()) {
+                attr.put(attributeName, Collections.singletonList(newAttributeValue));
                 user.setAttributes(attr);
                 updated = true;
             }
         }
-        if (attr.containsKey("mrn")) {
-            List<String> oldMrn = attr.get("mrn");
-            if (oldMrn != null && !oldMrn.isEmpty()) {
-                String mrn = oldMrn.get(0);
-                if (mrn == null || !mrn.equals(userMrn)) {
-                    attr.put("mrn", Collections.singletonList(userMrn));
-                    user.setAttributes(attr);
-                    updated = true;
-                }
-            }
-        } else {
-            attr.put("mrn", Collections.singletonList(userMrn));
-            user.setAttributes(attr);
-            updated = true;
-        }
-        if (updated) {
-            getProjectUserRealm().users().get(user.getId()).update(user);
-        }
+        return updated;
     }
 
     /**
