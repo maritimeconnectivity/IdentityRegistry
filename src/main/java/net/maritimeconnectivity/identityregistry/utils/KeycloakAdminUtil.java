@@ -139,12 +139,18 @@ public class KeycloakAdminUtil {
      * @param type  The type of instance to initialize.
      */
     public void init(int type) {
-        if (type == BROKER_INSTANCE) {
-            keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
-        } else if (type == USER_INSTANCE) {
-            keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
-        } else if(type == CERTIFICATES_INSTANCE) {
-            keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+        switch (type) {
+            case BROKER_INSTANCE:
+                keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
+                break;
+            case USER_INSTANCE:
+                keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
+                break;
+            case CERTIFICATES_INSTANCE:
+                keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+                break;
+            default:
+                break;
         }
     }
 
@@ -175,10 +181,10 @@ public class KeycloakAdminUtil {
     /**
      * Get IDP info by parsing info from wellKnownUrl json
      *
-     * @param infoUrl The url to parse
-     * @param providerId The provider type, can be "keycloak-oidc","oidc" or "saml"
-     * @return  The IDP
-     * @throws IOException
+     * @param infoUrl       The url to parse
+     * @param providerId    The provider type, can be "keycloak-oidc","oidc" or "saml"
+     * @return              The IDP
+     * @throws IOException  is thrown if the IDP info could not be found
      */
     private Map<String, String> getIdpSetupUrl(String infoUrl, String providerId) throws IOException {
         // Get IDP info by using keycloaks builtin parser
@@ -208,7 +214,7 @@ public class KeycloakAdminUtil {
      *
      * @param orgMrn        mrn of the IDP
      * @param input         map containing data about the IDP
-     * @throws IOException
+     * @throws IOException  is thrown if the IDP could not be created
      */
     public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException {
         String name = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
@@ -441,7 +447,8 @@ public class KeycloakAdminUtil {
     /**
      * Check the existence of user with email.
      *
-     * @param email         email of the user
+     * @param email                     email of the user
+     * @throws DuplicatedKeycloakEntry  is thrown if the user already exists
      */
     public void checkUserExistence(String email) throws DuplicatedKeycloakEntry{
         // First try: Find the user by searching for the username field
@@ -464,11 +471,12 @@ public class KeycloakAdminUtil {
     /**
      * Updates the user in keycloak
      *
-     * @param userMrn       MRN of the user
-     * @param firstName     first name of user
-     * @param lastName      last name of user
-     * @param email         email of the user
-     * @throws IOException
+     * @param userMrn                   MRN of the user
+     * @param firstName                 first name of user
+     * @param lastName                  last name of user
+     * @param email                     email of the user
+     * @throws IOException              is thrown if the user could not be updated
+     * @throws McpBasicRestException    is thrown if an existing user could not be found
      */
     public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions,
                            String uid, String homeMmsUrl, String subsidiaryMrn, String path)
@@ -509,6 +517,8 @@ public class KeycloakAdminUtil {
     }
 
     /**
+     * Updates a given attribute name with a given value and returns whether this
+     * or a previous operation has updated the attributes
      *
      * @param attributeName         the name of the attribute we want to update
      * @param newAttributeValue     the value of the attribute we want to update
@@ -578,11 +588,12 @@ public class KeycloakAdminUtil {
     /**
      * Creates an OpenId Connect client in keycloak
      *
-     * @param clientId       The client id
-     * @param type           The client type, can be public, bearer-only or confidential
-     * @param redirectUri    The redirect uri
-     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
-     * @throws IOException
+     * @param clientId                  The client id
+     * @param type                      The client type, can be public, bearer-only or confidential
+     * @param redirectUri               The redirect uri
+     * @return                          Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     * @throws IOException              is thrown if the client could not be created
+     * @throws DuplicatedKeycloakEntry  is thrown if the client already exist
      */
     public String createClient(String clientId, String type, String redirectUri) throws IOException, DuplicatedKeycloakEntry {
         ClientRepresentation client = new ClientRepresentation();
@@ -639,10 +650,10 @@ public class KeycloakAdminUtil {
     /**
      * Updates an OpenId Connect client in keycloak
      *
-     * @param clientId
-     * @param type
-     * @param redirectUri
-     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     * @param clientId      the ID of the client that should be updated
+     * @param type          the client type that the client should be updated to
+     * @param redirectUri   the redirect URI that the client should have
+     * @return              returns the generated client secret, unless the type is public, in which case an empty string is returned.
      */
     public String updateClient(String clientId, String type, String redirectUri) throws IOException {
         List<ClientRepresentation> clients = getBrokerRealm().clients().findByClientId(clientId);
@@ -667,8 +678,7 @@ public class KeycloakAdminUtil {
         getBrokerRealm().clients().get(client.getId()).update(client);
         if (!"public".equals(type)) {
             // The client secret can't be retrieved by the ClientRepresentation (bug?), so we need to use the ClientResource
-            String secret = getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
-            return secret;
+            return getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
         } else {
             return "";
         }
@@ -677,7 +687,7 @@ public class KeycloakAdminUtil {
     /**
      * Deletes an OpenId Connect client in keycloak
      *
-     * @param clientId
+     * @param clientId  the ID of the client that should be deleted
      */
     public void deleteClient(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -687,8 +697,8 @@ public class KeycloakAdminUtil {
     /**
      * Gets the keycloak.json for this client.
      *
-     * @param clientId client id/name
-     * @return the keycloak json
+     * @param clientId  client id/name
+     * @return          the keycloak json
      */
     public String getClientKeycloakJson(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -700,8 +710,8 @@ public class KeycloakAdminUtil {
     /**
      * Gets the keycloak.json for this client.
      *
-     * @param clientId client id/name
-     * @return the keycloak json
+     * @param clientId  client id/name
+     * @return          the keycloak json
      */
     public String getClientJbossXml(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -713,9 +723,9 @@ public class KeycloakAdminUtil {
     /**
      * Helper function to GET from keycloak api that isn't supported by the client
      *
-     * @param url The url to GET
+     * @param url   The url to GET
      * @param token The access_token to use for identification
-     * @return Returns a string representation of the result
+     * @return      Returns a string representation of the result
      */
     private String getFromKeycloak(String url, String token) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -729,8 +739,7 @@ public class KeycloakAdminUtil {
                     log.debug("" + response.getStatusLine().getStatusCode());
                     return null;
                 }
-                String content = getContent(response.getEntity());
-                return content;
+                return getContent(response.getEntity());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -738,7 +747,6 @@ public class KeycloakAdminUtil {
             try {
                 client.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 log.error("Failed GET from Keycloak", e);
             }
         }
@@ -747,9 +755,9 @@ public class KeycloakAdminUtil {
     /**
      * Helper function to extract string from HttpEntity
      *
-     * @param entity
-     * @return
-     * @throws IOException
+     * @param entity        the HttpEntity to get the content from
+     * @return              the content string of the entity
+     * @throws IOException  is thrown if the content string could be extracted
      */
     private static String getContent(HttpEntity entity) throws IOException {
         if (entity == null) return null;
@@ -760,8 +768,7 @@ public class KeycloakAdminUtil {
                 os.write(c);
             }
             byte[] bytes = os.toByteArray();
-            String data = new String(bytes, StandardCharsets.UTF_8);
-            return data;
+            return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 }
