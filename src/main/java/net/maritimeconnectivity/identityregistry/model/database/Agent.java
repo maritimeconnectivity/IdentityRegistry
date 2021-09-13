@@ -29,6 +29,7 @@ import java.util.Objects;
 @Table(name = "acting_on_behalf")
 @Getter
 @Setter
+@Schema(description = "Model object representing an agent")
 public class Agent extends TimestampModel {
 
     /**

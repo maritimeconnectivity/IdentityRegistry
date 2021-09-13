@@ -35,10 +35,11 @@ import javax.validation.constraints.NotBlank;
 import java.util.Locale;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 import static net.maritimeconnectivity.pki.CertificateBuilder.escapeSpecialCharacters;
 
 /**
- * Model object representing an user
+ * Model object representing a user
  */
 
 @Entity
@@ -47,25 +48,26 @@ import static net.maritimeconnectivity.pki.CertificateBuilder.escapeSpecialChara
 @Setter
 @ToString(exclude = "certificates")
 @NoArgsConstructor
+@Schema(description = "Model object representing a user")
 public class User extends EntityModel {
 
-    @Schema(required = true)
+    @Schema(description = "The first name of the user", required = true)
     @NotBlank
     @Column(name = "first_name")
     private String firstName;
 
-    @Schema(required = true)
+    @Schema(description = "The last name of the user", required = true)
     @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
-    @Schema(required = true)
+    @Schema(description = "The email of the user", required = true)
     @NotBlank
     @Email
     @Column(name = "email")
     private String email;
 
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.")
+    @Schema(description = "The set of certificates of the user. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Certificate> certificates;
 

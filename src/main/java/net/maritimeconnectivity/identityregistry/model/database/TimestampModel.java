@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -30,6 +31,8 @@ import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
 import java.util.Date;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 @MappedSuperclass
 @Getter
 @Setter
@@ -39,12 +42,15 @@ public abstract class TimestampModel implements JsonSerializable {
     @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
     @GenericGenerator(name = "native", strategy = "native")
     @Column(name = "id", nullable = false)
+    @Schema(description = "The ID of the entity in the form of a sequential integer", accessMode = READ_ONLY)
     protected Long id;
 
     @Column(name = "created_at", updatable=false)
+    @Schema(description = "The time that the entity was created", accessMode = READ_ONLY)
     protected Date createdAt;
 
     @Column(name = "updated_at")
+    @Schema(description = "The time that the entity was last updated", accessMode = READ_ONLY)
     protected Date updatedAt;
 
     /** Called at creation, set created_at and updated_at timestamp */

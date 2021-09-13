@@ -35,6 +35,7 @@ import java.util.Objects;
 public abstract class EntityModel extends CertificateModel {
 
     @Column(name = "id_organization", nullable = false)
+    @Schema(description = "The ID of the organization that the entity belongs to")
     private Long idOrganization;
 
     @MCPMRN

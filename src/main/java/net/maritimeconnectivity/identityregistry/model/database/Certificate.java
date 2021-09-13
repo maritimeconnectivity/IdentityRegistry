@@ -41,6 +41,8 @@ import java.math.BigInteger;
 import java.security.cert.CRLReason;
 import java.util.Date;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 /**
  * Model object representing a certificate
  */
@@ -51,26 +53,32 @@ import java.util.Date;
 @Setter
 @ToString(exclude = {"vessel", "user", "device", "service", "organization", "mms"})
 @NoArgsConstructor
+@Schema(description = "Model object representing a certificate")
 public class Certificate extends TimestampModel {
 
-    @Schema(description = "The certificate in PEM format")
     @Column(name = "certificate", columnDefinition = "MEDIUMTEXT", nullable = false)
+    @Schema(description = "The certificate in PEM format", accessMode = READ_ONLY)
     private String certificate;
 
     @Column(name = "start", nullable = false)
+    @Schema(description = "When the certificate is valid from", accessMode = READ_ONLY)
     private Date start;
 
     @Column(name = "end", nullable = false)
+    @Schema(description = "When the certificate is valid until", accessMode = READ_ONLY)
     private Date end;
 
     @JsonSerialize(using = ToStringSerializer.class)
     @Column(name = "serial_number", nullable = false)
+    @Schema(description = "The serial number of the certificate", accessMode = READ_ONLY)
     private BigInteger serialNumber;
 
     @Column(name = "revoked", nullable = false)
+    @Schema(description = "Whether the certificate has been revoked", accessMode = READ_ONLY)
     private boolean revoked;
 
     @Column(name= "revoked_at")
+    @Schema(description = "The time of revocation of the certificate", accessMode = READ_ONLY)
     private Date revokedAt;
 
     /* Can contain values as in rfc5280:
@@ -86,10 +94,12 @@ public class Certificate extends TimestampModel {
         AACompromise (10)
        We only store the text value, in lowercase. */
     @Column(name = "revoke_reason")
+    @Schema(description = "The revocation reason", accessMode = READ_ONLY)
     private String revokeReason;
 
     @JsonIgnore
     @Column(name= "certificate_authority", nullable = false)
+    @Schema(description = "The name of the CA that signed this certificate", accessMode = READ_ONLY)
     private String certificateAuthority;
 
     @JsonIgnore

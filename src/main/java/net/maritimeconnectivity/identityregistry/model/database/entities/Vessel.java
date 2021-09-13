@@ -36,6 +36,8 @@ import javax.persistence.Table;
 import javax.validation.Valid;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 /**
  * Model object representing a vessel
  */
@@ -46,12 +48,14 @@ import java.util.Set;
 @Setter
 @ToString(exclude = "services")
 @NoArgsConstructor
+@Schema(description = "Model object representing a vessel")
 public class Vessel extends NonHumanEntityModel {
 
+    @Schema(description = "The set of attributes of the vessel")
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
     private Set<@Valid VesselAttribute> attributes;
 
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "The set of certificates of the vessel. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "vessel")
     private Set<Certificate> certificates;
 

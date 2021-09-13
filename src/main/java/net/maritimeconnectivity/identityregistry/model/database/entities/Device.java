@@ -25,17 +25,20 @@ import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 /**
  * Model object representing a device
  */
 
 @Entity
 @Table(name = "devices")
+@Schema(description = "Model object representing a device")
 @NoArgsConstructor
 public class Device extends NonHumanEntityModel {
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "The set of certificates of the device. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
 
     /** Copies this device into the other */

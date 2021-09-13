@@ -42,6 +42,7 @@ import java.util.Set;
 @Accessors(chain = true)
 @ToString(exclude = "organization")
 @NoArgsConstructor
+@Schema(description = "Model object representing an identity provider attribute")
 public class IdentityProviderAttribute extends TimestampModel {
 
     @Schema(

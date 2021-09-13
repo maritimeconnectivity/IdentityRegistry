@@ -31,6 +31,8 @@ import javax.persistence.Table;
 import javax.validation.constraints.NotNull;
 import java.util.Set;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 /**
  * Model object representing Maritime Messaging Service (MMS) instance
  */
@@ -41,6 +43,7 @@ import java.util.Set;
 @Setter
 @ToString
 @NoArgsConstructor
+@Schema(description = "Model object representing an MMS")
 public class MMS extends NonHumanEntityModel {
 
     @NotNull
@@ -50,7 +53,7 @@ public class MMS extends NonHumanEntityModel {
     private String url;
 
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "mms")
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "The set of certificates of the MMS. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
 
     /** Copies this mms into the other */

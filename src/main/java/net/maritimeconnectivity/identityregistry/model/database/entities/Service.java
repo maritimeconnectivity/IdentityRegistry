@@ -46,6 +46,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 @Setter
 @ToString
 @NoArgsConstructor
+@Schema(description = "Model object representing a service")
 public class Service extends NonHumanEntityModel {
 
     @Schema(description = "Access type of the OpenId Connect client", allowableValues = "public, bearer-only, confidential")
@@ -75,7 +76,7 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "instance_version", nullable = false)
     private String instanceVersion;
 
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "The set of certificates of the service. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
 

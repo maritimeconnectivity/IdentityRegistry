@@ -42,9 +42,10 @@ import java.util.Date;
 @Setter
 @ToString(exclude = "vessel")
 @NoArgsConstructor
+@Schema(description = "Model object representing a vessel attribute")
 public class VesselAttribute extends TimestampModel {
 
-    @Schema(description = "Vessel attribute name", required = true, allowableValues = "imo-number, mmsi-number, callsign, flagstate, ais-class, port-of-register")
+    @Schema(description = "Vessel attribute name", required = true, allowableValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
     @NotNull
@@ -55,9 +56,11 @@ public class VesselAttribute extends TimestampModel {
     @NotNull
     private String attributeValue;
 
+    @Schema(description = "When the attribute is valid from")
     @Column(name = "start")
     private Date start;
 
+    @Schema(description = "When the attribute is valid until")
     @Column(name = "end")
     private Date end;
 

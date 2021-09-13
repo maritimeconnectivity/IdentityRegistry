@@ -31,6 +31,7 @@ import java.util.Objects;
 @Entity
 @Table(name="roles")
 @NoArgsConstructor
+@Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
 
     @Schema(required = true, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +

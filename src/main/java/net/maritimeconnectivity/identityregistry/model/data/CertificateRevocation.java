@@ -27,9 +27,11 @@ import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+
 @Getter
 @Setter
 @ToString
+@Schema(description = "Model object representing a certificate revocation")
 public class CertificateRevocation implements JsonSerializable {
 
     @Schema(description = "The date the certificate revocation should be activated.", required = true)
@@ -39,7 +41,8 @@ public class CertificateRevocation implements JsonSerializable {
     @Schema(
             required = true,
             description = "The reason the certificates has been revoked",
-            allowableValues = "unspecified, keycompromise, cacompromise, affiliationchanged, superseded, cessationofoperation, certificatehold, removefromcrl, privilegewithdrawn, aacompromise"
+            allowableValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",
+                    "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
     )
     @InPredefinedList(
             acceptedValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",

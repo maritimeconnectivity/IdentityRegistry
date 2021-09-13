@@ -41,17 +41,18 @@ import javax.validation.constraints.NotBlank;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.WRITE_ONLY;
 
 /**
  * Model object representing an organization
  */
-
 @Entity
 @Table(name = "organizations")
 @Getter
 @Setter
 @ToString
 @NoArgsConstructor
+@Schema(description = "Model object representing an organization")
 public class Organization extends CertificateModel {
 
     @Schema(description = "The name of the organization", required = true)
@@ -72,29 +73,29 @@ public class Organization extends CertificateModel {
     @Column(name = "mrn_subsidiary")
     private String mrnSubsidiary;
 
-    @Schema(description = "URL of MMS that the identity is registered")
+    @Schema(description = "URL of the MMS that the organization is registered with")
     @Column(name = "home_mms_url")
     private String homeMMSUrl;
 
     @Column(name = "email", nullable = false)
     @Email
-    @Schema(required = true)
+    @Schema(description = "The email of the organization", required = true)
     private String email;
 
     @Column(name = "url", nullable = false)
-    @Schema(required = true)
+    @Schema(description = "The URL of the organization's website", required = true)
     @NotBlank
     @URL
     private String url;
 
     @Column(name = "address", nullable = false)
     @NotBlank
-    @Schema(required = true)
+    @Schema(description = "The address of the organization", required = true)
     private String address;
 
     @Column(name = "country")
     @NotBlank
-    @Schema(required = true)
+    @Schema(description = "The country that the organization is located in", required = true)
     private String country;
 
     @JsonIgnore
@@ -102,7 +103,7 @@ public class Organization extends CertificateModel {
     private boolean approved;
 
     @Column(name = "federation_type", nullable = false)
-    @Schema(description = "Type of identity federation used by organization", allowableValues = "test-idp, own-idp, external-idp", accessMode = READ_ONLY)
+    @Schema(description = "Type of identity federation used by organization", allowableValues = {"test-idp", "own-idp", "external-idp"}, accessMode = WRITE_ONLY)
     private String federationType;
 
     @JsonIgnore
@@ -110,16 +111,18 @@ public class Organization extends CertificateModel {
     @JoinColumn(name="id_logo")
     private Logo logo;
 
-    @Schema(description = "Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.")
+    @Schema(description = "The set of certificates of the organization. Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "organization")
     private Set<Certificate> certificates;
 
     @Valid
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
+    @Schema(description = "The identity provider attributes of the organization", accessMode = WRITE_ONLY)
     private Set<IdentityProviderAttribute> identityProviderAttributes;
 
     @JsonIgnore
     @Column(name = "certificate_authority", nullable = false)
+    @Schema(description = "The name of the CA of the organization", accessMode = READ_ONLY)
     private String certificateAuthority;
 
     /** Copies this organization into the other */
