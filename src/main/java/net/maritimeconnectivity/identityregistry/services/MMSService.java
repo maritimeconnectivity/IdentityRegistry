@@ -18,6 +18,6 @@ package net.maritimeconnectivity.identityregistry.services;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 
-public interface MMSService extends EntityService<MMS>{
+public interface MMSService extends EntityService<MMS> {
     MMS getByUrl(String url);
 }

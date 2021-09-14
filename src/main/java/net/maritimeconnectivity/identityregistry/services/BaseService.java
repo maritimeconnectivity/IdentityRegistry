@@ -15,9 +15,10 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
+import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
 import org.springframework.data.repository.CrudRepository;
 
-public interface BaseService<T> {
+public interface BaseService<T extends TimestampModel> {
     T getById(Long id);
 
     T save(T entity);

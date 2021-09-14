@@ -15,7 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
-import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
+import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
 import net.maritimeconnectivity.identityregistry.repositories.EntityRepository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -23,7 +23,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
-public abstract class EntityServiceImpl<T extends TimestampModel> extends BaseServiceImpl<T> implements EntityService<T> {
+public abstract class EntityServiceImpl<T extends EntityModel> extends BaseServiceImpl<T> implements EntityService<T> {
 
     protected EntityRepository<T> repository;
 

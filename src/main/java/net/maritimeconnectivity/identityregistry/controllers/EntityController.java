@@ -208,7 +208,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McpBasicRestException
      */
     protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type, String version) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {

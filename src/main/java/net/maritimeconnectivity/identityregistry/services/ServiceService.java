@@ -20,7 +20,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Service
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface ServiceService extends EntityService<Service>{
+public interface ServiceService extends EntityService<Service> {
     Service getServiceByMrnAndVersion(String mrn, String version);
     Page<Service> getServicesByMrn(String mrn, Pageable pageable);
 }
