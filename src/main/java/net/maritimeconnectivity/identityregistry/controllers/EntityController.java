@@ -81,7 +81,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McpBasicRestException
      */
     protected ResponseEntity<T> createEntity(HttpServletRequest request, String orgMrn, T input) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
@@ -138,7 +138,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         if (!entityMrn.equalsIgnoreCase(input.getMrn())) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
@@ -167,7 +167,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McpBasicRestException
      */
     protected ResponseEntity<?> deleteEntity(HttpServletRequest request, String orgMrn, String entityMrn) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
@@ -246,7 +246,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     @Deprecated
     protected ResponseEntity<CertificateBundle> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
         if (this.certificateUtil.isEnableServerGeneratedKeys()) {
-            Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+            Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
             if (org != null) {
                 // Check that the entity being queried belongs to the organization
                 if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
@@ -278,7 +278,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @throws McpBasicRestException
      */
     protected ResponseEntity<?> revokeEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, BigInteger certId, CertificateRevocation input) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
