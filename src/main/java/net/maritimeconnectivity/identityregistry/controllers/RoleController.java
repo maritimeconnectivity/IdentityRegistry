@@ -232,7 +232,7 @@ public class RoleController {
     )
     @ResponseBody
     public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) {
-        // See net.maritimecloud.identityregistry.security.MultiSecurityConfig for the role hierarchy
+        // See net.maritimeconnectivity.identityregistry.security.MultiSecurityConfig for the role hierarchy
         List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
                                            "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN",
                                            "ROLE_APPROVE_ORG", "ROLE_USER");

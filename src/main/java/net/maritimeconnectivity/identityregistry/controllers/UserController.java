@@ -109,7 +109,7 @@ public class UserController extends EntityController<User> {
     @Transactional(rollbackFor = McpBasicRestException.class)
     public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
@@ -193,7 +193,7 @@ public class UserController extends EntityController<User> {
         if (!userMrn.equalsIgnoreCase(input.getMrn())) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
@@ -242,7 +242,7 @@ public class UserController extends EntityController<User> {
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(userMrn))) {
