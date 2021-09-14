@@ -17,6 +17,6 @@ package net.maritimeconnectivity.identityregistry.services;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 
-public interface UserService extends EntityService<User>{
+public interface UserService extends EntityService<User> {
     User getUserByUserOrgIdAndIdOrganization(String userOrgId, Long orgId);
 }

@@ -103,7 +103,7 @@ public class Organization extends CertificateModel {
     private boolean approved;
 
     @Column(name = "federation_type", nullable = false)
-    @Schema(description = "Type of identity federation used by organization", allowableValues = {"test-idp", "own-idp", "external-idp"}, accessMode = WRITE_ONLY)
+    @Schema(description = "Type of identity federation used by organization", allowableValues = {"test-idp", "own-idp", "external-idp"})
     private String federationType;
 
     @JsonIgnore

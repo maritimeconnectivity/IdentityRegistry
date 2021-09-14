@@ -19,7 +19,7 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
-public interface OrganizationService extends BaseService<Organization>{
+public interface OrganizationService extends BaseService<Organization> {
     Organization getOrganizationByMrn(String mrn);
 
     Organization getOrganizationById(Long id);

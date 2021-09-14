@@ -484,6 +484,7 @@ class UserControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -528,6 +529,7 @@ class UserControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -573,6 +575,7 @@ class UserControllerTests {
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -617,6 +620,7 @@ class UserControllerTests {
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
