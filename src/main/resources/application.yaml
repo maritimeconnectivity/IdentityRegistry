@@ -136,7 +136,7 @@ net:
 
             openapi:
                 oidc-base-path: https://api.maritimeconnectivity.net/
-                x509-base-path: https://x509-api.maritimeconnectivity.net/
+                x509-base-path: https://api-x509.maritimeconnectivity.net/
 
 # Set alternative keycloak conf file
 #keycloak.configurationFile: file:/conf/keycloak.json
