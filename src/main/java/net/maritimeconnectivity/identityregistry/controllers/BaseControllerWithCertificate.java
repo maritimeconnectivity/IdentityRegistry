@@ -169,11 +169,8 @@ public abstract class BaseControllerWithCertificate {
         newMCCert.setCertificate(pemCertificate);
         newMCCert.setSerialNumber(serialNumber);
         newMCCert.setCertificateAuthority(org.getCertificateAuthority());
-        // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-        Calendar cal = Calendar.getInstance();
-        int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-        newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
-        newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
+        newMCCert.setStart(userCert.getNotBefore());
+        newMCCert.setEnd(userCert.getNotAfter());
         this.certificateService.saveCertificate(newMCCert);
         return certificateBundle;
     }
@@ -214,7 +211,7 @@ public abstract class BaseControllerWithCertificate {
                 String email = getEmail(certOwner);
                 String uid = getUid(certOwner);
                 int validityPeriod = certificateUtil.getValidityPeriod(type);
-                if(validityPeriod < 0)
+                if (validityPeriod < 0)
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_MCP_TYPE, request.getServletPath());
 
                 if (uid == null || uid.trim().isEmpty()) {
@@ -266,11 +263,8 @@ public abstract class BaseControllerWithCertificate {
             newMCCert.setCertificate(pemCertificate);
             newMCCert.setSerialNumber(serialNumber);
             newMCCert.setCertificateAuthority(org.getCertificateAuthority());
-            // The dates we extract from the cert is in localtime, so they are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            newMCCert.setStart(new Date(userCert.getNotBefore().getTime() - offset));
-            newMCCert.setEnd(new Date(userCert.getNotAfter().getTime() - offset));
+            newMCCert.setStart(userCert.getNotBefore());
+            newMCCert.setEnd(userCert.getNotAfter());
             this.certificateService.saveCertificate(newMCCert);
 
             byte[] certCA = this.certificateUtil.getKeystoreHandler().getMCPCertificate(org.getCertificateAuthority()).getEncoded();
