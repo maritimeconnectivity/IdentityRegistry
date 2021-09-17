@@ -29,6 +29,7 @@ import javax.persistence.Id;
 import javax.persistence.MappedSuperclass;
 import javax.persistence.PrePersist;
 import javax.persistence.PreUpdate;
+import java.time.Instant;
 import java.util.Date;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -56,13 +57,13 @@ public abstract class TimestampModel implements JsonSerializable {
     /** Called at creation, set created_at and updated_at timestamp */
     @PrePersist
     void createdAt() {
-        this.createdAt = this.updatedAt = new Date();
+        this.createdAt = this.updatedAt = Date.from(Instant.now());
     }
 
     /** Called on update, set updated_at timestamp */
     @PreUpdate
     void updatedAt() {
-        this.updatedAt = new Date();
+        this.updatedAt = Date.from(Instant.now());
     }
 
     public Long getId() {

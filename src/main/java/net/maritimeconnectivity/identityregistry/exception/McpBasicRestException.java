@@ -20,7 +20,7 @@ import lombok.Getter;
 import lombok.ToString;
 import org.springframework.http.HttpStatus;
 
-import java.util.Date;
+import java.time.Instant;
 
 @Getter
 @ToString
@@ -37,7 +37,7 @@ public class McpBasicRestException extends Exception {
         this.status = status;
         this.errorMessage = errorMessage;
         this.path = path;
-        this.timestamp = new Date().getTime();
+        this.timestamp = Instant.now().toEpochMilli();
         this.error = status.getReasonPhrase();
     }
 
