@@ -20,10 +20,16 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
+import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.FetchType;
+import javax.persistence.OneToMany;
+import javax.persistence.PostPersist;
+import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import java.util.Objects;
+import java.util.Set;
 
 @Entity
 @Table(name = "acting_on_behalf")
@@ -46,12 +52,28 @@ public class Agent extends TimestampModel {
     @Column(name = "id_on_behalf_of", nullable = false)
     private Long idOnBehalfOfOrganization;
 
+    @Schema(description = "The set of roles that this agent is allowed to have")
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "agent", orphanRemoval = true)
+    private Set<AllowedAgentRole> allowedRoles;
+
     /** Copies this agent into the other */
     public Agent copyTo(Agent agent) {
         Objects.requireNonNull(agent);
         agent.setIdActingOrganization(this.idActingOrganization);
         agent.setIdOnBehalfOfOrganization(this.idOnBehalfOfOrganization);
-        agent.setId(this.id);
+        agent.getAllowedRoles().clear();
+        agent.getAllowedRoles().addAll(allowedRoles);
+        agent.setChildIds();
         return agent;
+    }
+
+    @PostPersist
+    @PostUpdate
+    public void setChildIds() {
+        if (this.allowedRoles != null && !this.allowedRoles.isEmpty()) {
+            for (AllowedAgentRole ar : this.allowedRoles) {
+                ar.setAgent(this);
+            }
+        }
     }
 }

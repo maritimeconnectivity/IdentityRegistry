@@ -15,6 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.validation.BindingResult;
@@ -23,11 +25,8 @@ import org.springframework.validation.ObjectError;
 import javax.servlet.http.HttpServletRequest;
 import java.util.StringJoiner;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ValidateUtil {
-
-    private ValidateUtil() {
-        // empty private constructor as this class should not be instantiated
-    }
 
     public static void hasErrors(BindingResult bindingResult, HttpServletRequest request) throws McpBasicRestException {
         if (bindingResult.hasErrors()) {

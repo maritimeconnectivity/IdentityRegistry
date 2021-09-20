@@ -30,8 +30,6 @@ import javax.persistence.FetchType;
 import javax.persistence.JoinColumn;
 import javax.persistence.OneToMany;
 import javax.persistence.OneToOne;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
 import javax.persistence.Table;
 import javax.validation.Valid;
 import java.util.Set;
@@ -93,8 +91,6 @@ public class Vessel extends NonHumanEntityModel {
     }
 
     @Override
-    @PostPersist
-    @PostUpdate
     public void setChildIds() {
         super.setChildIds();
         if (this.attributes != null) {
