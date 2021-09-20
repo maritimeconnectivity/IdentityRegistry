@@ -71,7 +71,7 @@ public class RoleController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<List<Role>> getRoles(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -87,7 +87,7 @@ public class RoleController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
+    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN') and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<Role> createRole(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Role input, BindingResult bindingResult) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -124,7 +124,7 @@ public class RoleController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -152,7 +152,7 @@ public class RoleController {
             value = "/api/org/{orgMrn}/role/{roleId}"
     )
     @ResponseBody
-    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn) and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
+    @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN') and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
     public ResponseEntity<?> updateRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId, @Valid @RequestBody Role input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -186,7 +186,7 @@ public class RoleController {
             value = "/api/org/{orgMrn}/role/{roleId}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {

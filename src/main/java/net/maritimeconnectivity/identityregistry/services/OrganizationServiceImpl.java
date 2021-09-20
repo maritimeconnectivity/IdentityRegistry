@@ -68,7 +68,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     protected Organization filterResult(Organization data) {
-        if (data != null && data.hasSensitiveFields() && (!isAuthorized() || !accessControlUtil.hasAccessToOrg(data.getMrn()))) {
+        if (data != null && data.hasSensitiveFields() && (!isAuthorized() || !accessControlUtil.hasAccessToOrg(data.getMrn(), "ORG_ADMIN"))) {
             // If not authorized to see all we clean the object for sensitive data.
             logger.debug("Clearing Sensitive Fields");
             data.clearSensitiveFields();
@@ -82,7 +82,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
             // If not authorized to see all we clean the object for sensitive data.
             boolean isAuthorized = isAuthorized();
             for (Organization org : data) {
-                if (!isAuthorized || !accessControlUtil.hasAccessToOrg(org.getMrn())) {
+                if (!isAuthorized || !accessControlUtil.hasAccessToOrg(org.getMrn(), "ORG_ADMIN")) {
                     logger.debug("Clearing Sensitive Fields");
                     org.clearSensitiveFields();
                 }

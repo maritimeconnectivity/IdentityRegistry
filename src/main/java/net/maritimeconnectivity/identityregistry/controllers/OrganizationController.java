@@ -263,7 +263,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @PutMapping(
             value = "/api/org/{orgMrn}"
     )
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
             @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -374,7 +374,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/issue-new",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     @Deprecated
     public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         if (this.certificateUtil.isEnableServerGeneratedKeys()) {
@@ -403,7 +403,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -433,7 +433,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {

@@ -70,7 +70,7 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Agent> getAgents(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -91,7 +91,7 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Agent> getActingOnBehalfOf(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -112,7 +112,7 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Agent> getAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -139,7 +139,7 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> createAgent(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Agent input) throws McpBasicRestException {
         Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
         Organization actingOrg = this.organizationService.getOrganizationById(input.getIdActingOrganization());
@@ -173,7 +173,7 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> updateAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId, @Valid @RequestBody Agent input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -203,7 +203,7 @@ public class AgentController {
             value = "/api/org/{orgMrn}/agent/{agentId}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {

@@ -75,7 +75,7 @@ public class VesselImageController {
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
     @ResponseBody
-    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> createVesselImagePost(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestParam("image") MultipartFile image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
@@ -113,7 +113,7 @@ public class VesselImageController {
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
     @ResponseBody
-    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
@@ -144,7 +144,7 @@ public class VesselImageController {
             produces = {MediaType.IMAGE_PNG_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<?> getVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {
@@ -170,7 +170,7 @@ public class VesselImageController {
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> deleteVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
         if (vessel != null) {

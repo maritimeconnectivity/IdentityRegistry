@@ -66,7 +66,7 @@ public class DeviceController extends EntityController<Device> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<Device> createDevice(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.createEntity(request, orgMrn, input);
@@ -83,7 +83,7 @@ public class DeviceController extends EntityController<Device> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Device> getDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
         return this.getEntity(request, orgMrn, deviceMrn);
     }
@@ -98,7 +98,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<?> updateDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Valid @RequestBody Device input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.updateEntity(request, orgMrn, deviceMrn, input);
@@ -114,7 +114,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<?> deleteDevice(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
         return this.deleteEntity(request, orgMrn, deviceMrn);
     }
@@ -129,7 +129,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/devices",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Device> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
@@ -138,7 +138,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, deviceMrn, TYPE, null, serialNumber);
     }
@@ -162,7 +162,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     @Deprecated
     public ResponseEntity<CertificateBundle> newDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn) throws McpBasicRestException {
         return this.newEntityCert(request, orgMrn, deviceMrn, TYPE);
@@ -179,7 +179,7 @@ public class DeviceController extends EntityController<Device> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE, null);
     }
@@ -194,7 +194,7 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, deviceMrn, certId, input);
     }

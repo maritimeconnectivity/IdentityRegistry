@@ -73,7 +73,7 @@ public class LogoController {
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> createLogoPost(HttpServletRequest request, @PathVariable String orgMrn, @RequestParam("logo") MultipartFile logo) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -139,7 +139,7 @@ public class LogoController {
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -166,7 +166,7 @@ public class LogoController {
             value = "/api/org/{orgMrn}/logo"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {

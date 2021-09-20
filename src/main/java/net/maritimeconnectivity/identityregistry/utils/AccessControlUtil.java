@@ -23,10 +23,13 @@ import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import org.keycloak.KeycloakSecurityContext;
+import org.keycloak.adapters.springsecurity.account.KeycloakRole;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
@@ -34,8 +37,11 @@ import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 
 @Component("accessControlUtil")
@@ -59,7 +65,10 @@ public class AccessControlUtil {
     @Autowired
     private EntityService<User> userService;
 
-    public boolean hasAccessToOrg(String orgMrn) {
+    @Autowired
+    private RoleHierarchy roleHierarchy;
+
+    public boolean hasAccessToOrg(String orgMrn, String roleNeeded) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
             log.debug("The orgMrn was empty!");
             return false;
@@ -100,6 +109,21 @@ public class AccessControlUtil {
                     List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                     if (!agents.isEmpty()) {
                         log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
+                        if (roleNeeded != null) {
+                            if (!roleNeeded.startsWith("ROLE_"))
+                                roleNeeded = "ROLE_" + roleNeeded;
+                            for (Agent agent : agents) {
+                                List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                        .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
+                                        .collect(Collectors.toList());
+                                Set<GrantedAuthority> reachableGrantedAuthorities =
+                                        new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
+                                if (reachableGrantedAuthorities.contains(new KeycloakRole(roleNeeded)))
+                                    return true;
+                            }
+                            log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
+                            return false;
+                        }
                         return true;
                     }
                 }
@@ -123,6 +147,21 @@ public class AccessControlUtil {
                 List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                 if (!agents.isEmpty()) {
                     log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
+                    if (roleNeeded != null) {
+                        if (!roleNeeded.startsWith("ROLE_"))
+                            roleNeeded = "ROLE_" + roleNeeded;
+                        for (Agent agent : agents) {
+                            List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                    .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
+                                    .collect(Collectors.toList());
+                            Set<GrantedAuthority> reachableGrantedAuthorities =
+                                    new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
+                            if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
+                                return true;
+                        }
+                        log.debug("Entity with O={} who is agent for {} does does not have the needed role {}", certOrgMrn, orgMrn, roleNeeded);
+                        return false;
+                    }
                     return true;
                 }
             }

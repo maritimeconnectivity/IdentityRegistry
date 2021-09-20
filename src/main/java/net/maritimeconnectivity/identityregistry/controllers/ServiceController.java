@@ -92,7 +92,7 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -164,7 +164,7 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -196,7 +196,7 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -227,7 +227,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         if (!serviceMrn.equalsIgnoreCase(input.getMrn()) || !version.equals(input.getInstanceVersion())) {
@@ -304,7 +304,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
@@ -341,7 +341,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/services",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
@@ -350,7 +350,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, version, serialNumber);
     }
@@ -374,7 +374,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     @Deprecated
     public ResponseEntity<CertificateBundle> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -408,7 +408,7 @@ public class ServiceController extends EntityController<Service> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, version);
     }
@@ -423,7 +423,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
@@ -460,7 +460,7 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -497,7 +497,7 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {

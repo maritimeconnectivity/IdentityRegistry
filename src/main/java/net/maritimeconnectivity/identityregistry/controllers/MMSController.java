@@ -69,7 +69,7 @@ public class MMSController extends EntityController<MMS> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<MMS> createMMS(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.createEntity(request, orgMrn, input);
@@ -86,7 +86,7 @@ public class MMSController extends EntityController<MMS> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<MMS> getMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.getEntity(request, orgMrn, mmsMrn);
     }
@@ -101,7 +101,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<?> updateMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Valid @RequestBody MMS input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         return this.updateEntity(request, orgMrn, mmsMrn, input);
@@ -117,7 +117,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}"
     )
     @ResponseBody
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<?> deleteMMS(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.deleteEntity(request, orgMrn, mmsMrn);
     }
@@ -132,7 +132,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mmses",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<MMS> getOrganizationMMSes(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
     }
@@ -141,7 +141,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, mmsMrn, TYPE, null, serialNumber);
     }
@@ -164,7 +164,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/issue-new",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     @Deprecated
     public ResponseEntity<CertificateBundle> newMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
         return this.newEntityCert(request, orgMrn, mmsMrn, TYPE);
@@ -181,7 +181,7 @@ public class MMSController extends EntityController<MMS> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE, null);
     }
@@ -196,7 +196,7 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn)")
+    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<?> revokeMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, mmsMrn, certId, input);
     }
