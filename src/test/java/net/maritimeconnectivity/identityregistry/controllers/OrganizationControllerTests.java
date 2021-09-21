@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
+import net.maritimeconnectivity.identityregistry.model.database.AllowedAgentRole;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
@@ -46,6 +47,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -250,13 +254,19 @@ class OrganizationControllerTests {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
+        AllowedAgentRole allowedAgentRole = new AllowedAgentRole();
+        allowedAgentRole.setAgent(agent);
+        allowedAgentRole.setRoleName("ROLE_ORG_ADMIN");
+        agent.setAllowedRoles(Collections.singleton(allowedAgentRole));
+        List<Agent> agents = new ArrayList<>();
+        agents.add(agent);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
         Organization mock1 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
-        List<Agent> agentList = (List<Agent>) mock(List.class);
+        List<Agent> agentList = spy(agents);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);

@@ -17,6 +17,7 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
+import net.maritimeconnectivity.identityregistry.model.database.AllowedAgentRole;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
@@ -38,6 +39,9 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.lang.reflect.Field;
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -170,6 +174,10 @@ class AgentControllerTests {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
+        AllowedAgentRole allowedAgentRole = new AllowedAgentRole();
+        allowedAgentRole.setAgent(agent);
+        Set<AllowedAgentRole> allowedAgentRoles = new HashSet<>(Collections.singleton(allowedAgentRole));
+        agent.setAllowedRoles(allowedAgentRoles);
 
         Organization organization = mock(Organization.class);
 
