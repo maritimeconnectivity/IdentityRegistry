@@ -36,7 +36,6 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -52,6 +51,7 @@ public class AccessControlUtil {
     public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
     public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
+    public static final String ROLE_PREFIX = "ROLE_";
 
     @Autowired
     private HasRoleUtil hasRoleUtil;
@@ -110,8 +110,8 @@ public class AccessControlUtil {
                     if (!agents.isEmpty()) {
                         log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
                         if (roleNeeded != null) {
-                            if (!roleNeeded.startsWith("ROLE_"))
-                                roleNeeded = "ROLE_" + roleNeeded;
+                            if (!roleNeeded.startsWith(ROLE_PREFIX))
+                                roleNeeded = ROLE_PREFIX + roleNeeded;
                             for (Agent agent : agents) {
                                 List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
@@ -148,8 +148,8 @@ public class AccessControlUtil {
                 if (!agents.isEmpty()) {
                     log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
                     if (roleNeeded != null) {
-                        if (!roleNeeded.startsWith("ROLE_"))
-                            roleNeeded = "ROLE_" + roleNeeded;
+                        if (!roleNeeded.startsWith(ROLE_PREFIX))
+                            roleNeeded = ROLE_PREFIX + roleNeeded;
                         for (Agent agent : agents) {
                             List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                     .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
@@ -219,47 +219,6 @@ public class AccessControlUtil {
         }
         if (auth != null) {
             log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
-        }
-        return false;
-    }
-
-    public static boolean hasPermission(String permission) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof KeycloakAuthenticationToken) {
-            log.debug("OIDC permission lookup");
-            // Keycloak authentication
-            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
-            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
-            Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
-                String usersPermissions = (String) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
-                String[] permissionList = usersPermissions.split(",");
-                for (String per : permissionList) {
-                    if (per.equalsIgnoreCase(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            log.debug("Certificate permission lookup");
-            // Certificate authentication
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
-            // Check that the permission is granted to this user
-            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
-            Collection<GrantedAuthority> authorities = person.getAuthorities();
-            for (GrantedAuthority authority : authorities) {
-                String usersPermissions = authority.getAuthority();
-                String[] permissionList = usersPermissions.split(",");
-                for (String per : permissionList) {
-                    if (per.equalsIgnoreCase(permission)) {
-                        return true;
-                    }
-                }
-            }
-        } else {
-            if (auth != null) {
-                log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
-            }
         }
         return false;
     }
