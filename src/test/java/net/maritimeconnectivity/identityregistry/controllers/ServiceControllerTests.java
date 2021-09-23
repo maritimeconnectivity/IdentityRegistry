@@ -210,7 +210,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
@@ -295,7 +295,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").with(authentication(auth))
