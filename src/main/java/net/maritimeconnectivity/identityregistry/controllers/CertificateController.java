@@ -82,7 +82,7 @@ public class CertificateController {
      */
     @GetMapping(
             value = "/api/certificates/crl/{caAlias}",
-            produces = "application/x-pem-file;charset=UTF-8"
+            produces = "application/x-pem-file"
     )
     @ResponseBody
     public ResponseEntity<?> getCRL(@PathVariable String caAlias) {
