@@ -15,7 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -35,24 +35,25 @@ import java.util.Objects;
 public abstract class EntityModel extends CertificateModel {
 
     @Column(name = "id_organization", nullable = false)
+    @Schema(description = "The ID of the organization that the entity belongs to")
     private Long idOrganization;
 
     @MCPMRN
-    @ApiModelProperty(value = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
     @MRN
-    @ApiModelProperty(value = "Subsidiary Maritime Resource Name")
+    @Schema(description = "Subsidiary Maritime Resource Name")
     @Column(name = "mrn_subsidiary")
     private String mrnSubsidiary;
 
     @URL(regexp = "^(http|https).*")
-    @ApiModelProperty(value = "URL of MMS that the identity is registered")
+    @Schema(description = "URL of MMS that the identity is registered")
     @Column(name = "home_mms_url")
     private String homeMMSUrl;
 
-    @ApiModelProperty(value = "Permissions as assigned from the organization")
+    @Schema(description = "Permissions as assigned from the organization")
     @Column(name = "permissions")
     private String permissions;
 

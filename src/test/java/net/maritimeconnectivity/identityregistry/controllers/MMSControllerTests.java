@@ -44,7 +44,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -61,7 +61,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class MMSControllerTests {
+class MMSControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -73,7 +73,7 @@ public class MMSControllerTests {
     private OrganizationService organizationService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -86,13 +86,12 @@ public class MMSControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetMMSWithoutRights() {
+    void testAccessGetMMSWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(new MMS());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -100,7 +99,7 @@ public class MMSControllerTests {
      * Try to get a mms with the appropriate association
      */
     @Test
-    public void testAccessGetMMSWithRights() {
+    void testAccessGetMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -120,7 +119,7 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
@@ -130,8 +129,7 @@ public class MMSControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(mmsJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
         verify(((MMSService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
     }
@@ -140,7 +138,7 @@ public class MMSControllerTests {
      * Try to get a mms with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetMMSWithRights2() {
+    void testAccessGetMMSWithRights2() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -159,19 +157,18 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:sma:user", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
-        given(((MMSService) this.entityService).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -179,7 +176,7 @@ public class MMSControllerTests {
      * Try to update a mms with the appropriate association
      */
     @Test
-    public void testAccessUpdateMMSWithRights() {
+    void testAccessUpdateMMSWithRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -199,7 +196,7 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
@@ -211,8 +208,7 @@ public class MMSControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -220,7 +216,7 @@ public class MMSControllerTests {
      * Try to update a mms without the appropriate association
      */
     @Test
-    public void testAccessUpdateMMSWithoutRights() {
+    void testAccessUpdateMMSWithoutRights() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -240,7 +236,7 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
@@ -252,8 +248,7 @@ public class MMSControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -261,7 +256,7 @@ public class MMSControllerTests {
      * Try to update a service with the appropriate association but with version set to null
      */
     @Test
-    public void testCreateMMSWithUrlNull() {
+    void testCreateMMSWithUrlNull() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -281,7 +276,7 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
@@ -292,8 +287,7 @@ public class MMSControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isBadRequest());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -301,7 +295,7 @@ public class MMSControllerTests {
      * Try to update a mms with a null subsidiary mrn
      */
     @Test
-    public void testUpdateMMS() {
+    void testUpdateMMS() {
         // Build service object to test with
         MMS mms = new MMS();
         mms.setMrn("urn:mrn:mcp:mms:idp1:dma:test1");
@@ -328,7 +322,7 @@ public class MMSControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
@@ -340,8 +334,7 @@ public class MMSControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 

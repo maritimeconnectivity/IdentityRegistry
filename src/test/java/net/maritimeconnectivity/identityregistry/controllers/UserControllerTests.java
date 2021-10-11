@@ -60,6 +60,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -77,7 +78,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class UserControllerTests {
+class UserControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -100,7 +101,7 @@ public class UserControllerTests {
     private int smtpServerPort;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -113,13 +114,12 @@ public class UserControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetUserWithoutRights() {
+    void testAccessGetUserWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(new User());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -127,7 +127,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate association
      */
     @Test
-    public void testAccessGetUserWithRights() {
+    void testAccessGetUserWithRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -147,7 +147,7 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
@@ -157,8 +157,7 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:dma:thc");
     }
@@ -167,7 +166,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetUserWithRights2() {
+    void testAccessGetUserWithRights2() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -197,8 +196,7 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -207,7 +205,7 @@ public class UserControllerTests {
      * Try to update a user without the appropriate association
      */
     @Test
-    public void testAccessUpdateUserWithoutRights() {
+    void testAccessUpdateUserWithoutRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -229,7 +227,7 @@ public class UserControllerTests {
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
@@ -239,8 +237,7 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -248,7 +245,7 @@ public class UserControllerTests {
      * Try to update a user with the appropriate association
      */
     @Test
-    public void testAccessUpdateUserWithRights() {
+    void testAccessUpdateUserWithRights() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -269,11 +266,13 @@ public class UserControllerTests {
         org.setFederationType("test-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
+        String userUid = user.constructDN(org);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        given(this.entityService.save(any())).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
@@ -282,14 +281,12 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
-            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", "");
+            verify(this.keycloakAU, times(1)).updateUser("urn:mrn:mcp:user:idp1:dma:thc", "Thomas", "Christensen", "thcc@dma.dk", "MCADMIN", userUid, null, null, "");
         } catch (IOException | McpBasicRestException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -297,7 +294,7 @@ public class UserControllerTests {
      * Try to get a user with the appropriate association, but letter casing of orgMrn being different
      */
     @Test
-    public void testAccessGetUserWithRightsOrgMrnDiffCase() {
+    void testAccessGetUserWithRightsOrgMrnDiffCase() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma@dma:thc");
@@ -317,7 +314,7 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma@dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
@@ -327,14 +324,13 @@ public class UserControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.entityService, atLeastOnce()).getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc");
     }
 
     @Test
-    public void testCreateUserForFederatedOrg() {
+    void testCreateUserForFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -370,14 +366,13 @@ public class UserControllerTests {
             .content(userJson)
             .contentType("application/json")).andExpect(status().is4xxClientError());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
 
     }
 
     @Test
-    public void testCreateUserForNonFederatedOrg() {
+    void testCreateUserForNonFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -399,13 +394,11 @@ public class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.save(any())).willReturn(user);
         when(org.getId()).thenReturn(1L);
-
-        User newUser = new User();
-        newUser.setMrn("urn:mrn:mcp:user:idp1:dma:user1");
 
         // setup mock SMTP server
         Wiser wiser = new Wiser(smtpServerPort);
@@ -415,11 +408,10 @@ public class UserControllerTests {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user").with(authentication(auth))
                     .header("Origin", "Bla")
                     .content(userJson)
-                    .contentType("application/json")).andExpect(status().isOk());
+                    .contentType("application/json")).andExpect(status().isCreated());
         } catch (Exception e) {
-            e.printStackTrace();
             wiser.stop();
-            fail();
+            fail(e);
         }
 
         assertTrue(wiser.getMessages().size() > 0);
@@ -427,7 +419,7 @@ public class UserControllerTests {
     }
 
     @Test
-    public void testUpdateUserFederatedOrg() {
+    void testUpdateUserFederatedOrg() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -451,7 +443,7 @@ public class UserControllerTests {
         // Create fake authentication token
         KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
@@ -461,13 +453,12 @@ public class UserControllerTests {
                     .contentType("application/json")
             ).andExpect(status().is4xxClientError());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testIssueCertificateUsingCsr() {
+    void testIssueCertificateUsingCsr() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -490,8 +481,9 @@ public class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
@@ -502,17 +494,16 @@ public class UserControllerTests {
                     .header("Origin", "bla")
                     .contentType(MediaType.TEXT_PLAIN)
                     .content(csr)
-            ).andExpect(status().isOk()).andReturn();
+            ).andExpect(status().isCreated()).andReturn();
             String content = result.getResponse().getContentAsString();
             assertNotNull(content);
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakRSAKey() {
+    void testIssueCertificateUsingCsrWithWeakRSAKey() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -535,8 +526,9 @@ public class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
@@ -552,13 +544,12 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.RSA_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakECKey() {
+    void testIssueCertificateUsingCsrWithWeakECKey() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -581,8 +572,9 @@ public class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
@@ -598,13 +590,12 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.EC_KEY_TOO_SHORT, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testIssueCertificateUsingCsrWithWeakSignature() {
+    void testIssueCertificateUsingCsrWithWeakSignature() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -627,9 +618,10 @@ public class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -644,8 +636,7 @@ public class UserControllerTests {
             ExceptionModel exceptionModel = deserializeError(content);
             assertEquals(MCPIdRegConstants.WEAK_HASH, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 

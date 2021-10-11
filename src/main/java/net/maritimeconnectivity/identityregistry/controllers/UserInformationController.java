@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Hidden;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -26,13 +27,15 @@ import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
+import net.maritimeconnectivity.pki.PKIIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
@@ -44,6 +47,7 @@ import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "service")
+@Hidden
 public class UserInformationController {
 
     // Data that identifies the User sync'er
@@ -72,10 +76,9 @@ public class UserInformationController {
         this.userService = userService;
     }
 
-    @RequestMapping(
+    @GetMapping(
             value = "/{userMrn}/roles",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<String>> getUserRoles(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
@@ -94,10 +97,9 @@ public class UserInformationController {
         return new ResponseEntity<>(Collections.singletonList("ROLE_USER"), HttpStatus.OK);
     }
 
-    @RequestMapping(
+    @GetMapping(
             value = "/{userMrn}/acting-on-behalf-of",
-            method = RequestMethod.GET,
-            produces = "application/json;charset=UTF-8"
+            produces = MediaType.APPLICATION_JSON_VALUE
     )
     public ResponseEntity<List<String>> getOrgsToActOnBehalfOf(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
         if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
@@ -105,11 +107,8 @@ public class UserInformationController {
         }
 
         User user = this.userService.getByMrn(userMrn);
-
         if (user != null) {
-
             Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
-
             if (organization != null) {
                 List<Agent> agents = this.agentService.getAgentsByIdActingOrg(organization.getId());
 
@@ -128,4 +127,23 @@ public class UserInformationController {
 
         return new ResponseEntity<>(new ArrayList<>(), HttpStatus.OK);
     }
+
+    @GetMapping(
+            value = "/{userMrn}/pki-identity",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    public ResponseEntity<PKIIdentity> getUserPKIIdentity(HttpServletRequest request, @PathVariable String userMrn) throws McpBasicRestException {
+        if (!AccessControlUtil.isUserSync(this.userSyncMRN, this.userSyncO, this.userSyncOU, this.userSyncC)) {
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        }
+
+        User user = this.userService.getByMrn(userMrn);
+        if (user != null) {
+            Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
+            if (organization != null) {
+                return new ResponseEntity<>(user.toPkiIdentity(organization), HttpStatus.OK);
+            }
+        }
+        return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
+     }
 }

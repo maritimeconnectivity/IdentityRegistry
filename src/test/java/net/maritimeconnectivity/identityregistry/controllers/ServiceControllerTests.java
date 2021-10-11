@@ -68,7 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class ServiceControllerTests {
+class ServiceControllerTests {
     @Autowired
     private WebApplicationContext context;
 
@@ -86,7 +86,7 @@ public class ServiceControllerTests {
     private CertificateService certificateService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -100,13 +100,12 @@ public class ServiceControllerTests {
      */
     @WithMockUser()
     @Test
-    public void testAccessGetServiceWithoutRights() {
+    void testAccessGetServiceWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            assertTrue(false);
+            fail(e);
         }
     }
 
@@ -114,7 +113,7 @@ public class ServiceControllerTests {
      * Try to get a service with the appropriate association
      */
     @Test
-    public void testAccessGetServiceWithRights() {
+    void testAccessGetServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -133,7 +132,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -143,8 +142,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
     }
@@ -153,7 +151,7 @@ public class ServiceControllerTests {
      * Try to get a service with the appropriate rights, but different org
      */
     @Test
-    public void testAccessGetServiceWithRights2() {
+    void testAccessGetServiceWithRights2() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -171,7 +169,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:sma:user", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
@@ -182,8 +180,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -192,7 +189,7 @@ public class ServiceControllerTests {
      * Try to update a service without the appropriate association
      */
     @Test
-    public void testAccessUpdateServiceWithoutRights() {
+    void testAccessUpdateServiceWithoutRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -211,7 +208,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -223,8 +220,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -232,7 +228,7 @@ public class ServiceControllerTests {
      * Try to update a service with the appropriate association
      */
     @Test
-    public void testAccessUpdateServiceWithRights() {
+    void testAccessUpdateServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -253,7 +249,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -265,14 +261,12 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
             verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "bearer-only", "https://localhost");
         } catch (IOException | DuplicatedKeycloakEntry e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -280,7 +274,7 @@ public class ServiceControllerTests {
      * Try to update a service with the appropriate association but with version set to null
      */
     @Test
-    public void testCreateServiceWithVersionNull() {
+    void testCreateServiceWithVersionNull() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -299,7 +293,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
@@ -310,8 +304,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isBadRequest());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -319,7 +312,7 @@ public class ServiceControllerTests {
      * Try to get a JBoss conf XML for a service
      */
     @Test
-    public void testAccessServiceJBossXMLWithRights() {
+    void testAccessServiceJBossXMLWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -340,7 +333,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -351,8 +344,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -360,7 +352,7 @@ public class ServiceControllerTests {
      * Try to get a JBoss conf XML for a service where it is not available
      */
     @Test
-    public void testAccessServiceJBossXMLWithRightsNoConf() {
+    void testAccessServiceJBossXMLWithRightsNoConf() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -380,7 +372,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
@@ -390,8 +382,7 @@ public class ServiceControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isNotFound());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -399,7 +390,7 @@ public class ServiceControllerTests {
      * Try to update a service with valid OIDC info
      */
     @Test
-    public void testUpdateServiceWithValidOIDC() {
+    void testUpdateServiceWithValidOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -428,7 +419,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
@@ -440,14 +431,12 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         try {
             verify(this.keycloakAU, times(1)).updateClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "public", "https://localhost");
         } catch (IOException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -455,7 +444,7 @@ public class ServiceControllerTests {
      * Try to update a service with invalid OIDC info
      */
     @Test
-    public void testUpdateServiceWithInvalidOIDC() {
+    void testUpdateServiceWithInvalidOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -484,7 +473,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
@@ -498,8 +487,7 @@ public class ServiceControllerTests {
             String stringResult = result.getResponse().getContentAsString();
             assertTrue(stringResult.contains(MCPIdRegConstants.OIDC_MISSING_REDIRECT_URL));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -507,7 +495,7 @@ public class ServiceControllerTests {
      * Try to update a service with valid OIDC info
      */
     @Test
-    public void testUpdateServiceRemoveOIDC() {
+    void testUpdateServiceRemoveOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -534,7 +522,7 @@ public class ServiceControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
@@ -546,8 +534,7 @@ public class ServiceControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
         verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }

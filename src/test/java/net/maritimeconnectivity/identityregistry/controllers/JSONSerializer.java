@@ -20,14 +20,14 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.io.IOException;
 
-public class JSONSerializer {
+class JSONSerializer {
 
     /**
      * Helper function to serialize an object to json
      * @param object
      * @return
      */
-    public static String serialize(Object object) {
+    static String serialize(Object object) {
         ObjectMapper mapper = new ObjectMapper();
         try {
             // Convert object to JSON string

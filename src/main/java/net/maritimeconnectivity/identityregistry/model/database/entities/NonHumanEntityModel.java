@@ -15,7 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
@@ -31,7 +31,7 @@ import javax.validation.constraints.NotBlank;
 public abstract class NonHumanEntityModel extends EntityModel {
     @Column(name = "name", nullable = false)
     @NotBlank
-    @ApiModelProperty(required = true)
+    @Schema(description = "The name of the entity", required = true)
     private String name;
 
     /** Copies this entity into the other */

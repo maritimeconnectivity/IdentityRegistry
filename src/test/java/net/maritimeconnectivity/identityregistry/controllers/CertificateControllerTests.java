@@ -49,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class CertificateControllerTests {
+class CertificateControllerTests {
 
     @Autowired
     private WebApplicationContext context;
@@ -63,19 +63,18 @@ public class CertificateControllerTests {
     CertificateController certificateController;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         this.certificateController = Mockito.spy(CertificateController.class);
         mvc = MockMvcBuilders.standaloneSetup(certificateController).build();
     }
 
     @Test
-    public void testGetOSCP() {
+    void testGetOSCP() {
         byte[] ret = "fake OCSP reply".getBytes(StandardCharsets.UTF_8);
         try {
             doReturn(ret).when(this.certificateController).handleOCSP(any(), any());
         } catch (IOException e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
             return;
         }
 
@@ -83,13 +82,12 @@ public class CertificateControllerTests {
             mvc.perform(get(new URI("/x509/api/certificates/ocsp/urn:mrn:mcl:ca:maritimecloud-idreg/MFUwUzBRME8wTTAJBgUrDgMCGgUABBQ6UIqQ34%2BgN2srrAjL6PckJ0ELZQQUxE5nZxstKKPxT9ruhJjPzxpwfFUCFCPUaD%2Fh4aw7GY%2F7bjSdgGfC3pt2")).header("Origin", "bla"))
                     .andExpect(status().isOk()).andExpect(content().bytes(ret));
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testGetOSCPInvalid() {
+    void testGetOSCPInvalid() {
         try {
             // The encoded OCSP request is missing some chars at the end and is therefore invalid
             mvc.perform(get("/x509/api/certificates/ocsp/urn:mrn:mcl:ca:maritimecloud-idreg/MFUwUzBRME8wTTAJBgUrDgMCGgUABBQ6UIqQ34%2BgN2srrAjL6PckJ0ELZQQUxE5nZxstKKPxT9ruhJjPzxpwfFUCFCPUaD%2Fh4aw7GY%2F7bjSdgGf").header("Origin", "bla"));

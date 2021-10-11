@@ -23,7 +23,7 @@ import javax.persistence.MappedSuperclass;
 import javax.persistence.PostPersist;
 import javax.persistence.PostUpdate;
 import javax.persistence.PreRemove;
-import java.util.Calendar;
+import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
 
@@ -43,10 +43,7 @@ public abstract class CertificateModel extends TimestampModel {
     @PreRemove
     public void preRemove() {
         if (getCertificates() != null) {
-            // Dates are converted to UTC before saving into the DB
-            Calendar cal = Calendar.getInstance();
-            int offset = cal.get(Calendar.ZONE_OFFSET) + cal.get(Calendar.DST_OFFSET);
-            Date now = new Date(cal.getTimeInMillis() - offset);
+            Date now = Date.from(Instant.now());
             for (Certificate cert : getCertificates()) {
                 // Revoke certificates
                 cert.setRevokedAt(now);

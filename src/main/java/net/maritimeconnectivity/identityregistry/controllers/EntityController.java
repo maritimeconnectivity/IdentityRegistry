@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
@@ -43,9 +44,14 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.net.URLEncoder;
 import java.util.List;
 
+@Slf4j
 @RestController
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
     protected EntityService<T> entityService;
@@ -90,13 +96,19 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             input.setIdOrganization(org.getId());
             // check that the requesting user has a role that is equal to or higher than the one given to the new entity
             checkRoles(request, input, org);
+            T newEntity = null;
+            HttpHeaders headers = new HttpHeaders();
             try {
                 input.setMrn(input.getMrn().toLowerCase());
-                T newEntity = this.entityService.save(input);
-                return new ResponseEntity<>(newEntity, HttpStatus.OK);
+                newEntity = this.entityService.save(input);
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), "UTF-8")).toString();
+                headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, e.getMessage(), request.getServletPath());
+            } catch (URISyntaxException | UnsupportedEncodingException e) {
+                log.error("Could not create Location header", e);
             }
+            return new ResponseEntity<>(newEntity, headers, HttpStatus.CREATED);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -119,7 +131,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().equals(org.getId())) {
                 return new ResponseEntity<>(entity, HttpStatus.OK);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
@@ -148,7 +160,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().equals(org.getId())) {
                 checkRoles(request, input, org);
                 input.selectiveCopyTo(entity);
                 this.entityService.save(entity);
@@ -177,7 +189,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().equals(org.getId())) {
                 this.entityService.delete(entity.getId());
                 return new ResponseEntity<>(HttpStatus.OK);
             }
@@ -197,6 +209,46 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             return this.entityService.listPageFromOrg(org.getId(), pageable);
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Returns the certificate with a specified serial number
+     * @param request       the HTTP request
+     * @param orgMrn        the organization MRN
+     * @param entityMrn     the entity MRN
+     * @param type          the entity type
+     * @param version       the version if type is service
+     * @param serialNumber  the serial number of the certificate to be returned
+     * @return a PEM encoded certificate chain
+     * @throws McpBasicRestException if something goes wrong
+     */
+    protected ResponseEntity<Certificate> getEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type, String version, BigInteger serialNumber) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            EntityModel entity;
+            if (type.equals("service")) {
+                entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
+            } else {
+                entity = this.entityService.getByMrn(entityMrn);
+            }
+            if (entity == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (entity.getIdOrganization().equals(org.getId())) {
+                Certificate certificate = this.certificateService.getCertificateBySerialNumber(serialNumber);
+                if (certificate != null) {
+                    return new ResponseEntity<>(certificate, HttpStatus.OK);
+                }
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
@@ -223,12 +275,18 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().equals(org.getId())) {
                 JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);
-                String cert = this.signCertificate(pkcs10CertificationRequest, entity, org, type, request);
+                Certificate cert = this.signCertificate(pkcs10CertificationRequest, entity, org, type, request);
                 HttpHeaders httpHeaders = new HttpHeaders();
                 httpHeaders.setContentType(new MediaType("application", "pem-certificate-chain"));
-                return new ResponseEntity<>(cert, httpHeaders, HttpStatus.OK);
+                try {
+                    String path = request.getRequestURL().toString().split("issue-new")[0] + cert.getSerialNumber().toString();
+                    httpHeaders.setLocation(new URI(path));
+                } catch (URISyntaxException e) {
+                    log.error("Could not create Location header", e);
+                }
+                return new ResponseEntity<>(cert.getCertificate(), httpHeaders, HttpStatus.CREATED);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
@@ -242,6 +300,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated Should only be used if server generated keys are allowed
      */
     @Deprecated
     protected ResponseEntity<CertificateBundle> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
@@ -256,7 +315,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 if (entity == null) {
                     throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
                 }
-                if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+                if (entity.getIdOrganization().equals(org.getId())) {
                     CertificateBundle ret = this.issueCertificate(entity, org, type, request);
                     return new ResponseEntity<>(ret, HttpStatus.OK);
                 }
@@ -288,10 +347,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (entity.getIdOrganization().compareTo(org.getId()) == 0) {
+            if (entity.getIdOrganization().equals(org.getId())) {
                 Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
                 T certEntity = getCertEntity(cert);
-                if (certEntity != null && certEntity.getId().compareTo(entity.getId()) == 0) {
+                if (certEntity != null && certEntity.getId().equals(entity.getId())) {
                     this.revokeCertificate(cert.getSerialNumber(), input, request);
                     return new ResponseEntity<>(HttpStatus.OK);
                 }

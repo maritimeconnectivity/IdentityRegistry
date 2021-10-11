@@ -13,10 +13,15 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 https://www.bouncycastle.org/index.html
 
-MySQL Connector J
+MySQL Connector/J
 ======================
 GPLv2 and The Universal FOSS Exception, Version 1.0
 https://github.com/mysql/mysql-connector-j
+
+MariaDB Connector/J
+======================
+GNU Lesser General Public License Version 2.1
+https://github.com/mariadb-corporation/mariadb-connector-j
 
 Twelve Monkeys
 ======================

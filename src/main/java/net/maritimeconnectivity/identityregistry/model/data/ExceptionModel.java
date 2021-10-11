@@ -18,12 +18,10 @@ package net.maritimeconnectivity.identityregistry.model.data;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 
 @Getter
-@Setter
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor

@@ -17,8 +17,9 @@ package net.maritimeconnectivity.identityregistry.model.database;
 
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import lombok.experimental.Accessors;
@@ -40,11 +41,13 @@ import java.util.Set;
 @Setter
 @Accessors(chain = true)
 @ToString(exclude = "organization")
+@NoArgsConstructor
+@Schema(description = "Model object representing an identity provider attribute")
 public class IdentityProviderAttribute extends TimestampModel {
 
-    @ApiModelProperty(
+    @Schema(
             required = true,
-            value = "OpenId Connect or SAML2 attribute name",
+            description = "OpenId Connect or SAML2 attribute name",
             allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
                     "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, " +
                     "tokenUrl, authorizationUrl, logoutUrl, issuer, publicKeySignatureVerifier, clientId, clientSecret," +
@@ -60,7 +63,7 @@ public class IdentityProviderAttribute extends TimestampModel {
     )
     private String attributeName;
 
-    @ApiModelProperty(value = "OpenId Connect or SAML2 attribute value", required = true)
+    @Schema(description = "OpenId Connect or SAML2 attribute value", required = true)
     @NotBlank
     @Column(name = "attribute_value", nullable = false)
     private String attributeValue;

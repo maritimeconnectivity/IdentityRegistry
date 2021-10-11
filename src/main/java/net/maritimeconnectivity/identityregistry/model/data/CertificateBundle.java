@@ -15,9 +15,12 @@
  */
 package net.maritimeconnectivity.identityregistry.model.data;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
+
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 
 /**
  * Object that bundles a PEM certificate with keystores in JKS and PKCS12 format and a password for the keystores
@@ -27,9 +30,15 @@ import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 @AllArgsConstructor
 @Getter
 @Deprecated
+@Schema(description = "Represents a bundle containing an PEM encoded certificate, keystores in JKS and PKCS#12 format " +
+        "and a password for the keystores. Will be removed in the future", deprecated = true)
 public class CertificateBundle implements JsonSerializable {
+    @Schema(description = "The PEM encoded certificate", accessMode = READ_ONLY)
     private PemCertificate pemCertificate;
+    @Schema(description = "JKS keystore containing certificate and private key", accessMode = READ_ONLY)
     private String jksKeystore;
+    @Schema(description = "PKCS#12 keystore containing certificate and private key", accessMode = READ_ONLY)
     private String pkcs12Keystore;
+    @Schema(description = "The password for the keystores", accessMode = READ_ONLY)
     private String keystorePassword;
 }

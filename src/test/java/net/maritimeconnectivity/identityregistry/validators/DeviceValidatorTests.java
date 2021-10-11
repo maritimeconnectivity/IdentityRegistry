@@ -39,19 +39,19 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
-public class DeviceValidatorTests {
+class DeviceValidatorTests {
     @Autowired
     private WebApplicationContext context;
 
     private LocalValidatorFactoryBean validator;
 
     @BeforeEach
-    public void init() {
+    void init() {
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
     @Test
-    public void validateValidDevice() {
+    void validateValidDevice() {
         Device validDevice = new Device();
         validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
@@ -61,7 +61,7 @@ public class DeviceValidatorTests {
     }
 
     @Test
-    public void validateInvalidDevice() {
+    void validateInvalidDevice() {
         Device invalidDevice = new Device();
         // Invalid mrn - must be set!
         invalidDevice.setMrn(null);
@@ -72,7 +72,7 @@ public class DeviceValidatorTests {
     }
 
     @Test
-    public void validateValidDeviceWithMMS() {
+    void validateValidDeviceWithMMS() {
         Device validDevice = new Device();
         validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
@@ -84,7 +84,7 @@ public class DeviceValidatorTests {
     }
 
     @Test
-    public void validateInvalidMMSUrlOfDeviceWithMMS() {
+    void validateInvalidMMSUrlOfDeviceWithMMS() {
         Device validDevice = new Device();
         validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");
@@ -96,7 +96,7 @@ public class DeviceValidatorTests {
     }
 
     @Test
-    public void validateInvalidSubMRNOfDeviceWithMMS() {
+    void validateInvalidSubMRNOfDeviceWithMMS() {
         Device validDevice = new Device();
         validDevice.setMrn("urn:mrn:mcp:device:idp1:testorg:test-device1");
         validDevice.setName("Test Device");

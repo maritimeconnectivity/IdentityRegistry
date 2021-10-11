@@ -15,7 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.model.database;
 
-import io.swagger.annotations.ApiModelProperty;
+import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
 import javax.persistence.Column;
@@ -29,19 +30,18 @@ import java.util.Objects;
 
 @Entity
 @Table(name="roles")
+@NoArgsConstructor
+@Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
 
-    public Role() {
-    }
-
-    @ApiModelProperty(required = true, value = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
+    @Schema(required = true, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
             "ROLE_USER_ADMIN, ROLE_VESSEL_ADMIN, ROLE_SERVICE_ADMIN, ROLE_DEVICE_ADMIN, ROLE_MMS_ADMIN, ROLE_USER, ROLE_APPROVE_ORG")
     @Column(name = "role_name", nullable = false)
     @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
             "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN", "ROLE_USER", "ROLE_APPROVE_ORG"})
     private String roleName;
 
-    @ApiModelProperty(required = true, value = "The permission that should be mapped to the role")
+    @Schema(required = true, description = "The permission that should be mapped to the role")
     @Column(name = "permission", nullable = false)
     private String permission;
 

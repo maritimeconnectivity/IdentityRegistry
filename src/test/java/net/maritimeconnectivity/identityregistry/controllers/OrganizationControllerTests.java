@@ -17,6 +17,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
+import net.maritimeconnectivity.identityregistry.model.database.AllowedAgentRole;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
@@ -46,6 +47,8 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -54,6 +57,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.spy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -64,7 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @WebAppConfiguration
-public class OrganizationControllerTests {
+class OrganizationControllerTests {
 
     @Autowired
     private WebApplicationContext context;
@@ -97,7 +101,7 @@ public class OrganizationControllerTests {
     private AgentService agentService;
 
     @BeforeEach
-    public void setup() {
+    void setup() {
         mvc = MockMvcBuilders
                 .webAppContextSetup(context)
                 //.alwaysDo(print())
@@ -110,7 +114,7 @@ public class OrganizationControllerTests {
      * Try to apply for an organization to be created
      */
     @Test
-    public void testApply() {
+    void testApply() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -129,10 +133,9 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
                     .content(orgJson)
                     .contentType("application/json")
-            ).andExpect(status().isOk());
+            ).andExpect(status().isCreated());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -142,12 +145,11 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="ORG_ADMIN")
     @Test
-    public void testAccessApproveOrgWithoutRights() {
+    void testAccessApproveOrgWithoutRights() {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -156,13 +158,12 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="SITE_ADMIN")
     @Test
-    public void testAccessApproveOrgWithRights() {
+    void testAccessApproveOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve").header("Origin", "bla")).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -171,12 +172,11 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="ORG_ADMIN")
     @Test
-    public void testAccessDeleteOrgWithoutRights() {
+    void testAccessDeleteOrgWithoutRights() {
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -185,13 +185,12 @@ public class OrganizationControllerTests {
      */
     @WithMockUser(roles="SITE_ADMIN")
     @Test
-    public void testAccessDeleteOrgWithRights() {
+    void testAccessDeleteOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").header("Origin", "bla")).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -199,7 +198,7 @@ public class OrganizationControllerTests {
      * Try to update an organization with the appropriate role
      */
     @Test
-    public void testAccessUpdateOrgWithRights() {
+    void testAccessUpdateOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -213,7 +212,7 @@ public class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
@@ -222,13 +221,12 @@ public class OrganizationControllerTests {
                             .contentType("application/json")
                         ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testAccessUpdateOrgAsAgent() {
+    void testAccessUpdateOrgAsAgent() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -256,13 +254,19 @@ public class OrganizationControllerTests {
         Agent agent = new Agent();
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
+        AllowedAgentRole allowedAgentRole = new AllowedAgentRole();
+        allowedAgentRole.setAgent(agent);
+        allowedAgentRole.setRoleName("ROLE_ORG_ADMIN");
+        agent.setAllowedRoles(Collections.singleton(allowedAgentRole));
+        List<Agent> agents = new ArrayList<>();
+        agents.add(agent);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
         Organization mock1 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
-        List<Agent> agentList = (List<Agent>) mock(List.class);
+        List<Agent> agentList = spy(agents);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -273,13 +277,12 @@ public class OrganizationControllerTests {
                 .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
     @Test
-    public void testAccessUpdateOrgAsAgentWithoutRights() {
+    void testAccessUpdateOrgAsAgentWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -324,8 +327,7 @@ public class OrganizationControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -333,7 +335,7 @@ public class OrganizationControllerTests {
      * Try to update an organization with data mismatch between json and url
      */
     @Test
-    public void testAccessUpdateOrgWithDataMismatch() {
+    void testAccessUpdateOrgWithDataMismatch() {
         // Build org object to test with
         Organization org = new Organization();
         // The mrn is deliberately wrong - that is the point of the test
@@ -358,8 +360,7 @@ public class OrganizationControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isBadRequest());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -367,7 +368,7 @@ public class OrganizationControllerTests {
      * Try to update an organization without the appropriate association
      */
     @Test
-    public void testAccessUpdateOrgWithoutRights() {
+    void testAccessUpdateOrgWithoutRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -390,8 +391,7 @@ public class OrganizationControllerTests {
                     .contentType("application/json")
             ).andExpect(status().isForbidden());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -400,7 +400,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role
      */
     @Test
-    public void testAccessGetOrgWithRights() {
+    void testAccessGetOrgWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -421,8 +421,7 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -430,7 +429,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role as SITE_ADMIN
      */
     @Test
-    public void testAccessGetOrgWithRights2() {
+    void testAccessGetOrgWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -451,8 +450,7 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -460,7 +458,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role
      */
     @Test
-    public void testAccessGetOrgByIdWithRights() {
+    void testAccessGetOrgByIdWithRights() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -481,8 +479,7 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 
@@ -490,7 +487,7 @@ public class OrganizationControllerTests {
      * Try to access an organization with the appropriate role as SITE_ADMIN
      */
     @Test
-    public void testAccessGetOrgByIdWithRights2() {
+    void testAccessGetOrgByIdWithRights2() {
         // Build org object to test with
         Organization org = new Organization();
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -511,8 +508,7 @@ public class OrganizationControllerTests {
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
-            e.printStackTrace();
-            fail();
+            fail(e);
         }
     }
 

@@ -30,7 +30,7 @@ public class McpExceptionResolver {
         // mimics the standard spring error structure on exceptions 
         ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
         HttpHeaders httpHeaders = new HttpHeaders();
-        httpHeaders.setContentType(MediaType.APPLICATION_JSON_UTF8);
+        httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return new ResponseEntity<>(exp, httpHeaders, ex.getStatus());
     }
 }

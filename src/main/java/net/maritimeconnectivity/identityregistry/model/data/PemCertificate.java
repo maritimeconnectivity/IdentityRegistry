@@ -15,18 +15,26 @@
  */
 package net.maritimeconnectivity.identityregistry.model.data;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 
+import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
+
 @AllArgsConstructor
 @Getter
 @Setter
 @ToString
+@Deprecated
+@Schema(description = "Model object representing an PEM encoded certificate", deprecated = true)
 public class PemCertificate implements JsonSerializable {
+    @Schema(description = "The private key of the certificate", accessMode = READ_ONLY)
     private String privateKey;
+    @Schema(description = "The public key of the certificate", accessMode = READ_ONLY)
     private String publicKey;
+    @Schema(description = "The certificate", accessMode = READ_ONLY)
     private String certificate;
 }

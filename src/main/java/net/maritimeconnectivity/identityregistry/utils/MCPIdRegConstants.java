@@ -23,6 +23,7 @@ public class MCPIdRegConstants {
     public static final String USER_NOT_FOUND = "The user could not be found.";
     public static final String DEVICE_NOT_FOUND = "The device could not be found.";
     public static final String ENTITY_NOT_FOUND = "The entity could not be found.";
+    public static final String CERTIFICATE_NOT_FOUND = "The certificate could not be found.";
     public static final String ROLE_NOT_FOUND = "The role could not be found.";
     public static final String URL_DATA_MISMATCH = "There is a mismatch between the url arguments and the data provided!";
     public static final String INVALID_REVOCATION_REASON = "The revocation reason is invalid!";
@@ -53,8 +54,9 @@ public class MCPIdRegConstants {
     public static final String CERT_ISSUING_FAILED = "Something went wrong while issuing certificate.";
     public static final String LOGO_ALREADY_EXISTS = "This organization already has a logo! Please update using PUT request.";
     public static final String VESSEL_IMAGE_ALREADY_EXISTS = "This vessel already has an image! Please update using PUT request.";
-    public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN";
-    public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type";
+    public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN.";
+    public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type.";
+    public static final String ERROR_STORING_ENTITY = "The entity could not be stored in the database.";
 
     private MCPIdRegConstants() {
         // empty private constructor as this class should not be instantiated

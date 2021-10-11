@@ -20,6 +20,8 @@ import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
+import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.methods.HttpGet;
@@ -94,10 +96,6 @@ public class KeycloakAdminUtil {
     @Value("${net.maritimeconnectivity.idreg.keycloak-client-template}")
     private String keycloakClientTemplate;
 
-    // Type of user
-    public static final int NORMAL_USER = 0;
-    public static final int ADMIN_USER = 1;
-
     // Type of instance
     public static final int BROKER_INSTANCE = 0;
     public static final int USER_INSTANCE = 1;
@@ -141,12 +139,18 @@ public class KeycloakAdminUtil {
      * @param type  The type of instance to initialize.
      */
     public void init(int type) {
-        if (type == BROKER_INSTANCE) {
-            keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
-        } else if (type == USER_INSTANCE) {
-            keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
-        } else if(type == CERTIFICATES_INSTANCE) {
-            keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+        switch (type) {
+            case BROKER_INSTANCE:
+                keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
+                break;
+            case USER_INSTANCE:
+                keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
+                break;
+            case CERTIFICATES_INSTANCE:
+                keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+                break;
+            default:
+                break;
         }
     }
 
@@ -177,10 +181,10 @@ public class KeycloakAdminUtil {
     /**
      * Get IDP info by parsing info from wellKnownUrl json
      *
-     * @param infoUrl The url to parse
-     * @param providerId The provider type, can be "keycloak-oidc","oidc" or "saml"
-     * @return  The IDP
-     * @throws IOException
+     * @param infoUrl       The url to parse
+     * @param providerId    The provider type, can be "keycloak-oidc","oidc" or "saml"
+     * @return              The IDP
+     * @throws IOException  is thrown if the IDP info could not be found
      */
     private Map<String, String> getIdpSetupUrl(String infoUrl, String providerId) throws IOException {
         // Get IDP info by using keycloaks builtin parser
@@ -210,7 +214,7 @@ public class KeycloakAdminUtil {
      *
      * @param orgMrn        mrn of the IDP
      * @param input         map containing data about the IDP
-     * @throws IOException
+     * @throws IOException  is thrown if the IDP could not be created
      */
     public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException {
         String name = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
@@ -374,50 +378,56 @@ public class KeycloakAdminUtil {
     /**
      * Creates a user in keycloak.
      *
-     * @param userMrn       MRN of the user
-     * @param firstName     first name of user
-     * @param lastName      last name of user
-     * @param password      password of the user
-     * @param email         email of the user
-     * @param orgMrn        MRN of the org
-     * @throws IOException
+     * @param user                      the user that is going to be created in Keycloak
+     * @param password                  password of the user
+     * @param org                       the organization that the user belongs to
+     * @param enabled                   should the user be enabled after it has been created
+     * @throws IOException              is thrown if user could not be created
+     * @throws DuplicatedKeycloakEntry  is thrown if the user already exists
      */
-    public void createUser(String userMrn, String password, String firstName, String lastName, String email, String orgMrn, String permissions, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        log.debug("creating user: " + userMrn);
+    public void createUser(User user, String password, Organization org, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
+        log.debug("Creating user: " + user.getMrn());
 
-        UserRepresentation user = new UserRepresentation();
-        user.setUsername(email);
-        user.setEnabled(enabled);
-        if (email != null && !email.trim().isEmpty()) {
-            user.setEmail(email);
-            user.setEmailVerified(true);
+        UserRepresentation kcUser = new UserRepresentation();
+        kcUser.setEnabled(enabled);
+        if (user.getEmail() != null && !user.getEmail().trim().isEmpty()) {
+            kcUser.setUsername(user.getEmail());
+            kcUser.setEmail(user.getEmail());
+            kcUser.setEmailVerified(true);
         }
-        if (firstName != null && !firstName.trim().isEmpty()) {
-            user.setFirstName(firstName);
+        if (user.getFirstName() != null && !user.getFirstName().trim().isEmpty()) {
+            kcUser.setFirstName(user.getFirstName());
         }
-        if (lastName != null && !lastName.trim().isEmpty()) {
-            user.setLastName(lastName);
+        if (user.getLastName() != null && !user.getLastName().trim().isEmpty()) {
+            kcUser.setLastName(user.getLastName());
         }
         // Set attributes
         Map<String, List<String>> attr = new HashMap<>();
-        attr.put("org", Collections.singletonList(orgMrn));
-        attr.put("mrn", Collections.singletonList(userMrn));
-        if (permissions != null && !permissions.trim().isEmpty()) {
-            attr.put("permissions", Collections.singletonList(permissions));
+        attr.put("org", Collections.singletonList(org.getMrn()));
+        attr.put("mrn", Collections.singletonList(user.getMrn()));
+        attr.put("uid", Collections.singletonList(user.constructDN(org)));
+        if (user.getPermissions() != null && !user.getPermissions().trim().isEmpty()) {
+            attr.put("permissions", Collections.singletonList(user.getPermissions()));
         }
-        user.setAttributes(attr);
-        try (Response ret = getProjectUserRealm().users().create(user)) {
+        if (user.getMrnSubsidiary() != null && !user.getMrnSubsidiary().trim().isEmpty()) {
+            attr.put("subsidiary_mrn", Collections.singletonList(user.getMrnSubsidiary()));
+        }
+        if (user.getHomeMMSUrl() != null && !user.getHomeMMSUrl().trim().isEmpty()) {
+            attr.put("mms_url", Collections.singletonList(user.getHomeMMSUrl()));
+        }
+        kcUser.setAttributes(attr);
+        try (Response ret = getProjectUserRealm().users().create(kcUser)) {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.debug("creating user failed due to duplicated user" + errMsg);
-                    throw new DuplicatedKeycloakEntry("User with mrn: " + userMrn + " already exists.", errMsg);
+                    log.error("Creating user failed due to duplicated user" + errMsg);
+                    throw new DuplicatedKeycloakEntry("User with mrn: " + user.getMrn() + " already exists.", errMsg);
                 } else {
-                    log.debug("creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating user failed, status: " + ret.getStatus() + ", " + errMsg);
                     throw new IOException("User creating failed: " + errMsg);
                 }
             }
-            log.debug("created user, status: " + ret.getStatus() + ", " + errMsg);
+            log.debug("Created user, status: " + ret.getStatus() + ", " + errMsg);
         }
 
         // Set credentials
@@ -427,17 +437,18 @@ public class KeycloakAdminUtil {
         // Make sure the user updates the password on first login
         cred.setTemporary(true);
         // Find the user by searching for the username
-        user = getProjectUserRealm().users().search(email, null, null, null, -1, -1).get(0);
-        user.setCredentials(Collections.singletonList(cred));
-        log.debug("setting password for user: " + user.getId());
-        getProjectUserRealm().users().get(user.getId()).resetPassword(cred);
-        log.debug("created user");
+        kcUser = getProjectUserRealm().users().search(user.getEmail(), null, null, null, -1, -1).get(0);
+        kcUser.setCredentials(Collections.singletonList(cred));
+        log.debug("Setting password for user: " + kcUser.getId());
+        getProjectUserRealm().users().get(kcUser.getId()).resetPassword(cred);
+        log.debug("Created user");
     }
 
     /**
      * Check the existence of user with email.
      *
-     * @param email         email of the user
+     * @param email                     email of the user
+     * @throws DuplicatedKeycloakEntry  is thrown if the user already exists
      */
     public void checkUserExistence(String email) throws DuplicatedKeycloakEntry{
         // First try: Find the user by searching for the username field
@@ -445,30 +456,33 @@ public class KeycloakAdminUtil {
 
         String errMsg = "";
         // If we found one, it already has the user
-        if (users.size()>0){
-            throw new DuplicatedKeycloakEntry("User with username: " +email + " already exists.", errMsg);
+        if (!users.isEmpty()){
+            throw new DuplicatedKeycloakEntry("User with username: " + email + " already exists.", errMsg);
         }
 
         // Second try: Find the user by searching for the email field
         users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
         // If we found one, it already has the user
-        if (users.size()>0){
-            throw new DuplicatedKeycloakEntry("User with email: " +email + " already exists.", errMsg);
+        if (!users.isEmpty()){
+            throw new DuplicatedKeycloakEntry("User with email: " + email + " already exists.", errMsg);
         }
     }
 
     /**
      * Updates the user in keycloak
      *
-     * @param userMrn       MRN of the user
-     * @param firstName     first name of user
-     * @param lastName      last name of user
-     * @param email         email of the user
-     * @throws IOException
+     * @param userMrn                   MRN of the user
+     * @param firstName                 first name of user
+     * @param lastName                  last name of user
+     * @param email                     email of the user
+     * @throws IOException              is thrown if the user could not be updated
+     * @throws McpBasicRestException    is thrown if an existing user could not be found
      */
-    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions, String path) throws IOException, McpBasicRestException {
+    public void updateUser(String userMrn, String firstName, String lastName, String email, String newPermissions,
+                           String uid, String homeMmsUrl, String subsidiaryMrn, String path)
+            throws IOException, McpBasicRestException {
         List<UserRepresentation> userReps = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
-        if (userReps.size() == 0) {
+        if (userReps.isEmpty()) {
             log.debug("Skipped user update");
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
         }
@@ -492,45 +506,50 @@ public class KeycloakAdminUtil {
             updated = true;
         }
         Map<String, List<String>> attr = user.getAttributes();
-        if (attr.containsKey("permissions")) {
-            List<String> oldPermissions = attr.get("permissions");
-            if (oldPermissions != null && !oldPermissions.isEmpty()) {
-                String permission = oldPermissions.get(0);
-                if (permission == null || !permission.equals(newPermissions)) {
-                    if (newPermissions != null) {
-                        attr.put("permissions", Collections.singletonList(newPermissions));
+        updated = isUpdated("permissions", newPermissions, user, updated, attr);
+        updated = isUpdated("mrn", userMrn, user, updated, attr);
+        updated = isUpdated("uid", uid, user, updated, attr);
+        updated = isUpdated("mms_url", homeMmsUrl, user, updated, attr);
+        updated = isUpdated("subsidiary_mrn", subsidiaryMrn, user, updated, attr);
+        if (updated) {
+            getProjectUserRealm().users().get(user.getId()).update(user);
+        }
+    }
+
+    /**
+     * Updates a given attribute name with a given value and returns whether this
+     * or a previous operation has updated the attributes
+     *
+     * @param attributeName         the name of the attribute we want to update
+     * @param newAttributeValue     the value of the attribute we want to update
+     * @param user                  the user we want to update
+     * @param updated               whether the user has already been updated
+     * @param attr                  the map of attributes of the user
+     * @return                      whether the user has been updated
+     */
+    private boolean isUpdated(String attributeName, String newAttributeValue, UserRepresentation user, boolean updated, Map<String, List<String>> attr) {
+        if (attr.containsKey(attributeName)) {
+            List<String> oldAttributeValue = attr.get(attributeName);
+            if (oldAttributeValue != null && !oldAttributeValue.isEmpty()) {
+                String attributeValue = oldAttributeValue.get(0);
+                if (attributeValue == null || !attributeValue.equals(newAttributeValue)) {
+                    if (newAttributeValue != null) {
+                        attr.put(attributeName, Collections.singletonList(newAttributeValue));
                     } else {
-                        attr.put("permissions", Collections.singletonList(""));
+                        attr.put(attributeName, Collections.singletonList(""));
                     }
                     user.setAttributes(attr);
                     updated = true;
                 }
             }
         } else {
-            if (newPermissions != null && !newPermissions.trim().isEmpty()) {
-                attr.put("permissions", Collections.singletonList(newPermissions));
+            if (newAttributeValue != null && !newAttributeValue.trim().isEmpty()) {
+                attr.put(attributeName, Collections.singletonList(newAttributeValue));
                 user.setAttributes(attr);
                 updated = true;
             }
         }
-        if (attr.containsKey("mrn")) {
-            List<String> oldMrn = attr.get("mrn");
-            if (oldMrn != null && !oldMrn.isEmpty()) {
-                String mrn = oldMrn.get(0);
-                if (mrn == null || !mrn.equals(userMrn)) {
-                    attr.put("mrn", Collections.singletonList(userMrn));
-                    user.setAttributes(attr);
-                    updated = true;
-                }
-            }
-        } else {
-            attr.put("mrn", Collections.singletonList(userMrn));
-            user.setAttributes(attr);
-            updated = true;
-        }
-        if (updated) {
-            getProjectUserRealm().users().get(user.getId()).update(user);
-        }
+        return updated;
     }
 
     /**
@@ -559,7 +578,7 @@ public class KeycloakAdminUtil {
         if (!users.isEmpty()) {
             getBrokerRealm().users().get(users.get(0).getId()).remove();
         }
-        // delete the user in the ceritificates realm
+        // delete the user in the certificates realm
         users = getCertificatesRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
             getCertificatesRealm().users().get(users.get(0).getId()).remove();
@@ -569,11 +588,12 @@ public class KeycloakAdminUtil {
     /**
      * Creates an OpenId Connect client in keycloak
      *
-     * @param clientId       The client id
-     * @param type           The client type, can be public, bearer-only or confidential
-     * @param redirectUri    The redirect uri
-     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
-     * @throws IOException
+     * @param clientId                  The client id
+     * @param type                      The client type, can be public, bearer-only or confidential
+     * @param redirectUri               The redirect uri
+     * @return                          Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     * @throws IOException              is thrown if the client could not be created
+     * @throws DuplicatedKeycloakEntry  is thrown if the client already exist
      */
     public String createClient(String clientId, String type, String redirectUri) throws IOException, DuplicatedKeycloakEntry {
         ClientRepresentation client = new ClientRepresentation();
@@ -596,10 +616,10 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.debug("creating client failed due to duplicated client" + errMsg);
+                    log.error("Creating client failed due to duplicated client" + errMsg);
                     throw new DuplicatedKeycloakEntry("Client with mrn: " + clientId + " already exists.", errMsg);
                 } else {
-                    log.debug("creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating client failed, status: " + ret.getStatus() + ", " + errMsg);
                     throw new IOException("Client creation failed: " + errMsg);
                 }
             }
@@ -607,8 +627,7 @@ public class KeycloakAdminUtil {
         if (!"public".equals(type)) {
             // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
             ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).get(0);
-            String secret = getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
-            return secret;
+            return getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
         } else {
             return "";
         }
@@ -631,10 +650,10 @@ public class KeycloakAdminUtil {
     /**
      * Updates an OpenId Connect client in keycloak
      *
-     * @param clientId
-     * @param type
-     * @param redirectUri
-     * @return               Returns the generated client secret, unless the type is public, in which case an empty string is returned.
+     * @param clientId      the ID of the client that should be updated
+     * @param type          the client type that the client should be updated to
+     * @param redirectUri   the redirect URI that the client should have
+     * @return              returns the generated client secret, unless the type is public, in which case an empty string is returned.
      */
     public String updateClient(String clientId, String type, String redirectUri) throws IOException {
         List<ClientRepresentation> clients = getBrokerRealm().clients().findByClientId(clientId);
@@ -659,8 +678,7 @@ public class KeycloakAdminUtil {
         getBrokerRealm().clients().get(client.getId()).update(client);
         if (!"public".equals(type)) {
             // The client secret can't be retrieved by the ClientRepresentation (bug?), so we need to use the ClientResource
-            String secret = getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
-            return secret;
+            return getBrokerRealm().clients().get(client.getId()).getSecret().getValue();
         } else {
             return "";
         }
@@ -669,7 +687,7 @@ public class KeycloakAdminUtil {
     /**
      * Deletes an OpenId Connect client in keycloak
      *
-     * @param clientId
+     * @param clientId  the ID of the client that should be deleted
      */
     public void deleteClient(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -679,8 +697,8 @@ public class KeycloakAdminUtil {
     /**
      * Gets the keycloak.json for this client.
      *
-     * @param clientId client id/name
-     * @return the keycloak json
+     * @param clientId  client id/name
+     * @return          the keycloak json
      */
     public String getClientKeycloakJson(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -692,8 +710,8 @@ public class KeycloakAdminUtil {
     /**
      * Gets the keycloak.json for this client.
      *
-     * @param clientId client id/name
-     * @return the keycloak json
+     * @param clientId  client id/name
+     * @return          the keycloak json
      */
     public String getClientJbossXml(String clientId) {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
@@ -705,9 +723,9 @@ public class KeycloakAdminUtil {
     /**
      * Helper function to GET from keycloak api that isn't supported by the client
      *
-     * @param url The url to GET
+     * @param url   The url to GET
      * @param token The access_token to use for identification
-     * @return Returns a string representation of the result
+     * @return      Returns a string representation of the result
      */
     private String getFromKeycloak(String url, String token) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
@@ -721,8 +739,7 @@ public class KeycloakAdminUtil {
                     log.debug("" + response.getStatusLine().getStatusCode());
                     return null;
                 }
-                String content = getContent(response.getEntity());
-                return content;
+                return getContent(response.getEntity());
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
@@ -730,7 +747,6 @@ public class KeycloakAdminUtil {
             try {
                 client.close();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
                 log.error("Failed GET from Keycloak", e);
             }
         }
@@ -739,9 +755,9 @@ public class KeycloakAdminUtil {
     /**
      * Helper function to extract string from HttpEntity
      *
-     * @param entity
-     * @return
-     * @throws IOException
+     * @param entity        the HttpEntity to get the content from
+     * @return              the content string of the entity
+     * @throws IOException  is thrown if the content string could be extracted
      */
     private static String getContent(HttpEntity entity) throws IOException {
         if (entity == null) return null;
@@ -752,8 +768,7 @@ public class KeycloakAdminUtil {
                 os.write(c);
             }
             byte[] bytes = os.toByteArray();
-            String data = new String(bytes, StandardCharsets.UTF_8);
-            return data;
+            return new String(bytes, StandardCharsets.UTF_8);
         }
     }
 }
