@@ -116,7 +116,6 @@ public class AccessControlUtil {
                                 List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
                                         .collect(Collectors.toList());
-                                allowedGrantedAuthorities.forEach(ga -> log.debug(ga.getAuthority()));
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
                                 final String finalRoleNeeded = roleNeeded;
