@@ -119,7 +119,6 @@ public class AccessControlUtil {
                                 allowedGrantedAuthorities.forEach(ga -> log.debug(ga.getAuthority()));
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                                reachableGrantedAuthorities.forEach(ga -> log.debug(ga.getAuthority()));
                                 final String finalRoleNeeded = roleNeeded;
                                 if (reachableGrantedAuthorities.stream().filter(ga -> finalRoleNeeded.equals(ga.getAuthority())).count() > 0L)
                                     return true;
