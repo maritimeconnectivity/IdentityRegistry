@@ -116,9 +116,12 @@ public class AccessControlUtil {
                                 List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
                                         .collect(Collectors.toList());
+                                allowedGrantedAuthorities.forEach(ga -> log.debug(ga.getAuthority()));
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                                if (reachableGrantedAuthorities.contains(new KeycloakRole(roleNeeded)))
+                                reachableGrantedAuthorities.forEach(ga -> log.debug(ga.getAuthority()));
+                                final String finalRoleNeeded = roleNeeded;
+                                if (reachableGrantedAuthorities.stream().filter(ga -> finalRoleNeeded.equals(ga.getAuthority())).count() > 0L)
                                     return true;
                             }
                             log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
