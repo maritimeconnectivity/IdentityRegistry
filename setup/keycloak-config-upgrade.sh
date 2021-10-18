@@ -12,7 +12,7 @@ then
 fi
 
 echo "Please input the path to the Keycloak Admin CLI script or press Enter if you have already added it to your PATH:"
-read KCADM
+read -r KCADM
 
 if [ -z "$KCADM" ]
 then
@@ -27,7 +27,7 @@ then
 fi
 
 echo "Please input the URL for the /auth endpoint of Keycloak:"
-read URL
+read -r URL
 
 if [ -z "$URL" ]
 then
@@ -36,7 +36,7 @@ then
 fi
 
 echo "Please input the admin username for Keycloak:"
-read ADMIN_USER
+read -r ADMIN_USER
 
 if [ -z "$ADMIN_USER" ]
 then
@@ -45,7 +45,7 @@ then
 fi
 
 echo "Please input the name of your Broker realm or press Enter for the default: [MCP]"
-read BROKER_REALM
+read -r BROKER_REALM
 
 if [ -z "$BROKER_REALM" ]
 then
@@ -53,7 +53,7 @@ then
 fi
 
 echo "Please input the name of your Users realm or press Enter for the default: [Users]"
-read USERS_REALM
+read -r USERS_REALM
 
 if [ -z "$USERS_REALM" ]
 then
@@ -61,7 +61,7 @@ then
 fi
 
 echo "Please input the name of the client for the Broker realm in the $USERS_REALM realm or press Enter for the default: [mcp-broker]"
-read USERS_BROKER_CLIENT
+read -r USERS_BROKER_CLIENT
 
 if [ -z "$USERS_BROKER_CLIENT" ]
 then
@@ -69,7 +69,7 @@ then
 fi
 
 echo "Please input the name of your Certificates realm or press Enter for the default: [Certificates]"
-read CERTIFICATES_REALM
+read -r CERTIFICATES_REALM
 
 if [ -z "$CERTIFICATES_REALM" ]
 then
@@ -77,36 +77,39 @@ then
 fi
 
 echo "Please input the name of the client for the Broker realm in the $CERTIFICATES_REALM realm or press Enter for the default: [mcp-broker]"
-read CERTIFICATES_BROKER_CLIENT
+read -r CERTIFICATES_BROKER_CLIENT
 
 if [ -z "$CERTIFICATES_BROKER_CLIENT" ]
 then
     CERTIFICATES_BROKER_CLIENT="mcp-broker"
 fi
 
-$KCADM config credentials --server $URL --realm master --user $ADMIN_USER
+$KCADM config credentials --server "$URL" --realm master --user "$ADMIN_USER"
 
-ATTRIBUTES=("uid" "flagstate" "callsign" "imo_number" "mmsi" "ais_type" "registered_port" "ship_mrn" "subsidiary_mrn" "mms_url" "url")
+ATTRIBUTES=("uid" "flagstate" "callsign" "imo_number" "mmsi" "ais_type" "registered_port" "ship_mrn" "mrn" "permissions" "subsidiary_mrn" "mms_url" "url")
 
 CLIENT_TEMPLATE=$($KCADM get client-scopes -r "$BROKER_REALM" | jq -r '.[] | select(.name == "mcp-client-template")')
 CLIENT_TEMPLATE_ID=$(echo "$CLIENT_TEMPLATE" | jq -r '.id')
 CLIENT_TEMPLATE_MAPPERS=$(echo "$CLIENT_TEMPLATE" | jq -r '.protocolMappers')
-echo $CLIENT_TEMPLATE_MAPPERS > /tmp/kc_upgrade.tmp
+echo "$CLIENT_TEMPLATE_MAPPERS" > /tmp/kc_upgrade.tmp
 
-MAPPER_TEMPLATE='{ "name": "%s", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": {"access.token.claim": true, "aggregate.attrs": "", "claim.name": "%s", "id.token.claim": false, "jsonType.label": "String", "multivalued": "", "user.attribute": "%s", "userinfo.token.claim": false} }'
+MAPPER_TEMPLATE='{ "name": "%s", "protocol": "openid-connect", "protocolMapper": "oidc-usermodel-attribute-mapper", "config": {"access.token.claim": true, "aggregate.attrs": "", "claim.name": "%s", "id.token.claim": true, "jsonType.label": "String", "multivalued": "", "user.attribute": "%s", "userinfo.token.claim": true} }'
 
 echo "Creating default client mappers in Broker realm"
 echo "==============================================="
-for attr in ${ATTRIBUTES[@]}; do
+for attr in "${ATTRIBUTES[@]}"; do
     export NAME="$attr mapper"
     MAPPER=$(jq -r '.[] | select(.name == env.NAME)' /tmp/kc_upgrade.tmp)
     if [ -z "$MAPPER" ]
     then
         echo "$NAME does not exist, will create it now."
         printf -v JSON "$MAPPER_TEMPLATE" "$NAME" "$attr" "$attr"
-        $KCADM create client-scopes/$CLIENT_TEMPLATE_ID/protocol-mappers/models -r "$BROKER_REALM" -b "$JSON"
+        $KCADM create client-scopes/"$CLIENT_TEMPLATE_ID"/protocol-mappers/models -r "$BROKER_REALM" -b "$JSON"
     else
-        echo "$NAME already exists."
+        echo "$NAME already exists, will update it if needed."
+        MAPPER_ID=$(echo "$MAPPER" | jq -r '.id')
+        MAPPER_NEW=$(echo "$MAPPER" | jq -r '.config["id.token.claim"] = true | .config["userinfo.token.claim"] = true')
+        $KCADM update client-scopes/"$CLIENT_TEMPLATE_ID"/protocol-mappers/models/"$MAPPER_ID" -r "$BROKER_REALM" -b "$MAPPER_NEW"
     fi
 done
 echo ""
@@ -120,17 +123,17 @@ for idp in "$USERS_REALM" "$CERTIFICATES_REALM"; do
     then
         echo "Trying again with lowercase name"
         idp=$(echo "$idp" | tr '[:upper:]' '[:lower:]')
-        ID_PROVIDER_MAPPERS=$($KCADM get identity-provider/instances/$idp/mappers -r "$BROKER_REALM")
+        ID_PROVIDER_MAPPERS=$($KCADM get identity-provider/instances/"$idp"/mappers -r "$BROKER_REALM")
     fi
     echo "$ID_PROVIDER_MAPPERS" > /tmp/kc_upgrade.tmp
-    for attr in ${ATTRIBUTES[@]}; do
+    for attr in "${ATTRIBUTES[@]}"; do
         export NAME="$attr mapper"
         MAPPER=$(jq -r '.[] | select(.name == env.NAME)' /tmp/kc_upgrade.tmp)
         if [ -z "$MAPPER" ]
         then
             echo "$NAME does not exist, will create it now."
             printf -v JSON "$MAPPER_TEMPLATE" "$idp" "$attr" "$attr" "$NAME"
-            $KCADM create identity-provider/instances/$idp/mappers -r "$BROKER_REALM" -b "$JSON"
+            $KCADM create identity-provider/instances/"$idp"/mappers -r "$BROKER_REALM" -b "$JSON"
         else
             echo "$NAME already exists."
         fi
@@ -148,14 +151,14 @@ MAPPER_TEMPLATE='{"protocol":"openid-connect","config":{"id.token.claim":"true",
 
 echo "Creating client mappers for Broker realm in the $USERS_REALM realm"
 echo "=================================================================="
-for attr in ${ATTRIBUTES[@]}; do
+for attr in "${ATTRIBUTES[@]}"; do
     export NAME="$attr mapper"
     MAPPER=$(jq -r '.[] | select(.name == env.NAME)' /tmp/kc_upgrade.tmp)
     if [ -z "$MAPPER" ]
     then
         echo "$NAME does not exists, will create it now."
         printf -v JSON "$MAPPER_TEMPLATE" "$attr" "$attr" "$NAME"
-        $KCADM create clients/$BROKER_CLIENT_ID/protocol-mappers/models -r "$USERS_REALM" -b "$JSON"
+        $KCADM create clients/"$BROKER_CLIENT_ID"/protocol-mappers/models -r "$USERS_REALM" -b "$JSON"
     else 
         echo "$NAME already exists."
     fi
@@ -172,14 +175,14 @@ MAPPER_TEMPLATE='{"protocol":"openid-connect","config":{"id.token.claim":"true",
 
 echo "Creating client mappers for Broker realm in the $CERTIFICATES_REALM realm"
 echo "=================================================================="
-for attr in ${ATTRIBUTES[@]}; do
+for attr in "${ATTRIBUTES[@]}"; do
     export NAME="$attr mapper"
     MAPPER=$(jq -r '.[] | select(.name == env.NAME)' /tmp/kc_upgrade.tmp)
     if [ -z "$MAPPER" ]
     then
         echo "$NAME does not exists, will create it now."
         printf -v JSON "$MAPPER_TEMPLATE" "$attr" "$attr" "$NAME"
-        $KCADM create clients/$BROKER_CLIENT_ID/protocol-mappers/models -r "$CERTIFICATES_REALM" -b "$JSON"
+        $KCADM create clients/"$BROKER_CLIENT_ID"/protocol-mappers/models -r "$CERTIFICATES_REALM" -b "$JSON"
     else 
         echo "$NAME already exists."
     fi
