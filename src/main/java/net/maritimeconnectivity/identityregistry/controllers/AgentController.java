@@ -141,8 +141,8 @@ public class AgentController {
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> createAgent(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Agent input) throws McpBasicRestException {
-        Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
-        Organization actingOrg = this.organizationService.getOrganizationById(input.getIdActingOrganization());
+        Organization organization = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        Organization actingOrg = this.organizationService.getOrganizationByIdNoFilter(input.getIdActingOrganization());
         if (organization != null && actingOrg != null) {
             input.setIdOnBehalfOfOrganization(organization.getId());
             Agent agent = null;
@@ -152,6 +152,7 @@ public class AgentController {
                 String path = request.getRequestURL().append("/").append(agent.getId().toString()).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
+                log.error("Could not store new agent", e);
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
             } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
@@ -175,7 +176,7 @@ public class AgentController {
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> updateAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId, @Valid @RequestBody Agent input) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             Agent agent = this.agentService.getById(agentId);
             if (agent == null) {
@@ -185,8 +186,12 @@ public class AgentController {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             agent = input.copyTo(agent);
-            this.agentService.save(agent);
-
+            try {
+                this.agentService.save(agent);
+            } catch (DataIntegrityViolationException e) {
+                log.error("Could not update agent", e);
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+            }
             return new ResponseEntity<>(agent, HttpStatus.OK);
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
@@ -205,7 +210,7 @@ public class AgentController {
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             Agent agent = this.agentService.getById(agentId);
             if (agent == null) {

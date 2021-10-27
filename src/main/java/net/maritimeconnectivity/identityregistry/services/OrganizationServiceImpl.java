@@ -50,12 +50,19 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
         return this.filterResult(organizationRepository.findByMrn(mrn));
     }
 
-    /* Does not filter sensitive data from the result! */
+    // Does not filter sensitive data from the result!
+    @Override
     public Organization getOrganizationByMrnNoFilter(String mrn) {
         return organizationRepository.findByMrnAndApprovedTrue(mrn);
     }
 
-    /* This only shows approved organizations */
+    // Does not filter sensitive data from the result!
+    @Override
+    public Organization getOrganizationByIdNoFilter(Long id) {
+        return organizationRepository.findById(id).orElse(null);
+    }
+
+    // This only shows approved organizations
     @Override
     public Page<Organization> listAllPage(Pageable pageable) {
         return this.filterResult(getRepository().findByApprovedTrue(pageable));

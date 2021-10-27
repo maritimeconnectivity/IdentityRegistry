@@ -25,8 +25,11 @@ public interface OrganizationService extends BaseService<Organization> {
     Organization getOrganizationById(Long id);
 
     Organization getOrganizationByMrnDisregardApproved(String mrn);
-    /* Does not filter sensitive data from the result! */
+    // Does not filter sensitive data from the result!
     Organization getOrganizationByMrnNoFilter(String mrn);
+
+    // Does not filter sensitive data from the result!
+    Organization getOrganizationByIdNoFilter(Long id);
 
     Page<Organization> getUnapprovedOrganizations(Pageable page);
 
