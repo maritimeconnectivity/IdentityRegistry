@@ -21,7 +21,7 @@
 
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
+	<version>1.0.0-JDK17</version>
 	<packaging>war</packaging>
 
 	<name>mcp-identityregistry-core</name>
@@ -43,9 +43,9 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
+		<java.version>17</java.version>
+		<maven.compiler.source>17</maven.compiler.source>
+		<maven.compiler.target>17</maven.compiler.target>
 		<keycloak.version>15.0.2</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.69</bouncycastle.version>
@@ -169,7 +169,7 @@
 		<dependency>
 			<groupId>net.maritimeconnectivity.pki</groupId>
 			<artifactId>mcp-pki</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
+			<version>1.0.0-JDK17</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>

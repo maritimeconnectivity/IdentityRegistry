@@ -106,14 +106,15 @@ public class CertificateController {
             revocationInfos.add(cert.toRevocationInfo());
         }
         AuthProvider provider = null;
-        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
-            provider = pkiConfiguration.getProvider();
-            pkiConfiguration.providerLogin();
+        P11PKIConfiguration p11PKIConfiguration = null;
+        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
+            p11PKIConfiguration = p11;
+            provider = p11PKIConfiguration.getProvider();
+            p11PKIConfiguration.providerLogin();
         }
-        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), provider);
+        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), p11PKIConfiguration);
         if (provider != null) {
-            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
+            p11PKIConfiguration.providerLogout();
         }
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
@@ -194,14 +195,15 @@ public class CertificateController {
             }
         }
         AuthProvider provider = null;
-        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
-            provider = pkiConfiguration.getProvider();
-            pkiConfiguration.providerLogin();
+        P11PKIConfiguration p11PKIConfiguration = null;
+        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
+            p11PKIConfiguration = p11;
+            provider = p11PKIConfiguration.getProvider();
+            p11PKIConfiguration.providerLogin();
         }
-        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias), provider);
+        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias), p11PKIConfiguration);
         if (provider != null) {
-            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
+            p11PKIConfiguration.providerLogout();
         }
         return response.getEncoded();
     }

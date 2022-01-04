@@ -32,6 +32,7 @@ import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.CertificateHandler;
+import net.maritimeconnectivity.pki.PKIConfiguration;
 import net.maritimeconnectivity.pki.PKIConstants;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
@@ -60,8 +61,6 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 @Slf4j
@@ -97,15 +96,16 @@ public abstract class BaseControllerWithCertificate {
      */
     @Deprecated
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
-        AuthProvider authProvider = null;
+        PKIConfiguration pkiConfiguration = certificateUtil.getPkiConfiguration();
         P11PKIConfiguration p11PKIConfiguration = null;
-        if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
-            authProvider = p11PKIConfiguration.getProvider();
+        boolean isPkcs11 = false;
+        if (pkiConfiguration instanceof P11PKIConfiguration p11) {
+            isPkcs11 = true;
+            p11PKIConfiguration = p11;
             p11PKIConfiguration.providerLogin();
         }
         // Generate keypair for user
-        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(authProvider);
+        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(pkiConfiguration);
         // Find special MC attributes to put in the certificate
         HashMap<String, String> attrs = getAttr(certOwner);
 
@@ -126,15 +126,15 @@ public abstract class BaseControllerWithCertificate {
         // Make sure that the serial number is unique
         boolean isUniqueSerialNumber = false;
         while (!isUniqueSerialNumber) {
-            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(pkiConfiguration);
             if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
                 isUniqueSerialNumber = true;
         }
 
         X509Certificate userCert;
         try {
-            if (authProvider != null) {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+            if (isPkcs11) {
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), p11PKIConfiguration.getProvider());
             } else {
                 userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
             }
@@ -155,7 +155,7 @@ public abstract class BaseControllerWithCertificate {
 
         // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
         String keystorePassword = passwordUtil.generatePassword();
-        if (authProvider != null) {
+        if (isPkcs11) {
             p11PKIConfiguration.providerLogout();
         }
         byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
@@ -198,8 +198,8 @@ public abstract class BaseControllerWithCertificate {
             if (csr.isSignatureValid(contentVerifierProvider)) {
                 AuthProvider authProvider = null;
                 P11PKIConfiguration p11PKIConfiguration = null;
-                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-                    p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
+                    p11PKIConfiguration = p11;
                     authProvider = p11PKIConfiguration.getProvider();
                     p11PKIConfiguration.providerLogin();
                 }
@@ -223,7 +223,7 @@ public abstract class BaseControllerWithCertificate {
                 // Make sure that the serial number is unique
                 boolean isUniqueSerialNumber = false;
                 while (!isUniqueSerialNumber) {
-                    serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+                    serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(p11PKIConfiguration);
                     if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
                         isUniqueSerialNumber = true;
                 }
