@@ -57,7 +57,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -266,9 +265,10 @@ class OrganizationControllerTests {
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
-        List<Agent> agentList = spy(agents);
+        List<Agent> agentList = mock(ArrayList.class);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
+        given(agentList.iterator()).willReturn(agents.iterator());
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
