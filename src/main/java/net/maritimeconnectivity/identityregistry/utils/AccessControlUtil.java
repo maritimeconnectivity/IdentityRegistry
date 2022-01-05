@@ -84,10 +84,9 @@ public class AccessControlUtil {
         }
         log.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
-        if (auth instanceof KeycloakAuthenticationToken) {
+        if (auth instanceof KeycloakAuthenticationToken kat) {
             log.debug("OIDC authentication in process");
             // Keycloak authentication
-            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
@@ -113,13 +112,13 @@ public class AccessControlUtil {
                             if (!roleNeeded.startsWith(ROLE_PREFIX))
                                 roleNeeded = ROLE_PREFIX + roleNeeded;
                             for (Agent agent : agents) {
-                                List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                List<KeycloakRole> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
-                                        .collect(Collectors.toList());
+                                        .toList();
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
                                 final String finalRoleNeeded = roleNeeded;
-                                if (reachableGrantedAuthorities.stream().filter(ga -> finalRoleNeeded.equals(ga.getAuthority())).count() > 0L)
+                                if (reachableGrantedAuthorities.stream().anyMatch(ga -> finalRoleNeeded.equals(ga.getAuthority())))
                                     return true;
                             }
                             log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
@@ -130,10 +129,9 @@ public class AccessControlUtil {
                 }
             }
             log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             log.debug("Certificate authentication in process");
             // Certificate authentication
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             // The O(rganization) value in the certificate is an MRN
@@ -152,9 +150,9 @@ public class AccessControlUtil {
                         if (!roleNeeded.startsWith(ROLE_PREFIX))
                             roleNeeded = ROLE_PREFIX + roleNeeded;
                         for (Agent agent : agents) {
-                            List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                            List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                     .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
-                                    .collect(Collectors.toList());
+                                    .toList();
                             Set<GrantedAuthority> reachableGrantedAuthorities =
                                     new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
                             if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
@@ -175,10 +173,9 @@ public class AccessControlUtil {
 
     public static boolean isUserSync(String userSyncMRN, String userSyncO, String userSyncOU, String userSyncC) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof PreAuthenticatedAuthenticationToken) {
+        if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             log.debug("Certificate authentication of user sync'er in process");
             // Certificate authentication
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             if (userSyncMRN.equalsIgnoreCase(person.getUid()) && userSyncO.equalsIgnoreCase(person.getO())
@@ -197,8 +194,7 @@ public class AccessControlUtil {
         User user = this.userService.getByMrn(userMRN);
         Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof KeycloakAuthenticationToken) {
-            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
+        if (auth instanceof KeycloakAuthenticationToken kat) {
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
             String mrn = (String) otherClaims.get(MRN_PROPERTY_NAME);
@@ -209,8 +205,7 @@ public class AccessControlUtil {
                 String org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             String mrn = person.getUid();
             String org = person.getO();

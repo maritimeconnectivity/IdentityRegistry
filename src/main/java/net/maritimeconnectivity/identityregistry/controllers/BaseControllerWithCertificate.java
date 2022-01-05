@@ -294,14 +294,14 @@ public abstract class BaseControllerWithCertificate {
     private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McpBasicRestException {
         String algorithm;
         int keyLength;
-        if (publicKey instanceof RSAPublicKey) {
-            keyLength = ((RSAPublicKey) publicKey).getModulus().bitLength();
+        if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+            keyLength = rsaPublicKey.getModulus().bitLength();
             algorithm = "RSA";
-        } else if (publicKey instanceof ECPublicKey) {
-            keyLength = ((ECPublicKey) publicKey).getParams().getCurve().getField().getFieldSize();
+        } else if (publicKey instanceof ECPublicKey ecPublicKey) {
+            keyLength = ecPublicKey.getParams().getCurve().getField().getFieldSize();
             algorithm = "EC";
-        } else if (publicKey instanceof DSAPublicKey) {
-            keyLength = ((DSAPublicKey) publicKey).getParams().getP().bitLength();
+        } else if (publicKey instanceof DSAPublicKey dsaPublicKey) {
+            keyLength = dsaPublicKey.getParams().getP().bitLength();
             algorithm = "DSA";
         } else if (publicKey instanceof BCEdDSAPublicKey) {
             keyLength = 256;
