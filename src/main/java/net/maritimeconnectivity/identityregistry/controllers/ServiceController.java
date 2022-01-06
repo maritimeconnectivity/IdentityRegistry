@@ -62,6 +62,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @RestController
@@ -135,7 +136,7 @@ public class ServiceController extends EntityController<Service> {
             HttpHeaders headers = new HttpHeaders();
             try {
                 newService = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newService.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newService.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the client from keycloak if it was created.
@@ -144,7 +145,7 @@ public class ServiceController extends EntityController<Service> {
                 }
                 log.error("Service could not be stored in database.", e);
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-            } catch (URISyntaxException | UnsupportedEncodingException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             return new ResponseEntity<>(newService, headers, HttpStatus.CREATED);

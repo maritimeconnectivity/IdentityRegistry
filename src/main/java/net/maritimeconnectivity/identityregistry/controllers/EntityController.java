@@ -49,6 +49,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -101,11 +102,11 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             try {
                 input.setMrn(input.getMrn().toLowerCase());
                 newEntity = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, e.getMessage(), request.getServletPath());
-            } catch (URISyntaxException | UnsupportedEncodingException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             return new ResponseEntity<>(newEntity, headers, HttpStatus.CREATED);

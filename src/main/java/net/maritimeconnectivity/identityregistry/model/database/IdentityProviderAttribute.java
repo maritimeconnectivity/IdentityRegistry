@@ -138,8 +138,7 @@ public class IdentityProviderAttribute extends TimestampModel {
         for (IdentityProviderAttribute attrInFirst : first) {
             boolean foundMatch = false;
             if (attrInFirst == null) {
-                int nullIdx = secondCopy.indexOf(null);
-                secondCopy.remove(nullIdx);
+                secondCopy.remove(null);
                 continue;
             }
             for (IdentityProviderAttribute attrInSecond : secondCopy) {

@@ -87,7 +87,7 @@ public class UserInformationController {
 
         User user = this.userService.getByMrn(userMrn);
         if (user != null && user.getPermissions() != null) {
-            List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).collect(Collectors.toList());
+            List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).toList();
 
             List<String> userRoles = new ArrayList<>();
             userPermissions.forEach(permission -> roleService.getRolesByIdOrganizationAndPermission(user.getIdOrganization(), permission).forEach(role -> userRoles.add(role.getRoleName())));

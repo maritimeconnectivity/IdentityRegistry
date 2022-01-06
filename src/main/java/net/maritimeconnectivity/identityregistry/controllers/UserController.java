@@ -65,6 +65,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RestController
@@ -123,18 +124,17 @@ public class UserController extends EntityController<User> {
             User newUser = null;
             try {
                 newUser = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-            } catch (UnsupportedEncodingException | URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
                 String password;
-                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-                    P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11PKIConfiguration) {
                     p11PKIConfiguration.providerLogin();
                     password = passwordUtil.generatePassword();
                     p11PKIConfiguration.providerLogout();

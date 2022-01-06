@@ -85,8 +85,7 @@ class TokenGenerator {
         essence.setCn(new String[] {"dmauser"});
         essence.setAuthorities(authorities);
 
-        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
-        return token;
+        return new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
     }
 
     static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {

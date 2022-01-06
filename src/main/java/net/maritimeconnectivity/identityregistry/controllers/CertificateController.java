@@ -89,7 +89,7 @@ public class CertificateController {
         // If looking for the root CRL we load that from a file and return it.
         if (certUtil.getRootCAAlias().equals(caAlias)) {
             try {
-                String rootCrl = new String(Files.readAllBytes(Paths.get(certUtil.getRootCrlPath())), StandardCharsets.UTF_8);
+                String rootCrl = Files.readString(Paths.get(certUtil.getRootCrlPath()));
                 return new ResponseEntity<>(rootCrl, HttpStatus.OK);
             } catch (IOException e) {
                 log.error("Unable to get load root crl file", e);
@@ -150,12 +150,7 @@ public class CertificateController {
     public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
         String uri = request.getRequestURI();
         String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
-        try {
-            encodedOCSP = URLDecoder.decode(encodedOCSP, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error("Failed to URL decode OCSP", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
         byte[] decodedOCSP = Base64.decode(encodedOCSP);
         byte[] byteResponse;
         try {
