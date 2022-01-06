@@ -52,7 +52,13 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI mirOpenAPI() {
         String v3ApiDocs = "/v3/api-docs/";
+        oidcBasePath = oidcBasePath.strip();
+        while (oidcBasePath.endsWith("/"))
+            oidcBasePath = oidcBasePath.substring(0, oidcBasePath.length() - 1);
         String oidcUrl = oidcBasePath + v3ApiDocs + oidcApi().getGroup();
+        x509BasePath = x509BasePath.strip();
+        while (x509BasePath.endsWith("/"))
+            x509BasePath = x509BasePath.substring(0, x509BasePath.length() - 1);
         String x509Url = x509BasePath + v3ApiDocs + x509Api().getGroup();
 
         return new OpenAPI()
