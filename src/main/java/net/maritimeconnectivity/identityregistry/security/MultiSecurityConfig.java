@@ -63,18 +63,19 @@ public class MultiSecurityConfig {
         RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         // If the hierarchy is changed, remember to update the hierarchy above and the list in
         // net.maritimeconnectivity.identityregistry.controllers.RoleController:getAvailableRoles()
-        roleHierarchy.setHierarchy("ROLE_SITE_ADMIN > ROLE_APPROVE_ORG\n" +
-                "ROLE_SITE_ADMIN > ROLE_ORG_ADMIN\n" +
-                "ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN\n" +
-                "ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN\n" +
-                "ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN\n" +
-                "ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN\n" +
-                "ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN\n" +
-                "ROLE_ENTITY_ADMIN > ROLE_MMS_ADMIN\n" +
-                "ROLE_USER_ADMIN > ROLE_USER\n" +
-                "ROLE_VESSEL_ADMIN > ROLE_USER\n" +
-                "ROLE_SERVICE_ADMIN > ROLE_USER\n" +
-                "ROLE_DEVICE_ADMIN > ROLE_USER");
+        roleHierarchy.setHierarchy("""
+                ROLE_SITE_ADMIN > ROLE_APPROVE_ORG
+                ROLE_SITE_ADMIN > ROLE_ORG_ADMIN
+                ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN
+                ROLE_ENTITY_ADMIN > ROLE_USER_ADMIN
+                ROLE_ENTITY_ADMIN > ROLE_VESSEL_ADMIN
+                ROLE_ENTITY_ADMIN > ROLE_SERVICE_ADMIN
+                ROLE_ENTITY_ADMIN > ROLE_DEVICE_ADMIN
+                ROLE_ENTITY_ADMIN > ROLE_MMS_ADMIN
+                ROLE_USER_ADMIN > ROLE_USER
+                ROLE_VESSEL_ADMIN > ROLE_USER
+                ROLE_SERVICE_ADMIN > ROLE_USER
+                ROLE_DEVICE_ADMIN > ROLE_USER""");
         return roleHierarchy;
     }
 
