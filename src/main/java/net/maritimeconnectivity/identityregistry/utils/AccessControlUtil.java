@@ -40,18 +40,10 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @Component("accessControlUtil")
 @Slf4j
 public class AccessControlUtil {
-
-    public static final String ORG_PROPERTY_NAME = "org";
-    public static final String MRN_PROPERTY_NAME = "mrn";
-    public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
-    public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
-    public static final String ROLE_PREFIX = "ROLE_";
 
     @Autowired
     private HasRoleUtil hasRoleUtil;
@@ -89,8 +81,8 @@ public class AccessControlUtil {
             // Keycloak authentication
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
-                String mrn = (String) otherClaims.get(AccessControlUtil.MRN_PROPERTY_NAME);
+            if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
+                String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
                 String org = "";
                 if (mrn != null) {
                     String[] mrnParts = mrn.split(":");
@@ -109,8 +101,8 @@ public class AccessControlUtil {
                     if (!agents.isEmpty()) {
                         log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
                         if (roleNeeded != null) {
-                            if (!roleNeeded.startsWith(ROLE_PREFIX))
-                                roleNeeded = ROLE_PREFIX + roleNeeded;
+                            if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                                roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
                             for (Agent agent : agents) {
                                 List<KeycloakRole> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
@@ -128,7 +120,7 @@ public class AccessControlUtil {
                     }
                 }
             }
-            log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
+            log.debug("Entity from org: " + otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             log.debug("Certificate authentication in process");
             // Certificate authentication
@@ -147,8 +139,8 @@ public class AccessControlUtil {
                 if (!agents.isEmpty()) {
                     log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
                     if (roleNeeded != null) {
-                        if (!roleNeeded.startsWith(ROLE_PREFIX))
-                            roleNeeded = ROLE_PREFIX + roleNeeded;
+                        if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                            roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
                         for (Agent agent : agents) {
                             List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                     .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
@@ -166,7 +158,7 @@ public class AccessControlUtil {
             }
             log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
         } else {
-            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+            log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
@@ -197,7 +189,7 @@ public class AccessControlUtil {
         if (auth instanceof KeycloakAuthenticationToken kat) {
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            String mrn = (String) otherClaims.get(MRN_PROPERTY_NAME);
+            String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
             if (mrn != null) {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length < 7)
@@ -214,7 +206,7 @@ public class AccessControlUtil {
             }
         }
         if (auth != null) {
-            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+            log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }

@@ -21,7 +21,7 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
-import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.account.KeycloakRole;
 import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
@@ -59,8 +59,8 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
         Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
 
         Organization org = null;
-        if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
-            String mrn = (String) otherClaims.get(AccessControlUtil.MRN_PROPERTY_NAME);
+        if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
+            String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
             if (mrn != null) {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length >= 7) {
@@ -71,8 +71,8 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
             }
 
             if (org != null) {
-                if (otherClaims.containsKey(AccessControlUtil.PERMISSIONS_PROPERTY_NAME)) {
-                    ArrayList<String> usersPermissions = (ArrayList<String>) otherClaims.get(AccessControlUtil.PERMISSIONS_PROPERTY_NAME);
+                if (otherClaims.containsKey(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME)) {
+                    ArrayList<String> usersPermissions = (ArrayList<String>) otherClaims.get(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME);
                     for (String permission : usersPermissions) {
                         String[] auths = permission.split(",");
                         for (String auth : auths) {
