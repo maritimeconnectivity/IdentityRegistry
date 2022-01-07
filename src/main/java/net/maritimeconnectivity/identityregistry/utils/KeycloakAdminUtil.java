@@ -140,17 +140,10 @@ public class KeycloakAdminUtil {
      */
     public void init(int type) {
         switch (type) {
-            case BROKER_INSTANCE:
-                keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
-                break;
-            case USER_INSTANCE:
-                keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
-                break;
-            case CERTIFICATES_INSTANCE:
-                keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
-                break;
-            default:
-                break;
+            case BROKER_INSTANCE -> keycloakBrokerInstance = Keycloak.getInstance(keycloakBrokerBaseUrl, keycloakBrokerRealm, keycloakBrokerAdminUser, keycloakBrokerAdminPassword, keycloakBrokerAdminClient);
+            case USER_INSTANCE -> keycloakUserInstance = Keycloak.getInstance(keycloakProjectUsersBaseUrl, keycloakProjectUsersRealm, keycloakProjectUsersAdminUser, keycloakProjectUsersAdminPassword, keycloakProjectUsersAdminClient);
+            case CERTIFICATES_INSTANCE -> keycloakCertificatesInstance = Keycloak.getInstance(keycloakCertificatesBaseUrl, keycloakCertificatesRealm, keycloakCertificatesAdminUser, keycloakCertificatesAdminPassword, keycloakCertificatesAdminClient);
+            default -> log.debug("Unknown Keycloak instance type {}", type);
         }
     }
 
