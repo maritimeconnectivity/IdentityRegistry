@@ -269,7 +269,7 @@ The apidocs and UML diagrams are placed in `target/site/apidocs/`.
 
 Some key UML diagrams has been manually placed in the `uml` folder for easy access. Remember to update those if you update the data model.
 
-# Acknowledgement
+## Acknowledgement
 
 The development is a part of the project titled “Development of Open Platform Technologies for Smart Maritime Safety and Industries” funded by the Korea Research Institute of Ships and Ocean Engineering (PES4070).
 The development was a part of the project titled “SMART-Navigation project,” funded by the Ministry of Oceans and Fisheries, KOREA.
