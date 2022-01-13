@@ -68,7 +68,7 @@ import java.util.HashMap;
 @RequestMapping(value = {"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
 
-    private CertificateService certificateService;
+    protected CertificateService certificateService;
 
     protected CertificateUtil certificateUtil;
 

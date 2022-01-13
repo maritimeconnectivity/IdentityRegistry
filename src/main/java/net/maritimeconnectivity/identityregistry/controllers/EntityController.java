@@ -24,7 +24,6 @@ import net.maritimeconnectivity.identityregistry.model.database.CertificateModel
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
-import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
@@ -44,7 +43,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -57,14 +55,8 @@ import java.util.List;
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
     protected EntityService<T> entityService;
     protected OrganizationService organizationService;
-    protected CertificateService certificateService;
     protected RoleService roleService;
     protected AccessControlUtil accessControlUtil;
-
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
 
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {

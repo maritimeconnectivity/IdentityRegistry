@@ -90,8 +90,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     private KeycloakAdminUtil keycloakAU;
 
-    private CertificateService certificateService;
-
     private AgentService agentService;
 
     @Autowired
@@ -137,12 +135,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Autowired
     public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
         this.keycloakAU = keycloakAU;
-    }
-
-    @Override
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
     }
 
     @Autowired
