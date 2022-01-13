@@ -24,8 +24,12 @@ import javax.validation.ConstraintValidatorContext;
 
 public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
 
-    @Autowired
     private MrnUtil mrnUtil;
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
+    }
 
     @Override
     public void initialize(MCPMRN constraintAnnotation) {

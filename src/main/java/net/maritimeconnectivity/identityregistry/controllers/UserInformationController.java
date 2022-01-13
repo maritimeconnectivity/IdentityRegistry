@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "service")
@@ -60,16 +59,28 @@ public class UserInformationController {
     @Value("${net.maritimeconnectivity.idreg.user-sync.mrn}")
     private String userSyncMRN;
 
-    @Autowired
     private RoleService roleService;
 
-    @Autowired
     private OrganizationService organizationService;
+
+    private AgentService agentService;
 
     private EntityService<User> userService;
 
     @Autowired
-    private AgentService agentService;
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
 
     @Autowired
     public void setUserService(EntityService<User> userService) {

@@ -84,16 +84,24 @@ public class UserController extends EntityController<User> {
 
     private static final String TYPE = "user";
 
+    private KeycloakAdminUtil keycloakAU;
+
+    private EmailUtil emailUtil;
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
     @Autowired
     public void setUserService(EntityService<User> userService) {
         this.entityService = userService;
     }
-
-    @Autowired
-    private KeycloakAdminUtil keycloakAU;
-
-    @Autowired
-    private EmailUtil emailUtil;
 
     /**
      * Creates a new User
@@ -144,7 +152,7 @@ public class UserController extends EntityController<User> {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.checkUserExistence(newUser.getEmail());
-                    keycloakAU.createUser(newUser, password, org,true);
+                    keycloakAU.createUser(newUser, password, org, true);
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                 } catch (IOException | NullPointerException e) {
@@ -289,10 +297,10 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns new certificate for the user identified by the given ID
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -349,7 +357,7 @@ public class UserController extends EntityController<User> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @Operation(hidden=true, summary = "Sync user from keycloak")
+    @Operation(hidden = true, summary = "Sync user from keycloak")
     @PostMapping(
             value = "/api/org/{orgMrn}/user-sync/",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -387,14 +395,14 @@ public class UserController extends EntityController<User> {
             org.setCertificateAuthority(orgCa);
             // Extract domain-name from the user email and use that for org url.
             int at = input.getEmail().indexOf('@');
-            String url = "http://" + input.getEmail().substring(at+1);
+            String url = "http://" + input.getEmail().substring(at + 1);
             org.setUrl(url);
             // Extract country from address
             String country;
             String address;
             int lastComma = orgAddress.lastIndexOf(',');
             if (lastComma > 0) {
-                country = orgAddress.substring(lastComma+1).trim();
+                country = orgAddress.substring(lastComma + 1).trim();
                 address = orgAddress.substring(0, lastComma).trim();
             } else {
                 country = "The Seven Seas";
@@ -441,12 +449,12 @@ public class UserController extends EntityController<User> {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        return ((User)certOwner).getFirstName() + " " + ((User)certOwner).getLastName();
+        return ((User) certOwner).getFirstName() + " " + ((User) certOwner).getLastName();
     }
 
     @Override
     protected String getEmail(CertificateModel certOwner) {
-        return ((User)certOwner).getEmail();
+        return ((User) certOwner).getEmail();
     }
 
     @Override

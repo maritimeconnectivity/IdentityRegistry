@@ -24,10 +24,14 @@ import javax.validation.ConstraintValidatorContext;
 
 public class MRNValidator implements ConstraintValidator<MRN, String> {
 
-    @Autowired
     private MrnUtil mrnUtil;
 
     private boolean nullable;
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
+    }
 
     @Override
     public void initialize(MRN constraintAnnotation) {

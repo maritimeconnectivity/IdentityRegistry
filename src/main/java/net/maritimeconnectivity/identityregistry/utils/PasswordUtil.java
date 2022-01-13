@@ -28,10 +28,14 @@ import java.security.SecureRandom;
 @Component
 public class PasswordUtil {
 
-    @Autowired
     private CertificateUtil certificateUtil;
 
     private SecureRandom secureRandom;
+
+    @Autowired
+    public void setCertificateUtil(CertificateUtil certificateUtil) {
+        this.certificateUtil = certificateUtil;
+    }
 
     @PostConstruct
     public void setup() throws NoSuchAlgorithmException {

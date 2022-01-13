@@ -130,8 +130,12 @@ public class KeycloakAdminUtil {
         attrNames2Keycloak.put("permissionsAttr", "permissions");
     }
 
-    @Autowired
     private MrnUtil mrnUtil;
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
+    }
 
     /**
      * Init the keycloak instance. Will only initialize the instance defined by the type

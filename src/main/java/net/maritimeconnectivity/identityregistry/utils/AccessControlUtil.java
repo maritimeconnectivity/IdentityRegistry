@@ -45,20 +45,40 @@ import java.util.Set;
 @Slf4j
 public class AccessControlUtil {
 
-    @Autowired
     private HasRoleUtil hasRoleUtil;
 
-    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
     private AgentService agentService;
 
-    @Autowired
     private EntityService<User> userService;
 
-    @Autowired
     private RoleHierarchy roleHierarchy;
+
+    @Autowired
+    public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
+        this.hasRoleUtil = hasRoleUtil;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setRoleHierarchy(RoleHierarchy roleHierarchy) {
+        this.roleHierarchy = roleHierarchy;
+    }
 
     public boolean hasAccessToOrg(String orgMrn, String roleNeeded) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {

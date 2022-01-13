@@ -65,34 +65,49 @@ import java.util.HashMap;
 
 @Slf4j
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
 
-    @Autowired
     private CertificateService certificateService;
 
-    @Autowired
     protected CertificateUtil certificateUtil;
 
-    @Autowired
     protected PasswordUtil passwordUtil;
 
-    @Autowired
     protected MrnUtil mrnUtil;
 
     private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setCertificateUtil(CertificateUtil certificateUtil) {
+        this.certificateUtil = certificateUtil;
+    }
+
+    @Autowired
+    public void setPasswordUtil(PasswordUtil passwordUtil) {
+        this.passwordUtil = passwordUtil;
+    }
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
+    }
+
     /**
      * Function for generating key pair and certificate for an entity.
      *
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     *
      * @param certOwner the entity that the certificate belongs to
-     * @param org the organization that the entity belongs to
-     * @param type the entity type
-     * @param request the HTTP request
+     * @param org       the organization that the entity belongs to
+     * @param type      the entity type
+     * @param request   the HTTP request
      * @return a bundle containing certificate and key pair in different formats
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Deprecated
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
@@ -333,7 +348,7 @@ public abstract class BaseControllerWithCertificate {
 
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
     protected String getName(CertificateModel certOwner) {
-        return ((NonHumanEntityModel)certOwner).getName();
+        return ((NonHumanEntityModel) certOwner).getName();
     }
 
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */

@@ -61,8 +61,12 @@ public class EmailUtil {
     @Value("${net.maritimeconnectivity.idreg.email.bug-report-email}")
     private String bugReportEmail;
 
-    @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) {
         if (sendTo == null || sendTo.trim().isEmpty()) {

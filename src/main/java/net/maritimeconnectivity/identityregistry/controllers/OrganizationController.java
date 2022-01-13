@@ -76,38 +76,83 @@ import java.util.HashMap;
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
     // These 4 services are used when deleting an organization
-    @Autowired
     private EntityService<Device> deviceService;
-    @Autowired
     private EntityService<Service> serviceService;
-    @Autowired
     private EntityService<User> userService;
-    @Autowired
     private EntityService<Vessel> vesselService;
-    @Autowired
     private EntityService<MMS> mmsService;
 
-    @Autowired
     private RoleService roleService;
 
-    @Autowired
     private EmailUtil emailUtil;
 
-    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
     private CertificateService certificateService;
 
-    @Autowired
     private AgentService agentService;
+
+    @Autowired
+    public void setDeviceService(EntityService<Device> deviceService) {
+        this.deviceService = deviceService;
+    }
+
+    @Autowired
+    public void setServiceService(EntityService<Service> serviceService) {
+        this.serviceService = serviceService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.vesselService = vesselService;
+    }
+
+    @Autowired
+    public void setMmsService(EntityService<MMS> mmsService) {
+        this.mmsService = mmsService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Override
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
 
     /**
      * Receives an application for a new organization and root-user
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -164,7 +209,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Approves the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -207,7 +252,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns info about the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -243,7 +288,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns list of all organizations
-     * 
+     *
      * @return a reply...
      */
     @GetMapping(
@@ -256,7 +301,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Updates info about the organization identified by the given ID
-     * 
+     *
      * @return a http reply
      * @throws McpBasicRestException
      */
@@ -265,7 +310,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
-            @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
+                                                @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -358,10 +403,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns new certificate for the user identified by the given ID
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -451,17 +496,17 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        return ((Organization)certOwner).getName();
+        return ((Organization) certOwner).getName();
     }
 
     @Override
     protected String getUid(CertificateModel certOwner) {
-        return ((Organization)certOwner).getMrn();
+        return ((Organization) certOwner).getMrn();
     }
 
     @Override
     protected String getEmail(CertificateModel certOwner) {
-        return ((Organization)certOwner).getEmail();
+        return ((Organization) certOwner).getEmail();
     }
 
     @Override

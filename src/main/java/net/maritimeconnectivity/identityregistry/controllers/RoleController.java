@@ -51,15 +51,27 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 public class RoleController {
 
-    @Autowired
     private RoleService roleService;
-    @Autowired
     private OrganizationService organizationService;
-    @Autowired
     private AccessControlUtil accessControlUtil;
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 
     /**
      * Returns a list of rolemappings for this organization
@@ -234,8 +246,8 @@ public class RoleController {
     public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) {
         // See net.maritimeconnectivity.identityregistry.security.MultiSecurityConfig for the role hierarchy
         List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
-                                           "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN",
-                                           "ROLE_APPROVE_ORG", "ROLE_USER");
+                "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN",
+                "ROLE_APPROVE_ORG", "ROLE_USER");
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 

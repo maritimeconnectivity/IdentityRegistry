@@ -38,8 +38,12 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(value={"oidc", "x509"})
 public class BugReportController {
 
-    @Autowired
     private EmailUtil emailUtil;
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
 
     @Operation(hidden=true, summary = "Reports a bug")
     @PostMapping(

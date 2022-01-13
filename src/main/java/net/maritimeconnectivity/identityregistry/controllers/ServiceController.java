@@ -68,13 +68,21 @@ import java.util.HashMap;
 @RestController
 @Slf4j
 public class ServiceController extends EntityController<Service> {
-    @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
     private VesselServiceImpl vesselService;
 
     private static final String TYPE = "service";
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
+    }
 
     @Autowired
     public void setEntityService(EntityService<Service> entityService) {
@@ -121,7 +129,7 @@ public class ServiceController extends EntityController<Service> {
                     } else {
                         input.setOidcClientSecret(null);
                     }
-                } catch(IOException e) {
+                } catch (IOException e) {
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
@@ -260,7 +268,7 @@ public class ServiceController extends EntityController<Service> {
                             service.generateOidcClientId();
                             clientSecret = keycloakAU.createClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                         }
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         log.error("Error while updating/creation client in keycloak.", e);
                         throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                     } catch (DuplicatedKeycloakEntry dke) {
@@ -359,10 +367,9 @@ public class ServiceController extends EntityController<Service> {
     /**
      * Returns new certificate for the service identified by the given ID
      *
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -535,7 +542,7 @@ public class ServiceController extends EntityController<Service> {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        String name = ((Service)certOwner).getCertDomainName();
+        String name = ((Service) certOwner).getCertDomainName();
         if (name == null || name.trim().isEmpty()) {
             name = ((Service) certOwner).getName();
         } else {

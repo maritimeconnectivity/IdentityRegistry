@@ -41,14 +41,22 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
 
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
-    @Autowired
     private OrganizationService organizationService;
-    @Autowired
     private RoleService roleService;
 
     @Override
     public void setGrantedAuthoritiesMapper(GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
         this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
     }
 
     @Override

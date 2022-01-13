@@ -15,29 +15,25 @@
  */
 package net.maritimeconnectivity.identityregistry.security.x509;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.asn1.x500.style.BCStyle;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 
 import java.util.ArrayList;
 import java.util.Collection;
 
-
+@Slf4j
 public class X509UserDetailsService implements UserDetailsService {
-
-    private static final Logger logger = LoggerFactory.getLogger(X509UserDetailsService.class);
 
     @Override
     public UserDetails loadUserByUsername(String certDN) {
-        logger.debug("certDN: {}", certDN);
+        log.debug("certDN: {}", certDN);
         SimpleGrantedAuthority role = new SimpleGrantedAuthority("ROLE_USER");
         Collection<GrantedAuthority> roles = new ArrayList<>();
         roles.add(role);
@@ -55,7 +51,7 @@ public class X509UserDetailsService implements UserDetailsService {
         essence.setOu(CertificateHandler.getElement(x500name, BCStyle.OU));
         essence.setAuthorities(roles);
         essence.setDescription(certDN);
-        logger.debug("Parsed certificate, name: {}", name);
+        log.debug("Parsed certificate, name: {}", name);
         return essence.createUserDetails();
     }
 
