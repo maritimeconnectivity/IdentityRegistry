@@ -46,7 +46,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.source>17</maven.compiler.source>
 		<maven.compiler.target>17</maven.compiler.target>
-		<keycloak.version>15.0.2</keycloak.version>
+		<keycloak.version>16.1.0</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.70</bouncycastle.version>
 		<springdoc-openapi.version>1.6.3</springdoc-openapi.version>
