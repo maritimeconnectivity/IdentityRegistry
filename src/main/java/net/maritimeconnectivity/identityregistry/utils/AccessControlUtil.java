@@ -26,6 +26,7 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.account.KeycloakRole;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -60,16 +61,19 @@ public class AccessControlUtil {
         this.hasRoleUtil = hasRoleUtil;
     }
 
+    @Lazy
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
         this.organizationService = organizationService;
     }
 
+    @Lazy
     @Autowired
     public void setAgentService(AgentService agentService) {
         this.agentService = agentService;
     }
 
+    @Lazy
     @Autowired
     public void setUserService(EntityService<User> userService) {
         this.userService = userService;

@@ -30,6 +30,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.Map;
 
 @Slf4j
+@Component
 public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationProvider {
 
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;

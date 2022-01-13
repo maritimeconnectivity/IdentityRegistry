@@ -88,13 +88,8 @@ public class MultiSecurityConfig {
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth) {
-            auth.authenticationProvider(mcKeycloakAuthenticationProvider());
-        }
-
-        @Bean
-        protected MCPKeycloakAuthenticationProvider mcKeycloakAuthenticationProvider() {
-            return new MCPKeycloakAuthenticationProvider();
+        public void configureGlobal(AuthenticationManagerBuilder auth, MCPKeycloakAuthenticationProvider mcpKeycloakAuthenticationProvider) {
+            auth.authenticationProvider(mcpKeycloakAuthenticationProvider);
         }
 
         /**
