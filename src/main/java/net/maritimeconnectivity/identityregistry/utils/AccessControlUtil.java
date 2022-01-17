@@ -56,34 +56,6 @@ public class AccessControlUtil {
 
     private RoleHierarchy roleHierarchy;
 
-    @Autowired
-    public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
-        this.hasRoleUtil = hasRoleUtil;
-    }
-
-    @Lazy
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Lazy
-    @Autowired
-    public void setAgentService(AgentService agentService) {
-        this.agentService = agentService;
-    }
-
-    @Lazy
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.userService = userService;
-    }
-
-    @Autowired
-    public void setRoleHierarchy(RoleHierarchy roleHierarchy) {
-        this.roleHierarchy = roleHierarchy;
-    }
-
     public boolean hasAccessToOrg(String orgMrn, String roleNeeded) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
             log.debug("The orgMrn was empty!");
@@ -267,5 +239,33 @@ public class AccessControlUtil {
             log.debug("user does not have role {}", role);
             return false;
         }
+    }
+
+    @Autowired
+    public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
+        this.hasRoleUtil = hasRoleUtil;
+    }
+
+    @Lazy
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Lazy
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    @Lazy
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setRoleHierarchy(RoleHierarchy roleHierarchy) {
+        this.roleHierarchy = roleHierarchy;
     }
 }

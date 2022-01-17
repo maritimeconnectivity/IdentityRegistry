@@ -57,11 +57,6 @@ public class VesselController extends EntityController<Vessel> {
 
     private static final String TYPE = "vessel";
 
-    @Autowired
-    public void setVesselService(EntityService<Vessel> vesselService) {
-        this.entityService = vesselService;
-    }
-
     /**
      * Creates a new Vessel
      *
@@ -238,5 +233,10 @@ public class VesselController extends EntityController<Vessel> {
     @Override
     protected Vessel getCertEntity(Certificate cert) {
         return cert.getVessel();
+    }
+
+    @Autowired
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.entityService = vesselService;
     }
 }

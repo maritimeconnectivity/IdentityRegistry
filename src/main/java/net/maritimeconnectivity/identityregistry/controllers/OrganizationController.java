@@ -92,56 +92,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     private AgentService agentService;
 
-    @Autowired
-    public void setDeviceService(EntityService<Device> deviceService) {
-        this.deviceService = deviceService;
-    }
-
-    @Autowired
-    public void setServiceService(EntityService<Service> serviceService) {
-        this.serviceService = serviceService;
-    }
-
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.userService = userService;
-    }
-
-    @Autowired
-    public void setVesselService(EntityService<Vessel> vesselService) {
-        this.vesselService = vesselService;
-    }
-
-    @Autowired
-    public void setMmsService(EntityService<MMS> mmsService) {
-        this.mmsService = mmsService;
-    }
-
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setEmailUtil(EmailUtil emailUtil) {
-        this.emailUtil = emailUtil;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
-        this.keycloakAU = keycloakAU;
-    }
-
-    @Autowired
-    public void setAgentService(AgentService agentService) {
-        this.agentService = agentService;
-    }
-
     /**
      * Receives an application for a new organization and root-user
      *
@@ -504,5 +454,55 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Override
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         return null;
+    }
+
+    @Autowired
+    public void setDeviceService(EntityService<Device> deviceService) {
+        this.deviceService = deviceService;
+    }
+
+    @Autowired
+    public void setServiceService(EntityService<Service> serviceService) {
+        this.serviceService = serviceService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.vesselService = vesselService;
+    }
+
+    @Autowired
+    public void setMmsService(EntityService<MMS> mmsService) {
+        this.mmsService = mmsService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
     }
 }

@@ -67,26 +67,6 @@ public class UserInformationController {
 
     private EntityService<User> userService;
 
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setAgentService(AgentService agentService) {
-        this.agentService = agentService;
-    }
-
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.userService = userService;
-    }
-
     @GetMapping(
             value = "/{userMrn}/roles",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -157,4 +137,24 @@ public class UserInformationController {
         }
         return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
      }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
 }

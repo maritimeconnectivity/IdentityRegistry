@@ -63,21 +63,11 @@ import java.util.List;
 public class CertificateController {
     private CertificateService certificateService;
 
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
     private CertificateUtil certUtil;
-
-    @Autowired
-    public void setCertUtil(CertificateUtil certUtil) {
-        this.certUtil = certUtil;
-    }
 
     /**
      * Returns info about the device identified by the given ID
-     * 
+     *
      * @return a reply...
      */
     @GetMapping(
@@ -201,5 +191,15 @@ public class CertificateController {
             p11PKIConfiguration.providerLogout();
         }
         return response.getEncoded();
+    }
+
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setCertUtil(CertificateUtil certUtil) {
+        this.certUtil = certUtil;
     }
 }

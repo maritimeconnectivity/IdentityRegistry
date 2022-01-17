@@ -53,17 +53,12 @@ public class MMSController extends EntityController<MMS> {
 
     private static final String TYPE = "mms";
 
-    @Autowired
-    public void setEntityService(EntityService<MMS> entityService) {
-        this.entityService = entityService;
-    }
-
     /**
      * Creates a new MMS
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
-     */ 
+     */
     @PostMapping(
             value = "/api/org/{orgMrn}/mms",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -77,7 +72,7 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Returns info about the MMS instance identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -93,7 +88,7 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Updates a mms
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -109,7 +104,7 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Deletes a mms
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -124,7 +119,7 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Returns a list of mmses owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -149,7 +144,7 @@ public class MMSController extends EntityController<MMS> {
     /**
      * Returns new certificate for the mms identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -188,7 +183,7 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Revokes certificate for the mms identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -213,6 +208,11 @@ public class MMSController extends EntityController<MMS> {
     @Override
     protected MMS getCertEntity(Certificate cert) {
         return cert.getMms();
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<MMS> entityService) {
+        this.entityService = entityService;
     }
 }
 

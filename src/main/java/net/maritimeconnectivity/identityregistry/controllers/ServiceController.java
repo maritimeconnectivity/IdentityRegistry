@@ -74,22 +74,6 @@ public class ServiceController extends EntityController<Service> {
 
     private static final String TYPE = "service";
 
-    @Autowired
-    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
-        this.keycloakAU = keycloakAU;
-    }
-
-    @Autowired
-    public void setVesselService(VesselServiceImpl vesselService) {
-        this.vesselService = vesselService;
-    }
-
-    @Autowired
-    public void setEntityService(EntityService<Service> entityService) {
-        this.entityService = entityService;
-    }
-
-
     /**
      * Creates a new Service
      *
@@ -571,5 +555,20 @@ public class ServiceController extends EntityController<Service> {
         attrs.putAll(AttributesUtil.getAttributes(certOwner));
 
         return attrs;
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<Service> entityService) {
+        this.entityService = entityService;
     }
 }

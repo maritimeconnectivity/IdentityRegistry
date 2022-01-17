@@ -58,21 +58,6 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     protected RoleService roleService;
     protected AccessControlUtil accessControlUtil;
 
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
-        this.accessControlUtil = accessControlUtil;
-    }
-
     /**
      * Creates a new Entity
      *
@@ -363,6 +348,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
     // Checks that the requesting user has a role that is equal to or higher than the ones being given to the input
+
     protected void checkRoles(HttpServletRequest request, T input, Organization org) throws McpBasicRestException {
         if (input.getPermissions() != null) {
             String[] permissions = input.getPermissions().split(",");
@@ -377,4 +363,18 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         }
     }
 
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 }

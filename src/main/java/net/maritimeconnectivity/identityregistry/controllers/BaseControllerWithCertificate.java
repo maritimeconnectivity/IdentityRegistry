@@ -76,27 +76,7 @@ public abstract class BaseControllerWithCertificate {
 
     protected MrnUtil mrnUtil;
 
-    private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
-
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
-    @Autowired
-    public void setCertificateUtil(CertificateUtil certificateUtil) {
-        this.certificateUtil = certificateUtil;
-    }
-
-    @Autowired
-    public void setPasswordUtil(PasswordUtil passwordUtil) {
-        this.passwordUtil = passwordUtil;
-    }
-
-    @Autowired
-    public void setMrnUtil(MrnUtil mrnUtil) {
-        this.mrnUtil = mrnUtil;
-    }
+    private static final String[] INSECURE_HASHES = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
     /**
      * Function for generating key pair and certificate for an entity.
@@ -299,7 +279,7 @@ public abstract class BaseControllerWithCertificate {
     private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McpBasicRestException {
         DefaultAlgorithmNameFinder algorithmNameFinder = new DefaultAlgorithmNameFinder();
         String algoName = algorithmNameFinder.getAlgorithmName(csr.getSignatureAlgorithm());
-        for (String insecureHash : this.insecureHashes) {
+        for (String insecureHash : INSECURE_HASHES) {
             if (algoName.contains(insecureHash)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.WEAK_HASH, request.getServletPath());
             }
@@ -347,19 +327,20 @@ public abstract class BaseControllerWithCertificate {
     }
 
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
+
     protected String getName(CertificateModel certOwner) {
         return ((NonHumanEntityModel) certOwner).getName();
     }
-
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
-    protected abstract String getUid(CertificateModel certOwner);
 
+    protected abstract String getUid(CertificateModel certOwner);
     /* Override if the entity type of the controller has an email */
+
     protected String getEmail(CertificateModel certOwner) {
         return "";
     }
-
     /* Override if the entity type isn't of type EntityModel */
+
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = new HashMap<>();
         EntityModel entity = (EntityModel) certOwner;
@@ -376,5 +357,25 @@ public abstract class BaseControllerWithCertificate {
             attrs.put(PKIConstants.MC_OID_HOME_MMS_URL, entity.getHomeMMSUrl());
         }
         return attrs;
+    }
+
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setCertificateUtil(CertificateUtil certificateUtil) {
+        this.certificateUtil = certificateUtil;
+    }
+
+    @Autowired
+    public void setPasswordUtil(PasswordUtil passwordUtil) {
+        this.passwordUtil = passwordUtil;
+    }
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
     }
 }

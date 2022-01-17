@@ -57,11 +57,6 @@ public class VesselImageController {
 
     private VesselServiceImpl vesselService;
 
-    @Autowired
-    public void setVesselService(VesselServiceImpl vesselService) {
-        this.vesselService = vesselService;
-    }
-
     /**
      * Creates an image for a vessel
      * @param request
@@ -195,5 +190,10 @@ public class VesselImageController {
             newVesselImage.setVessel(vessel);
             vessel.setImage(newVesselImage);
         }
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
     }
 }

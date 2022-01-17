@@ -58,21 +58,6 @@ public class RoleController {
     private OrganizationService organizationService;
     private AccessControlUtil accessControlUtil;
 
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
-        this.accessControlUtil = accessControlUtil;
-    }
-
     /**
      * Returns a list of rolemappings for this organization
      *
@@ -251,5 +236,18 @@ public class RoleController {
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
 
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 }

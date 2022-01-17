@@ -88,21 +88,6 @@ public class UserController extends EntityController<User> {
 
     private EmailUtil emailUtil;
 
-    @Autowired
-    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
-        this.keycloakAU = keycloakAU;
-    }
-
-    @Autowired
-    public void setEmailUtil(EmailUtil emailUtil) {
-        this.emailUtil = emailUtil;
-    }
-
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.entityService = userService;
-    }
-
     /**
      * Creates a new User
      *
@@ -460,5 +445,20 @@ public class UserController extends EntityController<User> {
     @Override
     protected User getCertEntity(Certificate cert) {
         return cert.getUser();
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.entityService = userService;
     }
 }

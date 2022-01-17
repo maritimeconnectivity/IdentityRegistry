@@ -40,11 +40,6 @@ public class BugReportController {
 
     private EmailUtil emailUtil;
 
-    @Autowired
-    public void setEmailUtil(EmailUtil emailUtil) {
-        this.emailUtil = emailUtil;
-    }
-
     @Operation(hidden=true, summary = "Reports a bug")
     @PostMapping(
             value = "/api/report-bug",
@@ -58,5 +53,10 @@ public class BugReportController {
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
         }
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
     }
 }

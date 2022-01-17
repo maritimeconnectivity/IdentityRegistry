@@ -57,16 +57,6 @@ public class AgentController {
 
     private AgentService agentService;
 
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setAgentService(AgentService agentService) {
-        this.agentService = agentService;
-    }
-
     /**
      * Returns all the agents for an organization
      *
@@ -232,5 +222,15 @@ public class AgentController {
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
     }
 }

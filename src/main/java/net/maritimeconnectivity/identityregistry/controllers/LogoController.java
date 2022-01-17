@@ -56,11 +56,6 @@ public class LogoController {
 
     private OrganizationService organizationService;
 
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
     /**
      * Creates a logo for an organization
      * @param request request to get servletPath
@@ -156,6 +151,7 @@ public class LogoController {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
+
     /**
      * Deletes a Logo
      *
@@ -191,5 +187,9 @@ public class LogoController {
             newLogo.setOrganization(org);
             org.setLogo(newLogo);
         }
+    }
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
     }
 }

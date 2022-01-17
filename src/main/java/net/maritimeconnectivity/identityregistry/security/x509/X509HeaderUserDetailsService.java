@@ -47,21 +47,6 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private RoleService roleService;
     private EntityService<User> userService;
 
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.userService = userService;
-    }
-
     @Override
     public UserDetails loadUserByUsername(String certificateHeader) {
         if (certificateHeader == null || certificateHeader.length() < 10) {
@@ -130,5 +115,20 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         }
         essence.setAuthorities(newRoles);
         return essence.createUserDetails();
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
     }
 }

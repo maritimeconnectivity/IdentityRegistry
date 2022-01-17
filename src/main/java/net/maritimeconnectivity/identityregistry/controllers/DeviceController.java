@@ -50,17 +50,12 @@ public class DeviceController extends EntityController<Device> {
 
     private static final String TYPE = "device";
 
-    @Autowired
-    public void setEntityService(EntityService<Device> entityService) {
-        this.entityService = entityService;
-    }
-
     /**
      * Creates a new Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
-     */ 
+     */
     @PostMapping(
             value = "/api/org/{orgMrn}/device",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -74,7 +69,7 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Returns info about the device identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -90,7 +85,7 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Updates a Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -106,7 +101,7 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Deletes a Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -121,7 +116,7 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Returns a list of devices owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -147,7 +142,7 @@ public class DeviceController extends EntityController<Device> {
      * Returns new certificate for the device identified by the given ID
      *
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -186,7 +181,7 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Revokes certificate for the device identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -202,6 +197,11 @@ public class DeviceController extends EntityController<Device> {
     @Override
     protected Device getCertEntity(Certificate cert) {
         return cert.getDevice();
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<Device> entityService) {
+        this.entityService = entityService;
     }
 }
 
