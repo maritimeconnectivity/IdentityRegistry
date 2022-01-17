@@ -15,6 +15,9 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
 import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -29,15 +32,12 @@ import java.io.InputStream;
   or this:
   -Djava.awt.headless=true
  */
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class ImageUtil {
 
     public static final float MAX_HEIGHT = 600.0f;
     public static final float MAX_WIDTH = 800.0f;
     public static final String OUTPUT_FORMAT = "png";
-
-    private ImageUtil() {
-        // empty private constructor as this class should not be instantiated
-    }
 
     public static ByteArrayOutputStream resize(InputStream inputStream) throws IOException {
         ByteArrayOutputStream outputImageStream = new ByteArrayOutputStream();

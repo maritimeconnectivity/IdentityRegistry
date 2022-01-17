@@ -16,6 +16,8 @@
 
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.NonNull;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
@@ -27,11 +29,8 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringReader;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class CsrUtil {
-
-    private CsrUtil() {
-        // empty private constructor as this class should not be instantiated
-    }
 
     /**
      * Function for converting a PEM encoded CSR to an object that can be used by  Java/Bouncy Castle

@@ -1,5 +1,7 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
@@ -11,12 +13,9 @@ import net.maritimeconnectivity.pki.PKIConstants;
 import java.util.HashMap;
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class AttributesUtil {
-
-    private AttributesUtil() {
-        // empty private constructor as this class should not be instantiated
-    }
 
     /**
      * Get the special attributes of an entity
