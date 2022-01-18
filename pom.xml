@@ -21,7 +21,7 @@
 
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
-	<version>1.0.0.JDK17-SNAPSHOT</version>
+	<version>1.1.0-SNAPSHOT</version>
 	<packaging>war</packaging>
 
 	<name>mcp-identityregistry-core</name>
@@ -170,7 +170,7 @@
 		<dependency>
 			<groupId>net.maritimeconnectivity.pki</groupId>
 			<artifactId>mcp-pki</artifactId>
-			<version>1.0.0.JDK17-SNAPSHOT</version>
+			<version>1.1.0-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.slf4j</groupId>
