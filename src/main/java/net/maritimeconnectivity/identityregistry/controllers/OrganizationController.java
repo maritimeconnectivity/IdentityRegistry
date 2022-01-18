@@ -139,7 +139,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         }
         if (newOrg == null) {
             log.error("Application for organization with MRN {} was not stored", input.getMrn());
-            throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
         }
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
