@@ -44,8 +44,7 @@
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 		<java.version>17</java.version>
-		<maven.compiler.source>17</maven.compiler.source>
-		<maven.compiler.target>17</maven.compiler.target>
+		<maven.compiler.release>17</maven.compiler.release>
 		<keycloak.version>16.1.0</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.70</bouncycastle.version>
@@ -175,6 +174,10 @@
 				<exclusion>
 					<groupId>org.slf4j</groupId>
 					<artifactId>slf4j-simple</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.slf4j</groupId>
+					<artifactId>slf4j-api</artifactId>
 				</exclusion>
 				<exclusion>
 					<groupId>commons-cli</groupId>
