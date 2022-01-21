@@ -23,7 +23,9 @@ import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
-import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.asn1.ocsp.OCSPResponse;
+import org.bouncycastle.asn1.ocsp.OCSPResponseStatus;
+import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -44,18 +46,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AuthProvider;
+import java.security.KeyStore;
+import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
@@ -122,14 +127,7 @@ public class CertificateController {
     )
     @ResponseBody
     public ResponseEntity<?> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
-        byte[] byteResponse;
-        try {
-            byteResponse = handleOCSP(input, caAlias);
-        } catch (IOException e) {
-            log.error("Failed to update OCSP", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(byteResponse, HttpStatus.OK);
+        return generateOCSPResponseEntity(caAlias, input);
     }
 
     @GetMapping(
@@ -142,54 +140,52 @@ public class CertificateController {
         String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
         encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
         byte[] decodedOCSP = Base64.decode(encodedOCSP);
+        return generateOCSPResponseEntity(caAlias, decodedOCSP);
+    }
+
+    private ResponseEntity<?> generateOCSPResponseEntity(String caAlias, byte[] input) {
         byte[] byteResponse;
         try {
-            byteResponse = handleOCSP(decodedOCSP, caAlias);
+            byteResponse = handleOCSP(input, caAlias);
         } catch (IOException e) {
-            log.error("Failed to base64 decode OCSP", e);
+            log.error("Failed to generate OCSP response", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(byteResponse, HttpStatus.OK);
     }
 
     protected byte[] handleOCSP(byte[] input, String certAlias) throws IOException {
-        OCSPReq ocspreq = new OCSPReq(input);
+        OCSPReq ocspreq;
+        try {
+            ocspreq = new OCSPReq(input);
+        } catch (IOException e) {
+            log.error("Received a malformed OCSP request", e);
+            OCSPResponse ocspResponse = new OCSPResponse(new OCSPResponseStatus(OCSPResponseStatus.MALFORMED_REQUEST), null);
+            return new OCSPResp(ocspResponse).getEncoded();
+        }
         /* TODO: verify signature - needed?
         if (ocspreq.isSigned()) {
         }*/
-        BasicOCSPRespBuilder respBuilder = Revocation.initOCSPRespBuilder(ocspreq, certUtil.getKeystoreHandler().getMCPCertificate(certAlias).getPublicKey());
+        Map<CertificateID, CertificateStatus> certificateStatusMap = new HashMap<>();
         Req[] requests = ocspreq.getRequestList();
         for (Req req : requests) {
             BigInteger sn = req.getCertID().getSerialNumber();
             Certificate cert = this.certificateService.getCertificateBySerialNumber(sn);
 
-            if (cert == null) {
-                respBuilder.addResponse(req.getCertID(), new UnknownStatus());
-
-            // Check if the certificate is even signed by this CA
-            } else if (!certAlias.equals(cert.getCertificateAuthority())) {
-                respBuilder.addResponse(req.getCertID(), new UnknownStatus());
-
+            if (cert == null || !certAlias.equals(cert.getCertificateAuthority())) {
+                certificateStatusMap.put(req.getCertID(), new UnknownStatus());
             // Check if certificate has been revoked
             } else if (cert.isRevoked()) {
-                respBuilder.addResponse(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), Revocation.getCRLReasonFromString(cert.getRevokeReason())));
-
+                certificateStatusMap.put(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), Revocation.getCRLReasonFromString(cert.getRevokeReason())));
             } else {
                 // Certificate is valid
-                respBuilder.addResponse(req.getCertID(), CertificateStatus.GOOD);
+                certificateStatusMap.put(req.getCertID(), CertificateStatus.GOOD);
             }
         }
-        AuthProvider provider = null;
-        P11PKIConfiguration p11PKIConfiguration = null;
-        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
-            p11PKIConfiguration = p11;
-            provider = p11PKIConfiguration.getProvider();
-            p11PKIConfiguration.providerLogin();
-        }
-        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias), p11PKIConfiguration);
-        if (provider != null) {
-            p11PKIConfiguration.providerLogout();
-        }
+
+        PublicKey caPublicKey = certUtil.getKeystoreHandler().getMCPCertificate(certAlias).getPublicKey();
+        KeyStore.PrivateKeyEntry caKeystoreEntry = certUtil.getKeystoreHandler().getSigningCertEntry(certAlias);
+        OCSPResp response = Revocation.handleOCSP(ocspreq, caPublicKey, caKeystoreEntry, certificateStatusMap, certUtil.getPkiConfiguration());
         return response.getEncoded();
     }
 
