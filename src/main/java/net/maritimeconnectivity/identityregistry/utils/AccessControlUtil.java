@@ -37,14 +37,18 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Component("accessControlUtil")
 @Slf4j
 public class AccessControlUtil {
+
+    public static final String ORG_TEMPLATE = "urn:mrn:mcp:org:%s:%s";
 
     private HasRoleUtil hasRoleUtil;
 
@@ -84,7 +88,7 @@ public class AccessControlUtil {
                     String[] mrnParts = mrn.split(":");
                     if (mrnParts.length < 7)
                         return false;
-                    org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                    org = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
                 }
                 if (org.equalsIgnoreCase(orgMrn)) {
                     log.debug("Entity from org: {} is in {}", org, orgMrn);
@@ -190,7 +194,7 @@ public class AccessControlUtil {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length < 7)
                     return false;
-                String org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                String org = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
@@ -207,14 +211,53 @@ public class AccessControlUtil {
         return false;
     }
 
-    public static List<String> getMyRoles() {
+    public List<String> getMyRoles(String orgMrn) {
         log.debug("Role lookup");
         List<String> roles = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Set<GrantedAuthority> userGrantedAuthorities;
         if (auth != null) {
-            for (GrantedAuthority authority : auth.getAuthorities()) {
+            userGrantedAuthorities = new HashSet<>(roleHierarchy
+                    .getReachableGrantedAuthorities(auth.getAuthorities()));
+            for (GrantedAuthority authority : userGrantedAuthorities) {
                 roles.add(authority.getAuthority());
             }
+        } else {
+            return roles;
+        }
+        // From here on we try to decide if the user is acting on behalf of another organization,
+        // and if so we compute the reachable roles that they have there.
+        String userOrgMrn = null;
+        if (auth instanceof KeycloakAuthenticationToken keycloakAuthenticationToken) {
+            KeycloakSecurityContext securityContext = (KeycloakSecurityContext) keycloakAuthenticationToken.getCredentials();
+            Map<String, Object> otherClaims = securityContext.getToken().getOtherClaims();
+            String userMrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
+            if (userMrn == null || userMrn.trim().isEmpty())
+                return Collections.emptyList();
+            String[] mrnParts = userMrn.split(":");
+            if (mrnParts.length < 7)
+                return Collections.emptyList();
+            userOrgMrn = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            userOrgMrn = person.getO();
+        }
+        if (!Objects.equals(orgMrn, userOrgMrn)) {
+            Organization organization = organizationService.getOrganizationByMrn(orgMrn);
+            Organization agentOrganization = organizationService.getOrganizationByMrn(userOrgMrn);
+            if (organization == null || agentOrganization == null)
+                return Collections.emptyList();
+            List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
+            if (agents.isEmpty())
+                return Collections.emptyList();
+            Set<String> roleSet = new HashSet<>();
+            for (Agent agent : agents) {
+                Set<GrantedAuthority> agentGrantedAuthorities = new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(agent.getAllowedRoles()
+                        .stream().map(ar -> new SimpleGrantedAuthority(ar.getRoleName())).toList()));
+                agentGrantedAuthorities.retainAll(userGrantedAuthorities);
+                agentGrantedAuthorities.forEach(ga -> roleSet.add(ga.getAuthority()));
+            }
+            roles = new ArrayList<>(roleSet);
         }
         return roles;
     }

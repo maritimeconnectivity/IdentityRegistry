@@ -202,7 +202,7 @@ public class RoleController {
     }
 
     /**
-     * Returns the roles of the current user
+     * Returns the list of roles of the current user in the given organization
      *
      * @return a reply...
      * @throws McpBasicRestException
@@ -213,7 +213,7 @@ public class RoleController {
     )
     @ResponseBody
     public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) {
-        List<String> roles = AccessControlUtil.getMyRoles();
+        List<String> roles = accessControlUtil.getMyRoles(orgMrn);
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 
