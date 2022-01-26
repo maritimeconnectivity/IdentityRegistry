@@ -70,12 +70,13 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @Slf4j
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
-    // These 4 services are used when deleting an organization
+    // These 5 services are used when deleting an organization
     private EntityService<Device> deviceService;
     private EntityService<Service> serviceService;
     private EntityService<User> userService;
@@ -117,11 +118,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
         HttpHeaders headers = new HttpHeaders();
         try {
             newOrg = this.organizationService.save(input);
-            String path = request.getRequestURL().toString().split("apply")[0] + URLEncoder.encode(newOrg.getMrn(), "UTF-8");
+            String path = request.getRequestURL().toString().split("apply")[0] + URLEncoder.encode(newOrg.getMrn(), StandardCharsets.UTF_8);
             headers.setLocation(new URI(path));
         } catch (DataIntegrityViolationException e) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
+        } catch (URISyntaxException e) {
             log.error("Could not create Location header", e);
         }
         if (newOrg == null) {
@@ -453,7 +454,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Override
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
-        return null;
+        return new HashMap<>();
     }
 
     @Autowired

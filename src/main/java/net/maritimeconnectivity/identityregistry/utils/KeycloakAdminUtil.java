@@ -50,6 +50,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 @Component
@@ -530,11 +531,7 @@ public class KeycloakAdminUtil {
             if (oldAttributeValue != null && !oldAttributeValue.isEmpty()) {
                 String attributeValue = oldAttributeValue.get(0);
                 if (attributeValue == null || !attributeValue.equals(newAttributeValue)) {
-                    if (newAttributeValue != null) {
-                        attr.put(attributeName, Collections.singletonList(newAttributeValue));
-                    } else {
-                        attr.put(attributeName, Collections.singletonList(""));
-                    }
+                    attr.put(attributeName, Collections.singletonList(Objects.requireNonNullElse(newAttributeValue, "")));
                     user.setAttributes(attr);
                     updated = true;
                 }
@@ -757,15 +754,15 @@ public class KeycloakAdminUtil {
      * @throws IOException  is thrown if the content string could be extracted
      */
     private static String getContent(HttpEntity entity) throws IOException {
-        if (entity == null) return null;
+        if (entity == null)
+            return null;
         try (InputStream is = entity.getContent()) {
             ByteArrayOutputStream os = new ByteArrayOutputStream();
             int c;
             while ((c = is.read()) != -1) {
                 os.write(c);
             }
-            byte[] bytes = os.toByteArray();
-            return new String(bytes, StandardCharsets.UTF_8);
+            return os.toString(StandardCharsets.UTF_8);
         }
     }
 }

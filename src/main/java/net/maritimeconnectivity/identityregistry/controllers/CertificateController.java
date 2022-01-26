@@ -169,8 +169,8 @@ public class CertificateController {
         Map<CertificateID, CertificateStatus> certificateStatusMap = new HashMap<>();
         Req[] requests = ocspreq.getRequestList();
         for (Req req : requests) {
-            BigInteger sn = req.getCertID().getSerialNumber();
-            Certificate cert = this.certificateService.getCertificateBySerialNumber(sn);
+            BigInteger serialNumber = req.getCertID().getSerialNumber();
+            Certificate cert = this.certificateService.getCertificateBySerialNumber(serialNumber);
 
             if (cert == null || !certAlias.equals(cert.getCertificateAuthority())) {
                 certificateStatusMap.put(req.getCertID(), new UnknownStatus());

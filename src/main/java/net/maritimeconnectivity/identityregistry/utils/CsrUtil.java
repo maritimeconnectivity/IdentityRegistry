@@ -33,7 +33,7 @@ import java.io.StringReader;
 public class CsrUtil {
 
     /**
-     * Function for converting a PEM encoded CSR to an object that can be used by  Java/Bouncy Castle
+     * Function for converting a PEM encoded CSR to an object that can be used by Java/Bouncy Castle
      *
      * @param request a HTTP request
      * @param pemCsr a PEM encoded CSR

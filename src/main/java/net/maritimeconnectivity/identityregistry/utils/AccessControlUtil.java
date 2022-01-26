@@ -48,7 +48,7 @@ import java.util.Set;
 @Slf4j
 public class AccessControlUtil {
 
-    public static final String ORG_TEMPLATE = "urn:mrn:mcp:org:%s:%s";
+    public static final String ORG_MRN_TEMPLATE = "urn:mrn:mcp:org:%s:%s";
 
     private HasRoleUtil hasRoleUtil;
 
@@ -88,7 +88,7 @@ public class AccessControlUtil {
                     String[] mrnParts = mrn.split(":");
                     if (mrnParts.length < 7)
                         return false;
-                    org = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
+                    org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
                 }
                 if (org.equalsIgnoreCase(orgMrn)) {
                     log.debug("Entity from org: {} is in {}", org, orgMrn);
@@ -194,7 +194,7 @@ public class AccessControlUtil {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length < 7)
                     return false;
-                String org = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
+                String org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
@@ -237,7 +237,7 @@ public class AccessControlUtil {
             String[] mrnParts = userMrn.split(":");
             if (mrnParts.length < 7)
                 return Collections.emptyList();
-            userOrgMrn = String.format(ORG_TEMPLATE, mrnParts[4], mrnParts[5]);
+            userOrgMrn = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             userOrgMrn = person.getO();
