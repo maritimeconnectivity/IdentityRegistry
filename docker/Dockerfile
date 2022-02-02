@@ -7,8 +7,8 @@
 FROM openjdk:8-jre
 
 RUN mkdir -p /conf
-ADD mcp-identityregistry-core-latest.war .
+ADD mcp-identityregistry-core-latest.jar .
 
 EXPOSE 8443
 
-CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mcp-identityregistry-core-latest.war", "--spring.config.location=/conf/application.yaml", "--keycloak.configurationFile=file:/conf/keycloak.json"]
+CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mcp-identityregistry-core-latest.jar", "--spring.config.location=/conf/application.yaml", "--keycloak.configurationFile=file:/conf/keycloak.json"]
