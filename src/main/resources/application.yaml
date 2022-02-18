@@ -173,7 +173,7 @@ spring:
             on-profile: development
 # Database setup
     datasource:
-        url: jdbc:postgres://localhost/identity_registry
+        url: jdbc:postgresql://localhost/identity_registry
         username: idreg
         password: idreg
     flyway:
