@@ -4,9 +4,20 @@
 # A customized conf file (application.yaml) must be available in the folder mounted to /conf.
 # When using in non-local environment it is recommened to generate new trust and keystores and place them in
 # the conf-folder and point to them in application.yaml.
-FROM openjdk:8-jre
+FROM eclipse-temurin:17-jre
 
-RUN mkdir -p /conf
+ENV MARIADB_VERSION 2.7.5
+ENV MYSQL_VERSION 8.0.28
+ENV LOADER_PATH /modules
+
+RUN mkdir /conf
+
+RUN mkdir /modules
+
+ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar /modules
+
+ADD https://repo1.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_VERSION/mysql-connector-java-$MYSQL_VERSION.jar /modules
+
 ADD mcp-identityregistry-core-latest.jar .
 
 EXPOSE 8443
