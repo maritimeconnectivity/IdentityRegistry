@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
@@ -71,13 +72,16 @@ public class CertificateController {
     private CertificateUtil certUtil;
 
     /**
-     * Returns info about the device identified by the given ID
+     * Get the CRL of the specified CA
      *
      * @return a reply...
      */
     @GetMapping(
             value = "/api/certificates/crl/{caAlias}",
             produces = "application/x-pem-file"
+    )
+    @Operation(
+            description = "Get the CRL of the specified CA"
     )
     @ResponseBody
     public ResponseEntity<?> getCRL(@PathVariable String caAlias) {
@@ -125,6 +129,9 @@ public class CertificateController {
             consumes = "application/ocsp-request",
             produces = "application/ocsp-response"
     )
+    @Operation(
+            description = "POST mapping for OCSP"
+    )
     @ResponseBody
     public ResponseEntity<?> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
         return generateOCSPResponseEntity(caAlias, input);
@@ -133,6 +140,9 @@ public class CertificateController {
     @GetMapping(
             value = "/api/certificates/ocsp/{caAlias}/**",
             produces = "application/ocsp-response"
+    )
+    @Operation(
+            description = "GET mapping for OCSP"
     )
     @ResponseBody
     public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
