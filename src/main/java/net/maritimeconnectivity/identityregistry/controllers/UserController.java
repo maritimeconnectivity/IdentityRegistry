@@ -98,6 +98,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Create a new user identity"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     @Transactional(rollbackFor = McpBasicRestException.class)
@@ -164,6 +167,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user/{userMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific user identity"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
@@ -178,6 +184,9 @@ public class UserController extends EntityController<User> {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}"
+    )
+    @Operation(
+            description = "Update a specific user identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
@@ -232,6 +241,9 @@ public class UserController extends EntityController<User> {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}"
     )
+    @Operation(
+            description = "Delete a specific user identity"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
@@ -266,6 +278,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/users",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of user identities of the specified organization"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<User> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -274,6 +289,9 @@ public class UserController extends EntityController<User> {
     @GetMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the user identity certificate with the given serial number"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
@@ -315,6 +333,9 @@ public class UserController extends EntityController<User> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new user identity certificate using CSR"
+    )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
@@ -329,6 +350,9 @@ public class UserController extends EntityController<User> {
     @PostMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the service identity certificate with the given serial number"
     )
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
