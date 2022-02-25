@@ -48,7 +48,7 @@
 		<keycloak.version>16.1.1</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.70</bouncycastle.version>
-		<springdoc-openapi.version>1.6.4</springdoc-openapi.version>
+		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
 		<twelvemonkeys.version>3.8.1</twelvemonkeys.version>
 	</properties>
 
