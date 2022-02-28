@@ -12,11 +12,13 @@ ENV LOADER_PATH /modules
 
 RUN mkdir /conf
 
-RUN mkdir /modules
+RUN mkdir $LOADER_PATH
 
-ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar /modules
+# Download the MariaDB client connector from Maven Central
+ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
 
-ADD https://repo1.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_VERSION/mysql-connector-java-$MYSQL_VERSION.jar /modules
+# Download the MySQL client connector from Maven Central
+ADD https://repo1.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_VERSION/mysql-connector-java-$MYSQL_VERSION.jar $LOADER_PATH
 
 ADD mcp-identityregistry-core-latest.jar .
 
