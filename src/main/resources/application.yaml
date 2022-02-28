@@ -1,6 +1,8 @@
 # https://docs.spring.io/spring-boot/docs/current/reference/html/common-application-properties.html
 spring:
     profiles.active: test
+    main:
+        allow-bean-definition-overriding: true
 
 # logging
 logging.level:
@@ -173,12 +175,25 @@ spring:
             on-profile: development
 # Database setup
     datasource:
-        url: jdbc:mysql://localhost/identity_registry
+        url: jdbc:postgresql://localhost/identity_registry
         username: idreg
         password: idreg
     flyway:
-      baseline-on-migrate: true
-
+        baseline-on-migrate: true
+        locations: classpath:/db/migration/postgresql
+---
+spring:
+    config:
+        activate:
+            on-profile: development-mysql
+    datasource:
+        url: jdbc:mysql://localhost/identity_registry # mysql
+        # url: jdbc:mariadb://localhost/identity_registry # mariadb
+        username: idreg
+        password: idreg
+    flyway:
+        baseline-on-migrate: true
+        locations: classpath:/db/migration/mysql
 ---
 spring:
     config:

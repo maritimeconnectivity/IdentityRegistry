@@ -103,6 +103,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/apply",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Apply for getting your organization registered"
+    )
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
@@ -145,6 +148,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/unapprovedorgs",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of organizations that have not yet been approved"
+    )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public Page<Organization> getUnapprovedOrganizations(@ParameterObject Pageable pageable) {
         return this.organizationService.getUnapprovedOrganizations(pageable);
@@ -159,6 +165,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @GetMapping(
             value = "/api/org/{orgMrn}/approve",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Approve the given applying organization"
     )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
@@ -203,6 +212,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific organization based on MRN"
+    )
     public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org == null) {
@@ -221,6 +233,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/id/{orgId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific organization based on ID"
+    )
     public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationById(orgId);
         if (org == null) {
@@ -238,6 +253,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/orgs",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of registered organizations"
+    )
     public Page<Organization> getOrganization(@ParameterObject Pageable pageable) {
         return this.organizationService.listAllPage(pageable);
     }
@@ -250,6 +268,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}"
+    )
+    @Operation(
+            description = "Update a specific organization"
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
@@ -300,6 +321,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @DeleteMapping(
             value = "/api/org/{orgMrn}"
     )
+    @Operation(
+            description = "Delete a specific organization"
+    )
     @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
@@ -330,6 +354,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @GetMapping(
             value = "/api/org/{orgMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the organization certificate with the given serial number"
     )
     public ResponseEntity<Certificate> getOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -391,6 +418,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new organization certificate using CSR"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -420,6 +450,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @PostMapping(
             value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the organization certificate with the given serial number"
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {

@@ -22,7 +22,7 @@
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
 	<version>1.1.0-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<packaging>jar</packaging>
 
 	<name>mcp-identityregistry-core</name>
 	<description>MCP Identity Registry Core</description>
@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.6.3</version>
+		<version>2.6.4</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -48,7 +48,7 @@
 		<keycloak.version>16.1.1</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
 		<bouncycastle.version>1.70</bouncycastle.version>
-		<springdoc-openapi.version>1.6.4</springdoc-openapi.version>
+		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
 		<twelvemonkeys.version>3.8.1</twelvemonkeys.version>
 	</properties>
 
@@ -70,13 +70,8 @@
 			<artifactId>spring-context-support</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -218,6 +213,9 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${project.parent.version}</version>
+				<configuration>
+					<layout>ZIP</layout>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
