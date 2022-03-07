@@ -32,6 +32,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -47,6 +48,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @ContextConfiguration
+@ActiveProfiles("test")
 class VesselImageControllerTest {
 
     @Autowired

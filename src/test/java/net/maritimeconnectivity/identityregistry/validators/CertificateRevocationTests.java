@@ -21,6 +21,7 @@ import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocatio
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import javax.validation.ConstraintViolation;
@@ -36,6 +37,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 
 @ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
 class CertificateRevocationTests {
 
     private Validator validator;

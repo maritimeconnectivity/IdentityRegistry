@@ -30,6 +30,7 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
@@ -55,6 +56,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 @SpringBootTest
 @ContextConfiguration
 @WebAppConfiguration
+@ActiveProfiles("test")
 class LogoControllerTest {
     @Autowired
     private WebApplicationContext context;
