@@ -124,21 +124,14 @@ public class CertificateUtil {
     }
 
     public int getValidityPeriod(String type) {
-        switch (type) {
-            case "user":
-                return validityPeriodForUser;
-            case "organization":
-                return validityPeriodForOrg;
-            case "device":
-                return validityPeriodForDevice;
-            case "service":
-                return validityPeriodForService;
-            case "vessel":
-                return validityPeriodForVessel;
-            case "mms":
-                return validityPeriodForMms;
-            default:
-                return -1;
-        }
+        return switch (type) {
+            case "user" -> validityPeriodForUser;
+            case "organization" -> validityPeriodForOrg;
+            case "device" -> validityPeriodForDevice;
+            case "service" -> validityPeriodForService;
+            case "vessel" -> validityPeriodForVessel;
+            case "mms" -> validityPeriodForMms;
+            default -> -1;
+        };
     }
 }

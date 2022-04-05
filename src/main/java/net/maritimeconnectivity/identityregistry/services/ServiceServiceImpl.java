@@ -28,23 +28,27 @@ import java.util.Optional;
 @org.springframework.stereotype.Service
 public class ServiceServiceImpl extends EntityServiceImpl<Service> implements ServiceService {
 
+    private ServiceRepository serviceRepository;
+
     @Autowired
-    private ServiceRepository repository;
+    public void setServiceRepository(ServiceRepository serviceRepository) {
+        this.serviceRepository = serviceRepository;
+    }
 
     @Override
     public Page<Service> listPageFromOrg(Long orgId, Pageable pageable) {
-        Page<Service> ret = repository.findByidOrganization(orgId, pageable);
+        Page<Service> ret = serviceRepository.findByidOrganization(orgId, pageable);
         return this.filterResult(ret);
     }
 
     @Override
     public List<Service> listAllFromOrg(Long id) {
-        List<Service> ret = repository.findByidOrganization(id);
+        List<Service> ret = serviceRepository.findByidOrganization(id);
         return this.filterResult(ret);
     }
 
     public Service getServiceByMrnAndVersion(String mrn, String version) {
-        return repository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
+        return serviceRepository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
     }
 
     public Service getByMrn(String mrn) {
@@ -52,31 +56,31 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
-        Page<Service> ret = repository.findByMrnIgnoreCase(mrn, pageable);
+        Page<Service> ret = serviceRepository.findByMrnIgnoreCase(mrn, pageable);
         return this.filterResult(ret);
     }
 
     @Transactional
     @Override
     public void deleteByOrg(Long id) {
-        repository.deleteByidOrganization(id);
+        serviceRepository.deleteByidOrganization(id);
     }
 
     @Override
     @Transactional
     public Service save(Service service) {
-        return repository.save(service);
+        return serviceRepository.save(service);
     }
 
     @Override
     @Transactional
     public void delete(Long id) {
-        repository.deleteById(id);
+        serviceRepository.deleteById(id);
     }
 
     @Override
     public Service getById(Long id) {
-        Optional<Service> ret = repository.findById(id);
+        Optional<Service> ret = serviceRepository.findById(id);
         return filterResult(ret.orElse(null));
     }
 

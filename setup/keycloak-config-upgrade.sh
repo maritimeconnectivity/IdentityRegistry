@@ -108,7 +108,7 @@ for attr in "${ATTRIBUTES[@]}"; do
     else
         echo "$NAME already exists, will update it if needed."
         MAPPER_ID=$(echo "$MAPPER" | jq -r '.id')
-        MAPPER_NEW=$(echo "$MAPPER" | jq -r '.config["id.token.claim"] = true | .config["userinfo.token.claim"] = true')
+        MAPPER_NEW=$(echo "$MAPPER" | jq -r '.config["id.token.claim"] = true | .config["userinfo.token.claim"] = true | .config["access.token.claim"] = true')
         $KCADM update client-scopes/"$CLIENT_TEMPLATE_ID"/protocol-mappers/models/"$MAPPER_ID" -r "$BROKER_REALM" -b "$MAPPER_NEW"
     fi
 done

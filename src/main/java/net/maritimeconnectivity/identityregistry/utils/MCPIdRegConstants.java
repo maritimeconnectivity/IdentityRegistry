@@ -16,6 +16,10 @@
 
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
+
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MCPIdRegConstants {
     public static final String MISSING_RIGHTS = "You do not have the needed rights.";
     public static final String ORG_NOT_FOUND = "The organization could not be found.";
@@ -57,8 +61,9 @@ public class MCPIdRegConstants {
     public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN.";
     public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type.";
     public static final String ERROR_STORING_ENTITY = "The entity could not be stored in the database.";
-
-    private MCPIdRegConstants() {
-        // empty private constructor as this class should not be instantiated
-    }
+    public static final String ORG_PROPERTY_NAME = "org";
+    public static final String MRN_PROPERTY_NAME = "mrn";
+    public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
+    public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
+    public static final String ROLE_PREFIX = "ROLE_";
 }

@@ -61,7 +61,7 @@ public class VesselAttribute extends TimestampModel {
     private Date start;
 
     @Schema(description = "When the attribute is valid until")
-    @Column(name = "end")
+    @Column(name = "valid_until")
     private Date end;
 
     @JsonIgnore

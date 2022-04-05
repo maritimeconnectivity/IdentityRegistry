@@ -26,7 +26,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class SwaggerConfig {
+public class OpenAPIConfig {
 
     @Value("${net.maritimeconnectivity.idreg.openapi.oidc-base-path}")
     private String oidcBasePath;
@@ -52,7 +52,13 @@ public class SwaggerConfig {
     @Bean
     public OpenAPI mirOpenAPI() {
         String v3ApiDocs = "/v3/api-docs/";
+        oidcBasePath = oidcBasePath.strip();
+        while (oidcBasePath.endsWith("/"))
+            oidcBasePath = oidcBasePath.substring(0, oidcBasePath.length() - 1);
         String oidcUrl = oidcBasePath + v3ApiDocs + oidcApi().getGroup();
+        x509BasePath = x509BasePath.strip();
+        while (x509BasePath.endsWith("/"))
+            x509BasePath = x509BasePath.substring(0, x509BasePath.length() - 1);
         String x509Url = x509BasePath + v3ApiDocs + x509Api().getGroup();
 
         return new OpenAPI()
@@ -60,7 +66,7 @@ public class SwaggerConfig {
                         .description(String.format("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.<br>" +
                                 "Two versions of the API are available - one that requires authentication using OpenID Connect and one that requires authentication using a X.509 client certificate.<br>" +
                                 "The OpenAPI descriptions for the two versions are available <a href=\"%s\">here</a> and <a href=\"%s\">here</a>.", oidcUrl, x509Url))
-                        .version("1.0.0")
+                        .version("1.1.0")
                         .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                         .externalDocs(new ExternalDocumentation()

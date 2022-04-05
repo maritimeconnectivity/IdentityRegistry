@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import java.io.FileInputStream;
@@ -44,6 +45,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
 
 @ExtendWith(SpringExtension.class)
+@ActiveProfiles("test")
 class X509HeaderUserDetailsServiceTest {
 
     @MockBean

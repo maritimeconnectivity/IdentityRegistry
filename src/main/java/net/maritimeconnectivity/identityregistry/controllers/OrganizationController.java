@@ -70,50 +70,41 @@ import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @Slf4j
 @RestController
 public class OrganizationController extends BaseControllerWithCertificate {
-    // These 4 services are used when deleting an organization
-    @Autowired
+    // These 5 services are used when deleting an organization
     private EntityService<Device> deviceService;
-    @Autowired
     private EntityService<Service> serviceService;
-    @Autowired
     private EntityService<User> userService;
-    @Autowired
     private EntityService<Vessel> vesselService;
-    @Autowired
     private EntityService<MMS> mmsService;
 
-    @Autowired
     private RoleService roleService;
 
-    @Autowired
     private EmailUtil emailUtil;
 
-    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
-    private CertificateService certificateService;
-
-    @Autowired
     private AgentService agentService;
 
     /**
      * Receives an application for a new organization and root-user
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @PostMapping(
             value = "/api/org/apply",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Apply for getting your organization registered"
     )
     public ResponseEntity<Organization> applyOrganization(HttpServletRequest request, @RequestBody @Valid Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -130,11 +121,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
         HttpHeaders headers = new HttpHeaders();
         try {
             newOrg = this.organizationService.save(input);
-            String path = request.getRequestURL().toString().split("apply")[0] + URLEncoder.encode(newOrg.getMrn(), "UTF-8");
+            String path = request.getRequestURL().toString().split("apply")[0] + URLEncoder.encode(newOrg.getMrn(), StandardCharsets.UTF_8);
             headers.setLocation(new URI(path));
         } catch (DataIntegrityViolationException e) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-        } catch (UnsupportedEncodingException | URISyntaxException e) {
+        } catch (URISyntaxException e) {
             log.error("Could not create Location header", e);
         }
         if (newOrg == null) {
@@ -157,6 +148,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/unapprovedorgs",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of organizations that have not yet been approved"
+    )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public Page<Organization> getUnapprovedOrganizations(@ParameterObject Pageable pageable) {
         return this.organizationService.getUnapprovedOrganizations(pageable);
@@ -164,13 +158,16 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Approves the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/approve",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Approve the given applying organization"
     )
     @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
     public ResponseEntity<Organization> approveOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
@@ -207,13 +204,16 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns info about the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a specific organization based on MRN"
     )
     public ResponseEntity<Organization> getOrganization(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -233,6 +233,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/id/{orgId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific organization based on ID"
+    )
     public ResponseEntity<Organization> getOrganizationById(HttpServletRequest request, @PathVariable Long orgId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationById(orgId);
         if (org == null) {
@@ -243,12 +246,15 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns list of all organizations
-     * 
+     *
      * @return a reply...
      */
     @GetMapping(
             value = "/api/orgs",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a page of registered organizations"
     )
     public Page<Organization> getOrganization(@ParameterObject Pageable pageable) {
         return this.organizationService.listAllPage(pageable);
@@ -256,16 +262,19 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Updates info about the organization identified by the given ID
-     * 
+     *
      * @return a http reply
      * @throws McpBasicRestException
      */
     @PutMapping(
             value = "/api/org/{orgMrn}"
     )
+    @Operation(
+            description = "Update a specific organization"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateOrganization(HttpServletRequest request, @PathVariable String orgMrn,
-            @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
+                                                @Valid @RequestBody Organization input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
@@ -312,6 +321,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @DeleteMapping(
             value = "/api/org/{orgMrn}"
     )
+    @Operation(
+            description = "Delete a specific organization"
+    )
     @PreAuthorize("hasRole('SITE_ADMIN')")
     public ResponseEntity<?> deleteOrg(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
@@ -343,6 +355,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the organization certificate with the given serial number"
+    )
     public ResponseEntity<Certificate> getOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         Organization organization = this.organizationService.getOrganizationByMrn(orgMrn);
         if (organization != null) {
@@ -358,10 +373,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     /**
      * Returns new certificate for the user identified by the given ID
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -403,6 +418,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new organization certificate using CSR"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -433,6 +451,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
             value = "/api/org/{orgMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Revoke the organization certificate with the given serial number"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> revokeOrgCert(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -451,21 +472,71 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        return ((Organization)certOwner).getName();
+        return ((Organization) certOwner).getName();
     }
 
     @Override
     protected String getUid(CertificateModel certOwner) {
-        return ((Organization)certOwner).getMrn();
+        return ((Organization) certOwner).getMrn();
     }
 
     @Override
     protected String getEmail(CertificateModel certOwner) {
-        return ((Organization)certOwner).getEmail();
+        return ((Organization) certOwner).getEmail();
     }
 
     @Override
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
-        return null;
+        return new HashMap<>();
+    }
+
+    @Autowired
+    public void setDeviceService(EntityService<Device> deviceService) {
+        this.deviceService = deviceService;
+    }
+
+    @Autowired
+    public void setServiceService(EntityService<Service> serviceService) {
+        this.serviceService = serviceService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.vesselService = vesselService;
+    }
+
+    @Autowired
+    public void setMmsService(EntityService<MMS> mmsService) {
+        this.mmsService = mmsService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
     }
 }

@@ -32,6 +32,7 @@ import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.CertificateHandler;
+import net.maritimeconnectivity.pki.PKIConfiguration;
 import net.maritimeconnectivity.pki.PKIConstants;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
@@ -60,52 +61,46 @@ import java.security.interfaces.DSAPublicKey;
 import java.security.interfaces.ECPublicKey;
 import java.security.interfaces.RSAPublicKey;
 import java.util.Base64;
-import java.util.Calendar;
-import java.util.Date;
 import java.util.HashMap;
 
 @Slf4j
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
 
-    @Autowired
-    private CertificateService certificateService;
+    protected CertificateService certificateService;
 
-    @Autowired
     protected CertificateUtil certificateUtil;
 
-    @Autowired
     protected PasswordUtil passwordUtil;
 
-    @Autowired
     protected MrnUtil mrnUtil;
 
-    private final String[] insecureHashes = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
+    private static final String[] INSECURE_HASHES = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
 
     /**
      * Function for generating key pair and certificate for an entity.
      *
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     *
      * @param certOwner the entity that the certificate belongs to
-     * @param org the organization that the entity belongs to
-     * @param type the entity type
-     * @param request the HTTP request
+     * @param org       the organization that the entity belongs to
+     * @param type      the entity type
+     * @param request   the HTTP request
      * @return a bundle containing certificate and key pair in different formats
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Deprecated
     protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
-        AuthProvider authProvider = null;
+        PKIConfiguration pkiConfiguration = certificateUtil.getPkiConfiguration();
         P11PKIConfiguration p11PKIConfiguration = null;
-        if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
-            authProvider = p11PKIConfiguration.getProvider();
+        boolean isPkcs11 = false;
+        if (pkiConfiguration instanceof P11PKIConfiguration p11) {
+            isPkcs11 = true;
+            p11PKIConfiguration = p11;
             p11PKIConfiguration.providerLogin();
         }
         // Generate keypair for user
-        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(authProvider);
+        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(pkiConfiguration);
         // Find special MC attributes to put in the certificate
         HashMap<String, String> attrs = getAttr(certOwner);
 
@@ -126,15 +121,15 @@ public abstract class BaseControllerWithCertificate {
         // Make sure that the serial number is unique
         boolean isUniqueSerialNumber = false;
         while (!isUniqueSerialNumber) {
-            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(pkiConfiguration);
             if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
                 isUniqueSerialNumber = true;
         }
 
         X509Certificate userCert;
         try {
-            if (authProvider != null) {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), authProvider);
+            if (isPkcs11) {
+                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), p11PKIConfiguration.getProvider());
             } else {
                 userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
             }
@@ -155,7 +150,7 @@ public abstract class BaseControllerWithCertificate {
 
         // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
         String keystorePassword = passwordUtil.generatePassword();
-        if (authProvider != null) {
+        if (isPkcs11) {
             p11PKIConfiguration.providerLogout();
         }
         byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
@@ -198,8 +193,8 @@ public abstract class BaseControllerWithCertificate {
             if (csr.isSignatureValid(contentVerifierProvider)) {
                 AuthProvider authProvider = null;
                 P11PKIConfiguration p11PKIConfiguration = null;
-                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-                    p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
+                    p11PKIConfiguration = p11;
                     authProvider = p11PKIConfiguration.getProvider();
                     p11PKIConfiguration.providerLogin();
                 }
@@ -223,7 +218,7 @@ public abstract class BaseControllerWithCertificate {
                 // Make sure that the serial number is unique
                 boolean isUniqueSerialNumber = false;
                 while (!isUniqueSerialNumber) {
-                    serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(authProvider);
+                    serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(p11PKIConfiguration);
                     if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
                         isUniqueSerialNumber = true;
                 }
@@ -284,7 +279,7 @@ public abstract class BaseControllerWithCertificate {
     private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McpBasicRestException {
         DefaultAlgorithmNameFinder algorithmNameFinder = new DefaultAlgorithmNameFinder();
         String algoName = algorithmNameFinder.getAlgorithmName(csr.getSignatureAlgorithm());
-        for (String insecureHash : this.insecureHashes) {
+        for (String insecureHash : INSECURE_HASHES) {
             if (algoName.contains(insecureHash)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.WEAK_HASH, request.getServletPath());
             }
@@ -294,14 +289,14 @@ public abstract class BaseControllerWithCertificate {
     private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McpBasicRestException {
         String algorithm;
         int keyLength;
-        if (publicKey instanceof RSAPublicKey) {
-            keyLength = ((RSAPublicKey) publicKey).getModulus().bitLength();
+        if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+            keyLength = rsaPublicKey.getModulus().bitLength();
             algorithm = "RSA";
-        } else if (publicKey instanceof ECPublicKey) {
-            keyLength = ((ECPublicKey) publicKey).getParams().getCurve().getField().getFieldSize();
+        } else if (publicKey instanceof ECPublicKey ecPublicKey) {
+            keyLength = ecPublicKey.getParams().getCurve().getField().getFieldSize();
             algorithm = "EC";
-        } else if (publicKey instanceof DSAPublicKey) {
-            keyLength = ((DSAPublicKey) publicKey).getParams().getP().bitLength();
+        } else if (publicKey instanceof DSAPublicKey dsaPublicKey) {
+            keyLength = dsaPublicKey.getParams().getP().bitLength();
             algorithm = "DSA";
         } else if (publicKey instanceof BCEdDSAPublicKey) {
             keyLength = 256;
@@ -332,19 +327,20 @@ public abstract class BaseControllerWithCertificate {
     }
 
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
+
     protected String getName(CertificateModel certOwner) {
-        return ((NonHumanEntityModel)certOwner).getName();
+        return ((NonHumanEntityModel) certOwner).getName();
     }
-
     /* Override if the entity type of the controller isn't of type NonHumanEntityModel */
-    protected abstract String getUid(CertificateModel certOwner);
 
+    protected abstract String getUid(CertificateModel certOwner);
     /* Override if the entity type of the controller has an email */
+
     protected String getEmail(CertificateModel certOwner) {
         return "";
     }
-
     /* Override if the entity type isn't of type EntityModel */
+
     protected HashMap<String, String> getAttr(CertificateModel certOwner) {
         HashMap<String, String> attrs = new HashMap<>();
         EntityModel entity = (EntityModel) certOwner;
@@ -361,5 +357,25 @@ public abstract class BaseControllerWithCertificate {
             attrs.put(PKIConstants.MC_OID_HOME_MMS_URL, entity.getHomeMMSUrl());
         }
         return attrs;
+    }
+
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setCertificateUtil(CertificateUtil certificateUtil) {
+        this.certificateUtil = certificateUtil;
+    }
+
+    @Autowired
+    public void setPasswordUtil(PasswordUtil passwordUtil) {
+        this.passwordUtil = passwordUtil;
+    }
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
     }
 }

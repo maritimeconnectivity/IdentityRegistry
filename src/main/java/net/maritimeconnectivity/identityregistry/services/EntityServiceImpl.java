@@ -48,7 +48,7 @@ public abstract class EntityServiceImpl<T extends EntityModel> extends BaseServi
         return this.getRepository().getByMrnIgnoreCase(mrn);
     }
 
-    public T getByMrnSubsidiary(String mrn){
+    public T getByMrnSubsidiary(String mrn) {
         return this.getRepository().getByMrnSubsidiaryIgnoreCase(mrn);
     }
 }

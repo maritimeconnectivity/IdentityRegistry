@@ -53,20 +53,18 @@ public class MMSController extends EntityController<MMS> {
 
     private static final String TYPE = "mms";
 
-    @Autowired
-    public void setEntityService(EntityService<MMS> entityService) {
-        this.entityService = entityService;
-    }
-
     /**
      * Creates a new MMS
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
-     */ 
+     */
     @PostMapping(
             value = "/api/org/{orgMrn}/mms",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Creates a new MMS"
     )
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
@@ -77,13 +75,16 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Returns info about the MMS instance identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a specific MMS identity"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -93,12 +94,15 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Updates a mms
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}"
+    )
+    @Operation(
+            description = "Update an existing MMS identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
@@ -109,12 +113,15 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Deletes a mms
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @DeleteMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}"
+    )
+    @Operation(
+            description = "Delete an MMS identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
@@ -124,13 +131,16 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Returns a list of mmses owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/mmses",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a page of MMS identities belonging to the given organization"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<MMS> getOrganizationMMSes(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
@@ -141,6 +151,9 @@ public class MMSController extends EntityController<MMS> {
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the certificate of the specified MMS with the specified serial number"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, mmsMrn, TYPE, null, serialNumber);
@@ -149,7 +162,7 @@ public class MMSController extends EntityController<MMS> {
     /**
      * Returns new certificate for the mms identified by the given ID
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -181,6 +194,9 @@ public class MMSController extends EntityController<MMS> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new MMS certificate using CSR"
+    )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE, null);
@@ -188,13 +204,16 @@ public class MMSController extends EntityController<MMS> {
 
     /**
      * Revokes certificate for the mms identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the MMS certificate with the given serial number"
     )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<?> revokeMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
@@ -213,6 +232,11 @@ public class MMSController extends EntityController<MMS> {
     @Override
     protected MMS getCertEntity(Certificate cert) {
         return cert.getMms();
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<MMS> entityService) {
+        this.entityService = entityService;
     }
 }
 

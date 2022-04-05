@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
@@ -56,11 +57,6 @@ public class LogoController {
 
     private OrganizationService organizationService;
 
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
     /**
      * Creates a logo for an organization
      * @param request request to get servletPath
@@ -71,6 +67,9 @@ public class LogoController {
     @PostMapping(
             value = "/api/org/{orgMrn}/logo",
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
+    )
+    @Operation(
+            description = "Create a new organization logo using POST"
     )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
@@ -108,6 +107,9 @@ public class LogoController {
             value = "/api/org/{orgMrn}/logo",
             produces = {MediaType.IMAGE_PNG_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Get the logo of the given organization"
+    )
     @ResponseBody
     public ResponseEntity<?> getLogo(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -138,6 +140,9 @@ public class LogoController {
             value = "/api/org/{orgMrn}/logo",
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
+    @Operation(
+            description = "Update an existing organization logo or create it if none already exists"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> updateLogoPut(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody byte[] logo) throws McpBasicRestException {
@@ -156,6 +161,7 @@ public class LogoController {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
+
     /**
      * Deletes a Logo
      *
@@ -164,6 +170,9 @@ public class LogoController {
      */
     @DeleteMapping(
             value = "/api/org/{orgMrn}/logo"
+    )
+    @Operation(
+            description = "Delete an organization logo"
     )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
@@ -191,5 +200,9 @@ public class LogoController {
             newLogo.setOrganization(org);
             org.setLogo(newLogo);
         }
+    }
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
     }
 }

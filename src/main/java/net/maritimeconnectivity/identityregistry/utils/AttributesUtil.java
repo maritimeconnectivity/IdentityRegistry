@@ -1,5 +1,7 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
@@ -11,12 +13,9 @@ import net.maritimeconnectivity.pki.PKIConstants;
 import java.util.HashMap;
 import java.util.Map;
 
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 @Slf4j
 public class AttributesUtil {
-
-    private AttributesUtil() {
-        // empty private constructor as this class should not be instantiated
-    }
 
     /**
      * Get the special attributes of an entity
@@ -26,12 +25,12 @@ public class AttributesUtil {
      */
     public static Map<String, String> getAttributes(CertificateModel certOwner) {
         HashMap<String, String> attrs = new HashMap<>();
-        if (certOwner instanceof Vessel) {
-            attrs = getAttributesVessel((Vessel) certOwner);
-        } else if (certOwner instanceof Service) {
-            attrs = getAttributesService((Service) certOwner);
-        } else if (certOwner instanceof MMS) {
-            attrs = getAttributeMMS((MMS) certOwner);
+        if (certOwner instanceof Vessel vessel) {
+            attrs = getAttributesVessel(vessel);
+        } else if (certOwner instanceof Service service) {
+            attrs = getAttributesService(service);
+        } else if (certOwner instanceof MMS mms) {
+            attrs = getAttributeMMS(mms);
         }
         return attrs;
     }
@@ -46,27 +45,14 @@ public class AttributesUtil {
         HashMap<String, String> attrs = new HashMap<>();
         for (VesselAttribute attr : vessel.getAttributes()) {
             String attrName = attr.getAttributeName().toLowerCase();
-            switch(attrName) {
-                case "callsign":
-                    attrs.put(PKIConstants.MC_OID_CALLSIGN, attr.getAttributeValue());
-                    break;
-                case "imo-number":
-                    attrs.put(PKIConstants.MC_OID_IMO_NUMBER, attr.getAttributeValue());
-                    break;
-                case "mmsi-number":
-                    attrs.put(PKIConstants.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
-                    break;
-                case "flagstate":
-                    attrs.put(PKIConstants.MC_OID_FLAGSTATE, attr.getAttributeValue());
-                    break;
-                case "ais-class":
-                    attrs.put(PKIConstants.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
-                    break;
-                case "port-of-register":
-                    attrs.put(PKIConstants.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
-                    break;
-                default:
-                    log.debug("Unexpected attribute value: " + attrName);
+            switch (attrName) {
+                case "callsign" -> attrs.put(PKIConstants.MC_OID_CALLSIGN, attr.getAttributeValue());
+                case "imo-number" -> attrs.put(PKIConstants.MC_OID_IMO_NUMBER, attr.getAttributeValue());
+                case "mmsi-number" -> attrs.put(PKIConstants.MC_OID_MMSI_NUMBER, attr.getAttributeValue());
+                case "flagstate" -> attrs.put(PKIConstants.MC_OID_FLAGSTATE, attr.getAttributeValue());
+                case "ais-class" -> attrs.put(PKIConstants.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
+                case "port-of-register" -> attrs.put(PKIConstants.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
+                default -> log.debug("Unexpected attribute value: " + attrName);
             }
         }
         return attrs;

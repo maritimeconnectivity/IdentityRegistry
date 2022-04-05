@@ -85,10 +85,7 @@ public class MrnUtil {
                 throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider ID: " + ipId);
             }
             switch (parts[3]) {
-                case "user":
-                case "device":
-                case "vessel":
-                case "mms":
+                case "user", "device", "vessel", "mms":
                     if (parts.length < 7) {
                         throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
                     }

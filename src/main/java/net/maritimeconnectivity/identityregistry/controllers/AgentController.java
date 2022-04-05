@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
@@ -49,14 +50,12 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 @Slf4j
 public class AgentController {
 
-    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
     private AgentService agentService;
 
     /**
@@ -68,6 +67,9 @@ public class AgentController {
     @GetMapping(
             value = "/api/org/{orgMrn}/agents",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Returns a page of agents for the given organization"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -81,7 +83,7 @@ public class AgentController {
     }
 
     /**
-     * Returns who the organization can act on behalf of
+     * Returns a page of whom the given organization can act on behalf of
      *
      * @return A page of agents
      * @throws McpBasicRestException
@@ -89,6 +91,9 @@ public class AgentController {
     @GetMapping(
             value = "/api/org/{orgMrn}/acting-on-behalf-of",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Returns the list of all organization that can be acted on behalf of"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -112,6 +117,9 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
+    @Operation(
+            description = "Get a specific agent"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Agent> getAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -139,6 +147,9 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
+    @Operation(
+            description = "Creates a new agent"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> createAgent(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Agent input) throws McpBasicRestException {
         Organization organization = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -174,6 +185,9 @@ public class AgentController {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @ResponseBody
+    @Operation(
+            description = "Update an existing agent"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<Agent> updateAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId, @Valid @RequestBody Agent input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -208,6 +222,9 @@ public class AgentController {
             value = "/api/org/{orgMrn}/agent/{agentId}"
     )
     @ResponseBody
+    @Operation(
+            description = "Deletes a given agent"
+    )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteAgent(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long agentId) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -224,5 +241,15 @@ public class AgentController {
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
     }
 }

@@ -24,7 +24,6 @@ import net.maritimeconnectivity.identityregistry.model.database.CertificateModel
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
-import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
@@ -44,11 +43,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 @Slf4j
@@ -56,29 +55,8 @@ import java.util.List;
 public abstract class EntityController<T extends EntityModel> extends BaseControllerWithCertificate {
     protected EntityService<T> entityService;
     protected OrganizationService organizationService;
-    protected CertificateService certificateService;
     protected RoleService roleService;
     protected AccessControlUtil accessControlUtil;
-
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
-    @Autowired
-    public void setOrganizationService(OrganizationService organizationService) {
-        this.organizationService = organizationService;
-    }
-
-    @Autowired
-    public void setRoleService(RoleService roleService) {
-        this.roleService = roleService;
-    }
-
-    @Autowired
-    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
-        this.accessControlUtil = accessControlUtil;
-    }
 
     /**
      * Creates a new Entity
@@ -101,11 +79,11 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             try {
                 input.setMrn(input.getMrn().toLowerCase());
                 newEntity = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newEntity.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, e.getMessage(), request.getServletPath());
-            } catch (URISyntaxException | UnsupportedEncodingException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             return new ResponseEntity<>(newEntity, headers, HttpStatus.CREATED);
@@ -370,6 +348,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
     // Checks that the requesting user has a role that is equal to or higher than the ones being given to the input
+
     protected void checkRoles(HttpServletRequest request, T input, Organization org) throws McpBasicRestException {
         if (input.getPermissions() != null) {
             String[] permissions = input.getPermissions().split(",");
@@ -384,4 +363,18 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         }
     }
 
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 }

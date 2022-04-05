@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.VesselImage;
@@ -57,11 +58,6 @@ public class VesselImageController {
 
     private VesselServiceImpl vesselService;
 
-    @Autowired
-    public void setVesselService(VesselServiceImpl vesselService) {
-        this.vesselService = vesselService;
-    }
-
     /**
      * Creates an image for a vessel
      * @param request
@@ -73,6 +69,9 @@ public class VesselImageController {
     @PostMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
+    )
+    @Operation(
+            description = "Create a new vessel image using POST"
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
@@ -112,6 +111,9 @@ public class VesselImageController {
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
             consumes = {MediaType.IMAGE_PNG_VALUE, MediaType.IMAGE_JPEG_VALUE}
     )
+    @Operation(
+            description = "Create or update a vessel image using PUT"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McpBasicRestException {
@@ -143,6 +145,9 @@ public class VesselImageController {
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage",
             produces = {MediaType.IMAGE_PNG_VALUE, MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Get the image of a specified vessel"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<?> getVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
@@ -168,6 +173,9 @@ public class VesselImageController {
      */
     @DeleteMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/vesselImage"
+    )
+    @Operation(
+            description = "Delete the image of a specified vessel"
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
@@ -195,5 +203,10 @@ public class VesselImageController {
             newVesselImage.setVessel(vessel);
             vessel.setImage(newVesselImage);
         }
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
     }
 }

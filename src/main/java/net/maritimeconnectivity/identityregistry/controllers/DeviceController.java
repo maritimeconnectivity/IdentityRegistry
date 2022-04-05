@@ -50,20 +50,18 @@ public class DeviceController extends EntityController<Device> {
 
     private static final String TYPE = "device";
 
-    @Autowired
-    public void setEntityService(EntityService<Device> entityService) {
-        this.entityService = entityService;
-    }
-
     /**
      * Creates a new Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
-     */ 
+     */
     @PostMapping(
             value = "/api/org/{orgMrn}/device",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Create a new device identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
@@ -74,13 +72,16 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Returns info about the device identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a specific device identity"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -90,12 +91,15 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Updates a Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}"
+    )
+    @Operation(
+            description = "Update an existing device identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
@@ -106,12 +110,15 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Deletes a Device
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @DeleteMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}"
+    )
+    @Operation(
+            description = "Delete a device identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
@@ -121,13 +128,16 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Returns a list of devices owned by the organization identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/devices",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a page of device identities of the specified organization"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Device> getOrganizationDevices(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
@@ -138,6 +148,9 @@ public class DeviceController extends EntityController<Device> {
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the certificate of the specified device with the specified serial number"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, deviceMrn, TYPE, null, serialNumber);
@@ -147,7 +160,7 @@ public class DeviceController extends EntityController<Device> {
      * Returns new certificate for the device identified by the given ID
      *
      * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
@@ -179,6 +192,9 @@ public class DeviceController extends EntityController<Device> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new device certificate using CSR"
+    )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE, null);
@@ -186,13 +202,16 @@ public class DeviceController extends EntityController<Device> {
 
     /**
      * Revokes certificate for the device identified by the given ID
-     * 
+     *
      * @return a reply...
      * @throws McpBasicRestException
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the device certificate with the given serial number"
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<?> revokeDeviceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
@@ -202,6 +221,11 @@ public class DeviceController extends EntityController<Device> {
     @Override
     protected Device getCertEntity(Certificate cert) {
         return cert.getDevice();
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<Device> entityService) {
+        this.entityService = entityService;
     }
 }
 

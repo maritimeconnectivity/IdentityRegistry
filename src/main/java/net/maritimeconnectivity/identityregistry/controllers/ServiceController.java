@@ -62,24 +62,17 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 
 @RestController
 @Slf4j
 public class ServiceController extends EntityController<Service> {
-    @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
     private VesselServiceImpl vesselService;
 
     private static final String TYPE = "service";
-
-    @Autowired
-    public void setEntityService(EntityService<Service> entityService) {
-        this.entityService = entityService;
-    }
-
 
     /**
      * Creates a new Service
@@ -90,6 +83,9 @@ public class ServiceController extends EntityController<Service> {
     @PostMapping(
             value = "/api/org/{orgMrn}/service",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Create a new service identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
@@ -120,7 +116,7 @@ public class ServiceController extends EntityController<Service> {
                     } else {
                         input.setOidcClientSecret(null);
                     }
-                } catch(IOException e) {
+                } catch (IOException e) {
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
@@ -135,7 +131,7 @@ public class ServiceController extends EntityController<Service> {
             HttpHeaders headers = new HttpHeaders();
             try {
                 newService = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newService.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newService.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 // If save to DB failed, remove the client from keycloak if it was created.
@@ -144,7 +140,7 @@ public class ServiceController extends EntityController<Service> {
                 }
                 log.error("Service could not be stored in database.", e);
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-            } catch (URISyntaxException | UnsupportedEncodingException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             return new ResponseEntity<>(newService, headers, HttpStatus.CREATED);
@@ -162,6 +158,9 @@ public class ServiceController extends EntityController<Service> {
     @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get a page of service identities with a given MRN"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -195,6 +194,9 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the service identity with the given MRN and version"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -225,6 +227,9 @@ public class ServiceController extends EntityController<Service> {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
+    )
+    @Operation(
+            description = "Update a specific service identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
@@ -259,7 +264,7 @@ public class ServiceController extends EntityController<Service> {
                             service.generateOidcClientId();
                             clientSecret = keycloakAU.createClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                         }
-                    } catch (IOException e){
+                    } catch (IOException e) {
                         log.error("Error while updating/creation client in keycloak.", e);
                         throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                     } catch (DuplicatedKeycloakEntry dke) {
@@ -303,6 +308,9 @@ public class ServiceController extends EntityController<Service> {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
     )
+    @Operation(
+            description = "Delete a specific service identity"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -341,6 +349,9 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/services",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of service identities of the specified organization"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Service> getOrganizationServices(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -350,6 +361,9 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the service identity certificate with the given serial number"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, version, serialNumber);
@@ -358,10 +372,9 @@ public class ServiceController extends EntityController<Service> {
     /**
      * Returns new certificate for the service identified by the given ID
      *
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -408,6 +421,9 @@ public class ServiceController extends EntityController<Service> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new service identity certificate using CSR"
+    )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, version);
@@ -422,6 +438,9 @@ public class ServiceController extends EntityController<Service> {
     @PostMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the service identity certificate with the given serial number"
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
@@ -459,6 +478,9 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/keycloakjson",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the Keycloak JSON configuration for the specified service if it exists"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
@@ -495,6 +517,9 @@ public class ServiceController extends EntityController<Service> {
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml"
+    )
+    @Operation(
+            description = "Get the Keycloak JBoss XML configuration for the specified service if it exists"
     )
     @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
@@ -534,7 +559,7 @@ public class ServiceController extends EntityController<Service> {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        String name = ((Service)certOwner).getCertDomainName();
+        String name = ((Service) certOwner).getCertDomainName();
         if (name == null || name.trim().isEmpty()) {
             name = ((Service) certOwner).getName();
         } else {
@@ -563,5 +588,20 @@ public class ServiceController extends EntityController<Service> {
         attrs.putAll(AttributesUtil.getAttributes(certOwner));
 
         return attrs;
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
+    }
+
+    @Autowired
+    public void setEntityService(EntityService<Service> entityService) {
+        this.entityService = entityService;
     }
 }

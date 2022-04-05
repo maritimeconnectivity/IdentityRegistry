@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
@@ -23,7 +24,9 @@ import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
-import org.bouncycastle.cert.ocsp.BasicOCSPRespBuilder;
+import org.bouncycastle.asn1.ocsp.OCSPResponse;
+import org.bouncycastle.asn1.ocsp.OCSPResponseStatus;
+import org.bouncycastle.cert.ocsp.CertificateID;
 import org.bouncycastle.cert.ocsp.CertificateStatus;
 import org.bouncycastle.cert.ocsp.OCSPReq;
 import org.bouncycastle.cert.ocsp.OCSPResp;
@@ -44,18 +47,21 @@ import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AuthProvider;
+import java.security.KeyStore;
+import java.security.PublicKey;
 import java.security.cert.CRLException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value={"oidc", "x509"})
@@ -63,33 +69,26 @@ import java.util.List;
 public class CertificateController {
     private CertificateService certificateService;
 
-    @Autowired
-    public void setCertificateService(CertificateService certificateService) {
-        this.certificateService = certificateService;
-    }
-
     private CertificateUtil certUtil;
 
-    @Autowired
-    public void setCertUtil(CertificateUtil certUtil) {
-        this.certUtil = certUtil;
-    }
-
     /**
-     * Returns info about the device identified by the given ID
-     * 
+     * Get the CRL of the specified CA
+     *
      * @return a reply...
      */
     @GetMapping(
             value = "/api/certificates/crl/{caAlias}",
             produces = "application/x-pem-file"
     )
+    @Operation(
+            description = "Get the CRL of the specified CA"
+    )
     @ResponseBody
     public ResponseEntity<?> getCRL(@PathVariable String caAlias) {
         // If looking for the root CRL we load that from a file and return it.
         if (certUtil.getRootCAAlias().equals(caAlias)) {
             try {
-                String rootCrl = new String(Files.readAllBytes(Paths.get(certUtil.getRootCrlPath())), StandardCharsets.UTF_8);
+                String rootCrl = Files.readString(Paths.get(certUtil.getRootCrlPath()));
                 return new ResponseEntity<>(rootCrl, HttpStatus.OK);
             } catch (IOException e) {
                 log.error("Unable to get load root crl file", e);
@@ -106,14 +105,15 @@ public class CertificateController {
             revocationInfos.add(cert.toRevocationInfo());
         }
         AuthProvider provider = null;
-        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
-            provider = pkiConfiguration.getProvider();
-            pkiConfiguration.providerLogin();
+        P11PKIConfiguration p11PKIConfiguration = null;
+        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11) {
+            p11PKIConfiguration = p11;
+            provider = p11PKIConfiguration.getProvider();
+            p11PKIConfiguration.providerLogin();
         }
-        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), provider);
+        X509CRL crl = Revocation.generateCRL(revocationInfos, certUtil.getKeystoreHandler().getSigningCertEntry(caAlias), p11PKIConfiguration);
         if (provider != null) {
-            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
+            p11PKIConfiguration.providerLogout();
         }
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
@@ -129,80 +129,83 @@ public class CertificateController {
             consumes = "application/ocsp-request",
             produces = "application/ocsp-response"
     )
+    @Operation(
+            description = "POST mapping for OCSP"
+    )
     @ResponseBody
     public ResponseEntity<?> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
-        byte[] byteResponse;
-        try {
-            byteResponse = handleOCSP(input, caAlias);
-        } catch (IOException e) {
-            log.error("Failed to update OCSP", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
-        return new ResponseEntity<>(byteResponse, HttpStatus.OK);
+        return generateOCSPResponseEntity(caAlias, input);
     }
 
     @GetMapping(
             value = "/api/certificates/ocsp/{caAlias}/**",
             produces = "application/ocsp-response"
     )
+    @Operation(
+            description = "GET mapping for OCSP"
+    )
     @ResponseBody
     public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
         String uri = request.getRequestURI();
         String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
-        try {
-            encodedOCSP = URLDecoder.decode(encodedOCSP, "UTF-8");
-        } catch (UnsupportedEncodingException e) {
-            log.error("Failed to URL decode OCSP", e);
-            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
-        }
+        encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
         byte[] decodedOCSP = Base64.decode(encodedOCSP);
+        return generateOCSPResponseEntity(caAlias, decodedOCSP);
+    }
+
+    private ResponseEntity<?> generateOCSPResponseEntity(String caAlias, byte[] input) {
         byte[] byteResponse;
         try {
-            byteResponse = handleOCSP(decodedOCSP, caAlias);
+            byteResponse = handleOCSP(input, caAlias);
         } catch (IOException e) {
-            log.error("Failed to base64 decode OCSP", e);
+            log.error("Failed to generate OCSP response", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
         return new ResponseEntity<>(byteResponse, HttpStatus.OK);
     }
 
     protected byte[] handleOCSP(byte[] input, String certAlias) throws IOException {
-        OCSPReq ocspreq = new OCSPReq(input);
+        OCSPReq ocspreq;
+        try {
+            ocspreq = new OCSPReq(input);
+        } catch (IOException e) {
+            log.error("Received a malformed OCSP request", e);
+            OCSPResponse ocspResponse = new OCSPResponse(new OCSPResponseStatus(OCSPResponseStatus.MALFORMED_REQUEST), null);
+            return new OCSPResp(ocspResponse).getEncoded();
+        }
         /* TODO: verify signature - needed?
         if (ocspreq.isSigned()) {
         }*/
-        BasicOCSPRespBuilder respBuilder = Revocation.initOCSPRespBuilder(ocspreq, certUtil.getKeystoreHandler().getMCPCertificate(certAlias).getPublicKey());
+        Map<CertificateID, CertificateStatus> certificateStatusMap = new HashMap<>();
         Req[] requests = ocspreq.getRequestList();
         for (Req req : requests) {
-            BigInteger sn = req.getCertID().getSerialNumber();
-            Certificate cert = this.certificateService.getCertificateBySerialNumber(sn);
+            BigInteger serialNumber = req.getCertID().getSerialNumber();
+            Certificate cert = this.certificateService.getCertificateBySerialNumber(serialNumber);
 
-            if (cert == null) {
-                respBuilder.addResponse(req.getCertID(), new UnknownStatus());
-
-            // Check if the certificate is even signed by this CA
-            } else if (!certAlias.equals(cert.getCertificateAuthority())) {
-                respBuilder.addResponse(req.getCertID(), new UnknownStatus());
-
+            if (cert == null || !certAlias.equals(cert.getCertificateAuthority())) {
+                certificateStatusMap.put(req.getCertID(), new UnknownStatus());
             // Check if certificate has been revoked
             } else if (cert.isRevoked()) {
-                respBuilder.addResponse(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), Revocation.getCRLReasonFromString(cert.getRevokeReason())));
-
+                certificateStatusMap.put(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), Revocation.getCRLReasonFromString(cert.getRevokeReason())));
             } else {
                 // Certificate is valid
-                respBuilder.addResponse(req.getCertID(), CertificateStatus.GOOD);
+                certificateStatusMap.put(req.getCertID(), CertificateStatus.GOOD);
             }
         }
-        AuthProvider provider = null;
-        if (certUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-            P11PKIConfiguration pkiConfiguration = (P11PKIConfiguration) certUtil.getPkiConfiguration();
-            provider = pkiConfiguration.getProvider();
-            pkiConfiguration.providerLogin();
-        }
-        OCSPResp response = Revocation.generateOCSPResponse(respBuilder, certUtil.getKeystoreHandler().getSigningCertEntry(certAlias), provider);
-        if (provider != null) {
-            ((P11PKIConfiguration) certUtil.getPkiConfiguration()).providerLogout();
-        }
+
+        PublicKey caPublicKey = certUtil.getKeystoreHandler().getMCPCertificate(certAlias).getPublicKey();
+        KeyStore.PrivateKeyEntry caKeystoreEntry = certUtil.getKeystoreHandler().getSigningCertEntry(certAlias);
+        OCSPResp response = Revocation.handleOCSP(ocspreq, caPublicKey, caKeystoreEntry, certificateStatusMap, certUtil.getPkiConfiguration());
         return response.getEncoded();
+    }
+
+    @Autowired
+    public void setCertificateService(CertificateService certificateService) {
+        this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setCertUtil(CertificateUtil certUtil) {
+        this.certUtil = certUtil;
     }
 }

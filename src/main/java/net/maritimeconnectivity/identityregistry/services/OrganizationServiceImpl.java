@@ -15,18 +15,17 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.repositories.OrganizationRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
 public class OrganizationServiceImpl extends BaseServiceImpl<Organization> implements OrganizationService {
-    private static final Logger logger = LoggerFactory.getLogger(OrganizationServiceImpl.class);
 
     private OrganizationRepository organizationRepository;
 
@@ -77,7 +76,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     protected Organization filterResult(Organization data) {
         if (data != null && data.hasSensitiveFields() && (!isAuthorized() || !accessControlUtil.hasAccessToOrg(data.getMrn(), "ORG_ADMIN"))) {
             // If not authorized to see all we clean the object for sensitive data.
-            logger.debug("Clearing Sensitive Fields");
+            log.debug("Clearing Sensitive Fields");
             data.clearSensitiveFields();
         }
         return data;
@@ -90,7 +89,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
             boolean isAuthorized = isAuthorized();
             for (Organization org : data) {
                 if (!isAuthorized || !accessControlUtil.hasAccessToOrg(org.getMrn(), "ORG_ADMIN")) {
-                    logger.debug("Clearing Sensitive Fields");
+                    log.debug("Clearing Sensitive Fields");
                     org.clearSensitiveFields();
                 }
             }

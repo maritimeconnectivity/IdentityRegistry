@@ -19,7 +19,6 @@ import net.maritimeconnectivity.identityregistry.model.data.BugReport;
 import net.maritimeconnectivity.identityregistry.model.data.BugReportAttachment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -62,8 +61,12 @@ public class EmailUtil {
     @Value("${net.maritimeconnectivity.idreg.email.bug-report-email}")
     private String bugReportEmail;
 
-    @Autowired
     private JavaMailSender mailSender;
+
+    @Autowired
+    public void setMailSender(JavaMailSender mailSender) {
+        this.mailSender = mailSender;
+    }
 
     public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) {
         if (sendTo == null || sendTo.trim().isEmpty()) {

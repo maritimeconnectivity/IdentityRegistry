@@ -57,11 +57,6 @@ public class VesselController extends EntityController<Vessel> {
 
     private static final String TYPE = "vessel";
 
-    @Autowired
-    public void setVesselService(EntityService<Vessel> vesselService) {
-        this.entityService = vesselService;
-    }
-
     /**
      * Creates a new Vessel
      *
@@ -71,6 +66,9 @@ public class VesselController extends EntityController<Vessel> {
     @PostMapping(
             value = "/api/org/{orgMrn}/vessel",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Create a new vessel identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
@@ -89,6 +87,9 @@ public class VesselController extends EntityController<Vessel> {
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific vessel identity"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Vessel> getVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
@@ -103,6 +104,9 @@ public class VesselController extends EntityController<Vessel> {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}"
+    )
+    @Operation(
+            description = "Update a specific vessel identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
@@ -120,6 +124,9 @@ public class VesselController extends EntityController<Vessel> {
     @GetMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/services",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the set of service identities that are linked to the specified vessel identity"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -141,6 +148,9 @@ public class VesselController extends EntityController<Vessel> {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}"
     )
+    @Operation(
+            description = "Delete a specific vessel identity"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> deleteVessel(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
@@ -157,6 +167,9 @@ public class VesselController extends EntityController<Vessel> {
             value = "/api/org/{orgMrn}/vessels",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of vessel identities of the specified organization"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Vessel> getOrganizationVessels(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -165,6 +178,9 @@ public class VesselController extends EntityController<Vessel> {
     @GetMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the vessel identity certificate with the given serial number"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
@@ -206,6 +222,9 @@ public class VesselController extends EntityController<Vessel> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new vessel identity certificate using CSR"
+    )
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<String> newVesselCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, vesselMrn, TYPE, null);
@@ -220,6 +239,9 @@ public class VesselController extends EntityController<Vessel> {
     @PostMapping(
             value = "/api/org/{orgMrn}/vessel/{vesselMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the vessel identity certificate with the given serial number"
     )
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> revokeVesselCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
@@ -238,5 +260,10 @@ public class VesselController extends EntityController<Vessel> {
     @Override
     protected Vessel getCertEntity(Certificate cert) {
         return cert.getVessel();
+    }
+
+    @Autowired
+    public void setVesselService(EntityService<Vessel> vesselService) {
+        this.entityService = vesselService;
     }
 }

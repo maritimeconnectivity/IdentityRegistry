@@ -33,8 +33,12 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     protected final List<String> authorizedRoles =  Arrays.asList("ORG_ADMIN", "SITE_ADMIN");
 
-    @Autowired
     protected AccessControlUtil accessControlUtil;
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 
     protected boolean isAuthorized() {
         return accessControlUtil.hasAnyRoles(authorizedRoles);

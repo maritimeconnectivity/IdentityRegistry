@@ -8,7 +8,6 @@ target
 *.iml
 /bin/
 wildfly-*
-.mvn
 stash
 setup/windows/set-env.bat
 setup/windows/idbroker-updater-password.txt

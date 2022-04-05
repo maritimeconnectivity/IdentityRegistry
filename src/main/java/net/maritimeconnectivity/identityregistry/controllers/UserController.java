@@ -65,6 +65,7 @@ import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 
 @Slf4j
 @RestController
@@ -83,15 +84,8 @@ public class UserController extends EntityController<User> {
 
     private static final String TYPE = "user";
 
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.entityService = userService;
-    }
-
-    @Autowired
     private KeycloakAdminUtil keycloakAU;
 
-    @Autowired
     private EmailUtil emailUtil;
 
     /**
@@ -103,6 +97,9 @@ public class UserController extends EntityController<User> {
     @PostMapping(
             value = "/api/org/{orgMrn}/user",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Create a new user identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
@@ -123,18 +120,17 @@ public class UserController extends EntityController<User> {
             User newUser = null;
             try {
                 newUser = this.entityService.save(input);
-                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), "UTF-8")).toString();
+                String path = request.getRequestURL().append("/").append(URLEncoder.encode(newUser.getMrn(), StandardCharsets.UTF_8)).toString();
                 headers.setLocation(new URI(path));
             } catch (DataIntegrityViolationException e) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-            } catch (UnsupportedEncodingException | URISyntaxException e) {
+            } catch (URISyntaxException e) {
                 log.error("Could not create Location header", e);
             }
             // If the organization doesn't have its own Identity Provider we create the user in a special keycloak instance
             if ("test-idp".equals(org.getFederationType()) && (org.getIdentityProviderAttributes() == null || org.getIdentityProviderAttributes().isEmpty()) || allowCreateUserForFederatedOrg) {
                 String password;
-                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration) {
-                    P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+                if (certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11PKIConfiguration) {
                     p11PKIConfiguration.providerLogin();
                     password = passwordUtil.generatePassword();
                     p11PKIConfiguration.providerLogout();
@@ -144,7 +140,7 @@ public class UserController extends EntityController<User> {
                 keycloakAU.init(KeycloakAdminUtil.USER_INSTANCE);
                 try {
                     keycloakAU.checkUserExistence(newUser.getEmail());
-                    keycloakAU.createUser(newUser, password, org,true);
+                    keycloakAU.createUser(newUser, password, org, true);
                 } catch (DuplicatedKeycloakEntry dke) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
                 } catch (IOException | NullPointerException e) {
@@ -171,6 +167,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user/{userMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific user identity"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
@@ -185,6 +184,9 @@ public class UserController extends EntityController<User> {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}"
+    )
+    @Operation(
+            description = "Update a specific user identity"
     )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
@@ -239,6 +241,9 @@ public class UserController extends EntityController<User> {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}"
     )
+    @Operation(
+            description = "Delete a specific user identity"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
@@ -273,6 +278,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/users",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a page of user identities of the specified organization"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<User> getOrganizationUsers(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         return this.getOrganizationEntities(request, orgMrn, pageable);
@@ -282,6 +290,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the user identity certificate with the given serial number"
+    )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, userMrn, TYPE, null, serialNumber);
@@ -289,10 +300,10 @@ public class UserController extends EntityController<User> {
 
     /**
      * Returns new certificate for the user identified by the given ID
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
      */
     @Operation(
             description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
@@ -322,6 +333,9 @@ public class UserController extends EntityController<User> {
             consumes = MediaType.TEXT_PLAIN_VALUE,
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
+    @Operation(
+            description = "Create a new user identity certificate using CSR"
+    )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
@@ -337,6 +351,9 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/{certId}/revoke",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Revoke the service identity certificate with the given serial number"
+    )
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> revokeUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         return this.revokeEntityCert(request, orgMrn, userMrn, certId, input);
@@ -349,7 +366,7 @@ public class UserController extends EntityController<User> {
      * @return a reply...
      * @throws McpBasicRestException
      */
-    @Operation(hidden=true, summary = "Sync user from keycloak")
+    @Operation(hidden = true, summary = "Sync user from keycloak")
     @PostMapping(
             value = "/api/org/{orgMrn}/user-sync/",
             produces = MediaType.APPLICATION_JSON_VALUE
@@ -387,14 +404,14 @@ public class UserController extends EntityController<User> {
             org.setCertificateAuthority(orgCa);
             // Extract domain-name from the user email and use that for org url.
             int at = input.getEmail().indexOf('@');
-            String url = "http://" + input.getEmail().substring(at+1);
+            String url = "http://" + input.getEmail().substring(at + 1);
             org.setUrl(url);
             // Extract country from address
             String country;
             String address;
             int lastComma = orgAddress.lastIndexOf(',');
             if (lastComma > 0) {
-                country = orgAddress.substring(lastComma+1).trim();
+                country = orgAddress.substring(lastComma + 1).trim();
                 address = orgAddress.substring(0, lastComma).trim();
             } else {
                 country = "The Seven Seas";
@@ -441,16 +458,31 @@ public class UserController extends EntityController<User> {
 
     @Override
     protected String getName(CertificateModel certOwner) {
-        return ((User)certOwner).getFirstName() + " " + ((User)certOwner).getLastName();
+        return ((User) certOwner).getFirstName() + " " + ((User) certOwner).getLastName();
     }
 
     @Override
     protected String getEmail(CertificateModel certOwner) {
-        return ((User)certOwner).getEmail();
+        return ((User) certOwner).getEmail();
     }
 
     @Override
     protected User getCertEntity(Certificate cert) {
         return cert.getUser();
+    }
+
+    @Autowired
+    public void setKeycloakAU(KeycloakAdminUtil keycloakAU) {
+        this.keycloakAU = keycloakAU;
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.entityService = userService;
     }
 }

@@ -40,6 +40,7 @@ import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -57,7 +58,6 @@ import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
@@ -68,6 +68,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
 @WebAppConfiguration
+@ActiveProfiles("test")
 class OrganizationControllerTests {
 
     @Autowired
@@ -266,9 +267,10 @@ class OrganizationControllerTests {
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
-        List<Agent> agentList = spy(agents);
+        List<Agent> agentList = mock(ArrayList.class);
         given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
+        given(agentList.iterator()).willReturn(agents.iterator());
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))

@@ -16,7 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
+import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.keycloak.KeycloakPrincipal;
 import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
@@ -48,10 +48,10 @@ class TokenGenerator {
     static KeycloakAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
         AccessToken accessToken = new AccessToken();
         if (mrn != null && !mrn.isEmpty()) {
-            accessToken.setOtherClaims(AccessControlUtil.MRN_PROPERTY_NAME, mrn);
+            accessToken.setOtherClaims(MCPIdRegConstants.MRN_PROPERTY_NAME, mrn);
         }
         if (permissions != null && !permissions.isEmpty()) {
-            accessToken.setOtherClaims(AccessControlUtil.PERMISSIONS_PROPERTY_NAME, permissions);
+            accessToken.setOtherClaims(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME, permissions);
         }
         String bearerTokenString = UUID.randomUUID().toString();
 
@@ -85,8 +85,7 @@ class TokenGenerator {
         essence.setCn(new String[] {"dmauser"});
         essence.setAuthorities(authorities);
 
-        PreAuthenticatedAuthenticationToken token = new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
-        return token;
+        return new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
     }
 
     static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {

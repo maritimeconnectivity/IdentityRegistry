@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -51,14 +52,11 @@ import java.util.List;
 
 @Slf4j
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 public class RoleController {
 
-    @Autowired
     private RoleService roleService;
-    @Autowired
     private OrganizationService organizationService;
-    @Autowired
     private AccessControlUtil accessControlUtil;
 
     /**
@@ -69,6 +67,9 @@ public class RoleController {
     @GetMapping(
             value = "/api/org/{orgMrn}/roles",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the list of role mappings for the specified organization"
     )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
@@ -85,6 +86,9 @@ public class RoleController {
     @PostMapping(
             value = "/api/org/{orgMrn}/role",
             produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Create a new role mapping"
     )
     @ResponseBody
     @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN') and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
@@ -123,6 +127,9 @@ public class RoleController {
             value = "/api/org/{orgMrn}/role/{roleId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get a specific role mapping"
+    )
     @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Role> getRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
@@ -150,6 +157,9 @@ public class RoleController {
      */
     @PutMapping(
             value = "/api/org/{orgMrn}/role/{roleId}"
+    )
+    @Operation(
+            description = "Update a specific role mapping"
     )
     @ResponseBody
     @PreAuthorize("(hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN') and #input.roleName != 'ROLE_SITE_ADMIN') or hasRole('SITE_ADMIN')")
@@ -185,6 +195,9 @@ public class RoleController {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/role/{roleId}"
     )
+    @Operation(
+            description = "Delete a specific role mapping"
+    )
     @ResponseBody
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
     public ResponseEntity<?> deleteRole(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable Long roleId) throws McpBasicRestException {
@@ -205,7 +218,7 @@ public class RoleController {
     }
 
     /**
-     * Returns the roles of the current user
+     * Returns the list of roles of the current user in the given organization
      *
      * @return a reply...
      * @throws McpBasicRestException
@@ -214,9 +227,12 @@ public class RoleController {
             value = "/api/org/{orgMrn}/role/myroles",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the list of roles of the requesting user"
+    )
     @ResponseBody
     public ResponseEntity<List<String>> getMyRole(@PathVariable String orgMrn) {
-        List<String> roles = AccessControlUtil.getMyRoles();
+        List<String> roles = accessControlUtil.getMyRoles(orgMrn);
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 
@@ -230,14 +246,30 @@ public class RoleController {
             value = "/api/org/{orgMrn}/role/available-roles",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
+    @Operation(
+            description = "Get the list of available roles"
+    )
     @ResponseBody
     public ResponseEntity<List<String>> getAvailableRoles(@PathVariable String orgMrn) {
         // See net.maritimeconnectivity.identityregistry.security.MultiSecurityConfig for the role hierarchy
         List<String> roles = Arrays.asList("ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
-                                           "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN",
-                                           "ROLE_APPROVE_ORG", "ROLE_USER");
+                "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN",
+                "ROLE_APPROVE_ORG", "ROLE_USER");
         return new ResponseEntity<>(roles, HttpStatus.OK);
     }
 
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
 
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
+        this.accessControlUtil = accessControlUtil;
+    }
 }

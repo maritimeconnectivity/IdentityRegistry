@@ -38,7 +38,6 @@ import javax.servlet.http.HttpServletRequest;
 @RequestMapping(value={"oidc", "x509"})
 public class BugReportController {
 
-    @Autowired
     private EmailUtil emailUtil;
 
     @Operation(hidden=true, summary = "Reports a bug")
@@ -54,5 +53,10 @@ public class BugReportController {
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
         }
         return new ResponseEntity<>(HttpStatus.OK);
+    }
+
+    @Autowired
+    public void setEmailUtil(EmailUtil emailUtil) {
+        this.emailUtil = emailUtil;
     }
 }

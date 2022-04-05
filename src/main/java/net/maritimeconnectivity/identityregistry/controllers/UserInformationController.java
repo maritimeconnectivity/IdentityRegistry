@@ -43,7 +43,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping(value = "service")
@@ -60,21 +59,13 @@ public class UserInformationController {
     @Value("${net.maritimeconnectivity.idreg.user-sync.mrn}")
     private String userSyncMRN;
 
-    @Autowired
     private RoleService roleService;
 
-    @Autowired
     private OrganizationService organizationService;
 
-    private EntityService<User> userService;
-
-    @Autowired
     private AgentService agentService;
 
-    @Autowired
-    public void setUserService(EntityService<User> userService) {
-        this.userService = userService;
-    }
+    private EntityService<User> userService;
 
     @GetMapping(
             value = "/{userMrn}/roles",
@@ -87,7 +78,7 @@ public class UserInformationController {
 
         User user = this.userService.getByMrn(userMrn);
         if (user != null && user.getPermissions() != null) {
-            List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).collect(Collectors.toList());
+            List<String> userPermissions = Arrays.asList(user.getPermissions().split(",")).parallelStream().map(String::trim).toList();
 
             List<String> userRoles = new ArrayList<>();
             userPermissions.forEach(permission -> roleService.getRolesByIdOrganizationAndPermission(user.getIdOrganization(), permission).forEach(role -> userRoles.add(role.getRoleName())));
@@ -146,4 +137,24 @@ public class UserInformationController {
         }
         return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
      }
+
+    @Autowired
+    public void setRoleService(RoleService roleService) {
+        this.roleService = roleService;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
 }

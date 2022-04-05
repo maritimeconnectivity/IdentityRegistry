@@ -26,6 +26,7 @@ import org.keycloak.KeycloakSecurityContext;
 import org.keycloak.adapters.springsecurity.account.KeycloakRole;
 import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -36,36 +37,27 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
-
 
 @Component("accessControlUtil")
 @Slf4j
 public class AccessControlUtil {
 
-    public static final String ORG_PROPERTY_NAME = "org";
-    public static final String MRN_PROPERTY_NAME = "mrn";
-    public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
-    public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
-    public static final String ROLE_PREFIX = "ROLE_";
+    public static final String ORG_MRN_TEMPLATE = "urn:mrn:mcp:org:%s:%s";
 
-    @Autowired
     private HasRoleUtil hasRoleUtil;
 
-    @Autowired
     private OrganizationService organizationService;
 
-    @Autowired
     private AgentService agentService;
 
-    @Autowired
     private EntityService<User> userService;
 
-    @Autowired
     private RoleHierarchy roleHierarchy;
 
     public boolean hasAccessToOrg(String orgMrn, String roleNeeded) {
@@ -84,20 +76,19 @@ public class AccessControlUtil {
         }
         log.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
-        if (auth instanceof KeycloakAuthenticationToken) {
+        if (auth instanceof KeycloakAuthenticationToken kat) {
             log.debug("OIDC authentication in process");
             // Keycloak authentication
-            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            if (otherClaims.containsKey(AccessControlUtil.MRN_PROPERTY_NAME)) {
-                String mrn = (String) otherClaims.get(AccessControlUtil.MRN_PROPERTY_NAME);
+            if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
+                String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
                 String org = "";
                 if (mrn != null) {
                     String[] mrnParts = mrn.split(":");
                     if (mrnParts.length < 7)
                         return false;
-                    org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                    org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
                 }
                 if (org.equalsIgnoreCase(orgMrn)) {
                     log.debug("Entity from org: {} is in {}", org, orgMrn);
@@ -110,16 +101,16 @@ public class AccessControlUtil {
                     if (!agents.isEmpty()) {
                         log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
                         if (roleNeeded != null) {
-                            if (!roleNeeded.startsWith(ROLE_PREFIX))
-                                roleNeeded = ROLE_PREFIX + roleNeeded;
+                            if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                                roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
                             for (Agent agent : agents) {
-                                List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                List<KeycloakRole> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                         .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
-                                        .collect(Collectors.toList());
+                                        .toList();
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
                                 final String finalRoleNeeded = roleNeeded;
-                                if (reachableGrantedAuthorities.stream().filter(ga -> finalRoleNeeded.equals(ga.getAuthority())).count() > 0L)
+                                if (reachableGrantedAuthorities.stream().anyMatch(ga -> finalRoleNeeded.equals(ga.getAuthority())))
                                     return true;
                             }
                             log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
@@ -129,11 +120,10 @@ public class AccessControlUtil {
                     }
                 }
             }
-            log.debug("Entity from org: " + otherClaims.get(AccessControlUtil.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
+            log.debug("Entity from org: " + otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             log.debug("Certificate authentication in process");
             // Certificate authentication
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             // The O(rganization) value in the certificate is an MRN
@@ -149,12 +139,12 @@ public class AccessControlUtil {
                 if (!agents.isEmpty()) {
                     log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
                     if (roleNeeded != null) {
-                        if (!roleNeeded.startsWith(ROLE_PREFIX))
-                            roleNeeded = ROLE_PREFIX + roleNeeded;
+                        if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                            roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
                         for (Agent agent : agents) {
-                            List<GrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                            List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
                                     .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
-                                    .collect(Collectors.toList());
+                                    .toList();
                             Set<GrantedAuthority> reachableGrantedAuthorities =
                                     new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
                             if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
@@ -168,17 +158,16 @@ public class AccessControlUtil {
             }
             log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
         } else {
-            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+            log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
 
     public static boolean isUserSync(String userSyncMRN, String userSyncO, String userSyncOU, String userSyncC) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof PreAuthenticatedAuthenticationToken) {
+        if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             log.debug("Certificate authentication of user sync'er in process");
             // Certificate authentication
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             if (userSyncMRN.equalsIgnoreCase(person.getUid()) && userSyncO.equalsIgnoreCase(person.getO())
@@ -197,20 +186,18 @@ public class AccessControlUtil {
         User user = this.userService.getByMrn(userMRN);
         Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof KeycloakAuthenticationToken) {
-            KeycloakAuthenticationToken kat = (KeycloakAuthenticationToken) auth;
+        if (auth instanceof KeycloakAuthenticationToken kat) {
             KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
             Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
-            String mrn = (String) otherClaims.get(MRN_PROPERTY_NAME);
+            String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
             if (mrn != null) {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length < 7)
                     return false;
-                String org = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                String org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken) {
-            PreAuthenticatedAuthenticationToken token = (PreAuthenticatedAuthenticationToken) auth;
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             String mrn = person.getUid();
             String org = person.getO();
@@ -219,19 +206,58 @@ public class AccessControlUtil {
             }
         }
         if (auth != null) {
-            log.debug(UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+            log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
 
-    public static List<String> getMyRoles() {
+    public List<String> getMyRoles(String orgMrn) {
         log.debug("Role lookup");
         List<String> roles = new ArrayList<>();
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Set<GrantedAuthority> userGrantedAuthorities;
         if (auth != null) {
-            for (GrantedAuthority authority : auth.getAuthorities()) {
+            userGrantedAuthorities = new HashSet<>(roleHierarchy
+                    .getReachableGrantedAuthorities(auth.getAuthorities()));
+            for (GrantedAuthority authority : userGrantedAuthorities) {
                 roles.add(authority.getAuthority());
             }
+        } else {
+            return roles;
+        }
+        // From here on we try to decide if the user is acting on behalf of another organization,
+        // and if so we compute the reachable roles that they have there.
+        String userOrgMrn = null;
+        if (auth instanceof KeycloakAuthenticationToken keycloakAuthenticationToken) {
+            KeycloakSecurityContext securityContext = (KeycloakSecurityContext) keycloakAuthenticationToken.getCredentials();
+            Map<String, Object> otherClaims = securityContext.getToken().getOtherClaims();
+            String userMrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
+            if (userMrn == null || userMrn.trim().isEmpty())
+                return Collections.emptyList();
+            String[] mrnParts = userMrn.split(":");
+            if (mrnParts.length < 7)
+                return Collections.emptyList();
+            userOrgMrn = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
+        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
+            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            userOrgMrn = person.getO();
+        }
+        if (!Objects.equals(orgMrn, userOrgMrn)) {
+            Organization organization = organizationService.getOrganizationByMrn(orgMrn);
+            Organization agentOrganization = organizationService.getOrganizationByMrn(userOrgMrn);
+            if (organization == null || agentOrganization == null)
+                return Collections.emptyList();
+            List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
+            if (agents.isEmpty())
+                return Collections.emptyList();
+            Set<String> roleSet = new HashSet<>();
+            for (Agent agent : agents) {
+                Set<GrantedAuthority> agentGrantedAuthorities = new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(agent.getAllowedRoles()
+                        .stream().map(ar -> new SimpleGrantedAuthority(ar.getRoleName())).toList()));
+                agentGrantedAuthorities.retainAll(userGrantedAuthorities);
+                agentGrantedAuthorities.forEach(ga -> roleSet.add(ga.getAuthority()));
+            }
+            roles = new ArrayList<>(roleSet);
         }
         return roles;
     }
@@ -256,5 +282,33 @@ public class AccessControlUtil {
             log.debug("user does not have role {}", role);
             return false;
         }
+    }
+
+    @Autowired
+    public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
+        this.hasRoleUtil = hasRoleUtil;
+    }
+
+    @Lazy
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Lazy
+    @Autowired
+    public void setAgentService(AgentService agentService) {
+        this.agentService = agentService;
+    }
+
+    @Lazy
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setRoleHierarchy(RoleHierarchy roleHierarchy) {
+        this.roleHierarchy = roleHierarchy;
     }
 }

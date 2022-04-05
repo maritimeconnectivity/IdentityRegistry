@@ -21,8 +21,8 @@
 
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
-	<version>1.0.0-SNAPSHOT</version>
-	<packaging>war</packaging>
+	<version>1.1.0-SNAPSHOT</version>
+	<packaging>jar</packaging>
 
 	<name>mcp-identityregistry-core</name>
 	<description>MCP Identity Registry Core</description>
@@ -30,7 +30,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.5.5</version>
+		<version>2.6.6</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 
@@ -43,13 +43,13 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<java.version>1.8</java.version>
-		<maven.compiler.source>1.8</maven.compiler.source>
-		<maven.compiler.target>1.8</maven.compiler.target>
-		<keycloak.version>15.0.2</keycloak.version>
+		<java.version>17</java.version>
+		<maven.compiler.release>17</maven.compiler.release>
+		<keycloak.version>16.1.1</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
-		<bouncycastle.version>1.69</bouncycastle.version>
-		<springdoc-openapi.version>1.5.10</springdoc-openapi.version>
+		<bouncycastle.version>1.70</bouncycastle.version>
+		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
+		<twelvemonkeys.version>3.8.2</twelvemonkeys.version>
 	</properties>
 
 	<dependencies>
@@ -70,13 +70,8 @@
 			<artifactId>spring-context-support</artifactId>
 		</dependency>
 		<dependency>
-			<groupId>mysql</groupId>
-			<artifactId>mysql-connector-java</artifactId>
-			<scope>runtime</scope>
-		</dependency>
-		<dependency>
-			<groupId>org.mariadb.jdbc</groupId>
-			<artifactId>mariadb-java-client</artifactId>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
 			<scope>runtime</scope>
 		</dependency>
 		<dependency>
@@ -169,27 +164,17 @@
 		<dependency>
 			<groupId>net.maritimeconnectivity.pki</groupId>
 			<artifactId>mcp-pki</artifactId>
-			<version>1.0.0-SNAPSHOT</version>
-			<exclusions>
-				<exclusion>
-					<groupId>org.slf4j</groupId>
-					<artifactId>slf4j-simple</artifactId>
-				</exclusion>
-				<exclusion>
-					<groupId>commons-cli</groupId>
-					<artifactId>commons-cli</artifactId>
-				</exclusion>
-			</exclusions>
+			<version>1.1.0-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
 			<artifactId>imageio-jpeg</artifactId>
-			<version>3.7.0</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.servlet</groupId>
 			<artifactId>servlet</artifactId>
-			<version>3.7.0</version>
+			<version>${twelvemonkeys.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.subethamail</groupId>
@@ -228,6 +213,9 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 				<version>${project.parent.version}</version>
+				<configuration>
+					<layout>ZIP</layout>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

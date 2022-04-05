@@ -64,7 +64,7 @@ public class Certificate extends TimestampModel {
     @Schema(description = "When the certificate is valid from", accessMode = READ_ONLY)
     private Date start;
 
-    @Column(name = "end", nullable = false)
+    @Column(name = "valid_until", nullable = false)
     @Schema(description = "When the certificate is valid until", accessMode = READ_ONLY)
     private Date end;
 
