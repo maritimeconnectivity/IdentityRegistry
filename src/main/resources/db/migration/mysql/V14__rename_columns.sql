@@ -1,3 +1,3 @@
-ALTER TABLE `vessel_attributes` RENAME COLUMN end TO valid_until;
+ALTER TABLE `vessel_attributes` CHANGE COLUMN `end` `valid_until` DATETIME;
 
-ALTER TABLE `certificates` RENAME COLUMN end TO valid_until;
+ALTER TABLE `certificates` CHANGE COLUMN `end` `valid_until` DATETIME;
