@@ -47,7 +47,6 @@
 		<maven.compiler.release>17</maven.compiler.release>
 		<keycloak.version>16.1.1</keycloak.version>
 		<resteasy.version>3.1.4.Final</resteasy.version>
-		<bouncycastle.version>1.70</bouncycastle.version>
 		<springdoc-openapi.version>1.6.6</springdoc-openapi.version>
 		<twelvemonkeys.version>3.8.2</twelvemonkeys.version>
 	</properties>
@@ -118,6 +117,16 @@
 			<groupId>org.keycloak</groupId>
 			<artifactId>keycloak-spring-security-adapter</artifactId>
 			<version>${keycloak.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcpkix-jdk15on</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.bouncycastle</groupId>
+					<artifactId>bcprov-jdk15on</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>org.keycloak</groupId>
@@ -149,17 +158,6 @@
 			<artifactId>lombok</artifactId>
 			<version>1.18.22</version>
 			<scope>provided</scope>
-		</dependency>
-		<!-- Needed to avoid using an older version that conflicts with a newer version from mc-pki -->
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcprov-jdk15on</artifactId>
-			<version>${bouncycastle.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.bouncycastle</groupId>
-			<artifactId>bcpkix-jdk15on</artifactId>
-			<version>${bouncycastle.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>net.maritimeconnectivity.pki</groupId>
