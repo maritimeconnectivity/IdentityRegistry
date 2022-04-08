@@ -84,8 +84,10 @@ public class Vessel extends NonHumanEntityModel {
     @Override
     public Vessel selectiveCopyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.selectiveCopyTo(target);
-        vessel.getAttributes().clear();
-        vessel.getAttributes().addAll(attributes);
+        if (attributes != null) {
+            vessel.getAttributes().clear();
+            vessel.getAttributes().addAll(attributes);
+        }
         vessel.setChildIds();
         return vessel;
     }
@@ -100,7 +102,7 @@ public class Vessel extends NonHumanEntityModel {
         }
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setVessel(this);
     }
 }

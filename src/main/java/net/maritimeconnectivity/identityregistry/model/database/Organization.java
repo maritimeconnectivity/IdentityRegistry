@@ -155,8 +155,10 @@ public class Organization extends CertificateModel {
         org.setCountry(country);
         org.setMrnSubsidiary(mrnSubsidiary);
         org.setHomeMMSUrl(homeMMSUrl);
-        org.getIdentityProviderAttributes().clear();
-        org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
+        if (identityProviderAttributes != null) {
+            org.getIdentityProviderAttributes().clear();
+            org.getIdentityProviderAttributes().addAll(identityProviderAttributes);
+        }
         org.setChildIds();
         return org;
     }
