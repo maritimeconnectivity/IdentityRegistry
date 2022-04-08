@@ -78,6 +78,7 @@ public class Organization extends CertificateModel {
     private String homeMMSUrl;
 
     @Column(name = "email", nullable = false)
+    @NotBlank
     @Email
     @Schema(description = "The email of the organization", required = true)
     private String email;
