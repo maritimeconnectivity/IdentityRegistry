@@ -1,4 +1,3 @@
-USE identity_registry;
 #--- Create the Bootstrap organization
 INSERT INTO `organizations` (name, mrn, email, address, country, url, approved, federation_type, certificate_authority, created_at, updated_at) VALUES
     ('Bootstrap Org', 'urn:mrn:mcp:org:idp1:bootstrap', 'info@maritimeconnectivity.net', '1 Maritime Street, The Eight Ocean', 'Denmark', 'https://maritimeconnectivity.net', 1, 'external-idp', 'urn:mrn:mcp:ca:idp1:mcp-idreg', NOW(), NOW());
