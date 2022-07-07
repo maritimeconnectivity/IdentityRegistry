@@ -21,7 +21,7 @@ $ ./setup/drop-db.sh
 ```
 
 ## Build
-* Requirement : OpenJDK 8
+* Requirement : OpenJDK 17
 
 Build using you favorite IDE or using the console:
 ```sh
@@ -65,7 +65,7 @@ The `ssl_certificate` and `ssl_certificate_key` properties in the configuration 
 Run using you favorite IDE or using the console:
 
 ```sh
-$ java -jar target/mc-identityregistry-core-latest.war
+$ java -jar target/mcp-identityregistry-core-latest.war
 ```
 Change the version number as needed. The Identity Registry will now be running and requests to https://localhost/api/... will be forwarded through nginx to the spring boot application on http://localhost:8443/api/... that wraps the API.
 
