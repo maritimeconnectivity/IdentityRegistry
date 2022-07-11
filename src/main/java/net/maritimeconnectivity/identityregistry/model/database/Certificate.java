@@ -73,6 +73,10 @@ public class Certificate extends TimestampModel {
     @Schema(description = "The serial number of the certificate", accessMode = READ_ONLY)
     private BigInteger serialNumber;
 
+    @Column(name = "thumbprint", nullable = false)
+    @Schema(description = "The base64 encoded SHA-256 thumbprint of the certificate", accessMode = READ_ONLY)
+    private String thumbprint;
+
     @Column(name = "revoked", nullable = false)
     @Schema(description = "Whether the certificate has been revoked", accessMode = READ_ONLY)
     private boolean revoked;
