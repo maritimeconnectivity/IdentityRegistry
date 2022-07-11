@@ -36,6 +36,7 @@ import net.maritimeconnectivity.pki.PKIConfiguration;
 import net.maritimeconnectivity.pki.PKIConstants;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -53,7 +54,9 @@ import java.nio.charset.StandardCharsets;
 import java.security.AuthProvider;
 import java.security.InvalidKeyException;
 import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -257,6 +260,7 @@ public abstract class BaseControllerWithCertificate {
             certOwner.assignToCert(newMCCert);
             newMCCert.setCertificate(pemCertificate);
             newMCCert.setSerialNumber(serialNumber);
+            newMCCert.setThumbprint(computeB64Thumbprint(userCert));
             newMCCert.setCertificateAuthority(org.getCertificateAuthority());
             newMCCert.setStart(userCert.getNotBefore());
             newMCCert.setEnd(userCert.getNotAfter());
@@ -274,6 +278,29 @@ public abstract class BaseControllerWithCertificate {
             log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
         }
+    }
+
+    private String computeB64Thumbprint(X509Certificate userCert) throws CertificateEncodingException {
+        byte[] encodedDigest;
+        // If we are using an HSM we might as well try to use that to compute the thumbprint of the certificate
+        if (certificateUtil.isUsingPKCS11()) {
+            P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+            try {
+                p11PKIConfiguration.providerLogin();
+                MessageDigest digest = MessageDigest.getInstance("SHA-256", p11PKIConfiguration.getPkcs11ProviderName());
+                encodedDigest = digest.digest(userCert.getEncoded());
+            } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+                log.warn("Could not get SHA-256 provider for HSM, falling back to BC");
+                MessageDigest digest = new SHA256.Digest();
+                encodedDigest = digest.digest(userCert.getEncoded());
+            } finally {
+                p11PKIConfiguration.providerLogout();
+            }
+        } else {
+            MessageDigest digest = new SHA256.Digest();
+            encodedDigest = digest.digest(userCert.getEncoded());
+        }
+        return Base64.getEncoder().encodeToString(encodedDigest);
     }
 
     private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McpBasicRestException {
