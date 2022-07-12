@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -31,7 +30,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Service
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
-import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
@@ -64,7 +62,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import javax.ws.rs.InternalServerErrorException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.MalformedURLException;
 import java.net.URI;
@@ -369,42 +366,6 @@ public class OrganizationController extends BaseControllerWithCertificate {
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
-    }
-
-    /**
-     * Returns new certificate for the user identified by the given ID
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     */
-    @Operation(
-            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
-                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
-                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
-                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
-                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
-    )
-    @GetMapping(
-            value = "/api/org/{orgMrn}/certificate/issue-new",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
-    @Deprecated
-    public ResponseEntity<CertificateBundle> newOrgCert(HttpServletRequest request, @PathVariable String orgMrn) throws McpBasicRestException {
-        if (this.certificateUtil.isEnableServerGeneratedKeys()) {
-            Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
-            if (org != null) {
-                CertificateBundle ret = this.issueCertificate(org, org, "organization", request);
-                return new ResponseEntity<>(ret, HttpStatus.OK);
-            } else {
-                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-            }
-        }
-        String oidcOrX509 = request.getServletPath().split("/")[1];
-        String path = String.format("/%s/api/org/%s/certificate/issue-new/csr", oidcOrX509, orgMrn);
-        throw new McpBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
-                "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
     }
 
     /**
