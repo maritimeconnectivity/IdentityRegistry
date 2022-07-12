@@ -17,7 +17,6 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -270,42 +269,6 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         } else {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
-    }
-
-
-    /**
-     * Returns new certificate for the entity identified by the given ID
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     * @deprecated Should only be used if server generated keys are allowed
-     */
-    @Deprecated
-    protected ResponseEntity<CertificateBundle> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
-        if (this.certificateUtil.isEnableServerGeneratedKeys()) {
-            Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
-            if (org != null) {
-                // Check that the entity being queried belongs to the organization
-                if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
-                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-                }
-                T entity = this.entityService.getByMrn(entityMrn);
-                if (entity == null) {
-                    throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-                }
-                if (entity.getIdOrganization().equals(org.getId())) {
-                    CertificateBundle ret = this.issueCertificate(entity, org, type, request);
-                    return new ResponseEntity<>(ret, HttpStatus.OK);
-                }
-                throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            } else {
-                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-            }
-        }
-        String oidcOrX509 = request.getServletPath().split("/")[1];
-        String path = String.format("/%s/api/org/%s/%s/%s/certificate/issue-new/csr", oidcOrX509, orgMrn, type, entityMrn);
-        throw new McpBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
-                "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
     }
 
     /**

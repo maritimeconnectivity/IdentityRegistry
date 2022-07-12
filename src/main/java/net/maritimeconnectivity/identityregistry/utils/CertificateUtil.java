@@ -101,10 +101,6 @@ public class CertificateUtil {
     @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
     private int validityPeriodForMms;
 
-    @Getter
-    @Value("${net.maritimeconnectivity.idreg.certs.enable-server-generated-keys:false}")
-    private boolean enableServerGeneratedKeys;
-
     @PostConstruct
     public void setup() {
         if (isUsingPKCS11) {

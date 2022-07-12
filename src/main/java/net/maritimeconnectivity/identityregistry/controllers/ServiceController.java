@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -57,7 +56,6 @@ import org.springframework.web.bind.annotation.RestController;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -367,47 +365,6 @@ public class ServiceController extends EntityController<Service> {
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, version, serialNumber);
-    }
-
-    /**
-     * Returns new certificate for the service identified by the given ID
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     */
-    @Operation(
-            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
-                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
-                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
-                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
-                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
-    )
-    @GetMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
-    @Deprecated
-    public ResponseEntity<CertificateBundle> newServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
-        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
-        if (org != null) {
-            // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
-                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            }
-            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
-            if (service == null) {
-                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().equals(org.getId())) {
-                CertificateBundle ret = this.issueCertificate(service, org, TYPE, request);
-                return new ResponseEntity<>(ret, HttpStatus.OK);
-            }
-            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
     }
 
     /**
