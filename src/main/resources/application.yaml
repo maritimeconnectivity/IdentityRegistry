@@ -75,10 +75,10 @@ net:
 
             # Certificate setup
             certs:
-                sub-ca-keystore-path: mc-sub-ca-keystore.jks
+                sub-ca-keystore-path: mcp-sub-ca-keystore.jks
                 sub-ca-keystore-password: changeit
                 sub-ca-key-password: changeit
-                truststore-path: mc-truststore.jks
+                truststore-path: mcp-truststore.jks
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
                 base-crl-ocsp-path: http://localhost/x509/api/certificates/ # should NOT be HTTPS due to concerns regarding compatibility
