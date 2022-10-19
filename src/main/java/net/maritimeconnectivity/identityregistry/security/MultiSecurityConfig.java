@@ -184,7 +184,6 @@ public class MultiSecurityConfig {
         @Override
         protected void configure(HttpSecurity http) throws Exception {
             http
-                .csrf().disable()
                 .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
