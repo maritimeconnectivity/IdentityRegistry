@@ -24,6 +24,7 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
+import net.maritimeconnectivity.identityregistry.model.database.entities.Identity;
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
@@ -135,6 +136,11 @@ public class Certificate extends TimestampModel {
     @ManyToOne
     @JoinColumn(name = "id_organization")
     private Organization organization;
+
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "id_identity")
+    private Identity identity;
 
     public RevocationInfo toRevocationInfo() {
         RevocationInfo info;
