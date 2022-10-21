@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.data;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -49,7 +50,8 @@ public class CertificateRevocation implements JsonSerializable {
                     "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
     )
     @NotBlank
-    private String revokationReason;
+    @JsonAlias({"revokationReason"})
+    private String revocationReason;
 
     public boolean validateReason() {
         ArrayList<String> validReasons = new ArrayList<>(Arrays.asList(
@@ -63,16 +65,16 @@ public class CertificateRevocation implements JsonSerializable {
                 "removefromcrl",
                 "privilegewithdrawn",
                 "aacompromise"));
-        String reason = getRevokationReason();
+        String reason = getRevocationReason();
 
         return (reason != null && validReasons.contains(reason));
     }
 
-    public void setRevokationReason(String revokationReason) {
-        if (revokationReason != null) {
-            revokationReason = revokationReason.toLowerCase();
+    public void setRevocationReason(String revocationReason) {
+        if (revocationReason != null) {
+            revocationReason = revocationReason.toLowerCase();
         }
-        this.revokationReason = revokationReason;
+        this.revocationReason = revocationReason;
     }
 
 

@@ -52,7 +52,7 @@ class CertificateRevocationTests {
     void validateInvalidCR() {
         // Set up a CR with invalid reason and date
         CertificateRevocation cr = new CertificateRevocation();
-        cr.setRevokationReason("not-valid-reason");
+        cr.setRevocationReason("not-valid-reason");
         cr.setRevokedAt(null);
         // Try to validate the CR
         Set<ConstraintViolation<CertificateRevocation>> violations = validator.validate(cr);
@@ -63,7 +63,7 @@ class CertificateRevocationTests {
     void validateValidCR() {
         // Set up a CR with valid reason and date
         CertificateRevocation cr = new CertificateRevocation();
-        cr.setRevokationReason("certificatehold");
+        cr.setRevocationReason("certificatehold");
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
         cr.setRevokedAt(now);
