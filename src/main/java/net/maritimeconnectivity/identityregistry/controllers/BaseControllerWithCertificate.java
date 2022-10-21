@@ -250,7 +250,7 @@ public abstract class BaseControllerWithCertificate {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
         }
         cert.setRevokedAt(input.getRevokedAt());
-        cert.setRevokeReason(input.getRevokationReason());
+        cert.setRevokeReason(input.getRevocationReason());
         cert.setRevoked(true);
         this.certificateService.saveCertificate(cert);
     }
