@@ -25,15 +25,18 @@ import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
 @ToString
 @Schema(description = "Model object representing a certificate revocation")
 public class CertificateRevocation implements JsonSerializable {
+
+    private static final List<String> VALID_REVOCATION_REASONS = List.of("unspecified", "keycompromise", "cacompromise",
+            "affiliationchanged", "superseded", "cessationofoperation", "certificatehold", "removefromcrl",
+            "privilegewithdrawn", "aacompromise");
 
     @Schema(description = "The date the certificate revocation should be activated.", required = true)
     @NotNull
@@ -54,20 +57,7 @@ public class CertificateRevocation implements JsonSerializable {
     private String revocationReason;
 
     public boolean validateReason() {
-        ArrayList<String> validReasons = new ArrayList<>(Arrays.asList(
-                "unspecified",
-                "keycompromise",
-                "cacompromise",
-                "affiliationchanged",
-                "superseded",
-                "cessationofoperation",
-                "certificatehold",
-                "removefromcrl",
-                "privilegewithdrawn",
-                "aacompromise"));
-        String reason = getRevocationReason();
-
-        return (reason != null && validReasons.contains(reason));
+        return (revocationReason != null && VALID_REVOCATION_REASONS.contains(revocationReason));
     }
 
     public void setRevocationReason(String revocationReason) {
