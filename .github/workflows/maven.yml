@@ -26,7 +26,7 @@ jobs:
       with:
         name: docker-folder
         path: docker
-        retention_days: 1
+        retention-days: 1
 
   build_docker_image:
 
