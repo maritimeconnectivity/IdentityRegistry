@@ -24,7 +24,6 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Identity;
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
@@ -49,7 +48,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
  */
 
 @Entity
-@Table(name="certificates")
+@Table(name = "certificates")
 @Getter
 @Setter
 @ToString(exclude = {"vessel", "user", "device", "service", "organization", "mms"})
@@ -82,7 +81,7 @@ public class Certificate extends TimestampModel {
     @Schema(description = "Whether the certificate has been revoked", accessMode = READ_ONLY)
     private boolean revoked;
 
-    @Column(name= "revoked_at")
+    @Column(name = "revoked_at")
     @Schema(description = "The time of revocation of the certificate", accessMode = READ_ONLY)
     private Date revokedAt;
 
@@ -103,7 +102,7 @@ public class Certificate extends TimestampModel {
     private String revokeReason;
 
     @JsonIgnore
-    @Column(name= "certificate_authority", nullable = false)
+    @Column(name = "certificate_authority", nullable = false)
     @Schema(description = "The name of the CA that signed this certificate", accessMode = READ_ONLY)
     private String certificateAuthority;
 
@@ -136,11 +135,6 @@ public class Certificate extends TimestampModel {
     @ManyToOne
     @JoinColumn(name = "id_organization")
     private Organization organization;
-
-    @JsonIgnore
-    @ManyToOne
-    @JoinColumn(name = "id_identity")
-    private Identity identity;
 
     public RevocationInfo toRevocationInfo() {
         RevocationInfo info;
