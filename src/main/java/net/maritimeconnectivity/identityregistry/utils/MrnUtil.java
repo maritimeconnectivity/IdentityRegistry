@@ -32,7 +32,7 @@ import java.util.regex.Pattern;
 public class MrnUtil {
 
     public final Pattern mrnPattern = Pattern.compile("^urn:mrn:([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):([a-z0-9][-a-z0-9]{0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)((\\?\\+((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?(\\?=((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?)?(#(((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?$", Pattern.CASE_INSENSITIVE);
-    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(device|org|user|vessel|service|mms):([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)$", Pattern.CASE_INSENSITIVE);
+    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(id|device|org|user|vessel|service|mms):([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)$", Pattern.CASE_INSENSITIVE);
 
     @Getter
     @Setter
@@ -76,27 +76,13 @@ public class MrnUtil {
     }
 
     public boolean validateMCPMrn(String mrn) {
-        if(validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()){
+        if (validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()) {
             String[] parts = mrn.split(":");
             if (parts.length < 6) {
                 throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
             }
             if (!parts[4].equals(ipId)) {
                 throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider ID: " + ipId);
-            }
-            switch (parts[3]) {
-                case "user", "device", "vessel", "mms":
-                    if (parts.length < 7) {
-                        throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
-                    }
-                    break;
-                case "service":
-                    if (parts.length < 8 || !parts[6].equals("instance")) {
-                        throw new IllegalArgumentException("The given MRN is not a valid service instance MRN");
-                    }
-                    break;
-                default:
-                    break;
             }
             return true;
         }
@@ -105,8 +91,9 @@ public class MrnUtil {
 
     /**
      * Get MRN prefix. Would be 'urn:mrn:mcl' for 'urn:mrn:mcl:org:dma', and 'urn:mrn:stm' for 'urn:mrn:stm:user:sma:user42'
-     * @param mrn
-     * @return
+     *
+     * @param mrn the MRN to get the prefix for
+     * @return the prefix of the given MRN
      */
     public String getMrnPrefix(String mrn) {
         // mrn always starts with 'urn:mrn:<sub-namespace>'
