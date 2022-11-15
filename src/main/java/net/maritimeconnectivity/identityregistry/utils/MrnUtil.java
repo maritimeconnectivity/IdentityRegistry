@@ -89,6 +89,13 @@ public class MrnUtil {
         return false;
     }
 
+    public String getEntityType(String mrn) {
+        String[] parts = mrn.split(":");
+        if (parts.length < 6)
+            return "";
+        return parts[3];
+    }
+
     /**
      * Get MRN prefix. Would be 'urn:mrn:mcl' for 'urn:mrn:mcl:org:dma', and 'urn:mrn:stm' for 'urn:mrn:stm:user:sma:user42'
      *

@@ -107,6 +107,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
         ValidateUtil.hasErrors(bindingResult, request);
         // Make sure all mrn are lowercase
         input.setMrn(input.getMrn().trim().toLowerCase());
+        if (!"id".equalsIgnoreCase(mrnUtil.getEntityType(input.getMrn()))) {
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "New organizations may only use the 'id' entity type", request.getServletPath());
+        }
         input.setApproved(false);
         // If no federation type is set we for now default to "test-idp"
         if (input.getFederationType() == null || input.getFederationType().isEmpty()) {
