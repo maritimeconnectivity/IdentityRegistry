@@ -118,7 +118,7 @@ class OrganizationControllerTests {
     void testApply() {
         // Build org object to test with
         Organization org = new Organization();
-        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setMrn("urn:mrn:mcp:id:idp1:dma");
         org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
         org.setCountry("Denmark");
         org.setUrl("http://dma.dk");
@@ -140,6 +140,30 @@ class OrganizationControllerTests {
         }
     }
 
+    @Test
+    void testApplyOldMrn() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        try {
+            mvc.perform(post("/oidc/api/org/apply")
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
 
     /**
      * Try to approve an organization without the appropriate role
