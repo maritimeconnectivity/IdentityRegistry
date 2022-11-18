@@ -31,7 +31,6 @@ import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.PKIConstants;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
@@ -64,6 +63,10 @@ import java.util.HashMap;
 @RestController
 @RequestMapping(value = {"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
+
+    private enum SignatureAlgorithm {
+        RSA, DSA, ECDSA, EDDSA;
+    }
 
     protected CertificateService certificateService;
 
@@ -216,27 +219,27 @@ public abstract class BaseControllerWithCertificate {
     }
 
     private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McpBasicRestException {
-        String algorithm;
+        SignatureAlgorithm algorithm;
         int keyLength;
         if (publicKey instanceof RSAPublicKey rsaPublicKey) {
             keyLength = rsaPublicKey.getModulus().bitLength();
-            algorithm = "RSA";
+            algorithm = SignatureAlgorithm.RSA;
         } else if (publicKey instanceof ECPublicKey ecPublicKey) {
             keyLength = ecPublicKey.getParams().getCurve().getField().getFieldSize();
-            algorithm = "EC";
+            algorithm = SignatureAlgorithm.ECDSA;
         } else if (publicKey instanceof DSAPublicKey dsaPublicKey) {
             keyLength = dsaPublicKey.getParams().getP().bitLength();
-            algorithm = "DSA";
-        } else if (publicKey instanceof BCEdDSAPublicKey) {
+            algorithm = SignatureAlgorithm.DSA;
+        } else if ("EdDSA".equals(publicKey.getAlgorithm())) {
             keyLength = 256;
-            algorithm = "EdDSA";
+            algorithm = SignatureAlgorithm.EDDSA;
         } else {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
         }
 
-        if ((algorithm.equals("RSA") || algorithm.equals("DSA")) && keyLength < 2048) {
+        if ((algorithm.equals(SignatureAlgorithm.RSA) || algorithm.equals(SignatureAlgorithm.DSA)) && keyLength < 2048) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.RSA_KEY_TOO_SHORT, request.getServletPath());
-        } else if ((algorithm.equals("EC") || algorithm.equals("EdDSA")) && keyLength < 224) {
+        } else if ((algorithm.equals(SignatureAlgorithm.ECDSA) || algorithm.equals(SignatureAlgorithm.EDDSA)) && keyLength < 224) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.EC_KEY_TOO_SHORT, request.getServletPath());
         }
     }
