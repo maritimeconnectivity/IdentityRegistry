@@ -505,6 +505,51 @@ class UserControllerTests {
     }
 
     @Test
+    void testIssueCertificateUsingCsrWithEdDSA() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1L);
+        user.setPermissions("MCADMIN");
+        String userJson = serialize(user);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
+        // Create fake authentication token
+        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1L);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/ed25519.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().isCreated()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            assertNotNull(content);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
     void testIssueCertificateUsingCsrWithWeakRSAKey() {
         // Build user object to test with
         User user = new User();
