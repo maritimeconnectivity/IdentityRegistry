@@ -15,7 +15,6 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.repositories.OrganizationRepository;
@@ -104,8 +103,7 @@ class LogoControllerTest {
         InetOrgPerson person = mock(InetOrgPerson.class);
         when(person.getO()).then(invocation -> org.getMrn());
         Authentication previousAuth = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "",
-                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
+        SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "", List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
 
         try {
             logoController.deleteLogo(new MockHttpServletRequest("DELETE", "/path"), org.getMrn());

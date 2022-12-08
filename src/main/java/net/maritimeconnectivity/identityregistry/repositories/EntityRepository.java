@@ -17,13 +17,14 @@ package net.maritimeconnectivity.identityregistry.repositories;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.NoRepositoryBean;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.List;
 
 @NoRepositoryBean
-public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long> {
+public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long>, CrudRepository<T, Long> {
     List<T> findByIdOrganization(Long orgId);
 
     Page<T> findByidOrganization(Long orgId, Pageable pageable);
