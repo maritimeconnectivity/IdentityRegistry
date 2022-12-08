@@ -41,8 +41,7 @@ public class PasswordUtil {
     public void setup() throws NoSuchAlgorithmException {
         if (certificateUtil.isUsingPKCS11()
                 && certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11PKIConfiguration) {
-            secureRandom = SecureRandom.getInstance(PKIConstants.PKCS11,
-                    p11PKIConfiguration.getProvider());
+            secureRandom = SecureRandom.getInstance(PKIConstants.PKCS11, p11PKIConfiguration.getProvider());
         } else {
             secureRandom = new SecureRandom();
         }

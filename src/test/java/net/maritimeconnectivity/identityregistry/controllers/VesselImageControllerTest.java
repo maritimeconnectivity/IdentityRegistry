@@ -16,7 +16,6 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.VesselImage;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
@@ -95,7 +94,7 @@ class VesselImageControllerTest {
         when(person.getO()).then(invocation -> org.getMrn());
         Authentication previousAuth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "",
-                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
+                List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
 
         try {
             vesselImageController.deleteVesselImage(new MockHttpServletRequest("DELETE", "/path"), org.getMrn(), vessel.getMrn());

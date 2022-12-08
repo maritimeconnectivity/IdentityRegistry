@@ -22,14 +22,13 @@ import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
-import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.account.KeycloakRole;
-import org.keycloak.adapters.springsecurity.authentication.KeycloakAuthenticationProvider;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
@@ -39,7 +38,7 @@ import java.util.Map;
 
 @Slf4j
 @Component
-public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationProvider {
+public class MCPKeycloakAuthenticationProvider implements AuthenticationProvider {
 
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
@@ -49,9 +48,8 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
     @Override
     public Authentication authenticate(Authentication authentication) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
-        KeycloakAuthenticationToken token = (KeycloakAuthenticationToken) authentication;
-        KeycloakSecurityContext ksc = (KeycloakSecurityContext)token.getCredentials();
-        Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
+        JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
+        Map<String, Object> otherClaims = token.getTokenAttributes();
 
         Organization org = null;
         if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
@@ -76,18 +74,23 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
                             if (foundRoles != null) {
                                 for (Role foundRole : foundRoles) {
                                     log.debug("Replacing role {}, with: {}", auth, foundRole.getRoleName());
-                                    grantedAuthorities.add(new KeycloakRole(foundRole.getRoleName()));
+                                    grantedAuthorities.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
                                 }
                             }
                         }
                     }
                 }
                 if (grantedAuthorities.isEmpty()) {
-                    grantedAuthorities.add(new KeycloakRole("ROLE_USER"));
+                    grantedAuthorities.add(new SimpleGrantedAuthority("ROLE_USER"));
                 }
             }
         }
-        return new KeycloakAuthenticationToken(token.getAccount(), token.isInteractive(), mapTheAuthorities(grantedAuthorities));
+        return new JwtAuthenticationToken(token.getToken(), mapTheAuthorities(grantedAuthorities));
+    }
+
+    @Override
+    public boolean supports(Class<?> authentication) {
+        return JwtAuthenticationToken.class.isAssignableFrom(authentication);
     }
 
     private Collection<? extends GrantedAuthority> mapTheAuthorities(
@@ -97,7 +100,7 @@ public class MCPKeycloakAuthenticationProvider extends KeycloakAuthenticationPro
                 : authorities;
     }
 
-    @Override
+    @Autowired
     public void setGrantedAuthoritiesMapper(GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
         this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
     }

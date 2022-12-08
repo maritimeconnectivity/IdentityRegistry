@@ -18,11 +18,12 @@ package net.maritimeconnectivity.identityregistry.repositories;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.PagingAndSortingRepository;
 
 import java.util.Optional;
 
-public interface OrganizationRepository extends PagingAndSortingRepository<Organization, Long> {
+public interface OrganizationRepository extends PagingAndSortingRepository<Organization, Long>, CrudRepository<Organization, Long> {
     Organization findByMrnAndApprovedTrue(String mrn);
 
     Organization findByMrn(String mrn);

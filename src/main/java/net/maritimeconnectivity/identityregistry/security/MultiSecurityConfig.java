@@ -15,49 +15,41 @@
  */
 package net.maritimeconnectivity.identityregistry.security;
 
-import lombok.AccessLevel;
-import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.identityregistry.config.SimpleCorsFilter;
 import net.maritimeconnectivity.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimeconnectivity.identityregistry.security.x509.X509UserDetailsService;
-import org.keycloak.adapters.springsecurity.config.KeycloakWebSecurityConfigurerAdapter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakAuthenticationProcessingFilter;
-import org.keycloak.adapters.springsecurity.filter.KeycloakPreAuthActionsFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
 import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
 import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
+import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
-import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
+import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
+import org.springframework.security.web.FilterChainProxy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
-import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
-import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 
-import jakarta.servlet.Filter;
+import java.util.List;
 
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
-@Profile("!test")
-@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiSecurityConfig {
 
     @Bean
@@ -82,6 +74,11 @@ public class MultiSecurityConfig {
     }
 
     @Bean
+    public static GrantedAuthoritiesMapper grantedAuthoritiesMapper() {
+        return new RoleHierarchyAuthoritiesMapper(roleHierarchy());
+    }
+
+    @Bean
     public static MethodSecurityExpressionHandler webExpressionHandler() {
         DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
         defaultMethodSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
@@ -98,10 +95,14 @@ public class MultiSecurityConfig {
         };
     }
 
+    @Bean
+    protected FilterChainProxy filterChainProxy(List<SecurityFilterChain> filterChains) {
+        return new FilterChainProxy(filterChains);
+    }
+
     @Configuration
     @Order(1)
-    @Profile("!test")
-    public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter {
+    public static class OIDCWebSecurityConfigurationAdapter {
         /**
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
@@ -110,77 +111,40 @@ public class MultiSecurityConfig {
             auth.authenticationProvider(mcpKeycloakAuthenticationProvider);
         }
 
-        /**
-         * Defines the session authentication strategy.
-         */
-        @Bean
-        @Override
-        protected SessionAuthenticationStrategy sessionAuthenticationStrategy() {
-            // When using as confidential keycloak/OpenID Connect client:
-            //return new RegisterSessionAuthenticationStrategy(new SessionRegistryImpl());
-            // When using as bearer-only keycloak/OpenID Connect client:
-            return new NullAuthenticatedSessionStrategy();
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
-            super.configure(http);
+        @Bean(name = "oidcChain")
+        protected SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManagerBuilder authenticationManagerBuilder, MCPKeycloakAuthenticationProvider authenticationProvider) throws Exception {
             http
                     .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                     .csrf().disable()
-                    .requestMatchers()
-                    .antMatchers("/oidc/**", "/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
-                    .and()
-                    .authorizeRequests()
-                    .expressionHandler(webExpressionHandler())
-                    // Some general filters for access, more specific ones are set at each method
-                    .antMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
-                    .antMatchers(HttpMethod.GET, "/oidc/api/certificates/crl/*").permitAll()
-                    .antMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp/**").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp/*").permitAll()
-                    .antMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/service/**").denyAll()
-            ;
-        }
+                    .authorizeHttpRequests(authz -> authz
+                            .requestMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/oidc/api/certificates/crl/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp/**").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp/*").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/service/**").denyAll())
+                    .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
 
-        @Bean
-        public FilterRegistrationBean<Filter> keycloakAuthenticationProcessingFilterRegistrationBean(
-                KeycloakAuthenticationProcessingFilter filter) {
-            FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>(filter);
-            registrationBean.setEnabled(false);
-            return registrationBean;
-        }
-
-        @Bean
-        public FilterRegistrationBean<Filter> keycloakPreAuthActionsFilterRegistrationBean(
-                KeycloakPreAuthActionsFilter filter) {
-            FilterRegistrationBean<Filter> registrationBean = new FilterRegistrationBean<>(filter);
-            registrationBean.setEnabled(false);
-            return registrationBean;
+            authenticationManagerBuilder.authenticationProvider(authenticationProvider);
+            http.authenticationManager(authenticationManagerBuilder.getOrBuild());
+            return http.build();
         }
     }
 
     // See https://docs.spring.io/spring-security/reference/servlet/authentication/x509.html
     @Configuration
     @Order(2)
-    @Profile("!test")
     public static class X509WebSecurityConfigurationAdapter {
 
         @Value("${server.ssl.enabled:false}")
         private boolean useStandardSSL;
-        private AuthenticationManagerBuilder authenticationManagerBuilder;
 
-        @Autowired
-        public void setAuthenticationManagerBuilder(AuthenticationManagerBuilder authenticationManagerBuilder) {
-            this.authenticationManagerBuilder = authenticationManagerBuilder;
-        }
-
-        @Bean
-        protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        @Bean(name = "x509Chain")
+        protected SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
             http
                     .authorizeHttpRequests(authz -> authz
                             .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
@@ -193,7 +157,6 @@ public class MultiSecurityConfig {
                             .requestMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
                             .requestMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
                             .requestMatchers(HttpMethod.GET, "/service/**").authenticated());
-
 
             if (!useStandardSSL) {
                 X509HeaderUserDetailsService userDetailsService = new X509HeaderUserDetailsService();

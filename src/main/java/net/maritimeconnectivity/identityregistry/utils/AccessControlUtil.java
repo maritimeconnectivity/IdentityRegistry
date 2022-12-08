@@ -22,9 +22,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
-import org.keycloak.KeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.account.KeycloakRole;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
@@ -33,6 +30,7 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.stereotype.Component;
 
@@ -76,11 +74,10 @@ public class AccessControlUtil {
         }
         log.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
-        if (auth instanceof KeycloakAuthenticationToken kat) {
+        if (auth instanceof JwtAuthenticationToken kat) {
             log.debug("OIDC authentication in process");
             // Keycloak authentication
-            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
-            Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
+            Map<String, Object> otherClaims = kat.getTokenAttributes();
             if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
                 String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
                 String org = "";
@@ -104,8 +101,8 @@ public class AccessControlUtil {
                             if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
                                 roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
                             for (Agent agent : agents) {
-                                List<KeycloakRole> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
-                                        .map(allowedAgentRole -> new KeycloakRole(allowedAgentRole.getRoleName()))
+                                List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                        .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
                                         .toList();
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
@@ -186,9 +183,8 @@ public class AccessControlUtil {
         User user = this.userService.getByMrn(userMRN);
         Organization organization = this.organizationService.getOrganizationById(user.getIdOrganization());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth instanceof KeycloakAuthenticationToken kat) {
-            KeycloakSecurityContext ksc = (KeycloakSecurityContext) kat.getCredentials();
-            Map<String, Object> otherClaims = ksc.getToken().getOtherClaims();
+        if (auth instanceof JwtAuthenticationToken kat) {
+            Map<String, Object> otherClaims = kat.getTokenAttributes();
             String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
             if (mrn != null) {
                 String[] mrnParts = mrn.split(":");
@@ -228,9 +224,8 @@ public class AccessControlUtil {
         // From here on we try to decide if the user is acting on behalf of another organization,
         // and if so we compute the reachable roles that they have there.
         String userOrgMrn = null;
-        if (auth instanceof KeycloakAuthenticationToken keycloakAuthenticationToken) {
-            KeycloakSecurityContext securityContext = (KeycloakSecurityContext) keycloakAuthenticationToken.getCredentials();
-            Map<String, Object> otherClaims = securityContext.getToken().getOtherClaims();
+        if (auth instanceof JwtAuthenticationToken jwtAuthenticationToken) {
+            Map<String, Object> otherClaims = jwtAuthenticationToken.getTokenAttributes();
             String userMrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
             if (userMrn == null || userMrn.trim().isEmpty())
                 return Collections.emptyList();
