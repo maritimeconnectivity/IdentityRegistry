@@ -15,6 +15,8 @@
  */
 package net.maritimeconnectivity.identityregistry.security;
 
+import lombok.AccessLevel;
+import lombok.NoArgsConstructor;
 import net.maritimeconnectivity.identityregistry.config.SimpleCorsFilter;
 import net.maritimeconnectivity.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimeconnectivity.identityregistry.security.x509.X509UserDetailsService;
@@ -29,33 +31,33 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpMethod;
-import org.springframework.security.access.expression.SecurityExpressionHandler;
+import org.springframework.security.access.expression.method.DefaultMethodSecurityExpressionHandler;
+import org.springframework.security.access.expression.method.MethodSecurityExpressionHandler;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
-import org.springframework.security.config.annotation.method.configuration.EnableGlobalMethodSecurity;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
-import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
-import org.springframework.security.web.FilterInvocation;
+import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.access.channel.ChannelProcessingFilter;
-import org.springframework.security.web.access.expression.DefaultWebSecurityExpressionHandler;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.authentication.session.NullAuthenticatedSessionStrategy;
 import org.springframework.security.web.authentication.session.SessionAuthenticationStrategy;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
-import org.springframework.security.web.firewall.HttpFirewall;
 
 import jakarta.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
-@EnableGlobalMethodSecurity(prePostEnabled = true)
+@EnableMethodSecurity
 @Profile("!test")
+@NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class MultiSecurityConfig {
 
     @Bean
@@ -79,11 +81,27 @@ public class MultiSecurityConfig {
         return roleHierarchy;
     }
 
+    @Bean
+    public static MethodSecurityExpressionHandler webExpressionHandler() {
+        DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
+        defaultMethodSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
+        return defaultMethodSecurityExpressionHandler;
+    }
+
+    @Bean
+    protected WebSecurityCustomizer webSecurityCustomizer() {
+        // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
+        return webSecurity -> {
+            DefaultHttpFirewall firewall = new DefaultHttpFirewall();
+            firewall.setAllowUrlEncodedSlash(true);
+            webSecurity.httpFirewall(firewall);
+        };
+    }
+
     @Configuration
     @Order(1)
     @Profile("!test")
-    public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter
-    {
+    public static class OIDCWebSecurityConfigurationAdapter extends KeycloakWebSecurityConfigurerAdapter {
         /**
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
@@ -105,16 +123,15 @@ public class MultiSecurityConfig {
         }
 
         @Override
-        protected void configure(HttpSecurity http) throws Exception
-        {
+        protected void configure(HttpSecurity http) throws Exception {
             super.configure(http);
             http
-                .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
-                .csrf().disable()
-                .requestMatchers()
-                    .antMatchers("/oidc/**","/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
-            .and()
-                .authorizeRequests()
+                    .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
+                    .csrf().disable()
+                    .requestMatchers()
+                    .antMatchers("/oidc/**", "/sso/**") // "/sso/**" matches the urls used by the keycloak adapter
+                    .and()
+                    .authorizeRequests()
                     .expressionHandler(webExpressionHandler())
                     // Some general filters for access, more specific ones are set at each method
                     .antMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
@@ -145,64 +162,48 @@ public class MultiSecurityConfig {
             registrationBean.setEnabled(false);
             return registrationBean;
         }
-
-        private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {
-            DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
-            defaultWebSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
-            return defaultWebSecurityExpressionHandler;
-        }
     }
 
-    // See https://docs.spring.io/spring-security/site/docs/4.0.x/reference/html/x509.html
+    // See https://docs.spring.io/spring-security/reference/servlet/authentication/x509.html
     @Configuration
     @Order(2)
     @Profile("!test")
-    public static class X509WebSecurityConfigurationAdapter extends WebSecurityConfigurerAdapter {
+    public static class X509WebSecurityConfigurationAdapter {
 
         @Value("${server.ssl.enabled:false}")
         private boolean useStandardSSL;
-        private X509HeaderUserDetailsService userDetailsService;
-        private PreAuthenticatedAuthenticationProvider preAuthenticatedProvider;
+        private AuthenticationManagerBuilder authenticationManagerBuilder;
 
-        public X509WebSecurityConfigurationAdapter() {
-            super();
-            if (!useStandardSSL) {
-                userDetailsService = new X509HeaderUserDetailsService();
-                UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>(userDetailsService);
-                preAuthenticatedProvider = new PreAuthenticatedAuthenticationProvider();
-                preAuthenticatedProvider.setPreAuthenticatedUserDetailsService(wrapper);
-            }
+        @Autowired
+        public void setAuthenticationManagerBuilder(AuthenticationManagerBuilder authenticationManagerBuilder) {
+            this.authenticationManagerBuilder = authenticationManagerBuilder;
         }
 
-        @Override
-        protected void configure(AuthenticationManagerBuilder authenticationManagerBuilder) throws Exception {
-            if (!useStandardSSL) {
-                authenticationManagerBuilder.authenticationProvider(preAuthenticatedProvider);
-            }
-        }
-
-        @Override
-        protected void configure(HttpSecurity http) throws Exception {
+        @Bean
+        protected SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
             http
-                .authorizeRequests()
-                    .expressionHandler(webExpressionHandler())
-                    // Some general filters for access, more specific ones are set at each method
-                    .antMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
-                    .antMatchers(HttpMethod.GET, "/x509/api/certificates/crl/*").permitAll()
-                    .antMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp/*").permitAll()
-                    .antMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
-                    .antMatchers(HttpMethod.GET, "/service/**").authenticated()
-            ;
+                    .authorizeHttpRequests(authz -> authz
+                            .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/x509/api/certificates/crl/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp/*").permitAll()
+                            .requestMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
+                            .requestMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
+                            .requestMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
+                            .requestMatchers(HttpMethod.GET, "/service/**").authenticated());
+
 
             if (!useStandardSSL) {
+                X509HeaderUserDetailsService userDetailsService = new X509HeaderUserDetailsService();
+                UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>(userDetailsService);
+                PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider = new PreAuthenticatedAuthenticationProvider();
+                preAuthenticatedAuthenticationProvider.setPreAuthenticatedUserDetailsService(wrapper);
+                authenticationManagerBuilder.authenticationProvider(preAuthenticatedAuthenticationProvider);
                 // Create and setup the filter used to extract the client certificate from the header
                 RequestHeaderAuthenticationFilter certFilter = new RequestHeaderAuthenticationFilter();
-                certFilter.setAuthenticationManager(authenticationManager());
+                certFilter.setAuthenticationManager(authenticationManagerBuilder.getOrBuild());
                 certFilter.setPrincipalRequestHeader("X-Client-Certificate");
                 certFilter.setExceptionIfHeaderMissing(false);
                 http.addFilter(certFilter);
@@ -210,39 +211,11 @@ public class MultiSecurityConfig {
                 // Using this approach is not recommended since we don't extract all the information from
                 // the certificate, as done in the approach above.
                 http
-                    .x509()
+                        .x509()
                         .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
-                        .userDetailsService(x509UserDetailsService());
+                        .userDetailsService(new X509UserDetailsService());
             }
-        }
-
-        @Bean
-        public X509HeaderUserDetailsService x509HeaderUserDetailsService() {
-            return userDetailsService;
-        }
-        
-        @Bean
-        public X509UserDetailsService x509UserDetailsService() {
-            return new X509UserDetailsService();
-        }
-
-        private SecurityExpressionHandler<FilterInvocation> webExpressionHandler() {
-            DefaultWebSecurityExpressionHandler defaultWebSecurityExpressionHandler = new DefaultWebSecurityExpressionHandler();
-            defaultWebSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
-            return defaultWebSecurityExpressionHandler;
-        }
-
-        // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
-        @Bean
-        public HttpFirewall allowUrlEncodedSlashHttpFirewall() {
-            DefaultHttpFirewall firewall = new DefaultHttpFirewall();
-            firewall.setAllowUrlEncodedSlash(true);
-            return firewall;
-        }
-
-        @Override
-        public void configure(WebSecurity web) throws Exception {
-            web.httpFirewall(allowUrlEncodedSlashHttpFirewall());
+            return http.build();
         }
     }
 }
