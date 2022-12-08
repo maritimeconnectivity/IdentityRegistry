@@ -19,8 +19,8 @@ package net.maritimeconnectivity.identityregistry.validators;
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 
 public class MRNValidator implements ConstraintValidator<MRN, String> {
 
