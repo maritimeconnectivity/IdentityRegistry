@@ -36,7 +36,7 @@ import org.springframework.security.web.authentication.session.SessionAuthentica
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.firewall.HttpFirewall;
 
-import javax.servlet.Filter;
+import jakarta.servlet.Filter;
 
 @Configuration
 @EnableWebSecurity
