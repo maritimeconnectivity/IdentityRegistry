@@ -151,7 +151,7 @@ spring.datasource:
 # Disable Hibernate entity validation as it is already done by Spring
 spring.jpa:
     properties:
-        javax.persistence.validation.mode: none
+        jakarta.persistence.validation.mode: none
 
 # Email setup
 spring.mail:
@@ -212,6 +212,6 @@ spring:
     flyway.enabled: false
     jpa:
         properties:
-            javax.persistence.validation.mode: auto
+            jakarta.persistence.validation.mode: auto
     mail:
         port: 10205
