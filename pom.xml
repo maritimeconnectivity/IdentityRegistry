@@ -46,7 +46,7 @@
 		<java.version>17</java.version>
 		<maven.compiler.release>17</maven.compiler.release>
 		<keycloak.version>20.0.1</keycloak.version>
-		<springdoc-openapi.version>1.6.12</springdoc-openapi.version>
+		<springdoc-openapi.version>2.0.0</springdoc-openapi.version>
 		<twelvemonkeys.version>3.9.3</twelvemonkeys.version>
 	</properties>
 
@@ -122,12 +122,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-ui</artifactId>
-			<version>${springdoc-openapi.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springdoc</groupId>
-			<artifactId>springdoc-openapi-data-rest</artifactId>
+			<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
 			<version>${springdoc-openapi.version}</version>
 		</dependency>
 		<dependency>
