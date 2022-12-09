@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -52,6 +53,9 @@ class X509HeaderUserDetailsServiceTest {
     private RoleService roleService;
     @MockBean
     private OrganizationService organizationService;
+
+    @MockBean
+    JwtDecoder jwtDecoder;
 
     @InjectMocks
     X509HeaderUserDetailsService x509HeaderUserDetailsService;

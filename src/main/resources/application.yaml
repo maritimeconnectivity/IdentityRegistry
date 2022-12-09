@@ -166,6 +166,12 @@ spring.mail:
     # Test that the mail server is available on startup.
     test-connection: false
 
+spring.security:
+    oauth2:
+        resourceserver:
+            jwt:
+                issuer-uri: http://localhost:8080/auth/realms/MCP
+
 # Do not "leak" internal setup details in http X-Application-Context header
 management.server.add-application-context-header: false
 ---

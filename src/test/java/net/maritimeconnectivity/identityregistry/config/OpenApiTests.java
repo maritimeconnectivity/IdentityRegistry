@@ -18,9 +18,11 @@ package net.maritimeconnectivity.identityregistry.config;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -44,6 +46,9 @@ class OpenApiTests {
     private WebApplicationContext context;
 
     private MockMvc mvc;
+
+    @MockBean
+    JwtDecoder jwtDecoder;
 
     @Autowired
     private GroupedOpenApi oidcApi;

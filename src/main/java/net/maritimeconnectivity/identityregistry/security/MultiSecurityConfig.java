@@ -87,7 +87,7 @@ public class MultiSecurityConfig {
 
     @Bean
     public static WebSecurityCustomizer webSecurityCustomizer() {
-        // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
+        // Allow URL encoded slashes in URL. Needed for OCSP.
         return webSecurity -> {
             DefaultHttpFirewall firewall = new DefaultHttpFirewall();
             firewall.setAllowUrlEncodedSlash(true);
@@ -107,12 +107,12 @@ public class MultiSecurityConfig {
          * Registers the MCKeycloakAuthenticationProvider with the authentication manager.
          */
         @Autowired
-        public void configureGlobal(AuthenticationManagerBuilder auth, MCPKeycloakAuthenticationProvider mcpKeycloakAuthenticationProvider) {
-            auth.authenticationProvider(mcpKeycloakAuthenticationProvider);
+        public void configureGlobal(AuthenticationManagerBuilder auth, MCPOidcAuthenticationProvider mcpOidcAuthenticationProvider) {
+            auth.authenticationProvider(mcpOidcAuthenticationProvider);
         }
 
         @Bean(name = "oidcChain")
-        protected SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManagerBuilder authenticationManagerBuilder, MCPKeycloakAuthenticationProvider authenticationProvider) throws Exception {
+        protected SecurityFilterChain filterChain(HttpSecurity http, AuthenticationManagerBuilder authenticationManagerBuilder, MCPOidcAuthenticationProvider authenticationProvider) throws Exception {
             http
                     .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                     .csrf().disable()
