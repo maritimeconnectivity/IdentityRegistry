@@ -28,17 +28,17 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
+import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Component
-public class MCPKeycloakAuthenticationProvider implements AuthenticationProvider {
+public class MCPOidcAuthenticationProvider implements AuthenticationProvider {
 
     private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
@@ -49,33 +49,31 @@ public class MCPKeycloakAuthenticationProvider implements AuthenticationProvider
     public Authentication authenticate(Authentication authentication) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
         JwtAuthenticationToken token = (JwtAuthenticationToken) authentication;
-        Map<String, Object> otherClaims = token.getTokenAttributes();
+        Jwt jwtToken = token.getToken();
 
         Organization org = null;
-        if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
-            String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
-            if (mrn != null) {
-                String[] mrnParts = mrn.split(":");
-                if (mrnParts.length >= 7) {
-                    String orgMrn = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
-                    log.debug("Found org mrn: {}", orgMrn);
-                    org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
-                }
+        String mrn = jwtToken.getClaimAsString(MCPIdRegConstants.MRN_PROPERTY_NAME);
+        if (mrn != null) {
+            String[] mrnParts = mrn.split(":");
+            if (mrnParts.length >= 7) {
+                String orgMrn = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                log.debug("Found org mrn: {}", orgMrn);
+                org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
             }
+        }
 
-            if (org != null) {
-                if (otherClaims.containsKey(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME)) {
-                    ArrayList<String> usersPermissions = (ArrayList<String>) otherClaims.get(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME);
-                    for (String permission : usersPermissions) {
-                        String[] auths = permission.split(",");
-                        for (String auth : auths) {
-                            log.debug("Looking up role: {}", auth);
-                            List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth);
-                            if (foundRoles != null) {
-                                for (Role foundRole : foundRoles) {
-                                    log.debug("Replacing role {}, with: {}", auth, foundRole.getRoleName());
-                                    grantedAuthorities.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
-                                }
+        if (org != null) {
+            List<String> usersPermissions = jwtToken.getClaimAsStringList(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME);
+            if (usersPermissions != null) {
+                for (String permission : usersPermissions) {
+                    String[] auths = permission.split(",");
+                    for (String auth : auths) {
+                        log.debug("Looking up role: {}", auth);
+                        List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), auth);
+                        if (foundRoles != null) {
+                            for (Role foundRole : foundRoles) {
+                                log.debug("Replacing role {}, with: {}", auth, foundRole.getRoleName());
+                                grantedAuthorities.add(new SimpleGrantedAuthority(foundRole.getRoleName()));
                             }
                         }
                     }
@@ -85,7 +83,7 @@ public class MCPKeycloakAuthenticationProvider implements AuthenticationProvider
                 }
             }
         }
-        return new JwtAuthenticationToken(token.getToken(), mapTheAuthorities(grantedAuthorities));
+        return new JwtAuthenticationToken(jwtToken, mapTheAuthorities(grantedAuthorities));
     }
 
     @Override
