@@ -407,7 +407,7 @@ class UserControllerTests {
         when(org.getId()).thenReturn(1L);
 
         // setup mock SMTP server
-        Wiser wiser = new Wiser(smtpServerPort);
+        Wiser wiser = Wiser.port(smtpServerPort);
         wiser.start();
 
         try {
