@@ -86,7 +86,7 @@ public class MultiSecurityConfig {
     }
 
     @Bean
-    protected WebSecurityCustomizer webSecurityCustomizer() {
+    public static WebSecurityCustomizer webSecurityCustomizer() {
         // Allow URL encoded slashes in URL. Needed for OCSP. Only needed for X509, since that is where the OCSP endpoint is
         return webSecurity -> {
             DefaultHttpFirewall firewall = new DefaultHttpFirewall();
@@ -96,7 +96,7 @@ public class MultiSecurityConfig {
     }
 
     @Bean
-    protected FilterChainProxy filterChainProxy(List<SecurityFilterChain> filterChains) {
+    protected static FilterChainProxy filterChainProxy(List<SecurityFilterChain> filterChains) {
         return new FilterChainProxy(filterChains);
     }
 
@@ -122,6 +122,9 @@ public class MultiSecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/oidc/api/certificates/crl/*").permitAll()
                             .requestMatchers(HttpMethod.GET, "/oidc/api/certificates/ocsp/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/oidc/api/certificates/ocsp/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/v3/api-docs").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
                             .requestMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
@@ -152,6 +155,9 @@ public class MultiSecurityConfig {
                             .requestMatchers(HttpMethod.GET, "/x509/api/certificates/crl/*").permitAll()
                             .requestMatchers(HttpMethod.GET, "/x509/api/certificates/ocsp/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/x509/api/certificates/ocsp/*").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/v3/api-docs").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
+                            .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                             .requestMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                             .requestMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                             .requestMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
