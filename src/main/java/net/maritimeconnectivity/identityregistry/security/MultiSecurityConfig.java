@@ -129,7 +129,7 @@ public class MultiSecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain x509FilterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService) throws Exception {
         http
                 .securityMatcher("/x509/**")
                 .authorizeHttpRequests(authz -> authz
@@ -149,8 +149,7 @@ public class MultiSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/service/**").authenticated());
 
         if (!useStandardSSL) {
-            X509HeaderUserDetailsService userDetailsService = new X509HeaderUserDetailsService();
-            UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>(userDetailsService);
+            UserDetailsByNameServiceWrapper<PreAuthenticatedAuthenticationToken> wrapper = new UserDetailsByNameServiceWrapper<>(x509HeaderUserDetailsService);
             PreAuthenticatedAuthenticationProvider preAuthenticatedAuthenticationProvider = new PreAuthenticatedAuthenticationProvider();
             preAuthenticatedAuthenticationProvider.setPreAuthenticatedUserDetailsService(wrapper);
             ProviderManager providerManager = new ProviderManager(preAuthenticatedAuthenticationProvider);
