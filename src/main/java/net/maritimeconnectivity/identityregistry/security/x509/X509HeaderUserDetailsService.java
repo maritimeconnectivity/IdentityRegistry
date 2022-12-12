@@ -115,8 +115,15 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         if (newRoles.isEmpty()) {
             newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
-        essence.setAuthorities(grantedAuthoritiesMapper.mapAuthorities(newRoles));
+        essence.setAuthorities(mapTheAuthorities(newRoles));
         return essence.createUserDetails();
+    }
+
+    private Collection<? extends GrantedAuthority> mapTheAuthorities(
+            Collection<? extends GrantedAuthority> authorities) {
+        return grantedAuthoritiesMapper != null
+                ? grantedAuthoritiesMapper.mapAuthorities(authorities)
+                : authorities;
     }
 
     @Autowired
