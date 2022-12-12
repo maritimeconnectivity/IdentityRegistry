@@ -32,13 +32,14 @@ import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
@@ -97,6 +98,9 @@ class UserControllerTests {
     @MockBean
     private CertificateService certificateService;
 
+    @MockBean
+    JwtDecoder jwtDecoder;
+
     @Getter
     @Setter
     @Value("${spring.mail.port}")
@@ -149,7 +153,7 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
@@ -227,7 +231,7 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
@@ -270,7 +274,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         String userUid = user.constructDN(org);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
@@ -316,7 +320,7 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
@@ -354,7 +358,7 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
@@ -396,14 +400,14 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.save(any())).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
         // setup mock SMTP server
-        Wiser wiser = new Wiser(smtpServerPort);
+        Wiser wiser = Wiser.port(smtpServerPort);
         wiser.start();
 
         try {
@@ -443,7 +447,7 @@ class UserControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
@@ -483,7 +487,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -528,7 +532,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -573,7 +577,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -619,7 +623,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -665,7 +669,7 @@ class UserControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
         // Create fake authentication token
-        KeycloakAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);

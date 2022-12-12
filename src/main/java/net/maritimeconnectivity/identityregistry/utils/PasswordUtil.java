@@ -20,7 +20,7 @@ import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.math.BigInteger;
 import java.security.NoSuchAlgorithmException;
 import java.security.SecureRandom;
@@ -41,8 +41,7 @@ public class PasswordUtil {
     public void setup() throws NoSuchAlgorithmException {
         if (certificateUtil.isUsingPKCS11()
                 && certificateUtil.getPkiConfiguration() instanceof P11PKIConfiguration p11PKIConfiguration) {
-            secureRandom = SecureRandom.getInstance(PKIConstants.PKCS11,
-                    p11PKIConfiguration.getProvider());
+            secureRandom = SecureRandom.getInstance(PKIConstants.PKCS11, p11PKIConfiguration.getProvider());
         } else {
             secureRandom = new SecureRandom();
         }

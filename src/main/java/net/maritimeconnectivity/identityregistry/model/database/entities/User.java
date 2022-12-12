@@ -25,13 +25,13 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.pki.PKIIdentity;
 import org.bouncycastle.asn1.x500.X500Name;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Locale;
 import java.util.Set;
 

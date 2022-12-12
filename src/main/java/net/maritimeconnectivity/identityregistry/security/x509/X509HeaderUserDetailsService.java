@@ -27,6 +27,7 @@ import net.maritimeconnectivity.pki.PKIIdentity;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,6 +47,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     private OrganizationService organizationService;
     private RoleService roleService;
     private EntityService<User> userService;
+    private GrantedAuthoritiesMapper grantedAuthoritiesMapper;
 
     @Override
     public UserDetails loadUserByUsername(String certificateHeader) {
@@ -79,7 +81,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         // Hack alert! There is no country property in this type, so we misuse PostalAddress...
         essence.setPostalAddress(user.getCountry());
         essence.setSn(user.getSn());
-        essence.setCn(new String[] { user.getCn() } );
+        essence.setCn(new String[]{user.getCn()});
         essence.setDn(user.getDn());
         essence.setDescription(user.getDn());
         Collection<GrantedAuthority> newRoles = new ArrayList<>();
@@ -98,7 +100,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
             }
             if (mirUser.getPermissions() != null) {
                 String[] permissions = mirUser.getPermissions().split(",");
-                for(String permission: permissions) {
+                for (String permission : permissions) {
                     log.debug("Looking up role: {}", permission);
                     List<Role> foundRoles = roleService.getRolesByIdOrganizationAndPermission(org.getId(), permission);
                     if (foundRoles != null) {
@@ -113,8 +115,15 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
         if (newRoles.isEmpty()) {
             newRoles.add(new SimpleGrantedAuthority("ROLE_USER"));
         }
-        essence.setAuthorities(newRoles);
+        essence.setAuthorities(mapTheAuthorities(newRoles));
         return essence.createUserDetails();
+    }
+
+    private Collection<? extends GrantedAuthority> mapTheAuthorities(
+            Collection<? extends GrantedAuthority> authorities) {
+        return grantedAuthoritiesMapper != null
+                ? grantedAuthoritiesMapper.mapAuthorities(authorities)
+                : authorities;
     }
 
     @Autowired
@@ -130,5 +139,10 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
     @Autowired
     public void setUserService(EntityService<User> userService) {
         this.userService = userService;
+    }
+
+    @Autowired
+    public void setGrantedAuthoritiesMapper(GrantedAuthoritiesMapper grantedAuthoritiesMapper) {
+        this.grantedAuthoritiesMapper = grantedAuthoritiesMapper;
     }
 }

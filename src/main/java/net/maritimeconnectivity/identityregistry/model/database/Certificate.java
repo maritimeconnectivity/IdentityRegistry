@@ -32,11 +32,11 @@ import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
 import net.maritimeconnectivity.pki.ocsp.CertStatus;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigInteger;
 import java.security.cert.CRLReason;
 import java.util.Date;

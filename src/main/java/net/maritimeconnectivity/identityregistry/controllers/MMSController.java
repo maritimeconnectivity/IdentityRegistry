@@ -25,7 +25,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -42,8 +42,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.math.BigInteger;
 import java.util.HashMap;
 

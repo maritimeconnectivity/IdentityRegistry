@@ -23,8 +23,8 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 import java.util.List;
 

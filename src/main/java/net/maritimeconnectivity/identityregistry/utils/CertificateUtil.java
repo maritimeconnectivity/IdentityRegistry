@@ -25,7 +25,7 @@ import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Slf4j
