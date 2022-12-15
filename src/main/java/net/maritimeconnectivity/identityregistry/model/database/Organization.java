@@ -55,7 +55,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.WRITE_ONLY;
 @Schema(description = "Model object representing an organization")
 public class Organization extends CertificateModel {
 
-    @Schema(description = "The name of the organization", required = true)
+    @Schema(description = "The name of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "name", nullable = false)
     @NotBlank
     private String name;
@@ -64,7 +64,7 @@ public class Organization extends CertificateModel {
     @Length(max = 64)
     @NotBlank
     @MCPMRN
-    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
@@ -80,23 +80,23 @@ public class Organization extends CertificateModel {
     @Column(name = "email", nullable = false)
     @NotBlank
     @Email
-    @Schema(description = "The email of the organization", required = true)
+    @Schema(description = "The email of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
 
     @Column(name = "url", nullable = false)
-    @Schema(description = "The URL of the organization's website", required = true)
+    @Schema(description = "The URL of the organization's website", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @URL
     private String url;
 
     @Column(name = "address", nullable = false)
     @NotBlank
-    @Schema(description = "The address of the organization", required = true)
+    @Schema(description = "The address of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     private String address;
 
     @Column(name = "country")
     @NotBlank
-    @Schema(description = "The country that the organization is located in", required = true)
+    @Schema(description = "The country that the organization is located in", requiredMode = Schema.RequiredMode.REQUIRED)
     private String country;
 
     @JsonIgnore

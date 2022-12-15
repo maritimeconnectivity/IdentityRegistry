@@ -51,17 +51,17 @@ import static net.maritimeconnectivity.pki.CertificateBuilder.escapeSpecialChara
 @Schema(description = "Model object representing a user")
 public class User extends EntityModel {
 
-    @Schema(description = "The first name of the user", required = true)
+    @Schema(description = "The first name of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "first_name")
     private String firstName;
 
-    @Schema(description = "The last name of the user", required = true)
+    @Schema(description = "The last name of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
-    @Schema(description = "The email of the user", required = true)
+    @Schema(description = "The email of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Email
     @Column(name = "email")

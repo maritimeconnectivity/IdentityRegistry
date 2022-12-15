@@ -41,7 +41,7 @@ public class Agent extends TimestampModel {
     /**
      * The organization that is acting on behalf of the other organization
      */
-    @Schema(required = true, description = "The id of the organization that should be given agent permissions")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The id of the organization that should be given agent permissions")
     @Column(name = "id_acting", nullable = false)
     private Long idActingOrganization;
 

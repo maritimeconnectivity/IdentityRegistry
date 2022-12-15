@@ -46,7 +46,7 @@ import java.util.Set;
 public class IdentityProviderAttribute extends TimestampModel {
 
     @Schema(
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             description = "OpenId Connect or SAML2 attribute name",
             allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
                     "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, " +
@@ -63,7 +63,7 @@ public class IdentityProviderAttribute extends TimestampModel {
     )
     private String attributeName;
 
-    @Schema(description = "OpenId Connect or SAML2 attribute value", required = true)
+    @Schema(description = "OpenId Connect or SAML2 attribute value", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "attribute_value", nullable = false)
     private String attributeValue;

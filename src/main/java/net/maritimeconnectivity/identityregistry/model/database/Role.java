@@ -34,14 +34,14 @@ import java.util.Objects;
 @Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
 
-    @Schema(required = true, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
             "ROLE_USER_ADMIN, ROLE_VESSEL_ADMIN, ROLE_SERVICE_ADMIN, ROLE_DEVICE_ADMIN, ROLE_MMS_ADMIN, ROLE_USER, ROLE_APPROVE_ORG")
     @Column(name = "role_name", nullable = false)
     @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
             "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN", "ROLE_USER", "ROLE_APPROVE_ORG"})
     private String roleName;
 
-    @Schema(required = true, description = "The permission that should be mapped to the role")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The permission that should be mapped to the role")
     @Column(name = "permission", nullable = false)
     private String permission;
 

@@ -38,12 +38,12 @@ public class CertificateRevocation implements JsonSerializable {
             "affiliationchanged", "superseded", "cessationofoperation", "certificatehold", "removefromcrl",
             "privilegewithdrawn", "aacompromise");
 
-    @Schema(description = "The date the certificate revocation should be activated.", required = true)
+    @Schema(description = "The date the certificate revocation should be activated.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull
     private Date revokedAt;
 
     @Schema(
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             description = "The reason the certificates has been revoked",
             allowableValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",
                     "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}

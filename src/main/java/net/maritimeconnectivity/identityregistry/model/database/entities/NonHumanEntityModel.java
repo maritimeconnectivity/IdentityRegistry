@@ -31,7 +31,7 @@ import jakarta.validation.constraints.NotBlank;
 public abstract class NonHumanEntityModel extends EntityModel {
     @Column(name = "name", nullable = false)
     @NotBlank
-    @Schema(description = "The name of the entity", required = true)
+    @Schema(description = "The name of the entity", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
     /** Copies this entity into the other */

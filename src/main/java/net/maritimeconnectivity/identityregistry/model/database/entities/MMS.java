@@ -48,7 +48,7 @@ public class MMS extends NonHumanEntityModel {
 
     @NotNull
     @URL(regexp = "^(http|https).*")
-    @Schema(description = "URL of MMS instance", required = true)
+    @Schema(description = "URL of MMS instance", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "url", nullable = false)
     private String url;
 
