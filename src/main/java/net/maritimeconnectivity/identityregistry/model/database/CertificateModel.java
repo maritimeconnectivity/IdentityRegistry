@@ -20,6 +20,7 @@ import lombok.ToString;
 import org.springframework.validation.annotation.Validated;
 
 import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OneToMany;
 import jakarta.persistence.PostPersist;
 import jakarta.persistence.PostUpdate;
 import jakarta.persistence.PreRemove;
@@ -58,6 +59,8 @@ public abstract class CertificateModel extends TimestampModel {
             }
         }
     }
+
+    @OneToMany
     public abstract Set<Certificate> getCertificates();
 
     @JsonIgnore
