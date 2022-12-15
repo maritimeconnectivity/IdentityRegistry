@@ -70,7 +70,7 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
-    @Schema(description = "The version of this service instance.", required = true)
+    @Schema(description = "The version of this service instance.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be max 32 characters long")
     @Column(name = "instance_version", nullable = false)

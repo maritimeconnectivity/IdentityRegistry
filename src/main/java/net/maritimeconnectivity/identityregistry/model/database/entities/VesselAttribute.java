@@ -45,13 +45,13 @@ import java.util.Date;
 @Schema(description = "Model object representing a vessel attribute")
 public class VesselAttribute extends TimestampModel {
 
-    @Schema(description = "Vessel attribute name", required = true, allowableValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
+    @Schema(description = "Vessel attribute name", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
     @NotNull
     private String attributeName;
 
-    @Schema(description = "Vessel attribute value", required = true)
+    @Schema(description = "Vessel attribute value", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "attribute_value", nullable = false)
     @NotNull
     private String attributeValue;

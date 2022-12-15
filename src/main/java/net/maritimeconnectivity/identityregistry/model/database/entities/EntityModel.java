@@ -39,7 +39,7 @@ public abstract class EntityModel extends CertificateModel {
     private Long idOrganization;
 
     @MCPMRN
-    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
