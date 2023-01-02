@@ -20,7 +20,7 @@ RUN mkdir $LOADER_PATH
 ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
 
 # Download the MySQL client connector from Maven Central
-ADD https://repo1.maven.org/maven2/mysql/mysql-connector-java/$MYSQL_VERSION/mysql-connector-java-$MYSQL_VERSION.jar $LOADER_PATH
+ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
 
 # Install native libraries that can be used by Spring Boot's embedded Tomcat server for improved performance
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libtcnative-1 && rm -rf /var/lib/apt/lists*
