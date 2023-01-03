@@ -10,14 +10,14 @@ A detailed guide on how to setup the Identity Registry that should be used in co
 ## Setup Database
 A MySQL/MariaDB is used as datastore, it can be setup running this commands from the console:
 ```sh
-$ ./setup/setup-db.sh
+./setup/setup-db.sh
 ```
 You will be prompted for the root password for the database. The script will create a new user and this user will be used to create the needed tables.
 If you see this error: ```ERROR 1698 (28000): Access denied for user 'root'@'localhost'```, try running the command with ```sudo```.
 
 The database can be dropped with this command:
 ```sh
-$ ./setup/drop-db.sh
+./setup/drop-db.sh
 ```
 
 ## Build
@@ -25,7 +25,7 @@ $ ./setup/drop-db.sh
 
 Build using you favorite IDE or using the console:
 ```sh
-$ mvn clean install
+mvn clean install
 ```
 
 ## Run
@@ -60,19 +60,19 @@ server {
 }
 ```
 
-The `ssl_certificate` and `ssl_certificate_key` properties in the configuration above points to the standard self-signed certificate that comes with an Ubuntu Linux. The `ssl_client_certificate` and `ssl_crl` should point to the `mc-ca-chain.pem` and `combined-crl.pem` provided in the the root of this project.
+The `ssl_certificate` and `ssl_certificate_key` properties in the configuration above points to the standard self-signed certificate that comes with an Ubuntu Linux. The `ssl_client_certificate` and `ssl_crl` should point to the `mc-ca-chain.pem` and `combined-crl.pem` provided in the root of this project.
 
 Run using you favorite IDE or using the console:
 
 ```sh
-$ java -jar target/mcp-identityregistry-core-latest.war
+java -jar target/mcp-identityregistry-core-latest.war
 ```
 Change the version number as needed. The Identity Registry will now be running and requests to https://localhost/api/... will be forwarded through nginx to the spring boot application on http://localhost:8443/api/... that wraps the API.
 
 The first time the application is started it creates the database tables needed. You should now insert an organization used for bootstraping by running this script:
 
 ```sh
-$ ./setup/create-mc-org.sh
+./setup/create-mc-org.sh
 ```
 
 ## Authentication using Openid Connect (Required!) 
@@ -89,10 +89,10 @@ The MCP realm also contains a client called "setupclient" used in the bootstrap 
 If setting up keycloak in a clustered environment remember to create a hmac-keystore provider for the realms you have created.
 
 ## Available REST API
-The API is documented using Swagger/OpenAPI 2.0, and can be obtained from http://localhost:8443/v2/api-docs.
+The API is documented using Swagger/OpenAPI 2.0, and can be obtained from http://localhost:8443/v3/api-docs.
 
 ## Insert data
-Inserting data can be done using the MCP Management Portal, or by "firing" REST requests from the console. Below is a step by step guide to put data into the Identity Registry by firing REST requests from the console, commands for both Linux/Mac (using curl) and Windows (using Invoke-RestMethod in PowerShell).
+Inserting data can be done using the MCP Management Portal, or by "firing" REST requests from the console. Below is a step-by-step guide to put data into the Identity Registry by firing REST requests from the console, commands for both Linux/Mac (using curl) and Windows (using Invoke-RestMethod in PowerShell).
 On Windows in PowerShell you must first run the command below to disable certificate check for the PowerShell session:
 ```ps1
 > [System.Net.ServicePointManager]::ServerCertificateValidationCallback = {$true}
@@ -100,7 +100,7 @@ On Windows in PowerShell you must first run the command below to disable certifi
 
 First we apply fro, an Organization to be added, in this case an organization called "Danish Maritime Authority". It is done by POST'ing prepared data in `setup/dma.json` to the REST interface:
 ```sh
-$ curl -k -H "Content-Type: application/json" --data @setup/dma.json https://localhost/oidc/api/org/apply
+curl -k -H "Content-Type: application/json" --data @setup/dma.json https://localhost/oidc/api/org/apply
 ```
 
 ```ps1
@@ -125,8 +125,8 @@ Make a note of the "mrn" which is used for identifying the Organization. In our 
 
 The next step is to approve the organization, which we will do using the administrative user mentioned above. First we must login as the administrative user. We here assume that the keycloak instance is available at `http://localhost:8080`.
 ```sh
-$ RESULT=`curl --data "grant_type=password&client_id=setupclient&username=mcp-admin@maritimeconnectivity.net&password=admin" http://localhost:8080/auth/realms/MCP/protocol/openid-connect/token`
-$ TOKEN=`echo $RESULT | sed 's/.*access_token":"//g' | sed 's/".*//g'`
+RESULT=`curl --data "grant_type=password&client_id=setupclient&username=mcp-admin@maritimeconnectivity.net&password=admin" http://localhost:8080/auth/realms/MCP/protocol/openid-connect/token`
+TOKEN=`echo $RESULT | sed 's/.*access_token":"//g' | sed 's/".*//g'`
 ```
 
 ```ps1
@@ -138,7 +138,7 @@ A authentication token will be saved into the token variable, and can now be use
 
 So now we want to approve the application to create the "Danish Maritime Authority" as an Organization. This is done as shown below. Notice that the MRN of the organization is used in the URL:
 ```sh
-$ curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve
+curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/approve
 ```
 
 ```ps1
@@ -147,7 +147,7 @@ $ curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:m
 
 Next we must define the roles that will grant the Organizations users rights, defined in `setup/dma-role.json`. This will grant users with "MCPADMIN" in the `permissions` attribute administrative rights for the DMA organization:
 ```sh
-$ curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @setup/dma-role.json https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/role
+curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @setup/dma-role.json https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/role
 ```
 
 ```ps1
@@ -156,7 +156,7 @@ $ curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" 
 
 And last but not least, we can then create a user for DMA with administrative rights. The user is defined in `setup/dma-user.json`:
 ```sh
-$ curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @setup/dma-user.json https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user
+curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --data @setup/dma-user.json https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user
 ```
 
 ```ps1
@@ -167,7 +167,7 @@ Looking at FakeSMTP an email will has been sent to the email-address of the user
 
 We can also issue a certificate for the user which can then be used for authentication:
 ```sh
-$ curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new
+curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new
 ```
 
 ```ps1
@@ -191,7 +191,7 @@ Note that this is the only time the private key is available, so make sure to sa
 The certificate can now be used to authenticate the user. For example, we can use it to create a vessel as shown below. Notice that we use https://localhost/x509/api/... instead of https://localhost/oidc/api/... when relying on certificate authentication.
 
 ```sh
-$ curl -k -H "Content-Type: application/json" --key private.pem --cert certificate.pem --data @setup/ship1.json https://localhost/x509/api/org/urn:mrn:mcp:org:idp1:dma/vessel
+curl -k -H "Content-Type: application/json" --key private.pem --cert certificate.pem --data @setup/ship1.json https://localhost/x509/api/org/urn:mrn:mcp:org:idp1:dma/vessel
 ```
 In PowerShell using certificates is a bit tricky since it must be converted from the PEM format. In this case we will use [openssl](https://www.openssl.org/), and then use the converted certificate to create the vessel:
 ```ps1
@@ -236,19 +236,19 @@ The MIR supports signing of PEM encoded PKCS#10 certificate signing requests. It
 An example of how a CSR can be generated using an elliptic curve key pair using OpenSSL:
 ### Step 1: Generate private key
 ```sh
-$ openssl ecparam -out private.key -name secp384r1 -genkey
+openssl ecparam -out private.key -name secp384r1 -genkey
 ```
 This generates an ECC private key using the named curve **secp384r1**. 
 
 ### Step 2: Generate CSR
 ```sh
-$ openssl req -new -key private.key -out request.csr
+openssl req -new -key private.key -out request.csr
 ```
 This will prompt you to fill in the attributes of the certificate. For this you can just use dummy data, as they in the end will be replaced with data from the MIR database. 
 
 ### Step 3: Send CSR to MIR for signing
 ```sh
-$ curl -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: text/plain" --data-binary @request.csr https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new/csr
+curl -k -H "Authorization: Bearer $TOKEN" -H "Content-Type: text/plain" --data-binary @request.csr https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new/csr
 ```
 This will send the CSR to the MIR to be signed for the user with the MRN urn:mrn:mcp:user:idp1:dma:dma-employee. The MIR will then return a certificate chain containing the signed certificate followed by the intermediate CA that signed it, looking like this:
 ```
