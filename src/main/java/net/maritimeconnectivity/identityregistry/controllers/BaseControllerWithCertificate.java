@@ -44,6 +44,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.math.BigInteger;
 import java.security.AuthProvider;
 import java.security.InvalidKeyException;
@@ -179,7 +180,7 @@ public abstract class BaseControllerWithCertificate {
             ret.setSerialNumber(serialNumber);
 
             return ret;
-        } catch (CertificateEncodingException e) {
+        } catch (CertificateEncodingException | IOException e) {
             log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
         }
