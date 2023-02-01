@@ -23,6 +23,7 @@ import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.pki.CertificateHandler;
 import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
+import net.maritimeconnectivity.pki.exception.PKIRuntimeException;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.bouncycastle.asn1.ocsp.OCSPResponse;
 import org.bouncycastle.asn1.ocsp.OCSPResponseStatus;
@@ -37,6 +38,7 @@ import org.bouncycastle.util.encoders.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,13 +55,21 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AuthProvider;
+import java.security.InvalidKeyException;
 import java.security.KeyStore;
+import java.security.KeyStoreException;
+import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
+import java.security.SignatureException;
 import java.security.cert.CRLException;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateException;
 import java.security.cert.X509CRL;
 import java.security.cert.X509Certificate;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
@@ -151,6 +161,62 @@ public class CertificateController {
         encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
         byte[] decodedOCSP = Base64.decode(encodedOCSP);
         return generateOCSPResponseEntity(caAlias, decodedOCSP);
+    }
+
+    @GetMapping(
+            value = "/api/certificates/certchain/{serialNumber}",
+            produces = "application/pem-certificate-chain"
+    )
+    @Operation(
+            description = "Get the certificate chain for the certificate with the given serial number"
+    )
+    @ResponseBody
+    public ResponseEntity<String> getCertificateChain(@PathVariable BigInteger serialNumber) {
+        Certificate certificate = certificateService.getCertificateBySerialNumber(serialNumber);
+        if (certificate == null || !StringUtils.hasText(certificate.getCertificate())) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        }
+        String intermediateCA;
+        String rootCA = "";
+        try {
+            java.security.cert.Certificate intermediate = certUtil.getKeystoreHandler().getMCPCertificate(certificate.getCertificateAuthority());
+            intermediateCA = CertificateHandler.getPemFromEncoded("CERTIFICATE", intermediate.getEncoded());
+            java.security.cert.Certificate root = null;
+            for (Iterator<String> i = certUtil.getKeystoreHandler().getTrustStore().aliases().asIterator(); i.hasNext(); ) {
+                String alias = i.next();
+                java.security.cert.Certificate cert = certUtil.getKeystoreHandler().getMCPCertificate(alias);
+                if (isSingedBy(intermediate, cert)) {
+                    root = cert;
+                    break;
+                }
+            }
+            if (root != null)
+                rootCA = CertificateHandler.getPemFromEncoded("CERTIFICATE", root.getEncoded());
+        } catch (PKIRuntimeException e) {
+            log.debug("Could not get CA certificate", e);
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (CertificateEncodingException e) {
+            log.error("Could not get encoding of CA", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (IOException e) {
+            log.error("Could not get PEM encoding of CA certificate", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        } catch (KeyStoreException e) {
+            log.error("Could not get the list of aliases in the trust store", e);
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+        String certChain = certificate.getCertificate() + intermediateCA + rootCA;
+        return new ResponseEntity<>(certChain, HttpStatus.OK);
+    }
+
+    private boolean isSingedBy(java.security.cert.Certificate intermediate, java.security.cert.Certificate cert) {
+        try {
+            intermediate.verify(cert.getPublicKey());
+        } catch (CertificateException | SignatureException | NoSuchProviderException | InvalidKeyException |
+                 NoSuchAlgorithmException e) {
+            return false;
+        }
+        return true;
     }
 
     private ResponseEntity<byte[]> generateOCSPResponseEntity(String caAlias, byte[] input) {
