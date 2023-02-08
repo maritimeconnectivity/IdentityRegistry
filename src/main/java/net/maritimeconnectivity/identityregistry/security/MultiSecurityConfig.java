@@ -132,6 +132,7 @@ public class MultiSecurityConfig {
     public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService) throws Exception {
         http
                 .securityMatcher("/x509/**")
+                .csrf().disable()
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
                         .requestMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
