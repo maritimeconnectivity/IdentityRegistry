@@ -16,7 +16,9 @@
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 
 import jakarta.persistence.Entity;
@@ -37,6 +39,8 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 @NoArgsConstructor
 public class Device extends NonHumanEntityModel {
 
+    @Getter
+    @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
     @Schema(description = "The set of certificates of the device. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
@@ -64,11 +68,5 @@ public class Device extends NonHumanEntityModel {
         cert.setDevice(this);
     }
 
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public Set<Certificate> getCertificates() {
-        return certificates;
-    }
 }
 

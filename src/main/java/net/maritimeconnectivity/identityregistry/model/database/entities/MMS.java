@@ -81,11 +81,5 @@ public class MMS extends NonHumanEntityModel {
         cert.setMms(this);
     }
 
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public Set<Certificate> getCertificates() {
-        return certificates;
-    }
 }
 
