@@ -27,7 +27,6 @@ import java.io.IOException;
 
 /**
  * This entry point is called if the request is missing an authentication and returns an 401 "unauthorized" response.
- * 
  */
 @Component
 public class RestAuthenticationEntryPoint implements AuthenticationEntryPoint {

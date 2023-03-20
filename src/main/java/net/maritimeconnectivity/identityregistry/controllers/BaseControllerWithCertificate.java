@@ -66,7 +66,7 @@ import java.util.HashMap;
 public abstract class BaseControllerWithCertificate {
 
     private enum SignatureAlgorithm {
-        RSA, DSA, ECDSA, EDDSA;
+        RSA, DSA, ECDSA, EDDSA
     }
 
     protected CertificateService certificateService;

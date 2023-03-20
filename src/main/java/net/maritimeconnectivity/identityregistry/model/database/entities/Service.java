@@ -85,7 +85,9 @@ public class Service extends NonHumanEntityModel {
     @JoinColumn(name = "id_vessel")
     private Vessel vessel;
 
-    /** Copies this service into the other */
+    /**
+     * Copies this service into the other
+     */
     @Override
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
@@ -102,8 +104,10 @@ public class Service extends NonHumanEntityModel {
         return service;
     }
 
-    /** Copies this service into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this service into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public Service selectiveCopyTo(EntityModel target) {
         Service service = (Service) super.selectiveCopyTo(target);
@@ -115,7 +119,7 @@ public class Service extends NonHumanEntityModel {
         return service;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setService(this);
     }
 

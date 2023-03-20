@@ -57,7 +57,9 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "permissions")
     private String permissions;
 
-    /** Copies this entity into the other */
+    /**
+     * Copies this entity into the other
+     */
     public EntityModel copyTo(EntityModel entity) {
         Objects.requireNonNull(entity);
         entity.setId(id);
@@ -69,8 +71,10 @@ public abstract class EntityModel extends CertificateModel {
         return entity;
     }
 
-    /** Copies this entity into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this entity into the other
+     * Only update things that are allowed to change on update
+     */
     public EntityModel selectiveCopyTo(EntityModel entity) {
         Objects.requireNonNull(entity);
         entity.setMrn(mrn);

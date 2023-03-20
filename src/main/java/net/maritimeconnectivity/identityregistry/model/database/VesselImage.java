@@ -30,7 +30,7 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
-@Table(name="vessel_images")
+@Table(name = "vessel_images")
 @Getter
 @Setter
 @ToString(exclude = "vessel")

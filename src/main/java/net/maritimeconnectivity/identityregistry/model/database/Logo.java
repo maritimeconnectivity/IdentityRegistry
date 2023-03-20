@@ -28,7 +28,7 @@ import jakarta.persistence.Table;
 import java.util.Objects;
 
 @Entity
-@Table(name="logos")
+@Table(name = "logos")
 @Getter
 @Setter
 @ToString(exclude = "organization")
@@ -39,10 +39,12 @@ public class Logo extends TimestampModel {
     private byte[] image;
 
     @JsonIgnore
-    @OneToOne(mappedBy="logo")
+    @OneToOne(mappedBy = "logo")
     private Organization organization;
 
-    /** Copies this user into the other */
+    /**
+     * Copies this logo into the other
+     */
     public Logo copyTo(Logo logo) {
         Objects.requireNonNull(logo);
         logo.setId(id);

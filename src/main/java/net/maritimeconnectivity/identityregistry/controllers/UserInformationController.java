@@ -136,7 +136,7 @@ public class UserInformationController {
             }
         }
         return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
-     }
+    }
 
     @Autowired
     public void setRoleService(RoleService roleService) {

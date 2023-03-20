@@ -51,7 +51,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 @Slf4j
 public class LogoController {
 
@@ -59,9 +59,10 @@ public class LogoController {
 
     /**
      * Creates a logo for an organization
+     *
      * @param request request to get servletPath
-     * @param orgMrn resource location for organization
-     * @param logo the log encoded as a MultipartFile
+     * @param orgMrn  resource location for organization
+     * @param logo    the log encoded as a MultipartFile
      * @throws McpBasicRestException
      */
     @PostMapping(
@@ -131,9 +132,10 @@ public class LogoController {
 
     /**
      * Creates or updates a logo for an organization
+     *
      * @param request so we can get the servlet path
-     * @param orgMrn the resource
-     * @param logo the logo bytes
+     * @param orgMrn  the resource
+     * @param logo    the logo bytes
      * @throws McpBasicRestException
      */
     @PutMapping(
@@ -188,6 +190,7 @@ public class LogoController {
             throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
     }
+
     // this method belongs to on the Organization class, not as a free function in the controller
     private void updateLogo(Organization org, InputStream logoInputStream) throws IOException {
         ByteArrayOutputStream newImage = ImageUtil.resize(logoInputStream);
@@ -201,6 +204,7 @@ public class LogoController {
             org.setLogo(newLogo);
         }
     }
+
     @Autowired
     public void setOrganizationService(OrganizationService organizationService) {
         this.organizationService = organizationService;

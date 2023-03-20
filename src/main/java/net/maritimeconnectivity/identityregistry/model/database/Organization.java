@@ -109,7 +109,7 @@ public class Organization extends CertificateModel {
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name="id_logo")
+    @JoinColumn(name = "id_logo")
     private Logo logo;
 
     @Schema(description = "The set of certificates of the organization. Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.", accessMode = READ_ONLY)
@@ -117,7 +117,7 @@ public class Organization extends CertificateModel {
     private Set<Certificate> certificates;
 
     @Valid
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval = true)
     @Schema(description = "The identity provider attributes of the organization", accessMode = WRITE_ONLY)
     private Set<IdentityProviderAttribute> identityProviderAttributes;
 
@@ -126,7 +126,9 @@ public class Organization extends CertificateModel {
     @Schema(description = "The name of the CA of the organization", accessMode = READ_ONLY)
     private String certificateAuthority;
 
-    /** Copies this organization into the other */
+    /**
+     * Copies this organization into the other
+     */
     public Organization copyTo(Organization org) {
         org.setName(name);
         org.setEmail(email);
@@ -146,8 +148,10 @@ public class Organization extends CertificateModel {
         return org;
     }
 
-    /** Copies this organization into the other.
-     * Skips certificates, approved, logo and shortname */
+    /**
+     * Copies this organization into the other.
+     * Skips certificates, approved, logo and shortname
+     */
     public Organization selectiveCopyTo(Organization org) {
         org.setName(name);
         org.setEmail(email);
@@ -175,12 +179,14 @@ public class Organization extends CertificateModel {
         }
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setOrganization(this);
     }
 
 
-    /** Creates a copy of this organization */
+    /**
+     * Creates a copy of this organization
+     */
     public Organization copy() {
         return copyTo(new Organization());
     }

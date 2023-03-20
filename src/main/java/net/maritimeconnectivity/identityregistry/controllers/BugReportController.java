@@ -35,12 +35,12 @@ import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 public class BugReportController {
 
     private EmailUtil emailUtil;
 
-    @Operation(hidden=true, summary = "Reports a bug")
+    @Operation(hidden = true, summary = "Reports a bug")
     @PostMapping(
             value = "/api/report-bug",
             produces = MediaType.APPLICATION_JSON_VALUE

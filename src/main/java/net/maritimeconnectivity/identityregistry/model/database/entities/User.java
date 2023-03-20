@@ -71,7 +71,9 @@ public class User extends EntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Certificate> certificates;
 
-    /** Copies this user into the other */
+    /**
+     * Copies this user into the other
+     */
     @Override
     public User copyTo(EntityModel target) {
         User user = (User) super.copyTo(target);
@@ -84,8 +86,10 @@ public class User extends EntityModel {
         return user;
     }
 
-    /** Copies this user into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this user into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public User selectiveCopyTo(EntityModel target) {
         User user = (User) super.selectiveCopyTo(target);
@@ -96,7 +100,7 @@ public class User extends EntityModel {
         return user;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setUser(this);
     }
 

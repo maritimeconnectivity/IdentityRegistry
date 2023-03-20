@@ -25,7 +25,7 @@ import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 @ToString
 @AllArgsConstructor
 @NoArgsConstructor
-public class ExceptionModel  implements JsonSerializable {
+public class ExceptionModel implements JsonSerializable {
     private long timestamp;
     private int status;
     private String error;

@@ -50,7 +50,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 public class Vessel extends NonHumanEntityModel {
 
     @Schema(description = "The set of attributes of the vessel")
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "vessel", orphanRemoval = true)
     private Set<@Valid VesselAttribute> attributes;
 
     @Schema(description = "The set of certificates of the vessel. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
@@ -63,10 +63,12 @@ public class Vessel extends NonHumanEntityModel {
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name="id_image")
+    @JoinColumn(name = "id_image")
     private VesselImage image;
 
-    /** Copies this vessel into the other */
+    /**
+     * Copies this vessel into the other
+     */
     @Override
     public Vessel copyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.copyTo(target);
@@ -79,8 +81,10 @@ public class Vessel extends NonHumanEntityModel {
         return vessel;
     }
 
-    /** Copies this vessel into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this vessel into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public Vessel selectiveCopyTo(EntityModel target) {
         Vessel vessel = (Vessel) super.selectiveCopyTo(target);

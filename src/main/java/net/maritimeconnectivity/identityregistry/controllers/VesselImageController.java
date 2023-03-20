@@ -52,7 +52,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 @Slf4j
 public class VesselImageController {
 
@@ -60,6 +60,7 @@ public class VesselImageController {
 
     /**
      * Creates an image for a vessel
+     *
      * @param request
      * @param orgMrn
      * @param vesselMrn
@@ -101,6 +102,7 @@ public class VesselImageController {
 
     /**
      * Creates or updates an image for a vessel
+     *
      * @param request
      * @param orgMrn
      * @param vesselMrn
@@ -135,6 +137,7 @@ public class VesselImageController {
 
     /**
      * Returns the image of the vessel given by the ID
+     *
      * @param request
      * @param orgMrn
      * @param vesselMrn
@@ -166,6 +169,7 @@ public class VesselImageController {
 
     /**
      * Deletes the image for the vessel given by the ID
+     *
      * @param request
      * @param orgMrn
      * @param vesselMrn

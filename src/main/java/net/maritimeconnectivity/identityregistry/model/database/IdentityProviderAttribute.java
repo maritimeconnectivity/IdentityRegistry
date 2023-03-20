@@ -57,9 +57,9 @@ public class IdentityProviderAttribute extends TimestampModel {
     @NotBlank
     @InPredefinedList(
             acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
-                "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
-                "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
-                "providerType", "firstNameAttr", "lastNameAttr", "emailAttr", "usernameAttr", "permissionsAttr"}
+                    "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
+                    "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
+                    "providerType", "firstNameAttr", "lastNameAttr", "emailAttr", "usernameAttr", "permissionsAttr"}
     )
     private String attributeName;
 
@@ -81,6 +81,7 @@ public class IdentityProviderAttribute extends TimestampModel {
 
     /**
      * Compares this IdentityProviderAttribute with another, but only compares AttributeName and AttributeValue
+     *
      * @param other The other IdentityProviderAttribute to compare with
      * @return 0 if equal, otherwise non-zero values.
      */
@@ -118,7 +119,8 @@ public class IdentityProviderAttribute extends TimestampModel {
     /**
      * Compares two IdentityProviderAttribute lists, but only looks the AttributeName and AttributeValue attributes
      * on list elements.
-     * @param first First list of IdentityProviderAttribute to compare
+     *
+     * @param first  First list of IdentityProviderAttribute to compare
      * @param second Second list of IdentityProviderAttribute to compare
      * @return true if lists are equal, else false
      */

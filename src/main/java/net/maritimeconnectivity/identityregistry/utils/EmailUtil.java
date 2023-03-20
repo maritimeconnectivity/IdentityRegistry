@@ -111,7 +111,7 @@ public class EmailUtil {
         if (report.getAttachments() != null) {
             for (BugReportAttachment attachment : report.getAttachments()) {
                 // Decode base64 encoded data
-                byte[] data =  Base64.getDecoder().decode(attachment.getData());
+                byte[] data = Base64.getDecoder().decode(attachment.getData());
                 ByteArrayDataSource dataSource = new ByteArrayDataSource(data, attachment.getMimetype());
                 helper.addAttachment(attachment.getName(), dataSource);
             }

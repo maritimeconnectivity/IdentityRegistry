@@ -51,7 +51,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 
 /**
  * @author Klaus Groenbaek
- *         Created 03/03/17.
+ * Created 03/03/17.
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest

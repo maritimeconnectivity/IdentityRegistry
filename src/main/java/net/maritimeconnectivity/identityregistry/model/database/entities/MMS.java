@@ -56,7 +56,9 @@ public class MMS extends NonHumanEntityModel {
     @Schema(description = "The set of certificates of the MMS. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
 
-    /** Copies this mms into the other */
+    /**
+     * Copies this mms into the other
+     */
     @Override
     public MMS copyTo(EntityModel target) {
         MMS mms = (MMS) super.copyTo(target);
@@ -67,8 +69,10 @@ public class MMS extends NonHumanEntityModel {
         return mms;
     }
 
-    /** Copies this mms into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this mms into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public MMS selectiveCopyTo(EntityModel target) {
         MMS mms = (MMS) super.selectiveCopyTo(target);
@@ -77,9 +81,8 @@ public class MMS extends NonHumanEntityModel {
         return mms;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setMms(this);
     }
-
 }
 

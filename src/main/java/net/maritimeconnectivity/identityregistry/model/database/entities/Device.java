@@ -45,7 +45,9 @@ public class Device extends NonHumanEntityModel {
     @Schema(description = "The set of certificates of the device. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
 
-    /** Copies this device into the other */
+    /**
+     * Copies this device into the other
+     */
     @Override
     public Device copyTo(EntityModel target) {
         Device device = (Device) super.copyTo(target);
@@ -55,8 +57,10 @@ public class Device extends NonHumanEntityModel {
         return device;
     }
 
-    /** Copies this device into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this device into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public Device selectiveCopyTo(EntityModel target) {
         Device device = (Device) super.selectiveCopyTo(target);
@@ -64,9 +68,8 @@ public class Device extends NonHumanEntityModel {
         return device;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setDevice(this);
     }
-
 }
 

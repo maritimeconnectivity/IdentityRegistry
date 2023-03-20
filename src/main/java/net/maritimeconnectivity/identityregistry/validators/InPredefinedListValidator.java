@@ -29,7 +29,7 @@ public class InPredefinedListValidator implements ConstraintValidator<InPredefin
     @Override
     public void initialize(InPredefinedList constraintAnnotation) {
         valueList = new ArrayList<>();
-        for(String val : constraintAnnotation.acceptedValues()) {
+        for (String val : constraintAnnotation.acceptedValues()) {
             valueList.add(val.toLowerCase());
         }
     }

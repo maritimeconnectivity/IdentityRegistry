@@ -61,12 +61,12 @@ public class CertificateServiceImpl implements CertificateService {
     public List<Certificate> listVesselCertificate(Vessel vessel) {
         return certificateRepository.findByvessel(vessel);
     }
-    
+
     @Override
     public List<Certificate> listUserCertificate(User user) {
         return certificateRepository.findByuser(user);
     }
-    
+
     @Override
     public List<Certificate> listDeviceCertificate(Device device) {
         return certificateRepository.findBydevice(device);

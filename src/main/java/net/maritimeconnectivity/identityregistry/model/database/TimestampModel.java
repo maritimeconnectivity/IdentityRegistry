@@ -44,7 +44,7 @@ public abstract class TimestampModel implements JsonSerializable {
     @Schema(description = "The ID of the entity in the form of a sequential integer", accessMode = READ_ONLY)
     protected Long id;
 
-    @Column(name = "created_at", updatable=false)
+    @Column(name = "created_at", updatable = false)
     @Schema(description = "The time that the entity was created", accessMode = READ_ONLY)
     protected Date createdAt;
 
@@ -52,13 +52,17 @@ public abstract class TimestampModel implements JsonSerializable {
     @Schema(description = "The time that the entity was last updated", accessMode = READ_ONLY)
     protected Date updatedAt;
 
-    /** Called at creation, set created_at and updated_at timestamp */
+    /**
+     * Called at creation, set created_at and updated_at timestamp
+     */
     @PrePersist
     void createdAt() {
         this.createdAt = this.updatedAt = Date.from(Instant.now());
     }
 
-    /** Called on update, set updated_at timestamp */
+    /**
+     * Called on update, set updated_at timestamp
+     */
     @PreUpdate
     void updatedAt() {
         this.updatedAt = Date.from(Instant.now());

@@ -113,9 +113,9 @@ class AgentControllerTests {
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent").with(authentication(auth))
-                .header("Origin", "bla")
-                .content(agentJson)
-                .contentType("application/json")).andExpect(status().isCreated());
+                    .header("Origin", "bla")
+                    .content(agentJson)
+                    .contentType("application/json")).andExpect(status().isCreated());
         } catch (Exception e) {
             fail(e);
         }
@@ -168,7 +168,7 @@ class AgentControllerTests {
 
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
-            .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+                    .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
         } catch (Exception e) {
             fail(e);
         }
@@ -196,7 +196,7 @@ class AgentControllerTests {
 
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
-                    .header("Origin", "bla").contentType("application/json").content(agentJson))
+                            .header("Origin", "bla").contentType("application/json").content(agentJson))
                     .andExpect(status().isOk()).andExpect(content().json(agentJson, false));
         } catch (Exception e) {
             fail(e);
@@ -221,7 +221,7 @@ class AgentControllerTests {
 
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
-                    .header("Origin", "bla").contentType("application/json").content(agentJson))
+                            .header("Origin", "bla").contentType("application/json").content(agentJson))
                     .andExpect(status().isForbidden());
         } catch (Exception e) {
             fail(e);

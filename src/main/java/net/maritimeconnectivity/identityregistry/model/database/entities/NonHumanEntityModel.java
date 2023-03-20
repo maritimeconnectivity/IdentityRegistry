@@ -34,7 +34,9 @@ public abstract class NonHumanEntityModel extends EntityModel {
     @Schema(description = "The name of the entity", requiredMode = Schema.RequiredMode.REQUIRED)
     private String name;
 
-    /** Copies this entity into the other */
+    /**
+     * Copies this entity into the other
+     */
     @Override
     public NonHumanEntityModel copyTo(EntityModel target) {
         NonHumanEntityModel entity = (NonHumanEntityModel) super.copyTo(target);
@@ -42,8 +44,10 @@ public abstract class NonHumanEntityModel extends EntityModel {
         return entity;
     }
 
-    /** Copies this entity into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this entity into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public NonHumanEntityModel selectiveCopyTo(EntityModel target) {
         NonHumanEntityModel entity = (NonHumanEntityModel) super.selectiveCopyTo(target);

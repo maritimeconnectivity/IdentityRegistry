@@ -548,6 +548,7 @@ class ServiceControllerTests {
 
     /**
      * Helper function to serialize a service to json
+     *
      * @param service
      * @return
      */

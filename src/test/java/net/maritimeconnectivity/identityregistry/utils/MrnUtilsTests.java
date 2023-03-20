@@ -49,14 +49,14 @@ class MrnUtilsTests {
     void extractOrgShortnameFromOrgMRN1() {
         String orgMrn = "urn:mrn:mcp:org:idp1:dma";
         String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-        assertEquals("Org shortname should be 'dma'","dma", ret);
+        assertEquals("Org shortname should be 'dma'", "dma", ret);
     }
 
     @Test
     void extractOrgShortnameFromOrgMRN2() {
         String orgMrn = "urn:mrn:mcp:org:idp1:dfds@bimco";
         String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
-        assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
+        assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
     }
 
 //    @Test
@@ -77,14 +77,14 @@ class MrnUtilsTests {
     void extractOrgShortnameFromUserMRN1() {
         String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
         String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dma'","dma", ret);
+        assertEquals("Org shortname should be 'dma'", "dma", ret);
     }
 
     @Test
     void extractOrgShortnameFromUserMRN2() {
         String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:fiskerfinn";
         String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
+        assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
     }
 
     @Test
@@ -99,28 +99,28 @@ class MrnUtilsTests {
     void extractOrgShortnameFromVesselMRN1() {
         String userMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
         String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dma'","dma", ret);
+        assertEquals("Org shortname should be 'dma'", "dma", ret);
     }
 
     @Test
     void extractOrgShortnameFromVesselMRN2() {
         String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:crown-seaways";
         String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dfds@bimco'","dfds@bimco", ret);
+        assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
     }
 
     @Test
     void extractUserIdFromUserMRN1() {
         String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
         String ret = mrnUtil.getEntityIdFromMrn(userMrn);
-        assertEquals("User id should be 'b00345'","b00345", ret);
+        assertEquals("User id should be 'b00345'", "b00345", ret);
     }
 
     @Test
     void extractUserIdFromUserMRN2() {
         String userMrn = "urn:mrn:mcp:user:idp1:dma:secretary:bob";
         String ret = mrnUtil.getEntityIdFromMrn(userMrn);
-        assertEquals("User id should be 'secretary:bob'","secretary:bob", ret);
+        assertEquals("User id should be 'secretary:bob'", "secretary:bob", ret);
     }
 
     @Test
@@ -163,14 +163,14 @@ class MrnUtilsTests {
     void extractPrefixFromMRN() {
         String userMrn = "urn:mrn:mcl:service:instance:dma:nw-nm-prod";
         String prefix = mrnUtil.getMrnPrefix(userMrn);
-        assertEquals("Prefix should be 'urn:mrn:mcl'","urn:mrn:mcl", prefix);
+        assertEquals("Prefix should be 'urn:mrn:mcl'", "urn:mrn:mcl", prefix);
     }
 
     @Test
     void extractPrefixFromMRN2() {
         String userMrn = "urn:mrn:iala:device:iala:device6";
         String prefix = mrnUtil.getMrnPrefix(userMrn);
-        assertEquals("Prefix should be 'urn:mrn:iala'","urn:mrn:iala", prefix);
+        assertEquals("Prefix should be 'urn:mrn:iala'", "urn:mrn:iala", prefix);
     }
 
 }

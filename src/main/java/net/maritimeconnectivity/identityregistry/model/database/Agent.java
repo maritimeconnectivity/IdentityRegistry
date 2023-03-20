@@ -56,7 +56,9 @@ public class Agent extends TimestampModel {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "agent", orphanRemoval = true)
     private Set<AllowedAgentRole> allowedRoles;
 
-    /** Copies this agent into the other */
+    /**
+     * Copies this agent into the other
+     */
     public Agent copyTo(Agent agent) {
         Objects.requireNonNull(agent);
         agent.setIdActingOrganization(this.idActingOrganization);

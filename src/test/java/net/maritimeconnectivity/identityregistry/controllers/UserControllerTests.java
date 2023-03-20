@@ -368,9 +368,9 @@ class UserControllerTests {
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user").with(authentication(auth))
-            .header("Origin", "Bla")
-            .content(userJson)
-            .contentType("application/json")).andExpect(status().is4xxClientError());
+                    .header("Origin", "Bla")
+                    .content(userJson)
+                    .contentType("application/json")).andExpect(status().is4xxClientError());
         } catch (Exception e) {
             fail(e);
         }
@@ -693,6 +693,7 @@ class UserControllerTests {
 
     /**
      * Helper function to serialize a user to json
+     *
      * @param user
      * @return
      */

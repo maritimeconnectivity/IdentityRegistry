@@ -69,7 +69,7 @@ public class OpenAPIConfig {
                         .version("2.0.0")
                         .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
-                        .externalDocs(new ExternalDocumentation()
+                .externalDocs(new ExternalDocumentation()
                         .description("MCP Identity Registry docs")
                         .url("https://docs.maritimeconnectivity.net/en/latest/MIR.html"));
     }

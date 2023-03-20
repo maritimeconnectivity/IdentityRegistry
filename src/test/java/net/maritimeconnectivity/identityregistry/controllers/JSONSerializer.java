@@ -24,6 +24,7 @@ class JSONSerializer {
 
     /**
      * Helper function to serialize an object to json
+     *
      * @param object
      * @return
      */

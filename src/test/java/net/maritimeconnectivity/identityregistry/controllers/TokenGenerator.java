@@ -62,6 +62,7 @@ class TokenGenerator {
 
     /**
      * Helper function of build fake PreAuthenticatedAuthenticationToken - used for x509 authentication
+     *
      * @param orgMrn
      * @param roles
      * @param permissions
@@ -73,9 +74,9 @@ class TokenGenerator {
         String username = "urn:mrn:mcl:user:dma:dmauser";
         essence.setUsername(username);
         essence.setUid(username);
-        essence.setDn("O="+orgMrn);
+        essence.setDn("O=" + orgMrn);
         essence.setO(orgMrn);
-        essence.setCn(new String[] {"dmauser"});
+        essence.setCn(new String[]{"dmauser"});
         essence.setAuthorities(authorities);
 
         return new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
@@ -84,7 +85,7 @@ class TokenGenerator {
     static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         String[] roleArr = roles.split(",");
-        for(String role : roleArr) {
+        for (String role : roleArr) {
             authorities.add(new SimpleGrantedAuthority(role.trim()));
         }
         return authorities;

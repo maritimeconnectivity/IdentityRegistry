@@ -38,7 +38,9 @@ public class MMSServiceImpl extends EntityServiceImpl<MMS> implements MMSService
     }
 
     @Autowired
-    public void setMMSRepository(MMSRepository mmsRepository) { this.repository = mmsRepository; }
+    public void setMMSRepository(MMSRepository mmsRepository) {
+        this.repository = mmsRepository;
+    }
 
 }
 

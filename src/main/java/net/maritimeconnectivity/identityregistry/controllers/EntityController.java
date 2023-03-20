@@ -196,12 +196,13 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     /**
      * Returns the certificate with a specified serial number
-     * @param request       the HTTP request
-     * @param orgMrn        the organization MRN
-     * @param entityMrn     the entity MRN
-     * @param type          the entity type
-     * @param version       the version if type is service
-     * @param serialNumber  the serial number of the certificate to be returned
+     *
+     * @param request      the HTTP request
+     * @param orgMrn       the organization MRN
+     * @param entityMrn    the entity MRN
+     * @param type         the entity type
+     * @param version      the version if type is service
+     * @param serialNumber the serial number of the certificate to be returned
      * @return a PEM encoded certificate chain
      * @throws McpBasicRestException if something goes wrong
      */
@@ -236,6 +237,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     /**
      * Receives a CSR and returns a signed and PEM encoded certificate
+     *
      * @return a PEM encoded certificate
      * @throws McpBasicRestException
      */
@@ -310,7 +312,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
     protected String getUid(CertificateModel certOwner) {
-        return ((EntityModel)certOwner).getMrn();
+        return ((EntityModel) certOwner).getMrn();
     }
 
     // Checks that the requesting user has a role that is equal to or higher than the ones being given to the input

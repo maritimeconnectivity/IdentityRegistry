@@ -29,7 +29,7 @@ import java.util.Objects;
  */
 
 @Entity
-@Table(name="roles")
+@Table(name = "roles")
 @NoArgsConstructor
 @Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
@@ -48,7 +48,9 @@ public class Role extends TimestampModel {
     @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
-    /** Copies this user into the other */
+    /**
+     * Copies this role into the other
+     */
     public Role copyTo(Role role) {
         Objects.requireNonNull(role);
         role.setId(id);

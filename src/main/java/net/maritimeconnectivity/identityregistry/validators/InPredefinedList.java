@@ -36,7 +36,7 @@ public @interface InPredefinedList {
 
     String message() default "Given value is not in the predefined list of valid values!";
 
-    Class<?>[] groups() default { };
+    Class<?>[] groups() default {};
 
-    Class<? extends Payload>[] payload() default { };
+    Class<? extends Payload>[] payload() default {};
 }
