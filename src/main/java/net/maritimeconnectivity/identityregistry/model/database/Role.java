@@ -16,7 +16,9 @@
 package net.maritimeconnectivity.identityregistry.model.database;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
 import jakarta.persistence.Column;
@@ -30,6 +32,8 @@ import java.util.Objects;
 
 @Entity
 @Table(name = "roles")
+@Getter
+@Setter
 @NoArgsConstructor
 @Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
@@ -58,32 +62,5 @@ public class Role extends TimestampModel {
         role.setPermission(permission);
         role.setRoleName(roleName);
         return role;
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
     }
 }
