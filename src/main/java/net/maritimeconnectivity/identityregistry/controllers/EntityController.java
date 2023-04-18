@@ -73,8 +73,8 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             input.setIdOrganization(org.getId());
             // check that the requesting user has a role that is equal to or higher than the one given to the new entity
             checkRoles(request, input, org);
-            if (!"id".equalsIgnoreCase(mrnUtil.getEntityType(input.getMrn()))) {
-                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "New entities may only use the 'id' entity type", request.getServletPath());
+            if (!mrnUtil.isEntityTypeValid(input)) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "The entity type in the MRN does not match type of the entity being created.", request.getServletPath());
             }
             T newEntity = null;
             HttpHeaders headers = new HttpHeaders();

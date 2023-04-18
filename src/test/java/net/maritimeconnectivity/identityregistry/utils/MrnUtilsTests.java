@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -171,6 +172,14 @@ class MrnUtilsTests {
         String userMrn = "urn:mrn:iala:device:iala:device6";
         String prefix = mrnUtil.getMrnPrefix(userMrn);
         assertEquals("Prefix should be 'urn:mrn:iala'", "urn:mrn:iala", prefix);
+    }
+
+    @Test
+    void checkDeviceWithWrongEntityTypeInMrn() {
+        Device device = new Device();
+        device.setMrn("urn:mrn:mcp:user:idp1:dma:secretary:bob");
+        boolean valid = mrnUtil.isEntityTypeValid(device);
+        assertFalse("Entity type validation should have failed", valid);
     }
 
 }
