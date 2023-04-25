@@ -38,7 +38,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -136,7 +136,7 @@ public class UserInformationController {
             }
         }
         return new ResponseEntity<>(new PKIIdentity(), HttpStatus.NOT_FOUND);
-     }
+    }
 
     @Autowired
     public void setRoleService(RoleService roleService) {

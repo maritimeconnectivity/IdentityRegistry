@@ -20,7 +20,7 @@ import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Contact;
 import io.swagger.v3.oas.models.info.Info;
 import io.swagger.v3.oas.models.info.License;
-import org.springdoc.core.GroupedOpenApi;
+import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -66,10 +66,10 @@ public class OpenAPIConfig {
                         .description(String.format("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.<br>" +
                                 "Two versions of the API are available - one that requires authentication using OpenID Connect and one that requires authentication using a X.509 client certificate.<br>" +
                                 "The OpenAPI descriptions for the two versions are available <a href=\"%s\">here</a> and <a href=\"%s\">here</a>.", oidcUrl, x509Url))
-                        .version("1.1.1")
+                        .version("1.2.0")
                         .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
-                        .externalDocs(new ExternalDocumentation()
+                .externalDocs(new ExternalDocumentation()
                         .description("MCP Identity Registry docs")
                         .url("https://docs.maritimeconnectivity.net/en/latest/MIR.html"));
     }

@@ -27,6 +27,7 @@ import org.mockito.InjectMocks;
 import org.mockito.MockitoAnnotations;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
@@ -53,6 +54,9 @@ class X509HeaderUserDetailsServiceTest {
     @MockBean
     private OrganizationService organizationService;
 
+    @MockBean
+    JwtDecoder jwtDecoder;
+
     @InjectMocks
     X509HeaderUserDetailsService x509HeaderUserDetailsService;
 
@@ -74,9 +78,9 @@ class X509HeaderUserDetailsServiceTest {
         // Try to get user from certificate
         InetOrgPerson person = (InetOrgPerson) x509HeaderUserDetailsService.loadUserByUsername(contents);
         // Validate the user object
-        assertEquals("urn:mrn:mcl:vessel:dma:myboat", person.getUsername());
-        assertEquals("urn:mrn:mcl:vessel:dma:myboat", person.getUid());
-        assertEquals("urn:mrn:mcl:org:dma", person.getO());
+        assertEquals("urn:mrn:mcp:vessel:idp1:bootstrap:myboat", person.getUsername());
+        assertEquals("urn:mrn:mcp:vessel:idp1:bootstrap:myboat", person.getUid());
+        assertEquals("urn:mrn:mcp:org:idp1:bootstrap", person.getO());
         assertEquals("vessel", person.getOu());
         assertEquals(1, person.getCn().length);
         assertEquals("My Boat", person.getCn()[0]);

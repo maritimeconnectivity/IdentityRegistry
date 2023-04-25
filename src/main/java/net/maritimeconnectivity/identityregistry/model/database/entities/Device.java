@@ -16,13 +16,15 @@
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -37,11 +39,15 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 @NoArgsConstructor
 public class Device extends NonHumanEntityModel {
 
+    @Getter
+    @Setter
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "device")
     @Schema(description = "The set of certificates of the device. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     private Set<Certificate> certificates;
 
-    /** Copies this device into the other */
+    /**
+     * Copies this device into the other
+     */
     @Override
     public Device copyTo(EntityModel target) {
         Device device = (Device) super.copyTo(target);
@@ -51,8 +57,10 @@ public class Device extends NonHumanEntityModel {
         return device;
     }
 
-    /** Copies this device into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this device into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public Device selectiveCopyTo(EntityModel target) {
         Device device = (Device) super.selectiveCopyTo(target);
@@ -60,15 +68,8 @@ public class Device extends NonHumanEntityModel {
         return device;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setDevice(this);
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public Set<Certificate> getCertificates() {
-        return certificates;
     }
 }
 

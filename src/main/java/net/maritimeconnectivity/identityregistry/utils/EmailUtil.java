@@ -24,9 +24,9 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Component;
 
-import javax.mail.MessagingException;
-import javax.mail.internet.MimeMessage;
-import javax.mail.util.ByteArrayDataSource;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
+import jakarta.mail.util.ByteArrayDataSource;
 import java.util.Base64;
 
 @Component
@@ -111,7 +111,7 @@ public class EmailUtil {
         if (report.getAttachments() != null) {
             for (BugReportAttachment attachment : report.getAttachments()) {
                 // Decode base64 encoded data
-                byte[] data =  Base64.getDecoder().decode(attachment.getData());
+                byte[] data = Base64.getDecoder().decode(attachment.getData());
                 ByteArrayDataSource dataSource = new ByteArrayDataSource(data, attachment.getMimetype());
                 helper.addAttachment(attachment.getName(), dataSource);
             }

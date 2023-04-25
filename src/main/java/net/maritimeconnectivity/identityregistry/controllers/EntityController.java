@@ -17,7 +17,6 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -42,7 +41,7 @@ import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -74,6 +73,9 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             input.setIdOrganization(org.getId());
             // check that the requesting user has a role that is equal to or higher than the one given to the new entity
             checkRoles(request, input, org);
+            if (!mrnUtil.isEntityTypeValid(input)) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "The entity type in the MRN does not match type of the entity being created.", request.getServletPath());
+            }
             T newEntity = null;
             HttpHeaders headers = new HttpHeaders();
             try {
@@ -194,12 +196,13 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     /**
      * Returns the certificate with a specified serial number
-     * @param request       the HTTP request
-     * @param orgMrn        the organization MRN
-     * @param entityMrn     the entity MRN
-     * @param type          the entity type
-     * @param version       the version if type is service
-     * @param serialNumber  the serial number of the certificate to be returned
+     *
+     * @param request      the HTTP request
+     * @param orgMrn       the organization MRN
+     * @param entityMrn    the entity MRN
+     * @param type         the entity type
+     * @param version      the version if type is service
+     * @param serialNumber the serial number of the certificate to be returned
      * @return a PEM encoded certificate chain
      * @throws McpBasicRestException if something goes wrong
      */
@@ -234,6 +237,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
 
     /**
      * Receives a CSR and returns a signed and PEM encoded certificate
+     *
      * @return a PEM encoded certificate
      * @throws McpBasicRestException
      */
@@ -272,42 +276,6 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         }
     }
 
-
-    /**
-     * Returns new certificate for the entity identified by the given ID
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     * @deprecated Should only be used if server generated keys are allowed
-     */
-    @Deprecated
-    protected ResponseEntity<CertificateBundle> newEntityCert(HttpServletRequest request, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
-        if (this.certificateUtil.isEnableServerGeneratedKeys()) {
-            Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
-            if (org != null) {
-                // Check that the entity being queried belongs to the organization
-                if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
-                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-                }
-                T entity = this.entityService.getByMrn(entityMrn);
-                if (entity == null) {
-                    throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-                }
-                if (entity.getIdOrganization().equals(org.getId())) {
-                    CertificateBundle ret = this.issueCertificate(entity, org, type, request);
-                    return new ResponseEntity<>(ret, HttpStatus.OK);
-                }
-                throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            } else {
-                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-            }
-        }
-        String oidcOrX509 = request.getServletPath().split("/")[1];
-        String path = String.format("/%s/api/org/%s/%s/%s/certificate/issue-new/csr", oidcOrX509, orgMrn, type, entityMrn);
-        throw new McpBasicRestException(HttpStatus.GONE, String.format("Certificate issuing with server generated key pairs is no longer supported. " +
-                "Please POST a certificate signing request to %s instead.", path), request.getContextPath());
-    }
-
     /**
      * Revokes certificate for the entity identified by the given ID
      *
@@ -344,7 +312,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     }
 
     protected String getUid(CertificateModel certOwner) {
-        return ((EntityModel)certOwner).getMrn();
+        return ((EntityModel) certOwner).getMrn();
     }
 
     // Checks that the requesting user has a role that is equal to or higher than the ones being given to the input

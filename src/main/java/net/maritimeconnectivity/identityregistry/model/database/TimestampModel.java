@@ -16,19 +16,19 @@
 package net.maritimeconnectivity.identityregistry.model.database;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
-import org.hibernate.annotations.GenericGenerator;
 
-import javax.persistence.Column;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
-import javax.persistence.Id;
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PrePersist;
-import javax.persistence.PreUpdate;
+import jakarta.persistence.Column;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
 import java.time.Instant;
 import java.util.Date;
 
@@ -40,13 +40,13 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
 @ToString
 public abstract class TimestampModel implements JsonSerializable {
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO, generator = "native")
-    @GenericGenerator(name = "native", strategy = "native")
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Setter(AccessLevel.PROTECTED)
     @Column(name = "id", nullable = false)
     @Schema(description = "The ID of the entity in the form of a sequential integer", accessMode = READ_ONLY)
     protected Long id;
 
-    @Column(name = "created_at", updatable=false)
+    @Column(name = "created_at", updatable = false)
     @Schema(description = "The time that the entity was created", accessMode = READ_ONLY)
     protected Date createdAt;
 
@@ -54,24 +54,20 @@ public abstract class TimestampModel implements JsonSerializable {
     @Schema(description = "The time that the entity was last updated", accessMode = READ_ONLY)
     protected Date updatedAt;
 
-    /** Called at creation, set created_at and updated_at timestamp */
+    /**
+     * Called at creation, set created_at and updated_at timestamp
+     */
     @PrePersist
     void createdAt() {
         this.createdAt = this.updatedAt = Date.from(Instant.now());
     }
 
-    /** Called on update, set updated_at timestamp */
+    /**
+     * Called on update, set updated_at timestamp
+     */
     @PreUpdate
     void updatedAt() {
         this.updatedAt = Date.from(Instant.now());
-    }
-
-    public Long getId() {
-        return id;
-    }
-
-    protected void setId(Long id) {
-        this.id = id;
     }
 
     // Override if needed - use to detect if blanking of sensitive fields are needed

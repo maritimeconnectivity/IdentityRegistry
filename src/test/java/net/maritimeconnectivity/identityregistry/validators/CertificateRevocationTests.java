@@ -21,13 +21,15 @@ import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocatio
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.boot.test.mock.mockito.MockBean;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.validation.ConstraintViolation;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
+import jakarta.validation.ConstraintViolation;
+import jakarta.validation.Validation;
+import jakarta.validation.Validator;
+import jakarta.validation.ValidatorFactory;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.Set;
@@ -39,6 +41,9 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ExtendWith(SpringExtension.class)
 @ActiveProfiles("test")
 class CertificateRevocationTests {
+
+    @MockBean
+    JwtDecoder jwtDecoder;
 
     private Validator validator;
 
@@ -52,7 +57,7 @@ class CertificateRevocationTests {
     void validateInvalidCR() {
         // Set up a CR with invalid reason and date
         CertificateRevocation cr = new CertificateRevocation();
-        cr.setRevokationReason("not-valid-reason");
+        cr.setRevocationReason("not-valid-reason");
         cr.setRevokedAt(null);
         // Try to validate the CR
         Set<ConstraintViolation<CertificateRevocation>> violations = validator.validate(cr);
@@ -63,7 +68,7 @@ class CertificateRevocationTests {
     void validateValidCR() {
         // Set up a CR with valid reason and date
         CertificateRevocation cr = new CertificateRevocation();
-        cr.setRevokationReason("certificatehold");
+        cr.setRevocationReason("certificatehold");
         Calendar cal = Calendar.getInstance();
         Date now = cal.getTime();
         cr.setRevokedAt(now);

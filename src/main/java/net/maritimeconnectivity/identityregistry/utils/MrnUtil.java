@@ -17,6 +17,14 @@ package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
+import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
+import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
+import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
+import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
+import net.maritimeconnectivity.identityregistry.model.database.entities.User;
+import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
@@ -76,7 +84,7 @@ public class MrnUtil {
     }
 
     public boolean validateMCPMrn(String mrn) {
-        if(validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()){
+        if (validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()) {
             String[] parts = mrn.split(":");
             if (parts.length < 6) {
                 throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
@@ -84,29 +92,49 @@ public class MrnUtil {
             if (!parts[4].equals(ipId)) {
                 throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider ID: " + ipId);
             }
-            switch (parts[3]) {
-                case "user", "device", "vessel", "mms":
-                    if (parts.length < 7) {
-                        throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
-                    }
-                    break;
-                case "service":
-                    if (parts.length < 8 || !parts[6].equals("instance")) {
-                        throw new IllegalArgumentException("The given MRN is not a valid service instance MRN");
-                    }
-                    break;
-                default:
-                    break;
-            }
             return true;
         }
         return false;
     }
 
+    public boolean isEntityTypeValid(CertificateModel entity) {
+        if (entity instanceof Organization org) {
+            String entityType = getEntityType(org.getMrn());
+            return entityType.equalsIgnoreCase("org");
+        }
+        if (entity instanceof EntityModel entityModel) {
+            String entityType = getEntityType(entityModel.getMrn());
+            if (entityModel instanceof Device) {
+                return entityType.equalsIgnoreCase("device");
+            }
+            if (entityModel instanceof MMS) {
+                return entityType.equalsIgnoreCase("mms");
+            }
+            if (entityModel instanceof Service) {
+                return entityType.equalsIgnoreCase("service");
+            }
+            if (entityModel instanceof User) {
+                return entityType.equalsIgnoreCase("user");
+            }
+            if (entityModel instanceof Vessel) {
+                return entityType.equalsIgnoreCase("vessel");
+            }
+        }
+        return false;
+    }
+
+    public String getEntityType(String mrn) {
+        String[] parts = mrn.split(":");
+        if (parts.length < 6)
+            return "";
+        return parts[3];
+    }
+
     /**
      * Get MRN prefix. Would be 'urn:mrn:mcl' for 'urn:mrn:mcl:org:dma', and 'urn:mrn:stm' for 'urn:mrn:stm:user:sma:user42'
-     * @param mrn
-     * @return
+     *
+     * @param mrn the MRN to get the prefix for
+     * @return the prefix of the given MRN
      */
     public String getMrnPrefix(String mrn) {
         // mrn always starts with 'urn:mrn:<sub-namespace>'

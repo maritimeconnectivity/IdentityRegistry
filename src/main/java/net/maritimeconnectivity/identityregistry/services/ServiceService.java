@@ -22,5 +22,6 @@ import org.springframework.data.domain.Pageable;
 
 public interface ServiceService extends EntityService<Service> {
     Service getServiceByMrnAndVersion(String mrn, String version);
+
     Page<Service> getServicesByMrn(String mrn, Pageable pageable);
 }

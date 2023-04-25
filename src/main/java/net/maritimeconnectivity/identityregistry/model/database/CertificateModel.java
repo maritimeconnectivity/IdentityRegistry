@@ -19,10 +19,11 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.ToString;
 import org.springframework.validation.annotation.Validated;
 
-import javax.persistence.MappedSuperclass;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.PreRemove;
+import jakarta.persistence.MappedSuperclass;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
+import jakarta.persistence.PreRemove;
 import java.time.Instant;
 import java.util.Date;
 import java.util.Set;
@@ -58,6 +59,8 @@ public abstract class CertificateModel extends TimestampModel {
             }
         }
     }
+
+    @OneToMany
     public abstract Set<Certificate> getCertificates();
 
     @JsonIgnore

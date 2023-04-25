@@ -22,6 +22,7 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 
 import java.util.List;
+
 @Getter
 @Setter
 @ToString

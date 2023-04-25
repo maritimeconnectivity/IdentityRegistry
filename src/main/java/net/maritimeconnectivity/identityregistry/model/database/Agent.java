@@ -20,14 +20,14 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.PostPersist;
-import javax.persistence.PostUpdate;
-import javax.persistence.Table;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.PostUpdate;
+import jakarta.persistence.Table;
 import java.util.Objects;
 import java.util.Set;
 
@@ -41,7 +41,7 @@ public class Agent extends TimestampModel {
     /**
      * The organization that is acting on behalf of the other organization
      */
-    @Schema(required = true, description = "The id of the organization that should be given agent permissions")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The id of the organization that should be given agent permissions")
     @Column(name = "id_acting", nullable = false)
     private Long idActingOrganization;
 
@@ -56,7 +56,9 @@ public class Agent extends TimestampModel {
     @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "agent", orphanRemoval = true)
     private Set<AllowedAgentRole> allowedRoles;
 
-    /** Copies this agent into the other */
+    /**
+     * Copies this agent into the other
+     */
     public Agent copyTo(Agent agent) {
         Objects.requireNonNull(agent);
         agent.setIdActingOrganization(this.idActingOrganization);

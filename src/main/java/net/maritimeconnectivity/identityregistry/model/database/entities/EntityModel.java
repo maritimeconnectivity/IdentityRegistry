@@ -24,8 +24,8 @@ import net.maritimeconnectivity.identityregistry.validators.MCPMRN;
 import net.maritimeconnectivity.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.URL;
 
-import javax.persistence.Column;
-import javax.persistence.MappedSuperclass;
+import jakarta.persistence.Column;
+import jakarta.persistence.MappedSuperclass;
 import java.util.Objects;
 
 @MappedSuperclass
@@ -39,7 +39,7 @@ public abstract class EntityModel extends CertificateModel {
     private Long idOrganization;
 
     @MCPMRN
-    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
@@ -57,7 +57,9 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "permissions")
     private String permissions;
 
-    /** Copies this entity into the other */
+    /**
+     * Copies this entity into the other
+     */
     public EntityModel copyTo(EntityModel entity) {
         Objects.requireNonNull(entity);
         entity.setId(id);
@@ -69,8 +71,10 @@ public abstract class EntityModel extends CertificateModel {
         return entity;
     }
 
-    /** Copies this entity into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this entity into the other
+     * Only update things that are allowed to change on update
+     */
     public EntityModel selectiveCopyTo(EntityModel entity) {
         Objects.requireNonNull(entity);
         entity.setMrn(mrn);

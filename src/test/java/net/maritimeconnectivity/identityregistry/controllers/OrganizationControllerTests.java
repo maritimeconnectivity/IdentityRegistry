@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
@@ -101,6 +102,9 @@ class OrganizationControllerTests {
     @MockBean
     private AgentService agentService;
 
+    @MockBean
+    JwtDecoder jwtDecoder;
+
     @BeforeEach
     void setup() {
         mvc = MockMvcBuilders
@@ -140,11 +144,10 @@ class OrganizationControllerTests {
         }
     }
 
-
     /**
      * Try to approve an organization without the appropriate role
      */
-    @WithMockUser(roles="ORG_ADMIN")
+    @WithMockUser(roles = "ORG_ADMIN")
     @Test
     void testAccessApproveOrgWithoutRights() {
         try {
@@ -157,7 +160,7 @@ class OrganizationControllerTests {
     /**
      * Try to approve an organization with the appropriate role
      */
-    @WithMockUser(roles="SITE_ADMIN")
+    @WithMockUser(roles = "SITE_ADMIN")
     @Test
     void testAccessApproveOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
@@ -171,7 +174,7 @@ class OrganizationControllerTests {
     /**
      * Try to delete an organization without the appropriate role
      */
-    @WithMockUser(roles="ORG_ADMIN")
+    @WithMockUser(roles = "ORG_ADMIN")
     @Test
     void testAccessDeleteOrgWithoutRights() {
         try {
@@ -184,7 +187,7 @@ class OrganizationControllerTests {
     /**
      * Try to delete an organization with the appropriate role
      */
-    @WithMockUser(roles="SITE_ADMIN")
+    @WithMockUser(roles = "SITE_ADMIN")
     @Test
     void testAccessDeleteOrgWithRights() {
         given(this.organizationService.getOrganizationByMrnDisregardApproved("urn:mrn:mcp:org:idp1:dma")).willReturn(new Organization());
@@ -217,10 +220,10 @@ class OrganizationControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
-                            .header("Origin", "bla")
-                            .content(orgJson)
-                            .contentType("application/json")
-                        ).andExpect(status().isOk());
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isOk());
         } catch (Exception e) {
             fail(e);
         }
@@ -274,9 +277,9 @@ class OrganizationControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
-                .header("Origin", "bla")
-                .content(orgJson)
-                .contentType("application/json")
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
             ).andExpect(status().isOk());
         } catch (Exception e) {
             fail(e);
@@ -517,6 +520,7 @@ class OrganizationControllerTests {
 
     /**
      * Helper function to serialize an organization to json
+     *
      * @param org
      * @return
      */

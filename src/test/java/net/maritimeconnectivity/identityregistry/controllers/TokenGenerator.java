@@ -17,20 +17,18 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
-import org.keycloak.KeycloakPrincipal;
-import org.keycloak.adapters.RefreshableKeycloakSecurityContext;
-import org.keycloak.adapters.springsecurity.account.SimpleKeycloakAccount;
-import org.keycloak.adapters.springsecurity.token.KeycloakAuthenticationToken;
-import org.keycloak.representations.AccessToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.jwt.Jwt;
+import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.HashSet;
-import java.util.Set;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.UUID;
 
 /**
@@ -39,36 +37,32 @@ import java.util.UUID;
 class TokenGenerator {
 
     /**
-     * Helper function of build fake KeycloakAuthenticationToken
+     * Helper function of build fake JwtAuthenticationToken
+     *
      * @param mrn
      * @param roles
      * @param permissions
      * @return
      */
-    static KeycloakAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
-        AccessToken accessToken = new AccessToken();
+    static JwtAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
+//        AccessToken accessToken = new AccessToken();
+        Map<String, Object> claims = new HashMap<>();
         if (mrn != null && !mrn.isEmpty()) {
-            accessToken.setOtherClaims(MCPIdRegConstants.MRN_PROPERTY_NAME, mrn);
+            claims.put(MCPIdRegConstants.MRN_PROPERTY_NAME, mrn);
         }
         if (permissions != null && !permissions.isEmpty()) {
-            accessToken.setOtherClaims(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME, permissions);
+            claims.put(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME, permissions);
         }
         String bearerTokenString = UUID.randomUUID().toString();
 
-        RefreshableKeycloakSecurityContext ksc = new RefreshableKeycloakSecurityContext(null, null, bearerTokenString, accessToken, null, null, null);
-        Set<String> rolesSet = new HashSet<>();
-        String[] roleArr = roles.split(",");
-        for(String role : roleArr) {
-            rolesSet.add(role.trim());
-        }
-        KeycloakPrincipal<RefreshableKeycloakSecurityContext> principal = new KeycloakPrincipal<>("name", ksc);
-        SimpleKeycloakAccount account = new SimpleKeycloakAccount(principal, rolesSet, ksc);
         Collection<GrantedAuthority> authorities = generateGrantedAuthority(roles);
-        return new KeycloakAuthenticationToken(account, false, authorities);
+        Jwt jwt = new Jwt(bearerTokenString, Instant.now(), Instant.now().plusSeconds(60), Map.of("alg", "none"), claims);
+        return new JwtAuthenticationToken(jwt, authorities);
     }
 
     /**
      * Helper function of build fake PreAuthenticatedAuthenticationToken - used for x509 authentication
+     *
      * @param orgMrn
      * @param roles
      * @param permissions
@@ -80,9 +74,9 @@ class TokenGenerator {
         String username = "urn:mrn:mcl:user:dma:dmauser";
         essence.setUsername(username);
         essence.setUid(username);
-        essence.setDn("O="+orgMrn);
+        essence.setDn("O=" + orgMrn);
         essence.setO(orgMrn);
-        essence.setCn(new String[] {"dmauser"});
+        essence.setCn(new String[]{"dmauser"});
         essence.setAuthorities(authorities);
 
         return new PreAuthenticatedAuthenticationToken(essence.createUserDetails(), null, authorities);
@@ -91,7 +85,7 @@ class TokenGenerator {
     static Collection<GrantedAuthority> generateGrantedAuthority(String roles) {
         Collection<GrantedAuthority> authorities = new ArrayList<>();
         String[] roleArr = roles.split(",");
-        for(String role : roleArr) {
+        for (String role : roleArr) {
             authorities.add(new SimpleGrantedAuthority(role.trim()));
         }
         return authorities;

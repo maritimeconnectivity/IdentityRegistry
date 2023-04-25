@@ -42,21 +42,21 @@ net:
             keycloak-broker-admin-password: idreg-admin
             keycloak-broker-admin-client: security-admin-console
             keycloak-broker-realm: MCP
-            keycloak-broker-base-url: http://localhost:8080/auth/
+            keycloak-broker-base-url: http://localhost:8080/
 
             # Login info for the keycloak used for project users
             keycloak-project-users-admin-user: idreg-test-idp-admin
             keycloak-project-users-admin-password: idreg-test-idp-admin
             keycloak-project-users-admin-client: security-admin-console
             keycloak-project-users-realm: Users
-            keycloak-project-users-base-url: http://localhost:8080/auth/
+            keycloak-project-users-base-url: http://localhost:8080/
 
             # Login info for the keycloak used for certificates
             keycloak-certificates-admin-user: idreg-cert-admin
             keycloak-certificates-admin-password: idreg-cert-admin
             keycloak-certificates-admin-client: security-admin-console
             keycloak-certificates-realm: Certificates
-            keycloak-certificates-base-url: http://localhost:8080/auth/
+            keycloak-certificates-base-url: http://localhost:8080/
 
             keycloak-client-template: mcp-client-template
 
@@ -75,10 +75,10 @@ net:
 
             # Certificate setup
             certs:
-                sub-ca-keystore-path: mc-sub-ca-keystore.jks
+                sub-ca-keystore-path: mcp-sub-ca-keystore.jks
                 sub-ca-keystore-password: changeit
                 sub-ca-key-password: changeit
-                truststore-path: mc-truststore.jks
+                truststore-path: mcp-truststore.jks
                 truststore-password: changeit
                 root-crl-path: root-ca.crl
                 base-crl-ocsp-path: http://localhost/x509/api/certificates/ # should NOT be HTTPS due to concerns regarding compatibility
@@ -88,7 +88,7 @@ net:
                 pkcs11:
                     enabled: false
                     config:
-                        file: /conf/pkcs11.cfg # https://docs.oracle.com/javase/8/docs/technotes/guides/security/p11guide.html
+                        file: /conf/pkcs11.cfg # https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html#GUID-C4ABFACB-B2C9-4E71-A313-79F881488BB9
                         pin: 0001password # the pin/password for the slot defined in the config file
                 validity-period: # unit: month
                     user: 24
@@ -151,7 +151,7 @@ spring.datasource:
 # Disable Hibernate entity validation as it is already done by Spring
 spring.jpa:
     properties:
-        javax.persistence.validation.mode: none
+        jakarta.persistence.validation.mode: none
 
 # Email setup
 spring.mail:
@@ -165,6 +165,12 @@ spring.mail:
     protocol: smtp
     # Test that the mail server is available on startup.
     test-connection: false
+
+spring.security:
+    oauth2:
+        resourceserver:
+            jwt:
+                issuer-uri: http://localhost:8080/realms/MCP
 
 # Do not "leak" internal setup details in http X-Application-Context header
 management.server.add-application-context-header: false
@@ -206,6 +212,6 @@ spring:
     flyway.enabled: false
     jpa:
         properties:
-            javax.persistence.validation.mode: auto
+            jakarta.persistence.validation.mode: auto
     mail:
         port: 10205

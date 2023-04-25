@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.model.data;
 
+import com.fasterxml.jackson.annotation.JsonAlias;
 import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,11 +23,10 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.JsonSerializable;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
-import java.util.ArrayList;
-import java.util.Arrays;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
+import java.util.List;
 
 @Getter
 @Setter
@@ -34,12 +34,16 @@ import java.util.Date;
 @Schema(description = "Model object representing a certificate revocation")
 public class CertificateRevocation implements JsonSerializable {
 
-    @Schema(description = "The date the certificate revocation should be activated.", required = true)
+    private static final List<String> VALID_REVOCATION_REASONS = List.of("unspecified", "keycompromise", "cacompromise",
+            "affiliationchanged", "superseded", "cessationofoperation", "certificatehold", "removefromcrl",
+            "privilegewithdrawn", "aacompromise");
+
+    @Schema(description = "The date the certificate revocation should be activated.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotNull
     private Date revokedAt;
 
     @Schema(
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             description = "The reason the certificates has been revoked",
             allowableValues = {"unspecified", "keycompromise", "cacompromise", "affiliationchanged", "superseded",
                     "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
@@ -49,30 +53,18 @@ public class CertificateRevocation implements JsonSerializable {
                     "cessationofoperation", "certificatehold", "removefromcrl", "privilegewithdrawn", "aacompromise"}
     )
     @NotBlank
-    private String revokationReason;
+    @JsonAlias({"revokationReason"})
+    private String revocationReason;
 
     public boolean validateReason() {
-        ArrayList<String> validReasons = new ArrayList<>(Arrays.asList(
-                "unspecified",
-                "keycompromise",
-                "cacompromise",
-                "affiliationchanged",
-                "superseded",
-                "cessationofoperation",
-                "certificatehold",
-                "removefromcrl",
-                "privilegewithdrawn",
-                "aacompromise"));
-        String reason = getRevokationReason();
-
-        return (reason != null && validReasons.contains(reason));
+        return (revocationReason != null && VALID_REVOCATION_REASONS.contains(revocationReason));
     }
 
-    public void setRevokationReason(String revokationReason) {
-        if (revokationReason != null) {
-            revokationReason = revokationReason.toLowerCase();
+    public void setRevocationReason(String revocationReason) {
+        if (revocationReason != null) {
+            revocationReason = revocationReason.toLowerCase();
         }
-        this.revokationReason = revokationReason;
+        this.revocationReason = revocationReason;
     }
 
 

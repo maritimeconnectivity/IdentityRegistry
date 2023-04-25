@@ -16,7 +16,6 @@
 
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.VesselImage;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
@@ -26,18 +25,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
 import java.util.List;
 
 import static org.mockito.Mockito.mock;
@@ -62,6 +63,9 @@ class VesselImageControllerTest {
 
     @Autowired
     EntityManagerFactory emf;
+
+    @MockBean
+    JwtDecoder jwtDecoder;
 
     @Test
     void deleteImage() throws Exception {
@@ -95,7 +99,7 @@ class VesselImageControllerTest {
         when(person.getO()).then(invocation -> org.getMrn());
         Authentication previousAuth = SecurityContextHolder.getContext().getAuthentication();
         SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "",
-                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
+                List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
 
         try {
             vesselImageController.deleteVesselImage(new MockHttpServletRequest("DELETE", "/path"), org.getMrn(), vessel.getMrn());

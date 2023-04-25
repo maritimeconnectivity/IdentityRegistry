@@ -26,18 +26,18 @@ import net.maritimeconnectivity.identityregistry.validators.MRN;
 import org.hibernate.validator.constraints.Length;
 import org.hibernate.validator.constraints.URL;
 
-import javax.persistence.CascadeType;
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.OneToMany;
-import javax.persistence.OneToOne;
-import javax.persistence.PostPersist;
-import javax.persistence.Table;
-import javax.validation.Valid;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
+import jakarta.persistence.PostPersist;
+import jakarta.persistence.Table;
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -55,7 +55,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.WRITE_ONLY;
 @Schema(description = "Model object representing an organization")
 public class Organization extends CertificateModel {
 
-    @Schema(description = "The name of the organization", required = true)
+    @Schema(description = "The name of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "name", nullable = false)
     @NotBlank
     private String name;
@@ -64,7 +64,7 @@ public class Organization extends CertificateModel {
     @Length(max = 64)
     @NotBlank
     @MCPMRN
-    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", required = true)
+    @Schema(description = "Maritime Connectivity Platform Maritime Resource Name", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "mrn", nullable = false)
     private String mrn;
 
@@ -80,23 +80,23 @@ public class Organization extends CertificateModel {
     @Column(name = "email", nullable = false)
     @NotBlank
     @Email
-    @Schema(description = "The email of the organization", required = true)
+    @Schema(description = "The email of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     private String email;
 
     @Column(name = "url", nullable = false)
-    @Schema(description = "The URL of the organization's website", required = true)
+    @Schema(description = "The URL of the organization's website", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @URL
     private String url;
 
     @Column(name = "address", nullable = false)
     @NotBlank
-    @Schema(description = "The address of the organization", required = true)
+    @Schema(description = "The address of the organization", requiredMode = Schema.RequiredMode.REQUIRED)
     private String address;
 
     @Column(name = "country")
     @NotBlank
-    @Schema(description = "The country that the organization is located in", required = true)
+    @Schema(description = "The country that the organization is located in", requiredMode = Schema.RequiredMode.REQUIRED)
     private String country;
 
     @JsonIgnore
@@ -109,7 +109,7 @@ public class Organization extends CertificateModel {
 
     @JsonIgnore
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name="id_logo")
+    @JoinColumn(name = "id_logo")
     private Logo logo;
 
     @Schema(description = "The set of certificates of the organization. Cannot be created/updated by editing in the model. Use the dedicate create and revoke calls.", accessMode = READ_ONLY)
@@ -117,7 +117,7 @@ public class Organization extends CertificateModel {
     private Set<Certificate> certificates;
 
     @Valid
-    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval=true)
+    @OneToMany(fetch = FetchType.EAGER, cascade = CascadeType.ALL, mappedBy = "organization", orphanRemoval = true)
     @Schema(description = "The identity provider attributes of the organization", accessMode = WRITE_ONLY)
     private Set<IdentityProviderAttribute> identityProviderAttributes;
 
@@ -126,7 +126,9 @@ public class Organization extends CertificateModel {
     @Schema(description = "The name of the CA of the organization", accessMode = READ_ONLY)
     private String certificateAuthority;
 
-    /** Copies this organization into the other */
+    /**
+     * Copies this organization into the other
+     */
     public Organization copyTo(Organization org) {
         org.setName(name);
         org.setEmail(email);
@@ -146,8 +148,10 @@ public class Organization extends CertificateModel {
         return org;
     }
 
-    /** Copies this organization into the other.
-     * Skips certificates, approved, logo and shortname */
+    /**
+     * Copies this organization into the other.
+     * Skips certificates, approved, logo and shortname
+     */
     public Organization selectiveCopyTo(Organization org) {
         org.setName(name);
         org.setEmail(email);
@@ -175,12 +179,14 @@ public class Organization extends CertificateModel {
         }
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setOrganization(this);
     }
 
 
-    /** Creates a copy of this organization */
+    /**
+     * Creates a copy of this organization
+     */
     public Organization copy() {
         return copyTo(new Organization());
     }

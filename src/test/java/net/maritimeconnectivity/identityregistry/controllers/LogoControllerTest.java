@@ -15,7 +15,6 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import com.google.common.collect.Lists;
 import net.maritimeconnectivity.identityregistry.model.database.Logo;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.repositories.OrganizationRepository;
@@ -24,11 +23,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
+import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
@@ -37,9 +38,9 @@ import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
 import org.springframework.web.context.WebApplicationContext;
 
-import javax.persistence.EntityManager;
-import javax.persistence.EntityManagerFactory;
-import javax.validation.ConstraintViolation;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.EntityManagerFactory;
+import jakarta.validation.ConstraintViolation;
 import java.util.List;
 import java.util.Set;
 
@@ -50,7 +51,7 @@ import static org.springframework.test.util.AssertionErrors.assertNull;
 
 /**
  * @author Klaus Groenbaek
- *         Created 03/03/17.
+ * Created 03/03/17.
  */
 @ExtendWith(SpringExtension.class)
 @SpringBootTest
@@ -69,6 +70,9 @@ class LogoControllerTest {
 
     @Autowired
     EntityManagerFactory emf;
+
+    @MockBean
+    JwtDecoder jwtDecoder;
 
     private LocalValidatorFactoryBean validator;
 
@@ -104,8 +108,7 @@ class LogoControllerTest {
         InetOrgPerson person = mock(InetOrgPerson.class);
         when(person.getO()).then(invocation -> org.getMrn());
         Authentication previousAuth = SecurityContextHolder.getContext().getAuthentication();
-        SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "",
-                Lists.newArrayList(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
+        SecurityContextHolder.getContext().setAuthentication(new PreAuthenticatedAuthenticationToken(person, "", List.of(new SimpleGrantedAuthority("ROLE_ORG_ADMIN"))));
 
         try {
             logoController.deleteLogo(new MockHttpServletRequest("DELETE", "/path"), org.getMrn());

@@ -24,12 +24,12 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotNull;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotNull;
 import java.util.Date;
 
 /**
@@ -45,13 +45,13 @@ import java.util.Date;
 @Schema(description = "Model object representing a vessel attribute")
 public class VesselAttribute extends TimestampModel {
 
-    @Schema(description = "Vessel attribute name", required = true, allowableValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
+    @Schema(description = "Vessel attribute name", requiredMode = Schema.RequiredMode.REQUIRED, allowableValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @InPredefinedList(acceptedValues = {"imo-number", "mmsi-number", "callsign", "flagstate", "ais-class", "port-of-register"})
     @Column(name = "attribute_name", nullable = false)
     @NotNull
     private String attributeName;
 
-    @Schema(description = "Vessel attribute value", required = true)
+    @Schema(description = "Vessel attribute value", requiredMode = Schema.RequiredMode.REQUIRED)
     @Column(name = "attribute_value", nullable = false)
     @NotNull
     private String attributeValue;

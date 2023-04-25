@@ -35,7 +35,7 @@ public interface CertificateService {
     List<Certificate> listVesselCertificate(Vessel vessel);
 
     List<Certificate> listUserCertificate(User user);
-    
+
     List<Certificate> listDeviceCertificate(Device device);
 
     List<Certificate> listRevokedCertificate(String caAlias);

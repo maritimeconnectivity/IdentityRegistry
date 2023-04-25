@@ -25,7 +25,7 @@ import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
 import org.springframework.http.HttpStatus;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.io.StringReader;
 
@@ -36,7 +36,7 @@ public class CsrUtil {
      * Function for converting a PEM encoded CSR to an object that can be used by Java/Bouncy Castle
      *
      * @param request a HTTP request
-     * @param pemCsr a PEM encoded CSR
+     * @param pemCsr  a PEM encoded CSR
      * @return an object containing a PKCS#10 CSR
      * @throws McpBasicRestException is thrown if given CSR cannot be parsed
      */

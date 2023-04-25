@@ -16,12 +16,14 @@
 package net.maritimeconnectivity.identityregistry.model.database;
 
 import io.swagger.v3.oas.annotations.media.Schema;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
+import lombok.Setter;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Table;
 import java.util.Objects;
 
 /**
@@ -29,26 +31,30 @@ import java.util.Objects;
  */
 
 @Entity
-@Table(name="roles")
+@Table(name = "roles")
+@Getter
+@Setter
 @NoArgsConstructor
 @Schema(description = "Model object representing a role")
 public class Role extends TimestampModel {
 
-    @Schema(required = true, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The role that should be mapped to the permission", allowableValues = "ROLE_SITE_ADMIN, ROLE_ORG_ADMIN, ROLE_ENTITY_ADMIN," +
             "ROLE_USER_ADMIN, ROLE_VESSEL_ADMIN, ROLE_SERVICE_ADMIN, ROLE_DEVICE_ADMIN, ROLE_MMS_ADMIN, ROLE_USER, ROLE_APPROVE_ORG")
     @Column(name = "role_name", nullable = false)
     @InPredefinedList(acceptedValues = {"ROLE_SITE_ADMIN", "ROLE_ORG_ADMIN", "ROLE_ENTITY_ADMIN", "ROLE_USER_ADMIN",
             "ROLE_VESSEL_ADMIN", "ROLE_SERVICE_ADMIN", "ROLE_DEVICE_ADMIN", "ROLE_MMS_ADMIN", "ROLE_USER", "ROLE_APPROVE_ORG"})
     private String roleName;
 
-    @Schema(required = true, description = "The permission that should be mapped to the role")
+    @Schema(requiredMode = Schema.RequiredMode.REQUIRED, description = "The permission that should be mapped to the role")
     @Column(name = "permission", nullable = false)
     private String permission;
 
     @Column(name = "id_organization", nullable = false)
     private Long idOrganization;
 
-    /** Copies this user into the other */
+    /**
+     * Copies this role into the other
+     */
     public Role copyTo(Role role) {
         Objects.requireNonNull(role);
         role.setId(id);
@@ -56,32 +62,5 @@ public class Role extends TimestampModel {
         role.setPermission(permission);
         role.setRoleName(roleName);
         return role;
-    }
-
-    /******************************/
-    /** Getters and setters      **/
-    /******************************/
-    public String getRoleName() {
-        return roleName;
-    }
-
-    public void setRoleName(String roleName) {
-        this.roleName = roleName;
-    }
-
-    public String getPermission() {
-        return permission;
-    }
-
-    public void setPermission(String permission) {
-        this.permission = permission;
-    }
-
-    public Long getIdOrganization() {
-        return idOrganization;
-    }
-
-    public void setIdOrganization(Long idOrganization) {
-        this.idOrganization = idOrganization;
     }
 }

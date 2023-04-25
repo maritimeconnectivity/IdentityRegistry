@@ -32,11 +32,11 @@ import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
 import net.maritimeconnectivity.pki.ocsp.CertStatus;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
 import java.math.BigInteger;
 import java.security.cert.CRLReason;
 import java.util.Date;
@@ -48,7 +48,7 @@ import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
  */
 
 @Entity
-@Table(name="certificates")
+@Table(name = "certificates")
 @Getter
 @Setter
 @ToString(exclude = {"vessel", "user", "device", "service", "organization", "mms"})
@@ -73,11 +73,15 @@ public class Certificate extends TimestampModel {
     @Schema(description = "The serial number of the certificate", accessMode = READ_ONLY)
     private BigInteger serialNumber;
 
+    @Column(name = "thumbprint", nullable = false)
+    @Schema(description = "The base64 encoded SHA-256 thumbprint of the certificate", accessMode = READ_ONLY)
+    private String thumbprint;
+
     @Column(name = "revoked", nullable = false)
     @Schema(description = "Whether the certificate has been revoked", accessMode = READ_ONLY)
     private boolean revoked;
 
-    @Column(name= "revoked_at")
+    @Column(name = "revoked_at")
     @Schema(description = "The time of revocation of the certificate", accessMode = READ_ONLY)
     private Date revokedAt;
 
@@ -98,7 +102,7 @@ public class Certificate extends TimestampModel {
     private String revokeReason;
 
     @JsonIgnore
-    @Column(name= "certificate_authority", nullable = false)
+    @Column(name = "certificate_authority", nullable = false)
     @Schema(description = "The name of the CA that signed this certificate", accessMode = READ_ONLY)
     private String certificateAuthority;
 

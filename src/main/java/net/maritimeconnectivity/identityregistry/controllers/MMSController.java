@@ -18,7 +18,6 @@ package net.maritimeconnectivity.identityregistry.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -26,7 +25,7 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.utils.AttributesUtil;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -43,8 +42,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.math.BigInteger;
 import java.util.HashMap;
 
@@ -157,30 +156,6 @@ public class MMSController extends EntityController<MMS> {
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, mmsMrn, TYPE, null, serialNumber);
-    }
-
-    /**
-     * Returns new certificate for the mms identified by the given ID
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     */
-    @Operation(
-            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
-                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
-                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
-                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
-                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
-    )
-    @GetMapping(
-            value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/issue-new",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
-    @Deprecated
-    public ResponseEntity<CertificateBundle> newMMSCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, mmsMrn, TYPE);
     }
 
     /**

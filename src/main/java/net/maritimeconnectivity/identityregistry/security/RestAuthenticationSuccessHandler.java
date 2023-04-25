@@ -24,20 +24,19 @@ import org.springframework.security.web.savedrequest.RequestCache;
 import org.springframework.security.web.savedrequest.SavedRequest;
 import org.springframework.util.StringUtils;
 
-import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
+import jakarta.servlet.ServletException;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 /**
  * By default, form login will answer a successful authentication request with a 301 MOVED PERMANENTLY status code; this makes sense
  * in the context of an actual login form which needs to redirect after login. For a RESTful web service however, the desired
  * response for a successful authentication should be 200 OK.
- *
+ * <p>
  * This is done by injecting a custom authentication success handler in the form login filter, to replace the default one. The new
  * handler implements the exact same login as the default org.springframework.security.web.authentication
  * .SavedRequestAwareAuthenticationSuccessHandler with one notable difference – the redirect logic is removed
- *
  */
 @Setter
 public final class RestAuthenticationSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {

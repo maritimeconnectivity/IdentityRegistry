@@ -32,7 +32,7 @@ public class McpBasicRestException extends Exception {
     protected final String errorMessage;
     protected final String path;
     protected final long timestamp;
-    
+
     public McpBasicRestException(HttpStatus status, String errorMessage, String path) {
         this.status = status;
         this.errorMessage = errorMessage;

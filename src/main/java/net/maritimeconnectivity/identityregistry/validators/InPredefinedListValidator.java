@@ -17,8 +17,8 @@ package net.maritimeconnectivity.identityregistry.validators;
 
 import org.hibernate.validator.internal.engine.messageinterpolation.util.InterpolationHelper;
 
-import javax.validation.ConstraintValidator;
-import javax.validation.ConstraintValidatorContext;
+import jakarta.validation.ConstraintValidator;
+import jakarta.validation.ConstraintValidatorContext;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +29,7 @@ public class InPredefinedListValidator implements ConstraintValidator<InPredefin
     @Override
     public void initialize(InPredefinedList constraintAnnotation) {
         valueList = new ArrayList<>();
-        for(String val : constraintAnnotation.acceptedValues()) {
+        for (String val : constraintAnnotation.acceptedValues()) {
             valueList.add(val.toLowerCase());
         }
     }

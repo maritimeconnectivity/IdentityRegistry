@@ -25,7 +25,7 @@ import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 @Component
 @Slf4j
@@ -100,10 +100,6 @@ public class CertificateUtil {
 
     @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
     private int validityPeriodForMms;
-
-    @Getter
-    @Value("${net.maritimeconnectivity.idreg.certs.enable-server-generated-keys:false}")
-    private boolean enableServerGeneratedKeys;
 
     @PostConstruct
     public void setup() {

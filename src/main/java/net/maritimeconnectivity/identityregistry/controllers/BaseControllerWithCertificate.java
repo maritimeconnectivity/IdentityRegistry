@@ -17,9 +17,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
-import net.maritimeconnectivity.identityregistry.model.data.PemCertificate;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -30,12 +28,10 @@ import net.maritimeconnectivity.identityregistry.utils.CertificateUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.PasswordUtil;
-import net.maritimeconnectivity.pki.CertificateBuilder;
 import net.maritimeconnectivity.pki.CertificateHandler;
-import net.maritimeconnectivity.pki.PKIConfiguration;
 import net.maritimeconnectivity.pki.PKIConstants;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
+import org.bouncycastle.jcajce.provider.digest.SHA256;
 import org.bouncycastle.operator.ContentVerifierProvider;
 import org.bouncycastle.operator.DefaultAlgorithmNameFinder;
 import org.bouncycastle.operator.OperatorCreationException;
@@ -47,13 +43,14 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.math.BigInteger;
-import java.nio.charset.StandardCharsets;
 import java.security.AuthProvider;
 import java.security.InvalidKeyException;
-import java.security.KeyPair;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.security.NoSuchProviderException;
 import java.security.PublicKey;
 import java.security.cert.CertificateEncodingException;
 import java.security.cert.X509Certificate;
@@ -68,6 +65,10 @@ import java.util.HashMap;
 @RequestMapping(value = {"oidc", "x509"})
 public abstract class BaseControllerWithCertificate {
 
+    private enum SignatureAlgorithm {
+        RSA, DSA, ECDSA, EDDSA
+    }
+
     protected CertificateService certificateService;
 
     protected CertificateUtil certificateUtil;
@@ -77,98 +78,6 @@ public abstract class BaseControllerWithCertificate {
     protected MrnUtil mrnUtil;
 
     private static final String[] INSECURE_HASHES = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
-
-    /**
-     * Function for generating key pair and certificate for an entity.
-     *
-     * @param certOwner the entity that the certificate belongs to
-     * @param org       the organization that the entity belongs to
-     * @param type      the entity type
-     * @param request   the HTTP request
-     * @return a bundle containing certificate and key pair in different formats
-     * @throws McpBasicRestException
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     */
-    @Deprecated
-    protected CertificateBundle issueCertificate(CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
-        PKIConfiguration pkiConfiguration = certificateUtil.getPkiConfiguration();
-        P11PKIConfiguration p11PKIConfiguration = null;
-        boolean isPkcs11 = false;
-        if (pkiConfiguration instanceof P11PKIConfiguration p11) {
-            isPkcs11 = true;
-            p11PKIConfiguration = p11;
-            p11PKIConfiguration.providerLogin();
-        }
-        // Generate keypair for user
-        KeyPair userKeyPair = CertificateBuilder.generateKeyPair(pkiConfiguration);
-        // Find special MC attributes to put in the certificate
-        HashMap<String, String> attrs = getAttr(certOwner);
-
-        String o = org.getMrn();
-        String name = getName(certOwner);
-        String email = getEmail(certOwner);
-        String uid = getUid(certOwner);
-        int validityPeriod = certificateUtil.getValidityPeriod(type);
-        if (validityPeriod < 0)
-            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_MCP_TYPE, request.getServletPath());
-
-        if (uid == null || uid.trim().isEmpty()) {
-            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
-        }
-
-        BigInteger serialNumber = null;
-
-        // Make sure that the serial number is unique
-        boolean isUniqueSerialNumber = false;
-        while (!isUniqueSerialNumber) {
-            serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(pkiConfiguration);
-            if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
-                isUniqueSerialNumber = true;
-        }
-
-        X509Certificate userCert;
-        try {
-            if (isPkcs11) {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), p11PKIConfiguration.getProvider());
-            } else {
-                userCert = certificateUtil.getCertificateBuilder().generateCertForEntity(serialNumber, org.getCountry(), o, type, name, email, uid, validityPeriod, userKeyPair.getPublic(), attrs, org.getCertificateAuthority(), certificateUtil.getBaseCrlOcspCrlURI(), null);
-            }
-        } catch (Exception e) {
-            log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
-            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
-        }
-        String pemCertificate;
-        try {
-            pemCertificate = CertificateHandler.getPemFromEncoded("CERTIFICATE", userCert.getEncoded()).replace("\n", "\\n");
-        } catch (CertificateEncodingException e) {
-            log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
-            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
-        }
-        String pemPublicKey = CertificateHandler.getPemFromEncoded("PUBLIC KEY", userKeyPair.getPublic().getEncoded()).replace("\n", "\\n");
-        String pemPrivateKey = CertificateHandler.getPemFromEncoded("PRIVATE KEY", userKeyPair.getPrivate().getEncoded()).replace("\n", "\\n");
-        PemCertificate ret = new PemCertificate(pemPrivateKey, pemPublicKey, pemCertificate);
-
-        // create the JKS and PKCS12 keystores and pack them in a bundle with the PEM certificate
-        String keystorePassword = passwordUtil.generatePassword();
-        if (isPkcs11) {
-            p11PKIConfiguration.providerLogout();
-        }
-        byte[] jksKeystore = CertificateHandler.createOutputKeystore("JKS", name, keystorePassword, userKeyPair.getPrivate(), userCert);
-        byte[] pkcs12Keystore = CertificateHandler.createOutputKeystore("PKCS12", name, keystorePassword, userKeyPair.getPrivate(), userCert);
-        Base64.Encoder encoder = Base64.getEncoder();
-        CertificateBundle certificateBundle = new CertificateBundle(ret, new String(encoder.encode(jksKeystore), StandardCharsets.UTF_8), new String(encoder.encode(pkcs12Keystore), StandardCharsets.UTF_8), keystorePassword);
-
-        // Create the certificate
-        Certificate newMCCert = new Certificate();
-        certOwner.assignToCert(newMCCert);
-        newMCCert.setCertificate(pemCertificate);
-        newMCCert.setSerialNumber(serialNumber);
-        newMCCert.setCertificateAuthority(org.getCertificateAuthority());
-        newMCCert.setStart(userCert.getNotBefore());
-        newMCCert.setEnd(userCert.getNotAfter());
-        this.certificateService.saveCertificate(newMCCert);
-        return certificateBundle;
-    }
 
     protected Certificate signCertificate(JcaPKCS10CertificationRequest csr, CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
         PublicKey publicKey;
@@ -257,6 +166,7 @@ public abstract class BaseControllerWithCertificate {
             certOwner.assignToCert(newMCCert);
             newMCCert.setCertificate(pemCertificate);
             newMCCert.setSerialNumber(serialNumber);
+            newMCCert.setThumbprint(computeB64Thumbprint(userCert));
             newMCCert.setCertificateAuthority(org.getCertificateAuthority());
             newMCCert.setStart(userCert.getNotBefore());
             newMCCert.setEnd(userCert.getNotAfter());
@@ -270,10 +180,33 @@ public abstract class BaseControllerWithCertificate {
             ret.setSerialNumber(serialNumber);
 
             return ret;
-        } catch (CertificateEncodingException e) {
+        } catch (CertificateEncodingException | IOException e) {
             log.error(MCPIdRegConstants.CERT_ISSUING_FAILED, e);
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.CERT_ISSUING_FAILED, request.getServletPath());
         }
+    }
+
+    private String computeB64Thumbprint(X509Certificate userCert) throws CertificateEncodingException {
+        byte[] encodedDigest;
+        // If we are using an HSM we might as well try to use that to compute the thumbprint of the certificate
+        if (certificateUtil.isUsingPKCS11()) {
+            P11PKIConfiguration p11PKIConfiguration = (P11PKIConfiguration) certificateUtil.getPkiConfiguration();
+            try {
+                p11PKIConfiguration.providerLogin();
+                MessageDigest digest = MessageDigest.getInstance("SHA-256", p11PKIConfiguration.getPkcs11ProviderName());
+                encodedDigest = digest.digest(userCert.getEncoded());
+            } catch (NoSuchAlgorithmException | NoSuchProviderException e) {
+                log.warn("Could not get SHA-256 provider for HSM, falling back to BC");
+                MessageDigest digest = new SHA256.Digest();
+                encodedDigest = digest.digest(userCert.getEncoded());
+            } finally {
+                p11PKIConfiguration.providerLogout();
+            }
+        } else {
+            MessageDigest digest = new SHA256.Digest();
+            encodedDigest = digest.digest(userCert.getEncoded());
+        }
+        return Base64.getEncoder().encodeToString(encodedDigest);
     }
 
     private void checkSignatureAlgorithm(JcaPKCS10CertificationRequest csr, HttpServletRequest request) throws McpBasicRestException {
@@ -287,27 +220,27 @@ public abstract class BaseControllerWithCertificate {
     }
 
     private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McpBasicRestException {
-        String algorithm;
+        SignatureAlgorithm algorithm;
         int keyLength;
         if (publicKey instanceof RSAPublicKey rsaPublicKey) {
             keyLength = rsaPublicKey.getModulus().bitLength();
-            algorithm = "RSA";
+            algorithm = SignatureAlgorithm.RSA;
         } else if (publicKey instanceof ECPublicKey ecPublicKey) {
             keyLength = ecPublicKey.getParams().getCurve().getField().getFieldSize();
-            algorithm = "EC";
+            algorithm = SignatureAlgorithm.ECDSA;
         } else if (publicKey instanceof DSAPublicKey dsaPublicKey) {
             keyLength = dsaPublicKey.getParams().getP().bitLength();
-            algorithm = "DSA";
-        } else if (publicKey instanceof BCEdDSAPublicKey) {
+            algorithm = SignatureAlgorithm.DSA;
+        } else if ("EdDSA".equals(publicKey.getAlgorithm())) {
             keyLength = 256;
-            algorithm = "EdDSA";
+            algorithm = SignatureAlgorithm.EDDSA;
         } else {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.PUBLIC_KEY_INVALID, request.getServletPath());
         }
 
-        if ((algorithm.equals("RSA") || algorithm.equals("DSA")) && keyLength < 2048) {
+        if ((algorithm.equals(SignatureAlgorithm.RSA) || algorithm.equals(SignatureAlgorithm.DSA)) && keyLength < 2048) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.RSA_KEY_TOO_SHORT, request.getServletPath());
-        } else if ((algorithm.equals("EC") || algorithm.equals("EdDSA")) && keyLength < 224) {
+        } else if ((algorithm.equals(SignatureAlgorithm.ECDSA) || algorithm.equals(SignatureAlgorithm.EDDSA)) && keyLength < 224) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.EC_KEY_TOO_SHORT, request.getServletPath());
         }
     }
@@ -321,7 +254,7 @@ public abstract class BaseControllerWithCertificate {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_REVOCATION_DATE, request.getServletPath());
         }
         cert.setRevokedAt(input.getRevokedAt());
-        cert.setRevokeReason(input.getRevokationReason());
+        cert.setRevokeReason(input.getRevocationReason());
         cert.setRevoked(true);
         this.certificateService.saveCertificate(cert);
     }

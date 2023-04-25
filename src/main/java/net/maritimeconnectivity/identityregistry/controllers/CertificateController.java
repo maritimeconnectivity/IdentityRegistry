@@ -45,7 +45,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URLDecoder;
@@ -64,7 +64,7 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping(value={"oidc", "x509"})
+@RequestMapping(value = {"oidc", "x509"})
 @Slf4j
 public class CertificateController {
     private CertificateService certificateService;
@@ -84,14 +84,14 @@ public class CertificateController {
             description = "Get the CRL of the specified CA"
     )
     @ResponseBody
-    public ResponseEntity<?> getCRL(@PathVariable String caAlias) {
+    public ResponseEntity<String> getCRL(@PathVariable String caAlias) {
         // If looking for the root CRL we load that from a file and return it.
         if (certUtil.getRootCAAlias().equals(caAlias)) {
             try {
                 String rootCrl = Files.readString(Paths.get(certUtil.getRootCrlPath()));
                 return new ResponseEntity<>(rootCrl, HttpStatus.OK);
             } catch (IOException e) {
-                log.error("Unable to get load root crl file", e);
+                log.error("Unable to load root crl file", e);
                 return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
             }
         }
@@ -118,8 +118,8 @@ public class CertificateController {
         try {
             String pemCrl = CertificateHandler.getPemFromEncoded("X509 CRL", crl.getEncoded());
             return new ResponseEntity<>(pemCrl, HttpStatus.OK);
-        } catch (CRLException e) {
-            log.error("Unable to get Pem from bytes", e);
+        } catch (CRLException | IOException e) {
+            log.error("Unable to get PEM from bytes", e);
             return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
@@ -133,7 +133,7 @@ public class CertificateController {
             description = "POST mapping for OCSP"
     )
     @ResponseBody
-    public ResponseEntity<?> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
+    public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
         return generateOCSPResponseEntity(caAlias, input);
     }
 
@@ -145,7 +145,7 @@ public class CertificateController {
             description = "GET mapping for OCSP"
     )
     @ResponseBody
-    public ResponseEntity<?> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
+    public ResponseEntity<byte[]> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
         String uri = request.getRequestURI();
         String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
         encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
@@ -153,7 +153,7 @@ public class CertificateController {
         return generateOCSPResponseEntity(caAlias, decodedOCSP);
     }
 
-    private ResponseEntity<?> generateOCSPResponseEntity(String caAlias, byte[] input) {
+    private ResponseEntity<byte[]> generateOCSPResponseEntity(String caAlias, byte[] input) {
         byte[] byteResponse;
         try {
             byteResponse = handleOCSP(input, caAlias);
@@ -184,7 +184,7 @@ public class CertificateController {
 
             if (cert == null || !certAlias.equals(cert.getCertificateAuthority())) {
                 certificateStatusMap.put(req.getCertID(), new UnknownStatus());
-            // Check if certificate has been revoked
+                // Check if certificate has been revoked
             } else if (cert.isRevoked()) {
                 certificateStatusMap.put(req.getCertID(), new RevokedStatus(cert.getRevokedAt(), Revocation.getCRLReasonFromString(cert.getRevokeReason())));
             } else {

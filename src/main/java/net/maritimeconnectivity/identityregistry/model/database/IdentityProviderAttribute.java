@@ -25,12 +25,12 @@ import lombok.ToString;
 import lombok.experimental.Accessors;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -46,7 +46,7 @@ import java.util.Set;
 public class IdentityProviderAttribute extends TimestampModel {
 
     @Schema(
-            required = true,
+            requiredMode = Schema.RequiredMode.REQUIRED,
             description = "OpenId Connect or SAML2 attribute name",
             allowableValues = "importUrl, validateSignature, signingCertificate, singleLogoutServiceUrl, postBindingResponse, " +
                     "postBindingAuthnRequest, singleSignOnServiceUrl, wantAuthnRequestsSigned, userInfoUrl, " +
@@ -57,13 +57,13 @@ public class IdentityProviderAttribute extends TimestampModel {
     @NotBlank
     @InPredefinedList(
             acceptedValues = {"importUrl", "validateSignature", "signingCertificate", "singleLogoutServiceUrl", "postBindingResponse",
-                "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
-                "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
-                "providerType", "firstNameAttr", "lastNameAttr", "emailAttr", "usernameAttr", "permissionsAttr"}
+                    "postBindingAuthnRequest", "singleSignOnServiceUrl", "wantAuthnRequestsSigned", "userInfoUrl",
+                    "tokenUrl", "authorizationUrl", "logoutUrl", "issuer", "publicKeySignatureVerifier", "clientId", "clientSecret",
+                    "providerType", "firstNameAttr", "lastNameAttr", "emailAttr", "usernameAttr", "permissionsAttr"}
     )
     private String attributeName;
 
-    @Schema(description = "OpenId Connect or SAML2 attribute value", required = true)
+    @Schema(description = "OpenId Connect or SAML2 attribute value", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "attribute_value", nullable = false)
     private String attributeValue;
@@ -81,6 +81,7 @@ public class IdentityProviderAttribute extends TimestampModel {
 
     /**
      * Compares this IdentityProviderAttribute with another, but only compares AttributeName and AttributeValue
+     *
      * @param other The other IdentityProviderAttribute to compare with
      * @return 0 if equal, otherwise non-zero values.
      */
@@ -118,7 +119,8 @@ public class IdentityProviderAttribute extends TimestampModel {
     /**
      * Compares two IdentityProviderAttribute lists, but only looks the AttributeName and AttributeValue attributes
      * on list elements.
-     * @param first First list of IdentityProviderAttribute to compare
+     *
+     * @param first  First list of IdentityProviderAttribute to compare
      * @param second Second list of IdentityProviderAttribute to compare
      * @return true if lists are equal, else false
      */

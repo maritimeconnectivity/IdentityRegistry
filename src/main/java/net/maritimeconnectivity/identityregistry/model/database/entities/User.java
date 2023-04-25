@@ -25,13 +25,13 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.pki.PKIIdentity;
 import org.bouncycastle.asn1.x500.X500Name;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.validation.constraints.Email;
-import javax.validation.constraints.NotBlank;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import java.util.Locale;
 import java.util.Set;
 
@@ -51,17 +51,17 @@ import static net.maritimeconnectivity.pki.CertificateBuilder.escapeSpecialChara
 @Schema(description = "Model object representing a user")
 public class User extends EntityModel {
 
-    @Schema(description = "The first name of the user", required = true)
+    @Schema(description = "The first name of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "first_name")
     private String firstName;
 
-    @Schema(description = "The last name of the user", required = true)
+    @Schema(description = "The last name of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Column(name = "last_name")
     private String lastName;
 
-    @Schema(description = "The email of the user", required = true)
+    @Schema(description = "The email of the user", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Email
     @Column(name = "email")
@@ -71,7 +71,9 @@ public class User extends EntityModel {
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "user")
     private Set<Certificate> certificates;
 
-    /** Copies this user into the other */
+    /**
+     * Copies this user into the other
+     */
     @Override
     public User copyTo(EntityModel target) {
         User user = (User) super.copyTo(target);
@@ -84,8 +86,10 @@ public class User extends EntityModel {
         return user;
     }
 
-    /** Copies this user into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this user into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public User selectiveCopyTo(EntityModel target) {
         User user = (User) super.selectiveCopyTo(target);
@@ -96,7 +100,7 @@ public class User extends EntityModel {
         return user;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setUser(this);
     }
 

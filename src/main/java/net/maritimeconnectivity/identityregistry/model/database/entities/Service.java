@@ -23,15 +23,15 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
-import javax.persistence.Column;
-import javax.persistence.Entity;
-import javax.persistence.FetchType;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
-import javax.persistence.OneToMany;
-import javax.persistence.Table;
-import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.Pattern;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Pattern;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -70,7 +70,7 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
-    @Schema(description = "The version of this service instance.", required = true)
+    @Schema(description = "The version of this service instance.", requiredMode = Schema.RequiredMode.REQUIRED)
     @NotBlank
     @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be max 32 characters long")
     @Column(name = "instance_version", nullable = false)
@@ -85,7 +85,9 @@ public class Service extends NonHumanEntityModel {
     @JoinColumn(name = "id_vessel")
     private Vessel vessel;
 
-    /** Copies this service into the other */
+    /**
+     * Copies this service into the other
+     */
     @Override
     public Service copyTo(EntityModel target) {
         Service service = (Service) super.copyTo(target);
@@ -102,8 +104,10 @@ public class Service extends NonHumanEntityModel {
         return service;
     }
 
-    /** Copies this service into the other
-     * Only update things that are allowed to change on update */
+    /**
+     * Copies this service into the other
+     * Only update things that are allowed to change on update
+     */
     @Override
     public Service selectiveCopyTo(EntityModel target) {
         Service service = (Service) super.selectiveCopyTo(target);
@@ -115,7 +119,7 @@ public class Service extends NonHumanEntityModel {
         return service;
     }
 
-    public void assignToCert(Certificate cert){
+    public void assignToCert(Certificate cert) {
         cert.setService(this);
     }
 

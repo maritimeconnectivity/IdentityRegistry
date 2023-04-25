@@ -31,7 +31,7 @@ import java.util.Optional;
 public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseService<T> {
     private static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
 
-    protected final List<String> authorizedRoles =  Arrays.asList("ORG_ADMIN", "SITE_ADMIN");
+    protected final List<String> authorizedRoles = Arrays.asList("ORG_ADMIN", "SITE_ADMIN");
 
     protected AccessControlUtil accessControlUtil;
 

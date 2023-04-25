@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
-import net.maritimeconnectivity.identityregistry.model.data.CertificateBundle;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -34,7 +33,7 @@ import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
 import net.maritimeconnectivity.pki.pkcs11.P11PKIConfiguration;
-import org.springdoc.api.annotations.ParameterObject;
+import org.springdoc.core.annotations.ParameterObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -57,10 +56,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.validation.Valid;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
 import java.math.BigInteger;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -296,30 +294,6 @@ public class UserController extends EntityController<User> {
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, userMrn, TYPE, null, serialNumber);
-    }
-
-    /**
-     * Returns new certificate for the user identified by the given ID
-     *
-     * @return a reply...
-     * @throws McpBasicRestException
-     * @deprecated It is generally not considered secure letting the server generate the private key. Will be removed in the future
-     */
-    @Operation(
-            description = "DEPRECATED: Issues a bundle containing a certificate, the key pair of the certificate " +
-                    "and keystores in JKS and PKCS#12 formats. As server generated key pairs are not considered secure " +
-                    "this endpoint should not be used, and anybody who does should migrate to the endpoint for issuing " +
-                    "certificates using certificate signing requests as soon as possible. This endpoint will be removed " +
-                    "completely in the future and providers may choose to already disable it now which will result in an error if called."
-    )
-    @GetMapping(
-            value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new",
-            produces = MediaType.APPLICATION_JSON_VALUE
-    )
-    @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
-    @Deprecated
-    public ResponseEntity<CertificateBundle> newUserCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
-        return this.newEntityCert(request, orgMrn, userMrn, TYPE);
     }
 
     /**
