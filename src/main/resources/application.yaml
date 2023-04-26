@@ -170,7 +170,7 @@ spring.security:
     oauth2:
         resourceserver:
             jwt:
-                issuer-uri: http://localhost:8080/realms/MCP
+                issuer-uri: http://localhost:8080/auth/realms/MCP
 
 # Do not "leak" internal setup details in http X-Application-Context header
 management.server.add-application-context-header: false
