@@ -16,6 +16,7 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
@@ -45,11 +46,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.math.BigInteger;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.security.AuthProvider;
@@ -133,23 +131,20 @@ public class CertificateController {
             description = "POST mapping for OCSP"
     )
     @ResponseBody
-    public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
+    public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias, @Parameter(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1") @RequestBody byte[] input) {
         return generateOCSPResponseEntity(caAlias, input);
     }
 
     @GetMapping(
-            value = "/api/certificates/ocsp/{caAlias}/**",
+            value = "/api/certificates/ocsp/{caAlias}/{ocspRequest}",
             produces = "application/ocsp-response"
     )
     @Operation(
             description = "GET mapping for OCSP"
     )
     @ResponseBody
-    public ResponseEntity<byte[]> getOCSP(HttpServletRequest request, @PathVariable String caAlias) {
-        String uri = request.getRequestURI();
-        String encodedOCSP = uri.substring(uri.indexOf(caAlias) + caAlias.length() + 1);
-        encodedOCSP = URLDecoder.decode(encodedOCSP, StandardCharsets.UTF_8);
-        byte[] decodedOCSP = Base64.decode(encodedOCSP);
+    public ResponseEntity<byte[]> getOCSP(@PathVariable String caAlias, @Parameter(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1") @PathVariable String ocspRequest) {
+        byte[] decodedOCSP = Base64.decode(ocspRequest);
         return generateOCSPResponseEntity(caAlias, decodedOCSP);
     }
 
