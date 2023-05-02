@@ -131,7 +131,8 @@ public class CertificateController {
             description = "POST mapping for OCSP"
     )
     @ResponseBody
-    public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias, @Parameter(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1") @RequestBody byte[] input) {
+    public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias,
+                                           @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1") @RequestBody byte[] input) {
         return generateOCSPResponseEntity(caAlias, input);
     }
 
