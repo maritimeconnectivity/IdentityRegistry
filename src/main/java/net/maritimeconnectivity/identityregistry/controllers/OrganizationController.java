@@ -379,14 +379,15 @@ public class OrganizationController extends BaseControllerWithCertificate {
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/certificate/issue-new/csr",
-            consumes = MediaType.TEXT_PLAIN_VALUE,
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(
-            description = "Create a new organization certificate using CSR"
+            description = "Create a new organization certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
     @PreAuthorize("hasRole('ORG_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'ORG_ADMIN')")
-    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newOrgCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody String csr) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             JcaPKCS10CertificationRequest pkcs10CertificationRequest = CsrUtil.getCsrFromPem(request, csr);

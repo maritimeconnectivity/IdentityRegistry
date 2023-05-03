@@ -166,14 +166,15 @@ public class MMSController extends EntityController<MMS> {
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/mms/{mmsMrn}/certificate/issue-new/csr",
-            consumes = MediaType.TEXT_PLAIN_VALUE,
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(
-            description = "Create a new MMS certificate using CSR"
+            description = "Create a new MMS certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
-    public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE, null);
     }
 

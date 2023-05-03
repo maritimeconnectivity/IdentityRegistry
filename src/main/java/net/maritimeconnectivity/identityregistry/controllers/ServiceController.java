@@ -375,14 +375,15 @@ public class ServiceController extends EntityController<Service> {
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/issue-new/csr",
-            consumes = MediaType.TEXT_PLAIN_VALUE,
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(
-            description = "Create a new service identity certificate using CSR"
+            description = "Create a new service identity certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
-    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, version);
     }
 

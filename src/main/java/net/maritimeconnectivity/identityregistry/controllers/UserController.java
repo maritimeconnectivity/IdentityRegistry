@@ -304,14 +304,15 @@ public class UserController extends EntityController<User> {
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/user/{userMrn}/certificate/issue-new/csr",
-            consumes = MediaType.TEXT_PLAIN_VALUE,
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(
-            description = "Create a new user identity certificate using CSR"
+            description = "Create a new user identity certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
     @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
-    public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
     }
 

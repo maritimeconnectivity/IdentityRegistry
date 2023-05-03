@@ -163,14 +163,15 @@ public class DeviceController extends EntityController<Device> {
      */
     @PostMapping(
             value = "/api/org/{orgMrn}/device/{deviceMrn}/certificate/issue-new/csr",
-            consumes = MediaType.TEXT_PLAIN_VALUE,
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
             produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
     )
     @Operation(
-            description = "Create a new device certificate using CSR"
+            description = "Create a new device certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
-    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @Parameter(description = "A PEM encoded PKCS#10 CSR", required = true) @RequestBody String csr) throws McpBasicRestException {
+    public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE, null);
     }
 
