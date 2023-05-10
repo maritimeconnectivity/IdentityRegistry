@@ -97,7 +97,6 @@ net:
                     organization: 24
                     service: 24
                     mms: 24
-                #enable-server-generated-keys: false # if you want to enable server generated key pairs you need to uncomment this line and set the value to true
 
             # Email setup
             email:
@@ -139,9 +138,6 @@ net:
             openapi: # base URLs for the OIDC and X.509 versions of the API
                 oidc-base-path: https://api.maritimeconnectivity.net/
                 x509-base-path: https://api-x509.maritimeconnectivity.net/
-
-# Set alternative keycloak conf file
-#keycloak.configurationFile: file:/conf/keycloak.json
 
 # Test db-connection, used to avoid connection timeout errors
 spring.datasource:
