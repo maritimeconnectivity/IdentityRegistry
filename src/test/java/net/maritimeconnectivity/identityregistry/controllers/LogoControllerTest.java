@@ -78,6 +78,7 @@ class LogoControllerTest {
 
     @BeforeEach
     void init() {
+        orgRepo.deleteAll();
         validator = context.getBean(LocalValidatorFactoryBean.class);
     }
 
@@ -100,9 +101,13 @@ class LogoControllerTest {
         logo.setImage(new byte[]{1, 2, 3});
         org.setLogo(logo);
         Set<ConstraintViolation<Organization>> violations = validator.validate(org);
-        assertEquals("Number of logos", 0, violations.size());
+        assertEquals("Number of violations", 0, violations.size());
+
+        assertNumberOfLogos(0);
 
         orgRepo.save(org);
+
+        assertNumberOfLogos(1);
 
         // fiddle with security to be able to call the delete method
         InetOrgPerson person = mock(InetOrgPerson.class);
