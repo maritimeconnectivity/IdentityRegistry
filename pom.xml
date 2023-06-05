@@ -21,7 +21,7 @@
 
 	<groupId>net.maritimeconnectivity.identityregistry</groupId>
 	<artifactId>mcp-identityregistry-core</artifactId>
-	<version>1.2.0-RC2</version>
+	<version>1.2.0</version>
 	<packaging>jar</packaging>
 
 	<name>mcp-identityregistry-core</name>
@@ -137,7 +137,7 @@
 		<dependency>
 			<groupId>net.maritimeconnectivity.pki</groupId>
 			<artifactId>mcp-pki</artifactId>
-			<version>1.2.0-RC2</version>
+			<version>1.2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>com.twelvemonkeys.imageio</groupId>
