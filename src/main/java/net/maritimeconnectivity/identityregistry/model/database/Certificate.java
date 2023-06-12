@@ -19,24 +19,16 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import com.fasterxml.jackson.databind.ser.std.ToStringSerializer;
 import io.swagger.v3.oas.annotations.media.Schema;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.ToString;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
-import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
-import net.maritimeconnectivity.identityregistry.model.database.entities.User;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
+import net.maritimeconnectivity.identityregistry.model.database.entities.*;
 import net.maritimeconnectivity.pki.Revocation;
 import net.maritimeconnectivity.pki.RevocationInfo;
 import net.maritimeconnectivity.pki.ocsp.CertStatus;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.Table;
 import java.math.BigInteger;
 import java.security.cert.CRLReason;
 import java.util.Date;
@@ -73,7 +65,7 @@ public class Certificate extends TimestampModel {
     @Schema(description = "The serial number of the certificate", accessMode = READ_ONLY)
     private BigInteger serialNumber;
 
-    @Column(name = "thumbprint", nullable = false)
+    @Column(name = "thumbprint")
     @Schema(description = "The base64 encoded SHA-256 thumbprint of the certificate", accessMode = READ_ONLY)
     private String thumbprint;
 
