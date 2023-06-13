@@ -56,6 +56,7 @@ public abstract class CertificateModel extends TimestampModel {
                 cert.setService(null);
                 cert.setUser(null);
                 cert.setVessel(null);
+                cert.setMms(null);
             }
         }
     }
