@@ -479,6 +479,45 @@
       },
       "notBefore": 0,
       "groups": []
+    },
+    {
+      "id": "817e7665-301a-463f-80e6-5a1b50af7fa0",
+      "createdTimestamp": 1700657940455,
+      "username": "urn:mrn:mcp:user:idp1:bootstrap:bootstrap-user",
+      "enabled": true,
+      "totp": false,
+      "emailVerified": false,
+      "firstName": "",
+      "lastName": "",
+      "email": "mcp-admin@maritimeconnectivity.net",
+      "attributes": {
+        "mrn": [
+          "urn:mrn:mcp:user:idp1:bootstrap:bootstrap-user"
+        ],
+        "org": [
+          "urn:mrn:mcp:org:idp1:bootstrap"
+        ],
+        "permissions": [
+          "MCPADMIN"
+        ]
+      },
+      "credentials": [
+        {
+          "id": "c5aa65fa-0ecd-41c3-acd0-07693874d31c",
+          "type": "password",
+          "userLabel": "My password",
+          "createdDate": 1700657953340,
+          "secretData": "{\"value\":\"QSJlMOoTdcQW1RW0QDcKisN1WFlsXwps6A8RYyMqZIw=\",\"salt\":\"a0tWUrsNxffT3mogiays0Q==\",\"additionalParameters\":{}}",
+          "credentialData": "{\"hashIterations\":20000,\"algorithm\":\"pbkdf2-sha256\",\"additionalParameters\":{}}"
+        }
+      ],
+      "disableableCredentialTypes": [],
+      "requiredActions": [],
+      "realmRoles": [
+        "default-roles-mcp"
+      ],
+      "notBefore": 0,
+      "groups": []
     }
   ],
   "scopeMappings": [
