@@ -4,7 +4,7 @@
 # A customized conf file (application.yaml) must be available in the folder mounted to /conf.
 # When using in non-local environment it is recommened to generate new trust and keystores and place them in
 # the conf-folder and point to them in application.yaml.
-FROM eclipse-temurin:17-jre
+FROM eclipse-temurin:21-jre
 
 LABEL org.opencontainers.image.source="https://github.com/maritimeconnectivity/IdentityRegistry"
 
