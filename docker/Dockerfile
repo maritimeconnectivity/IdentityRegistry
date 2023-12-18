@@ -8,8 +8,8 @@ FROM eclipse-temurin:21-jre
 
 LABEL org.opencontainers.image.source="https://github.com/maritimeconnectivity/IdentityRegistry"
 
-ENV MARIADB_VERSION 3.0.10
-ENV MYSQL_VERSION 8.0.33
+ENV MARIADB_VERSION 3.2.0
+ENV MYSQL_VERSION 8.1.0
 ENV LOADER_PATH /modules
 
 RUN mkdir /conf
