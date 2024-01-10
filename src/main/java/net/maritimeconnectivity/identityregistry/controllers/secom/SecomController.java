@@ -18,8 +18,18 @@ package net.maritimeconnectivity.identityregistry.controllers.secom;
 
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
+import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
+import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
+import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
+import net.maritimeconnectivity.identityregistry.services.DeviceServiceImpl;
+import net.maritimeconnectivity.identityregistry.services.EntityService;
+import net.maritimeconnectivity.identityregistry.services.MMSService;
+import net.maritimeconnectivity.identityregistry.services.OrganizationService;
+import net.maritimeconnectivity.identityregistry.services.ServiceService;
+import net.maritimeconnectivity.identityregistry.services.VesselServiceImpl;
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
+import org.apache.commons.codec.binary.Base64;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,6 +38,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.regex.Pattern;
 
 @RestController
@@ -36,10 +47,13 @@ import java.util.regex.Pattern;
 public class SecomController {
 
     private MrnUtil mrnUtil;
-
     private CertificateService certificateService;
-
-    private final Pattern base64Pattern = Pattern.compile("^[-A-Za-z0-9+=]{1,50}|=[^=]|={3,}$");
+    private DeviceServiceImpl deviceService;
+    private MMSService mmsService;
+    private OrganizationService organizationService;
+    private ServiceService serviceService;
+    private EntityService<User> userService;
+    private VesselServiceImpl vesselService;
     private final Pattern serialNumberPattern = Pattern.compile("^\\d+$");
 
     @GetMapping(
@@ -49,22 +63,43 @@ public class SecomController {
     public ResponseEntity<String> getPublicKey(@PathVariable String parameter) {
         String ret = null;
         // check if the parameter is certificate thumbprint
-        if (base64Pattern.matcher(parameter).matches()) {
+        if (Base64.isBase64(parameter)) {
             Certificate certificate = certificateService.getCertificateByThumbprint(parameter);
             if (certificate != null) {
                 ret = certificate.getCertificate();
             }
+            // else, check if it is a serial number
         } else if (serialNumberPattern.matcher(parameter).matches()) {
             BigInteger serialNumber = new BigInteger(parameter);
             Certificate certificate = certificateService.getCertificateBySerialNumber(serialNumber);
             if (certificate != null) {
                 ret = certificate.getCertificate();
             }
+            // else, check if it is an MCP MRN
         } else if (mrnUtil.mcpMrnPattern.matcher(parameter).matches()) {
+            String type = mrnUtil.getEntityType(parameter);
+            CertificateModel entity = switch (type) {
+                case "device" -> deviceService.getByMrn(parameter);
+                case "mms" -> mmsService.getByMrn(parameter);
+                case "organization" -> organizationService.getOrganizationByMrn(parameter);
+                case "user" -> userService.getByMrn(parameter);
+                case "vessel" -> vesselService.getByMrn(parameter);
+                case null, default -> null;
+            };
 
+            if (entity == null && "service".equals(type)) {
+                List<Service> services = serviceService.getServicesByMrn(parameter);
+                StringBuilder stringBuilder = new StringBuilder();
+                services.forEach(service -> service.getCertificates().forEach(cert -> stringBuilder.append(cert.getCertificate())));
+                ret = stringBuilder.toString();
+            } else if (entity != null) {
+                StringBuilder stringBuilder = new StringBuilder();
+                entity.getCertificates().forEach(cert -> stringBuilder.append(cert.getCertificate()));
+                ret = stringBuilder.toString();
+            }
         }
 
-        if (ret != null) {
+        if (ret != null && !ret.isEmpty()) {
             return ResponseEntity.ok(ret);
         }
         return ResponseEntity.notFound().build();
@@ -78,5 +113,35 @@ public class SecomController {
     @Autowired
     public void setCertificateService(CertificateService certificateService) {
         this.certificateService = certificateService;
+    }
+
+    @Autowired
+    public void setDeviceService(DeviceServiceImpl deviceService) {
+        this.deviceService = deviceService;
+    }
+
+    @Autowired
+    public void setMmsService(MMSService mmsService) {
+        this.mmsService = mmsService;
+    }
+
+    @Autowired
+    public void setOrganizationService(OrganizationService organizationService) {
+        this.organizationService = organizationService;
+    }
+
+    @Autowired
+    public void setServiceService(ServiceService serviceService) {
+        this.serviceService = serviceService;
+    }
+
+    @Autowired
+    public void setUserService(EntityService<User> userService) {
+        this.userService = userService;
+    }
+
+    @Autowired
+    public void setVesselService(VesselServiceImpl vesselService) {
+        this.vesselService = vesselService;
     }
 }

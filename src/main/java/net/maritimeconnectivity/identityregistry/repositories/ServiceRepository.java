@@ -29,8 +29,7 @@ public interface ServiceRepository extends PagingAndSortingRepository<Service, L
 
     void deleteByidOrganization(Long orgId);
 
-    List<Service> findByName(String lastName);
-
     Service getByMrnIgnoreCaseAndInstanceVersion(String mrn, String version);
     Page<Service> findByMrnIgnoreCase(String mrn, Pageable pageable);
+    List<Service> findByMrnIgnoreCase(String mrn);
 }

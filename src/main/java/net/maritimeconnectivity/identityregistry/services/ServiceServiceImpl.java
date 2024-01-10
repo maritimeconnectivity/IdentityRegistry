@@ -47,17 +47,25 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
         return this.filterResult(ret);
     }
 
+    @Override
     public Service getServiceByMrnAndVersion(String mrn, String version) {
         return serviceRepository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
     }
 
+    @Override
     public Service getByMrn(String mrn) {
         throw new UnsupportedOperationException("Single services cannot be fetched using only MRN!");
     }
 
+    @Override
     public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
         Page<Service> ret = serviceRepository.findByMrnIgnoreCase(mrn, pageable);
         return this.filterResult(ret);
+    }
+
+    @Override
+    public List<Service> getServicesByMrn(String mrn) {
+        return serviceRepository.findByMrnIgnoreCase(mrn);
     }
 
     @Transactional
