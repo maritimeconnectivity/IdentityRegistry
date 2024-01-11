@@ -62,7 +62,7 @@ public class SecomController {
     )
     public ResponseEntity<String> getPublicKey(@PathVariable String parameter) {
         String ret = null;
-        // check if the parameter is certificate thumbprint
+        // check if the parameter is a certificate thumbprint
         if (Base64.isBase64(parameter)) {
             Certificate certificate = certificateService.getCertificateByThumbprint(parameter);
             if (certificate != null) {
@@ -77,32 +77,44 @@ public class SecomController {
             }
             // else, check if it is an MCP MRN
         } else if (mrnUtil.mcpMrnPattern.matcher(parameter).matches()) {
-            String type = mrnUtil.getEntityType(parameter);
-            CertificateModel entity = switch (type) {
-                case "device" -> deviceService.getByMrn(parameter);
-                case "mms" -> mmsService.getByMrn(parameter);
-                case "organization" -> organizationService.getOrganizationByMrn(parameter);
-                case "user" -> userService.getByMrn(parameter);
-                case "vessel" -> vesselService.getByMrn(parameter);
-                case null, default -> null;
-            };
-
-            if (entity == null && "service".equals(type)) {
-                List<Service> services = serviceService.getServicesByMrn(parameter);
-                StringBuilder stringBuilder = new StringBuilder();
-                services.forEach(service -> service.getCertificates().forEach(cert -> stringBuilder.append(cert.getCertificate())));
-                ret = stringBuilder.toString();
-            } else if (entity != null) {
-                StringBuilder stringBuilder = new StringBuilder();
-                entity.getCertificates().forEach(cert -> stringBuilder.append(cert.getCertificate()));
-                ret = stringBuilder.toString();
-            }
+            ret = getCertsForMrn(parameter);
         }
 
         if (ret != null && !ret.isEmpty()) {
             return ResponseEntity.ok(ret);
         }
         return ResponseEntity.notFound().build();
+    }
+
+    private String getCertsForMrn(String mrn) {
+        String type = mrnUtil.getEntityType(mrn);
+        String ret = null;
+        CertificateModel entity = switch (type) {
+            case "device" -> deviceService.getByMrn(mrn);
+            case "mms" -> mmsService.getByMrn(mrn);
+            case "organization" -> organizationService.getOrganizationByMrn(mrn);
+            case "user" -> userService.getByMrn(mrn);
+            case "vessel" -> vesselService.getByMrn(mrn);
+            default -> null;
+        };
+
+        if (entity == null && "service".equals(type)) {
+            List<Service> services = serviceService.getServicesByMrn(mrn);
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Service service : services) {
+                for (Certificate cert : service.getCertificates()) {
+                    stringBuilder.append(cert.getCertificate());
+                }
+            }
+            ret = stringBuilder.toString();
+        } else if (entity != null) {
+            StringBuilder stringBuilder = new StringBuilder();
+            for (Certificate cert : entity.getCertificates()) {
+                stringBuilder.append(cert.getCertificate());
+            }
+            ret = stringBuilder.toString();
+        }
+        return ret;
     }
 
     @Autowired
