@@ -20,14 +20,14 @@ import net.maritimeconnectivity.identityregistry.model.database.Agent;
 import net.maritimeconnectivity.identityregistry.model.database.AllowedAgentRole;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.services.AgentService;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
+import net.maritimeconnectivity.identityregistry.services.DeviceServiceImpl;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
+import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import org.junit.jupiter.api.BeforeEach;
@@ -78,9 +78,9 @@ class OrganizationControllerTests {
     private MockMvc mvc;
 
     @MockBean
-    private EntityService<Device> deviceService;
+    private DeviceServiceImpl deviceService;
     @MockBean
-    private EntityService<Service> serviceService;
+    private ServiceService serviceService;
     @MockBean
     private EntityService<User> userService;
 
