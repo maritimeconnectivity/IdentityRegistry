@@ -125,12 +125,9 @@ public abstract class BaseControllerWithCertificate {
                 BigInteger serialNumber = null;
 
                 // Make sure that the serial number is unique
-                boolean isUniqueSerialNumber = false;
-                while (!isUniqueSerialNumber) {
+                do {
                     serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(p11PKIConfiguration);
-                    if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
-                        isUniqueSerialNumber = true;
-                }
+                } while (this.certificateService.countCertificatesBySerialNumber(serialNumber) != 0);
                 X509Certificate userCert = createX509Certificate(org, type, request, publicKey, authProvider, p11PKIConfiguration, attrs, o, name, email, uid, validityPeriod, serialNumber);
                 return createCertificate(certOwner, org, request, serialNumber, userCert);
             }
