@@ -122,7 +122,7 @@ public abstract class BaseControllerWithCertificate {
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
 
-                BigInteger serialNumber = null;
+                BigInteger serialNumber;
 
                 // Make sure that the serial number is unique
                 do {
