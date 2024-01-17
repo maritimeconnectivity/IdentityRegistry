@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.controllers.secom;
 
+import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
@@ -59,6 +60,12 @@ public class SecomController {
     @GetMapping(
             value = "/publicKey/{parameter}",
             produces = "application/x-pem-file"
+    )
+    @Operation(
+            description = "Returns 0 or more certificates (public keys). Based on the REST definition of the GetPublicKey " +
+                    "interface definition from IEC 63173-2:2022 (SECOM). The input parameter can either be the " +
+                    "serial number or base64 encoded SHA-256 thumbprint of the wanted certificate. It is also possible " +
+                    "to provide the MRN of an MCP entity to get the list of all active certificate of that entity."
     )
     public ResponseEntity<String> getPublicKey(@PathVariable String parameter) {
         String ret = null;
