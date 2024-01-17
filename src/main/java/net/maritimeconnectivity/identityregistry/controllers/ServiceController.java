@@ -17,6 +17,8 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
@@ -50,11 +52,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -85,7 +84,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Create a new service identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<Service> createService(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -160,7 +158,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Get a page of service identities with a given MRN"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -195,7 +192,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Get the service identity with the given MRN and version"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -229,7 +225,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Update a specific service identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -309,7 +304,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Delete a specific service identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -439,7 +433,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Get the Keycloak JSON configuration for the specified service if it exists"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -479,7 +472,6 @@ public class ServiceController extends EntityController<Service> {
     @Operation(
             description = "Get the Keycloak JBoss XML configuration for the specified service if it exists"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
