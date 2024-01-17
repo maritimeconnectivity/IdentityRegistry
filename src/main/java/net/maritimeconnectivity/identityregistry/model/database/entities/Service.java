@@ -16,13 +16,6 @@
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
-import lombok.ToString;
-import net.maritimeconnectivity.identityregistry.model.database.Certificate;
-import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -30,8 +23,13 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import lombok.ToString;
+import net.maritimeconnectivity.identityregistry.model.database.Certificate;
+import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
+
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -62,19 +60,13 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "oidc_client_secret")
     private String oidcClientSecret;
 
-    @Schema(description = "The OpenId Connect redirect uri of service.")
+    @Schema(description = "The OpenId Connect redirect URI of service.")
     @Column(name = "oidc_redirect_uri")
     private String oidcRedirectUri;
 
     @Schema(description = "The domain name the service will be available on. Used in the issued certificates for the service.")
     @Column(name = "cert_domain_name")
     private String certDomainName;
-
-    @Schema(description = "The version of this service instance.", requiredMode = Schema.RequiredMode.REQUIRED)
-    @NotBlank
-    @Pattern(regexp = "^[\\p{Alnum}\\.\\-\\,\\+_:]{1,32}$", message = "The version number must only contain alpha-numerical characters and '.,+-_:' and be max 32 characters long")
-    @Column(name = "instance_version", nullable = false)
-    private String instanceVersion;
 
     @Schema(description = "The set of certificates of the service. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
@@ -96,7 +88,6 @@ public class Service extends NonHumanEntityModel {
         service.setOidcClientSecret(oidcClientSecret);
         service.setOidcRedirectUri(oidcRedirectUri);
         service.setCertDomainName(certDomainName);
-        service.setInstanceVersion(instanceVersion);
         service.getCertificates().clear();
         service.getCertificates().addAll(certificates);
         service.setVessel(vessel);
@@ -140,11 +131,10 @@ public class Service extends NonHumanEntityModel {
      * Generates the oidcClientId. Currently done by concat'ing the version and the mrn
      */
     public void generateOidcClientId() {
-        if (this.getInstanceVersion() == null || this.getInstanceVersion().trim().isEmpty()
-                || this.getMrn() == null || this.getMrn().trim().isEmpty()) {
-            throw new IllegalArgumentException("Service Instance Version or Instance Mrn is empty!");
+        if (this.getMrn() == null || this.getMrn().trim().isEmpty()) {
+            throw new IllegalArgumentException("Service MRN is empty!");
         }
-        this.setOidcClientId(this.getInstanceVersion() + "-" + this.getMrn());
+        this.setOidcClientId(this.getMrn());
     }
 }
 
