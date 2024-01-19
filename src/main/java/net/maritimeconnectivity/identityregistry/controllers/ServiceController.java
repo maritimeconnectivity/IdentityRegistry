@@ -156,10 +156,10 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            description = "Get a page of service identities with a given MRN"
+            description = "Get a page of service identities with a given MRN prefix"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
-    public Page<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McpBasicRestException {
+    public Page<Service> getServices(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
@@ -184,14 +184,17 @@ public class ServiceController extends EntityController<Service> {
      *
      * @return a reply...
      * @throws McpBasicRestException
+     * @deprecated will be removed in the future as version is no longer kept separate from MRN
      */
     @GetMapping(
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            description = "Get the service identity with the given MRN and version"
+            description = "Get the service identity with the given MRN and version",
+            deprecated = true
     )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Service> getServiceVersion(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -228,7 +231,7 @@ public class ServiceController extends EntityController<Service> {
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
-        if (!serviceMrn.equalsIgnoreCase(input.getMrn()) || !version.equals(input.getInstanceVersion())) {
+        if (!serviceMrn.equalsIgnoreCase(input.getMrn())) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
         }
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -258,7 +261,7 @@ public class ServiceController extends EntityController<Service> {
                             clientSecret = keycloakAU.createClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
                         }
                     } catch (IOException e) {
-                        log.error("Error while updating/creation client in keycloak.", e);
+                        log.error("Error while updating/creating client in keycloak.", e);
                         throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
                     } catch (DuplicatedKeycloakEntry dke) {
                         throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
@@ -278,6 +281,7 @@ public class ServiceController extends EntityController<Service> {
                     service.setOidcRedirectUri(null);
                 }
                 this.addVesselToServiceIfPresent(input, orgMrn, request);
+                input.setMrn(input.getMrn() + ':' + version);
                 input.selectiveCopyTo(service);
                 try {
                     this.entityService.save(service);
