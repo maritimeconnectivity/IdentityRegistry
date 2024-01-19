@@ -17,8 +17,6 @@ package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
@@ -54,6 +52,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.validation.Valid;
 import java.io.IOException;
 import java.math.BigInteger;
 import java.net.URI;
@@ -172,6 +172,49 @@ public class ServiceController extends EntityController<Service> {
             }
             if (services.iterator().next().getIdOrganization().equals(org.getId())) {
                 return services;
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * @param request    the HTTP request
+     * @param orgMrn     the org MRN
+     * @param serviceMrn the service MRN
+     * @return a response containing a service
+     * @throws McpBasicRestException if something goes wrong
+     */
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the service identity with the given MRN. If a direct match cannot be found, the service " +
+                    "that was last created and has the given MRN as a prefix of its MRN followed by an additional namespace will be returned."
+    )
+    public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+
+            // Start by checking whether we have a direct match on the MRN
+            Service service = entityService.getByMrn(serviceMrn);
+            if (service != null) {
+                return ResponseEntity.ok(service);
+            }
+
+            // Else, check if there are any services that have the MRN as prefix of their MRN and return the latest that was created
+            service = ((ServiceService) entityService).getNewestServiceByMrn(serviceMrn);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId())) {
+                return new ResponseEntity<>(service, HttpStatus.OK);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
