@@ -68,6 +68,11 @@ public class Service extends NonHumanEntityModel {
     @Column(name = "cert_domain_name")
     private String certDomainName;
 
+    @Schema(description = "DEPRECATED: The version of the service should no longer be set separately from the MRN, " +
+            "but should instead be appended to the MRN, if needed. This change has been made to ensure uniqueness of MRNs.", deprecated = true)
+    @Deprecated(forRemoval = true)
+    private String instanceVersion;
+
     @Schema(description = "The set of certificates of the service. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
     @OneToMany(fetch = FetchType.EAGER, mappedBy = "service")
     private Set<Certificate> certificates;
