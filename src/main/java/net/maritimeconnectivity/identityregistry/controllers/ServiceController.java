@@ -152,7 +152,7 @@ public class ServiceController extends EntityController<Service> {
      * @throws McpBasicRestException
      */
     @GetMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}",
+            value = "/api/org/{orgMrn}/services/{serviceMrn}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
