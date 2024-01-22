@@ -54,11 +54,6 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     @Override
-    public Service getByMrn(String mrn) {
-        return serviceRepository.findByMrnIgnoreCase(mrn);
-    }
-
-    @Override
     public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
         Page<Service> ret = serviceRepository.findByMrnStartingWithIgnoreCase(mrn, pageable);
         return this.filterResult(ret);
