@@ -20,7 +20,6 @@ import io.swagger.v3.oas.annotations.Operation;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
-import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.User;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.DeviceServiceImpl;
@@ -39,7 +38,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.regex.Pattern;
 
 @RestController
@@ -100,21 +98,17 @@ public class SecomController {
             case "device" -> deviceService.getByMrn(mrn);
             case "mms" -> mmsService.getByMrn(mrn);
             case "organization" -> organizationService.getOrganizationByMrn(mrn);
+            case "service" -> serviceService.getByMrn(mrn);
             case "user" -> userService.getByMrn(mrn);
             case "vessel" -> vesselService.getByMrn(mrn);
             default -> null;
         };
 
         if (entity == null && "service".equals(type)) {
-            List<Service> services = serviceService.getServicesByMrn(mrn);
-            StringBuilder stringBuilder = new StringBuilder();
-            for (Service service : services) {
-                for (Certificate cert : service.getCertificates()) {
-                    stringBuilder.append(cert.getCertificate());
-                }
-            }
-            ret = stringBuilder.toString();
-        } else if (entity != null) {
+            entity = serviceService.getNewestServiceByMrn(mrn);
+        }
+
+        if (entity != null) {
             StringBuilder stringBuilder = new StringBuilder();
             for (Certificate cert : entity.getCertificates()) {
                 stringBuilder.append(cert.getCertificate());
