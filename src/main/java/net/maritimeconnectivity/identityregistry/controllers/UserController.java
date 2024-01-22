@@ -311,7 +311,7 @@ public class UserController extends EntityController<User> {
             description = "Create a new user identity certificate using CSR",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
     )
-    @PreAuthorize("(hasRole('USER_ADMIN') or @accessControlUtil.isUser(#userMrn)) and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
+    @PreAuthorize("@accessControlUtil.isUser(#userMrn) or @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
     }
