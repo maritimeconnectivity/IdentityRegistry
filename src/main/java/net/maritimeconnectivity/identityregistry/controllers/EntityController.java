@@ -214,7 +214,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             EntityModel entity;
-            if (type.equals("service")) {
+            if (type.equals("service") && version != null) {
                 entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
             } else {
                 entity = this.entityService.getByMrn(entityMrn);
@@ -249,7 +249,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             EntityModel entity;
-            if (type.equals("service")) {
+            if (type.equals("service") && version != null) {
                 entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
             } else {
                 entity = this.entityService.getByMrn(entityMrn);

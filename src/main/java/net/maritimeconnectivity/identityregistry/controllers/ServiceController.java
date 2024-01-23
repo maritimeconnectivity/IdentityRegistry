@@ -269,8 +269,10 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
     )
     @Operation(
-            description = "Update a specific service identity"
+            description = "Update a specific service identity",
+            deprecated = true
     )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -346,11 +348,52 @@ public class ServiceController extends EntityController<Service> {
      * @throws McpBasicRestException
      */
     @DeleteMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
+            value = "/api/org/{orgMrn}/service/{serviceMrn}"
     )
     @Operation(
             description = "Delete a specific service identity"
     )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        if (org != null) {
+            // Check that the entity being deleted belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = this.entityService.getByMrn(serviceMrn);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId())) {
+                // Delete the keycloak client for the service if needed
+                if (service.getOidcClientId() != null && !service.getOidcClientId().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    keycloakAU.deleteClient(service.getOidcClientId());
+                }
+                this.entityService.delete(service.getId());
+                return new ResponseEntity<>(HttpStatus.OK);
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Deletes a Service
+     *
+     * @return a reply...
+     * @throws McpBasicRestException
+     */
+    @DeleteMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
+    )
+    @Operation(
+            description = "Delete a specific service identity",
+            deprecated = true
+    )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> deleteService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -397,15 +440,49 @@ public class ServiceController extends EntityController<Service> {
     }
 
     @GetMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{serialNumber}",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/{serialNumber}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
             description = "Get the service identity certificate with the given serial number"
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
+    public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
+        return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, null, serialNumber);
+    }
+
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/certificate/{serialNumber}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the service identity certificate with the given serial number",
+            deprecated = true
+    )
+    @Deprecated(forRemoval = true)
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Certificate> getServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @PathVariable BigInteger serialNumber) throws McpBasicRestException {
         return this.getEntityCert(request, orgMrn, serviceMrn, TYPE, version, serialNumber);
+    }
+
+    /**
+     * Takes a certificate signing request and returns a signed certificate with the public key from the csr
+     *
+     * @return a reply...
+     * @throws McpBasicRestException
+     */
+    @PostMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/issue-new/csr",
+            consumes = {"application/x-pem-file", MediaType.TEXT_PLAIN_VALUE},
+            produces = {"application/pem-certificate-chain", MediaType.APPLICATION_JSON_VALUE}
+    )
+    @Operation(
+            description = "Create a new service identity certificate using CSR",
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
+    )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @RequestBody String csr) throws McpBasicRestException {
+        return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, null);
     }
 
     /**
@@ -421,11 +498,52 @@ public class ServiceController extends EntityController<Service> {
     )
     @Operation(
             description = "Create a new service identity certificate using CSR",
-            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR")
+            requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "A PEM encoded PKCS#10 CSR"),
+            deprecated = true
     )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @RequestBody String csr) throws McpBasicRestException {
         return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, version);
+    }
+
+    /**
+     * Revokes certificate for the service identified by the given ID
+     *
+     * @return a reply...
+     * @throws McpBasicRestException
+     */
+    @PostMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/certificate/{certId}/revoke",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Revoke the service identity certificate with the given serial number"
+    )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = this.entityService.getByMrn(serviceMrn);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId())) {
+                Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
+                Service certEntity = getCertEntity(cert);
+                if (certEntity != null && certEntity.getId().equals(service.getId())) {
+                    this.revokeCertificate(cert.getSerialNumber(), input, request);
+                    return new ResponseEntity<>(HttpStatus.OK);
+                }
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
     }
 
     /**
@@ -439,8 +557,10 @@ public class ServiceController extends EntityController<Service> {
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
-            description = "Revoke the service identity certificate with the given serial number"
+            description = "Revoke the service identity certificate with the given serial number",
+            deprecated = true
     )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> revokeServiceCert(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Parameter(description = "The serial number of the certificate given in decimal", required = true) @PathVariable BigInteger certId, @Valid @RequestBody CertificateRevocation input) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -474,12 +594,54 @@ public class ServiceController extends EntityController<Service> {
      * @throws McpBasicRestException
      */
     @GetMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/keycloakjson",
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/keycloakjson",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
     @Operation(
             description = "Get the Keycloak JSON configuration for the specified service if it exists"
     )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = this.entityService.getByMrn(serviceMrn);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId())) {
+                // Get the keycloak json for the client the service represents if it exists
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
+                    return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
+                }
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Returns keycloak.json the service identified by the given ID
+     *
+     * @return a reply...
+     * @throws McpBasicRestException
+     */
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/keycloakjson",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Get the Keycloak JSON configuration for the specified service if it exists",
+            deprecated = true
+    )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceKeycloakJson(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -514,11 +676,55 @@ public class ServiceController extends EntityController<Service> {
      * @throws McpBasicRestException
      */
     @GetMapping(
-            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml"
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/jbossxml"
     )
     @Operation(
             description = "Get the Keycloak JBoss XML configuration for the specified service if it exists"
     )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            // Check that the entity being queried belongs to the organization
+            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = this.entityService.getByMrn(serviceMrn);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId())) {
+                // Get the jboss xml for the client the service represents if it exists
+                if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
+                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
+                    String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
+                    HttpHeaders responseHeaders = new HttpHeaders();
+                    responseHeaders.setContentLength(jbossXml.length());
+                    responseHeaders.setContentType(MediaType.APPLICATION_XML);
+                    return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
+                }
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
+     * Returns keycloak.json the service identified by the given ID
+     *
+     * @return a reply...
+     * @throws McpBasicRestException
+     */
+    @GetMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/jbossxml"
+    )
+    @Operation(
+            description = "Get the Keycloak JBoss XML configuration for the specified service if it exists",
+            deprecated = true
+    )
+    @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> getServiceJbossXml(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
