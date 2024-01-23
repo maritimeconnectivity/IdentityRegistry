@@ -63,7 +63,7 @@ public class SecomController {
             description = "Returns 0 or more certificates (public keys). Based on the REST definition of the GetPublicKey " +
                     "interface definition from IEC 63173-2:2022 (SECOM). The input parameter can either be the " +
                     "serial number or base64 encoded SHA-256 thumbprint of the wanted certificate. It is also possible " +
-                    "to provide the MRN of an MCP entity to get the list of all active certificate of that entity."
+                    "to provide the MRN of an MCP entity to get the list of all active certificates of that entity."
     )
     public ResponseEntity<String> getPublicKey(@PathVariable String parameter) {
         String ret = null;
@@ -110,9 +110,7 @@ public class SecomController {
 
         if (entity != null) {
             StringBuilder stringBuilder = new StringBuilder();
-            for (Certificate cert : entity.getCertificates()) {
-                stringBuilder.append(cert.getCertificate());
-            }
+            entity.getCertificates().stream().filter(c -> !c.isRevoked()).forEach(c -> stringBuilder.append(c.getCertificate()));
             ret = stringBuilder.toString();
         }
         return ret;
