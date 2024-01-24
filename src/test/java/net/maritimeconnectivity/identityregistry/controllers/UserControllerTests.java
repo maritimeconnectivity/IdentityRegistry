@@ -491,6 +491,7 @@ class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationById(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -536,6 +537,7 @@ class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationById(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -581,6 +583,7 @@ class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationById(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -627,6 +630,7 @@ class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationById(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -673,6 +677,7 @@ class UserControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationById(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
