@@ -94,6 +94,10 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
+            if (input.getInstanceVersion() != null && !input.getInstanceVersion().isBlank()
+                    && !input.getMrn().endsWith(input.getInstanceVersion())) {
+                input.setMrn(input.getMrn() + ':' + input.getInstanceVersion());
+            }
             input.setMrn(input.getMrn().toLowerCase());
             // If the service requested to be created contains a vessel, add it to the service
             this.addVesselToServiceIfPresent(input, orgMrn, request);
@@ -326,7 +330,6 @@ public class ServiceController extends EntityController<Service> {
                     service.setOidcRedirectUri(null);
                 }
                 this.addVesselToServiceIfPresent(input, orgMrn, request);
-                input.setMrn(input.getMrn() + ':' + version);
                 input.selectiveCopyTo(service);
                 try {
                     this.entityService.save(service);
