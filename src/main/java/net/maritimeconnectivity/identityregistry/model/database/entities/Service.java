@@ -69,7 +69,9 @@ public class Service extends NonHumanEntityModel {
     private String certDomainName;
 
     @Schema(description = "DEPRECATED: The version of the service should no longer be set separately from the MRN, " +
-            "but should instead be appended to the MRN, if needed. This change has been made to ensure uniqueness of MRNs.", deprecated = true)
+            "but should instead be appended to the MRN, if needed. This change has been made to ensure uniqueness of MRNs. " +
+            "Note that if you do set a value for this field when you create a new service, the current behavior is " +
+            "that it will be appended to the MRN as an additional namespace.", deprecated = true)
     @Deprecated(forRemoval = true)
     private String instanceVersion;
 
