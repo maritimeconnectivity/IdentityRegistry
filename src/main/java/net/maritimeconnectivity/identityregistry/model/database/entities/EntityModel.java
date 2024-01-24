@@ -64,7 +64,6 @@ public abstract class EntityModel extends CertificateModel {
         Objects.requireNonNull(entity);
         entity.setId(id);
         entity.setIdOrganization(idOrganization);
-        entity.setMrn(mrn);
         entity.setPermissions(permissions);
         entity.setMrnSubsidiary(mrnSubsidiary);
         entity.setHomeMMSUrl(homeMMSUrl);
@@ -77,7 +76,6 @@ public abstract class EntityModel extends CertificateModel {
      */
     public EntityModel selectiveCopyTo(EntityModel entity) {
         Objects.requireNonNull(entity);
-        entity.setMrn(mrn);
         entity.setPermissions(permissions);
         entity.setMrnSubsidiary(mrnSubsidiary);
         entity.setHomeMMSUrl(homeMMSUrl);
