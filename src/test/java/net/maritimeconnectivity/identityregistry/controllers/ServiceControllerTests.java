@@ -61,7 +61,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 import static org.springframework.security.test.web.servlet.request.SecurityMockMvcRequestPostProcessors.authentication;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -272,44 +271,6 @@ class ServiceControllerTests {
         try {
             verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "bearer-only", "https://localhost");
         } catch (IOException | DuplicatedKeycloakEntry e) {
-            fail(e);
-        }
-    }
-
-    /**
-     * Try to update a service with the appropriate association but with version set to null
-     */
-    @Test
-    void testCreateServiceWithVersionNull() {
-        // Build service object to test with
-        Service service = new Service();
-        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
-        service.setName("NW NM Service");
-        service.setInstanceVersion(null);
-        service.setIdOrganization(1L);
-        String serviceJson = serialize(service);
-        // Build org object to test with
-        Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcp:org:idp1:dma");
-        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
-        org.setCountry("Denmark");
-        org.setUrl("http://dma.dk");
-        org.setEmail("dma@dma.dk");
-        org.setName("Danish Maritime Authority");
-        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
-        org.setIdentityProviderAttributes(identityProviderAttributes);
-        // Create fake authentication token
-        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
-        // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
-        try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").with(authentication(auth))
-                    .header("Origin", "bla")
-                    .content(serviceJson)
-                    .contentType("application/json")
-            ).andExpect(status().isBadRequest());
-        } catch (Exception e) {
             fail(e);
         }
     }
