@@ -321,9 +321,8 @@ class ServiceControllerTests {
     void testAccessServiceJBossXMLWithRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4");
         service.setName("NW NM Service");
-        service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1L);
         service.setOidcAccessType("bearer-only");
         service.generateOidcClientId();
@@ -342,11 +341,11 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
-        given(this.keycloakAU.getClientJbossXml("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
+        given(this.keycloakAU.getClientJbossXml("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
         try {
-            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
             ).andExpect(status().isOk());
         } catch (Exception e) {
