@@ -236,9 +236,8 @@ class ServiceControllerTests {
     void testAccessUpdateServiceWithRights() {
         // Build service object to test with
         Service service = new Service();
-        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4");
         service.setName("NW NM Service");
-        service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1L);
         service.setOidcAccessType("bearer-only");
         service.setOidcRedirectUri("https://localhost");
@@ -257,10 +256,10 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -269,7 +268,7 @@ class ServiceControllerTests {
             fail(e);
         }
         try {
-            verify(this.keycloakAU, times(1)).createClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "bearer-only", "https://localhost");
+            verify(this.keycloakAU, times(1)).createClient("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4", "bearer-only", "https://localhost");
         } catch (IOException | DuplicatedKeycloakEntry e) {
             fail(e);
         }
