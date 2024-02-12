@@ -135,7 +135,7 @@ public class Service extends NonHumanEntityModel {
     }
 
     /**
-     * Generates the oidcClientId. Currently done by concat'ing the version and the mrn
+     * Generates the oidcClientId. Currently done by just using the mrn
      */
     public void generateOidcClientId() {
         if (this.getMrn() == null || this.getMrn().trim().isEmpty()) {
