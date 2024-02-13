@@ -38,6 +38,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigInteger;
+import java.util.Comparator;
+import java.util.Date;
 import java.util.regex.Pattern;
 
 @RestController
@@ -110,7 +112,11 @@ public class SecomController {
 
         if (entity != null) {
             StringBuilder stringBuilder = new StringBuilder();
-            entity.getCertificates().stream().filter(c -> !c.isRevoked()).forEach(c -> stringBuilder.append(c.getCertificate()));
+            Date now = new Date();
+            entity.getCertificates().stream()
+                    .filter(c -> !c.isRevoked() && !c.getEnd().before(now))
+                    .sorted(Comparator.comparing(Certificate::getStart).reversed())
+                    .forEach(c -> stringBuilder.append(c.getCertificate()));
             ret = stringBuilder.toString();
         }
         return ret;
