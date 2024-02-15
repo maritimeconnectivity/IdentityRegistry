@@ -115,7 +115,7 @@ public class SecomController {
             StringBuilder stringBuilder = new StringBuilder();
             Date now = new Date();
             entity.getCertificates().stream()
-                    .filter(c -> !c.isRevoked() && !c.getEnd().before(now))
+                    .filter(c -> !c.isRevoked() && !c.getEnd().before(now) && !c.getStart().after(now))
                     .sorted(Comparator.comparing(Certificate::getStart).reversed())
                     .forEach(c -> stringBuilder.append(c.getCertificate()));
             ret = stringBuilder.toString();
