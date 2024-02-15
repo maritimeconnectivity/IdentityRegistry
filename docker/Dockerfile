@@ -9,7 +9,7 @@ FROM eclipse-temurin:21-jdk AS builder
 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libapr1-dev libssl-dev tar gzip build-essential file && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.6/source/tomcat-native-2.0.6-src.tar.gz tomcat-native.tar.gz
+ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.7/source/tomcat-native-2.0.7-src.tar.gz tomcat-native.tar.gz
 
 RUN tar -xvf tomcat-native.tar.gz && mv tomcat-native*/ tomcat-native/
 
