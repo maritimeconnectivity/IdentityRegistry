@@ -75,8 +75,9 @@ public class SecomController {
             if (certificate != null) {
                 ret = certificate.getCertificate();
             }
-            // else, check if it is a serial number
-        } else if (serialNumberPattern.matcher(parameter).matches()) {
+        }
+        // else, check if it is a serial number
+        if (ret == null && serialNumberPattern.matcher(parameter).matches()) {
             BigInteger serialNumber = new BigInteger(parameter);
             Certificate certificate = certificateService.getCertificateBySerialNumber(serialNumber);
             if (certificate != null) {
