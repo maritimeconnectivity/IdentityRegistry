@@ -108,14 +108,14 @@ class SecomControllerTests {
         try {
             String pemCrt = getCertificate("src/test/resources/Certificate_Myboat.pem");
             certificate.setCertificate(pemCrt);
-            certificate.setThumbprint("NDgyNzE3ZjA0OWJiMGRmMjBmODI3YjlkMmFjMjVkMjhlM2M2NzhlZDY0MzU1ZDA4MDkxZWU1MWFiZGFjYTk5Ywo=");
+            certificate.setThumbprint("SCcX8Em7DfIPgnudKsJdKOPGeO1kNV0ICR7lGr2sqZw=");
             certificate.setStart(new Date());
             Calendar calendar = new GregorianCalendar();
             calendar.add(Calendar.MONTH, 6);
             certificate.setEnd(calendar.getTime());
             given(this.certificateService.getCertificateByThumbprint(certificate.getThumbprint())).willReturn(certificate);
 
-            MvcResult result = mvc.perform(get("/secom/v1/publicKey/NDgyNzE3ZjA0OWJiMGRmMjBmODI3YjlkMmFjMjVkMjhlM2M2NzhlZDY0MzU1ZDA4MDkxZWU1MWFiZGFjYTk5Ywo="))
+            MvcResult result = mvc.perform(get("/secom/v1/publicKey/SCcX8Em7DfIPgnudKsJdKOPGeO1kNV0ICR7lGr2sqZw="))
                     .andExpect(status().isOk())
                     .andExpect(content().contentTypeCompatibleWith("application/x-pem-file"))
                     .andReturn();
