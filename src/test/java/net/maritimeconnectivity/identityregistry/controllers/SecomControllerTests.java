@@ -91,7 +91,10 @@ class SecomControllerTests {
             certificate.setEnd(calendar.getTime());
             given(this.certificateService.getCertificateBySerialNumber(certificate.getSerialNumber())).willReturn(certificate);
 
-            MvcResult result = mvc.perform(get("/secom/v1/publicKey/9001")).andExpect(status().isOk()).andExpect(content().contentTypeCompatibleWith("application/x-pem-file")).andReturn();
+            MvcResult result = mvc.perform(get("/secom/v1/publicKey/9001"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith("application/x-pem-file"))
+                    .andReturn();
             String resultBody = result.getResponse().getContentAsString();
             assertEquals(pemCrt, resultBody);
         } catch (Exception e) {
