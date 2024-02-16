@@ -43,6 +43,7 @@ import java.nio.file.Files;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.GregorianCalendar;
+import java.util.HashSet;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -103,6 +104,25 @@ class SecomControllerTests {
     }
 
     @Test
+    void testGetPublicKeyBySerialNumberNotExisting() {
+        Certificate certificate = new Certificate();
+        try {
+            String pemCrt = getCertificate("src/test/resources/Certificate_Myboat.pem");
+            certificate.setCertificate(pemCrt);
+            certificate.setSerialNumber(BigInteger.valueOf(9001));
+            certificate.setStart(new Date());
+            Calendar calendar = new GregorianCalendar();
+            calendar.add(Calendar.MONTH, 6);
+            certificate.setEnd(calendar.getTime());
+
+            mvc.perform(get("/secom/v1/publicKey/9002"))
+                    .andExpect(status().isNotFound());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
     void testGetPublicKeyByThumbprint() {
         Certificate certificate = new Certificate();
         try {
@@ -121,6 +141,26 @@ class SecomControllerTests {
                     .andReturn();
             String resultBody = result.getResponse().getContentAsString();
             assertEquals(pemCrt, resultBody);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testGetPublicKeyByThumbprintNotExisting() {
+        Certificate certificate = new Certificate();
+        try {
+            String pemCrt = getCertificate("src/test/resources/Certificate_Myboat.pem");
+            certificate.setCertificate(pemCrt);
+            certificate.setThumbprint("SCcX8Em7DfIPgnudKsJdKOPGeO1kNV0ICR7lGr2sqZw=");
+            certificate.setStart(new Date());
+            Calendar calendar = new GregorianCalendar();
+            calendar.add(Calendar.MONTH, 6);
+            certificate.setEnd(calendar.getTime());
+            given(this.certificateService.getCertificateByThumbprint(certificate.getThumbprint())).willReturn(certificate);
+
+            mvc.perform(get("/secom/v1/publicKey/PlQSr1T70aXKRbWZ026ZIIHTfcqyrOnst8HmXF+uDpA="))
+                    .andExpect(status().isNotFound());
         } catch (Exception e) {
             fail(e);
         }
@@ -188,6 +228,20 @@ class SecomControllerTests {
                     .andReturn();
             String resultBody = result.getResponse().getContentAsString();
             assertEquals(cert2, resultBody);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testGetPublicKeyByMrnWithNoCerts() {
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:org1:srvc:1.0");
+        service.setCertificates(new HashSet<>());
+        given(serviceService.getByMrn(service.getMrn())).willReturn(service);
+        try {
+            mvc.perform(get("/secom/v1/publicKey/urn:mrn:mcp:service:idp1:org1:srvc:1.0"))
+                    .andExpect(status().isNotFound());
         } catch (Exception e) {
             fail(e);
         }
