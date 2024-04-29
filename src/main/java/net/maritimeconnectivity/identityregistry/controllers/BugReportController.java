@@ -28,7 +28,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.mail.MessagingException;
@@ -45,7 +44,6 @@ public class BugReportController {
             value = "/api/report-bug",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     public ResponseEntity<?> reportBug(HttpServletRequest request, @RequestBody BugReport report) throws McpBasicRestException {
         try {
             emailUtil.sendBugReport(report);

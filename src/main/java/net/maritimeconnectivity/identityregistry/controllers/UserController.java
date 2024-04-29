@@ -53,7 +53,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -99,7 +98,6 @@ public class UserController extends EntityController<User> {
     @Operation(
             description = "Create a new user identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     @Transactional(rollbackFor = McpBasicRestException.class)
     public ResponseEntity<User> createUser(HttpServletRequest request, @PathVariable String orgMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
@@ -168,7 +166,6 @@ public class UserController extends EntityController<User> {
     @Operation(
             description = "Get a specific user identity"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<User> getUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
         return this.getEntity(request, orgMrn, userMrn);
@@ -186,7 +183,6 @@ public class UserController extends EntityController<User> {
     @Operation(
             description = "Update a specific user identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
@@ -242,7 +238,6 @@ public class UserController extends EntityController<User> {
     @Operation(
             description = "Delete a specific user identity"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<?> deleteUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -346,7 +341,6 @@ public class UserController extends EntityController<User> {
             value = "/api/org/{orgMrn}/user-sync/",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     public ResponseEntity<?> syncUser(HttpServletRequest request, @PathVariable String orgMrn, @RequestBody User input,
                                       @RequestParam(value = "org-name", required = false) String orgName,
                                       @RequestParam(value = "org-address", required = false) String orgAddress) throws McpBasicRestException {
