@@ -55,10 +55,9 @@ public class MultiSecurityConfig {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         // If the hierarchy is changed, remember to update the hierarchy above and the list in
         // net.maritimeconnectivity.identityregistry.controllers.RoleController:getAvailableRoles()
-        roleHierarchy.setHierarchy("""
+        return RoleHierarchyImpl.fromHierarchy("""
                 ROLE_SITE_ADMIN > ROLE_APPROVE_ORG
                 ROLE_SITE_ADMIN > ROLE_ORG_ADMIN
                 ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN
@@ -71,7 +70,6 @@ public class MultiSecurityConfig {
                 ROLE_VESSEL_ADMIN > ROLE_USER
                 ROLE_SERVICE_ADMIN > ROLE_USER
                 ROLE_DEVICE_ADMIN > ROLE_USER""");
-        return roleHierarchy;
     }
 
     @Bean
