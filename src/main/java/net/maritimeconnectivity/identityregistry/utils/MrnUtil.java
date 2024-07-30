@@ -39,7 +39,7 @@ import java.util.regex.Pattern;
 public class MrnUtil {
 
     public final Pattern mrnPattern = Pattern.compile("^urn:mrn:([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):([a-z0-9][-a-z0-9]{0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)((\\?\\+((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?(\\?=((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?)?(#(((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?$", Pattern.CASE_INSENSITIVE);
-    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(entity|device|org|user|vessel|service|mms):([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)$", Pattern.CASE_INSENSITIVE);
+    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(entity|mir|mms|msr|(device|org|user|vessel|service)):([a-z]{2}|([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]){3,22}):([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]|[!$&'()*+,;=:@])(([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]|[!$&'()*+,;=:@])|/)*$", Pattern.CASE_INSENSITIVE);
 
     @Getter
     @Setter
