@@ -28,7 +28,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -69,7 +68,7 @@ public class MrnUtil {
             throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         if (mrnSplit.length > 7) {
-            List<String> idList = new ArrayList<>(Arrays.asList(mrnSplit).subList(6, mrnSplit.length));
+            List<String> idList = Arrays.asList(mrnSplit).subList(6, mrnSplit.length);
             return String.join(":", idList);
         }
         return mrnSplit[mrnSplit.length - 1];
