@@ -106,21 +106,14 @@ public class MrnUtil {
             if (entityType.equalsIgnoreCase("entity")) {
                 return true;
             }
-            if (entityModel instanceof Device) {
-                return entityType.equalsIgnoreCase("device");
-            }
-            if (entityModel instanceof MMS) {
-                return entityType.equalsIgnoreCase("mms");
-            }
-            if (entityModel instanceof Service) {
-                return entityType.equalsIgnoreCase("service");
-            }
-            if (entityModel instanceof User) {
-                return entityType.equalsIgnoreCase("user");
-            }
-            if (entityModel instanceof Vessel) {
-                return entityType.equalsIgnoreCase("vessel");
-            }
+            return switch (entityModel) {
+                case Device ignored -> entityType.equalsIgnoreCase("device");
+                case MMS ignored -> entityType.equalsIgnoreCase("mms");
+                case Service ignored -> entityType.equalsIgnoreCase("service");
+                case User ignored -> entityType.equalsIgnoreCase("user");
+                case Vessel ignored -> entityType.equalsIgnoreCase("vessel");
+                default -> false;
+            };
         }
         return false;
     }
