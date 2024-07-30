@@ -145,6 +145,35 @@ class OrganizationControllerTests {
     }
 
     /**
+     * Try to apply for an organization to be created
+     */
+    @Test
+    void testApply2() {
+        // Build org object to test with
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:entity:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = this.serialize(org);
+        given(this.organizationService.save(any())).willReturn(org);
+        try {
+            mvc.perform(post("/oidc/api/org/apply")
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isCreated());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    /**
      * Try to approve an organization without the appropriate role
      */
     @WithMockUser(roles = "ORG_ADMIN")
