@@ -104,6 +104,7 @@ public class SecomController {
             case "service" -> serviceService.getByMrn(mrn);
             case "user" -> userService.getByMrn(mrn);
             case "vessel" -> vesselService.getByMrn(mrn);
+            case "entity" -> getEntity(mrn); // We don't know what kind of entity it is
             default -> null;
         };
 
@@ -121,6 +122,31 @@ public class SecomController {
             ret = stringBuilder.toString();
         }
         return ret;
+    }
+
+    private CertificateModel getEntity(String mrn) {
+        CertificateModel entity = deviceService.getByMrn(mrn);
+        if (entity != null) {
+            return entity;
+        }
+        entity = mmsService.getByMrn(mrn);
+        if (entity != null) {
+            return entity;
+        }
+        entity = organizationService.getOrganizationByMrn(mrn);
+        if (entity != null) {
+            return entity;
+        }
+        entity = serviceService.getByMrn(mrn);
+        if (entity != null) {
+            return entity;
+        }
+        entity = userService.getByMrn(mrn);
+        if (entity != null) {
+            return entity;
+        }
+        entity = vesselService.getByMrn(mrn);
+        return entity;
     }
 
     @Autowired

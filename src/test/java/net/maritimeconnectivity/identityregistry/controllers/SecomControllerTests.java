@@ -200,6 +200,39 @@ class SecomControllerTests {
     }
 
     @Test
+    void testGetPublicKeyByMrnWithEntityAsType() throws IOException {
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:entity:idp1:org1:srvc:1.0");
+        String cert1 = getCertificate("src/test/resources/Certificate_Myboat.pem");
+        String cert2 = getCertificate("src/test/resources/Certificate_Myservice.pem");
+        Certificate c1 = new Certificate();
+        c1.setCertificate(cert1);
+        Calendar calendar = new GregorianCalendar();
+        calendar.add(Calendar.DAY_OF_YEAR, -2); // 2 days ago
+        c1.setStart(calendar.getTime());
+        calendar = new GregorianCalendar();
+        calendar.add(Calendar.MONTH, 6);
+        c1.setEnd(calendar.getTime());
+        Certificate c2 = new Certificate();
+        c2.setCertificate(cert2);
+        c2.setStart(new Date());
+        c2.setEnd(calendar.getTime());
+        service.setCertificates(Set.of(c1, c2));
+        given(serviceService.getByMrn(service.getMrn())).willReturn(service);
+        try {
+            MvcResult result = mvc.perform(get("/secom/v1/publicKey/urn:mrn:mcp:entity:idp1:org1:srvc:1.0"))
+                    .andExpect(status().isOk())
+                    .andExpect(content().contentTypeCompatibleWith("application/x-pem-file"))
+                    .andReturn();
+            String expected = cert2 + cert1;
+            String resultBody = result.getResponse().getContentAsString();
+            assertEquals(expected, resultBody);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
     void testGetPublicKeyByMrnWithOneExpiredCert() throws IOException {
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:org1:srvc:1.0");
