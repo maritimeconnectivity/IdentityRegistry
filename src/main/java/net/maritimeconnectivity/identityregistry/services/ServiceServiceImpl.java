@@ -50,7 +50,7 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
 
     @Override
     public Service getServiceByMrnAndVersion(String mrn, String version) {
-        return getByMrn(mrn + ':' + version);
+        return serviceRepository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
     }
 
     @Override
