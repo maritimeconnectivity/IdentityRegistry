@@ -94,9 +94,8 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
-            if (input.getInstanceVersion() != null && !input.getInstanceVersion().isBlank()
-                    && !input.getMrn().endsWith(input.getInstanceVersion())) {
-                input.setMrn(input.getMrn() + ':' + input.getInstanceVersion());
+            if (input.getInstanceVersion() != null && !input.getInstanceVersion().isBlank()) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "Registering a service with an instance version is no longer possible. Please consider making it a part of the MRN instead.", request.getServletPath());
             }
             input.setMrn(input.getMrn().toLowerCase());
             // If the service requested to be created contains a vessel, add it to the service
