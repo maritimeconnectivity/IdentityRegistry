@@ -16,13 +16,6 @@
 package net.maritimeconnectivity.identityregistry.model.database.entities;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.FetchType;
-import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
-import jakarta.persistence.Table;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -30,6 +23,13 @@ import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.validators.InPredefinedList;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.Table;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -69,10 +69,10 @@ public class Service extends NonHumanEntityModel {
     private String certDomainName;
 
     @Schema(description = "DEPRECATED: The version of the service should no longer be set separately from the MRN, " +
-            "but should instead be appended to the MRN, if needed. This change has been made to ensure uniqueness of MRNs. " +
-            "Note that if you do set a value for this field when you create a new service, the current behavior is " +
-            "that it will be appended to the MRN as an additional namespace.", deprecated = true)
+            "but should instead be appended to the MRN, if needed. This change has been made to ensure uniqueness of MRNs.",
+            deprecated = true, accessMode = READ_ONLY)
     @Deprecated(forRemoval = true)
+    @Column(name = "instance_version", insertable = false)
     private String instanceVersion;
 
     @Schema(description = "The set of certificates of the service. Cannot be created/updated by editing in the model. Use the dedicated create and revoke calls.", accessMode = READ_ONLY)
