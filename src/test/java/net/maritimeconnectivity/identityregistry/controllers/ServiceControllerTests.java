@@ -137,9 +137,7 @@ class ServiceControllerTests {
                     .andExpect(status().isBadRequest())
                     .andReturn();
             String responseBody = result.getResponse().getContentAsString();
-            if (!responseBody.contains(MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED)) {
-                fail("Did not receive expected error message");
-            }
+            assertTrue(responseBody.contains(MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED));
         } catch (Exception e) {
             fail(e);
         }
