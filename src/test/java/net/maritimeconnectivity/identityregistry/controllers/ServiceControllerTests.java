@@ -514,15 +514,8 @@ class ServiceControllerTests {
     private String serialize(Service service) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            // Convert object to JSON string
-            String jsonInString = mapper.writeValueAsString(service);
-            //System.out.println(jsonInString);
-
             // Convert object to JSON string and pretty print
-            jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(service);
-            //System.out.println(jsonInString);
-
-            return jsonInString;
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(service);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
