@@ -202,6 +202,7 @@ class MrnUtilsTests {
         device.setMrn("urn:mrn:mcp:entity:idp1:org1:device1");
         boolean valid = mrnUtil.isEntityTypeValid(device);
         assertTrue("Entity type validation should be valid", valid);
+        assertTrue("Device MRN should be a valid MCP MRN", mrnUtil.validateMCPMrn(device.getMrn()));
     }
 
 }
