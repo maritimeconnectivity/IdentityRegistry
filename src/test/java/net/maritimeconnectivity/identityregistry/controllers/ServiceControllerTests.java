@@ -163,6 +163,7 @@ class ServiceControllerTests {
         service.setName("NW NM Service");
         service.setInstanceVersion("0.3.4");
         service.setIdOrganization(1L);
+        String serviceJson = serialize(service);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -183,7 +184,7 @@ class ServiceControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk());
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
             fail(e);
         }
