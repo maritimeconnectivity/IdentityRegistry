@@ -197,6 +197,7 @@ public class ServiceController extends EntityController<Service> {
             description = "Get the service identity with the given MRN. If a direct match cannot be found, the service " +
                     "that was last created and has the given MRN as a prefix of its MRN followed by an additional namespace will be returned."
     )
+    @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Service> getService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
