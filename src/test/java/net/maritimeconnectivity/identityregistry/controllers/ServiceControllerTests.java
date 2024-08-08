@@ -594,7 +594,7 @@ class ServiceControllerTests {
      * Try to update a service with valid OIDC info
      */
     @Test
-    void testUpdateServiceRemoveOIDC() {
+    void testUpdateServiceWithVersionRemoveOIDC() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -627,7 +627,55 @@ class ServiceControllerTests {
         given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
         when(org.getId()).thenReturn(1L);
         try {
-            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
+            MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest()).andReturn();
+
+            String responseBody = result.getResponse().getContentAsString();
+            assertTrue(responseBody.contains(MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED));
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    /**
+     * Try to update a service with valid OIDC info
+     */
+    @Test
+    void testUpdateServiceWithoutVersionRemoveOIDC() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setName("NW NM Service");
+        service.setIdOrganization(1L);
+        String serviceJson = serialize(service);
+        // Old service that we want to update
+        Service oldService = new Service();
+        oldService.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        oldService.setName("NW NM Service");
+        oldService.setIdOrganization(1L);
+        oldService.setOidcAccessType("bearer-only");
+        oldService.setOidcClientId("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
+        when(org.getId()).thenReturn(1L);
+        try {
+            mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
@@ -635,9 +683,8 @@ class ServiceControllerTests {
         } catch (Exception e) {
             fail(e);
         }
-        verify(this.keycloakAU, times(1)).deleteClient("0.3.4-urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        verify(this.keycloakAU, times(1)).deleteClient("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }
-
 
     /**
      * Helper function to serialize a service to json
