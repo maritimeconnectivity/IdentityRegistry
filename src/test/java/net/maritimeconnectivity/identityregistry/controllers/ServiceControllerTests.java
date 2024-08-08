@@ -642,8 +642,8 @@ class ServiceControllerTests {
     /**
      * Helper function to serialize a service to json
      *
-     * @param service
-     * @return
+     * @param service the service to be JSON serialized
+     * @return JSON representation of service
      */
     private String serialize(Service service) {
         ObjectMapper mapper = new ObjectMapper();
