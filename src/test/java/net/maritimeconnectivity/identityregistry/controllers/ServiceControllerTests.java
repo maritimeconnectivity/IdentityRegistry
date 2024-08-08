@@ -189,7 +189,7 @@ class ServiceControllerTests {
      */
     @WithMockUser()
     @Test
-    void testAccessGetServiceWithoutRights() {
+    void testAccessGetServiceWithVersionWithoutRights() {
         given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
@@ -199,10 +199,24 @@ class ServiceControllerTests {
     }
 
     /**
+     * Try to get a service without being authenticated
+     */
+    @WithMockUser()
+    @Test
+    void testAccessGetServiceWithoutVersionWithoutRights() {
+        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").header("Origin", "bla")).andExpect(status().isForbidden());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    /**
      * Try to get a service with the appropriate association
      */
     @Test
-    void testAccessGetServiceWithRights() {
+    void testAccessGetServiceWithVersionWithRights() {
         // Build service object to test with
         Service service = new Service();
         service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
@@ -234,6 +248,43 @@ class ServiceControllerTests {
             fail(e);
         }
         verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
+    }
+
+    /**
+     * Try to get a service with the appropriate association
+     */
+    @Test
+    void testAccessGetServiceWithoutVersionWithRights() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setName("NW NM Service");
+        service.setIdOrganization(1L);
+        String serviceJson = serialize(service);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(((ServiceService) this.entityService).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(service);
+        when(org.getId()).thenReturn(1L);
+        try {
+            mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
+                    .header("Origin", "bla")
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
+        } catch (Exception e) {
+            fail(e);
+        }
+        verify(((ServiceService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }
 
     /**
