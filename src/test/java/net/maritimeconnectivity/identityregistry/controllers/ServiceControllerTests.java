@@ -54,6 +54,7 @@ import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.spy;
@@ -101,6 +102,9 @@ class ServiceControllerTests {
                 .build();
     }
 
+    /**
+     * Try to create a service with an instance version
+     */
     @Test
     void testCreateServiceWithVersion() {
         Service service = new Service();
@@ -136,6 +140,45 @@ class ServiceControllerTests {
             if (!responseBody.contains(MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED)) {
                 fail("Did not receive expected error message");
             }
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    /**
+     * Try to create a service without an instance version
+     */
+    @Test
+    void testCreateServiceWithoutVersion() {
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setName("NW NM Service");
+        service.setIdOrganization(1L);
+        String serviceJson = serialize(service);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1L);
+        when(entityService.save(any())).thenReturn(service);
+
+        try {
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").header("Origin", "bla")
+                            .content(serviceJson)
+                            .contentType(MediaType.APPLICATION_JSON)
+                            .with(authentication(auth)))
+                    .andExpect(status().isCreated())
+                    .andExpect(content().json(serviceJson, false));
         } catch (Exception e) {
             fail(e);
         }
