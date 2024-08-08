@@ -95,7 +95,7 @@ public class ServiceController extends EntityController<Service> {
             }
             input.setIdOrganization(org.getId());
             if (input.getInstanceVersion() != null && !input.getInstanceVersion().isBlank()) {
-                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "Registering a service with an instance version is no longer possible. Please consider making it a part of the MRN instead.", request.getServletPath());
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED, request.getServletPath());
             }
             input.setMrn(input.getMrn().toLowerCase());
             // If the service requested to be created contains a vessel, add it to the service
@@ -291,6 +291,10 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().equals(org.getId())) {
+                if (input.getInstanceVersion() != null && !input.getInstanceVersion().isEmpty()) {
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED, request.getServletPath());
+                }
+
                 // Update the keycloak client for the service if needed
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                     // Check if the redirect uri is set if access type is not "bearer-only"
@@ -372,6 +376,10 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().equals(org.getId())) {
+                if (input.getInstanceVersion() != null && !input.getInstanceVersion().isEmpty()) {
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED, request.getServletPath());
+                }
+
                 // Update the keycloak client for the service if needed
                 if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
                     // Check if the redirect uri is set if access type is not "bearer-only"

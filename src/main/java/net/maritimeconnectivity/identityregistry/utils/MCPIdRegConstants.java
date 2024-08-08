@@ -61,6 +61,7 @@ public class MCPIdRegConstants {
     public static final String MRN_IS_NOT_VALID = "The given MRN is not a valid MCP MRN.";
     public static final String INVALID_MCP_TYPE = "The given type is not a valid MCP entity type.";
     public static final String ERROR_STORING_ENTITY = "The entity could not be stored in the database.";
+    public static final String INSTANCE_VERSION_NOT_ALLOWED = "Registering a service with an instance version is no longer possible. Please consider making the version a part of the MRN instead.";
     public static final String ORG_PROPERTY_NAME = "org";
     public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
