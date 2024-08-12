@@ -149,9 +149,11 @@ public class Service extends NonHumanEntityModel {
     public void revokeAllCertificates() {
         Date now = Date.from(Instant.now());
         for (Certificate cert : certificates) {
-            cert.setRevokedAt(now);
-            cert.setRevokeReason("cessationofoperation");
-            cert.setRevoked(true);
+            if (!cert.isRevoked() && cert.getEnd().after(now)) {
+                cert.setRevokedAt(now);
+                cert.setRevokeReason("cessationofoperation");
+                cert.setRevoked(true);
+            }
         }
     }
 }
