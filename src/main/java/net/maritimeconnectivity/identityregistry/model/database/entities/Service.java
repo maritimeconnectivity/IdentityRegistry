@@ -146,6 +146,9 @@ public class Service extends NonHumanEntityModel {
         this.setOidcClientId(this.getMrn());
     }
 
+    /**
+     * Revoke all active certificates of this service
+     */
     public void revokeAllCertificates() {
         Date now = Date.from(Instant.now());
         for (Certificate cert : certificates) {
