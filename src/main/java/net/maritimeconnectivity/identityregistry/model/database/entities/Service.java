@@ -30,6 +30,8 @@ import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
+import java.time.Instant;
+import java.util.Date;
 import java.util.Set;
 
 import static io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY;
@@ -142,6 +144,15 @@ public class Service extends NonHumanEntityModel {
             throw new IllegalArgumentException("Service MRN is empty!");
         }
         this.setOidcClientId(this.getMrn());
+    }
+
+    public void revokeAllCertificates() {
+        Date now = Date.from(Instant.now());
+        for (Certificate cert : certificates) {
+            cert.setRevokedAt(now);
+            cert.setRevokeReason("cessationofoperation");
+            cert.setRevoked(true);
+        }
     }
 }
 

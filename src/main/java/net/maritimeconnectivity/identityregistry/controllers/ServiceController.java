@@ -21,6 +21,7 @@ import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
+import net.maritimeconnectivity.identityregistry.model.data.ServicePatch;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -46,6 +47,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -838,6 +840,51 @@ public class ServiceController extends EntityController<Service> {
                     return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
                 }
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
+            }
+            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    @PatchMapping(
+            value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}/migrate",
+            consumes = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Update the MRN of a Service entity that currently has an instance version registered and delete the instance version entirely. " +
+                    "Note that this operation will revoke all certificates that are currently associated with the Service entity and cannot be reverted."
+    )
+    @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
+    public ResponseEntity<?> migrateServiceMrn(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody ServicePatch servicePatch) throws McpBasicRestException {
+        Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
+        if (org != null) {
+            String orgShortName = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+            // Check that the entity being queried belongs to the organization
+            if (!orgShortName.equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
+            if (service == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
+            }
+            if (service.getIdOrganization().equals(org.getId()) && orgShortName.equals(mrnUtil.getOrgShortNameFromEntityMrn(servicePatch.getMrn()))) {
+                if (entityService.getByMrn(servicePatch.getMrn()) != null) {
+                    throw new McpBasicRestException(HttpStatus.CONFLICT, "A service with the given MRN already exists.", request.getServletPath());
+                }
+                service.setMrn(servicePatch.getMrn());
+                service.setInstanceVersion(null);
+                service.revokeAllCertificates();
+                entityService.save(service);
+
+                HttpHeaders responseHeaders = new HttpHeaders();
+                try {
+                    String location = request.getRequestURL().toString().split("/" + version)[0];
+                    responseHeaders.setLocation(new URI(location));
+                } catch (Exception e) {
+                    log.error("Could not create Location header", e);
+                }
+                return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
