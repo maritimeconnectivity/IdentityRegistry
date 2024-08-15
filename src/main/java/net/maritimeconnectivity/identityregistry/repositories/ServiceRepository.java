@@ -30,7 +30,7 @@ public interface ServiceRepository extends PagingAndSortingRepository<Service, L
 
     void deleteByidOrganization(Long orgId);
 
-    Service findByMrnIgnoreCase(String mrn);
+    boolean existsByMrnIgnoreCase(String mrn);
 
     Page<Service> findByMrnStartingWithIgnoreCase(String mrn, Pageable pageable);
 

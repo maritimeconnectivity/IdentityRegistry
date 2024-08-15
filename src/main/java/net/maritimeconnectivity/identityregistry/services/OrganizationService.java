@@ -35,4 +35,6 @@ public interface OrganizationService extends BaseService<Organization> {
     Page<Organization> getUnapprovedOrganizations(Pageable page);
 
     Page<Organization> listAllPage(Pageable pageable);
+
+    boolean existByMrn(String mrn);
 }

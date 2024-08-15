@@ -29,4 +29,6 @@ public interface EntityService<T extends EntityModel> extends BaseService<T> {
     void deleteByOrg(Long id);
 
     T getByMrn(String mrn);
+
+    boolean existsByMrn(String mrn);
 }

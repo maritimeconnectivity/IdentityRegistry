@@ -100,4 +100,9 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     public Page<Organization> getUnapprovedOrganizations(Pageable pageable) {
         return getRepository().findByApprovedFalse(pageable);
     }
+
+    @Override
+    public boolean existByMrn(String mrn) {
+        return organizationRepository.existsByMrnIgnoreCase(mrn);
+    }
 }

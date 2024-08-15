@@ -15,6 +15,7 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
+import lombok.Getter;
 import net.maritimeconnectivity.identityregistry.model.database.entities.EntityModel;
 import net.maritimeconnectivity.identityregistry.repositories.EntityRepository;
 import org.springframework.data.domain.Page;
@@ -23,8 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
+@Getter
 public abstract class EntityServiceImpl<T extends EntityModel> extends BaseServiceImpl<T> implements EntityService<T> {
-
     protected EntityRepository<T> repository;
 
     public List<T> listAllFromOrg(Long id) {
@@ -40,15 +41,16 @@ public abstract class EntityServiceImpl<T extends EntityModel> extends BaseServi
         this.getRepository().deleteByidOrganization(id);
     }
 
-    public EntityRepository<T> getRepository() {
-        return this.repository;
-    }
-
     public T getByMrn(String mrn) {
         return this.getRepository().getByMrnIgnoreCase(mrn);
     }
 
     public T getByMrnSubsidiary(String mrn) {
         return this.getRepository().getByMrnSubsidiaryIgnoreCase(mrn);
+    }
+
+    @Override
+    public boolean existsByMrn(String mrn) {
+        return this.getRepository().existsByMrnIgnoreCase(mrn);
     }
 }
