@@ -100,5 +100,9 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
         return filterResult(ret.orElse(null));
     }
 
+    @Override
+    public boolean existsByMrn(String mrn) {
+        return serviceRepository.existsByMrnIgnoreCase(mrn);
+    }
 }
 
