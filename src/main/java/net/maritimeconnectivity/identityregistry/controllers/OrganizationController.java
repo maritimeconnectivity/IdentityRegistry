@@ -35,6 +35,7 @@ import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
+import net.maritimeconnectivity.identityregistry.utils.ExistsByMrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import net.maritimeconnectivity.identityregistry.utils.ValidateUtil;
@@ -90,6 +91,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
 
     private AgentService agentService;
 
+    private ExistsByMrnUtil existsByMrnUtil;
+
     /**
      * Receives an application for a new organization and root-user
      *
@@ -109,6 +112,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
         input.setMrn(input.getMrn().trim().toLowerCase());
         if (!mrnUtil.isEntityTypeValid(input)) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "The entity type in the MRN does not match the type of the entity being created.", request.getServletPath());
+        }
+        if (!existsByMrnUtil.isMrnUnique(input.getMrn())) {
+            throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
         }
         input.setApproved(false);
         // If no federation type is set we for now default to "test-idp"
@@ -503,5 +509,10 @@ public class OrganizationController extends BaseControllerWithCertificate {
     @Autowired
     public void setAgentService(AgentService agentService) {
         this.agentService = agentService;
+    }
+
+    @Autowired
+    public void setExistsByMrnUtil(ExistsByMrnUtil existsByMrnUtil) {
+        this.existsByMrnUtil = existsByMrnUtil;
     }
 }

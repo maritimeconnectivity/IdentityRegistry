@@ -29,6 +29,7 @@ import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
+import net.maritimeconnectivity.identityregistry.utils.ExistsByMrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     protected OrganizationService organizationService;
     protected RoleService roleService;
     protected AccessControlUtil accessControlUtil;
+    protected ExistsByMrnUtil existsByMrnUtil;
 
     /**
      * Creates a new Entity
@@ -69,6 +71,9 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             // Check that the entity being created belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            if (!existsByMrnUtil.isMrnUnique(input.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
             // check that the requesting user has a role that is equal to or higher than the one given to the new entity
@@ -344,5 +349,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     @Autowired
     public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
         this.accessControlUtil = accessControlUtil;
+    }
+
+    @Autowired
+    public void setExistsByMrnUtil(ExistsByMrnUtil existsByMrnUtil) {
+        this.existsByMrnUtil = existsByMrnUtil;
     }
 }
