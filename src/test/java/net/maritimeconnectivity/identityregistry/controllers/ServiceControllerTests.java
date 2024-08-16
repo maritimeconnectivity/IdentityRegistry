@@ -21,6 +21,7 @@ import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEnt
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
+import net.maritimeconnectivity.identityregistry.repositories.VesselRepository;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
@@ -89,6 +90,9 @@ class ServiceControllerTests {
 
     @MockBean
     private CertificateService certificateService;
+
+    @MockBean
+    private VesselRepository vesselRepository;
 
     @MockBean
     JwtDecoder jwtDecoder;
@@ -680,6 +684,43 @@ class ServiceControllerTests {
             fail(e);
         }
         verify(this.keycloakAU, times(1)).deleteClient("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+    }
+
+    @Test
+    void tryCreatingServiceWithMrnAlreadyUsedByVessel() {
+        String mrn = "urn:mrn:mcp:entity:idp1:org1:test";
+        given(vesselRepository.existsByMrnIgnoreCase(mrn)).willReturn(true);
+        Service service = new Service();
+        service.setMrn(mrn);
+        service.setName("Service");
+        service.setIdOrganization(1L);
+        String serviceJson = serialize(service);
+
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:entity:idp1:org1");
+        org.setName("Test Org");
+        org.setCountry("Nowhere");
+        org.setUrl("https://example.com");
+        org.setEmail("test@example.com");
+        org.setAddress("Middle of Nowhere 12");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:entity:idp1:org1:user", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:entity:idp1:org1")).willReturn(org);
+        when(org.getId()).thenReturn(1L);
+
+        try {
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:entity:idp1:org1/service").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(serviceJson)
+                    .contentType("application/json")
+            ).andExpect(status().isConflict()).andReturn();
+            String responseBody = result.getResponse().getContentAsString();
+            assertTrue(responseBody.contains(MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS));
+        } catch (Exception e) {
+            fail(e);
+        }
     }
 
     /**
