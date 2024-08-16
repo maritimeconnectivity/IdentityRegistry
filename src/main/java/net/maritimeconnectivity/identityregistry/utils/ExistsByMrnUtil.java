@@ -37,7 +37,7 @@ public class ExistsByMrnUtil {
     private EntityService<User> userService;
     private EntityService<Vessel> vesselService;
 
-    public boolean isMrnUnique(String mrn) {
+    public boolean isMrnAlreadyUsed(String mrn) {
         return !(deviceService.existsByMrn(mrn) || mmsService.existsByMrn(mrn) || organizationService.existByMrn(mrn)
                 || serviceService.existsByMrn(mrn) || userService.existsByMrn(mrn) || vesselService.existsByMrn(mrn));
     }
