@@ -95,6 +95,9 @@ public class ServiceController extends EntityController<Service> {
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
+            if (!existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
+            }
             input.setIdOrganization(org.getId());
             if (input.getInstanceVersion() != null && !input.getInstanceVersion().isBlank()) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED, request.getServletPath());

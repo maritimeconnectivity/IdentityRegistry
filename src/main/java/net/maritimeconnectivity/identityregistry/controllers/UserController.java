@@ -108,6 +108,9 @@ public class UserController extends EntityController<User> {
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
+            if (!existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
+            }
             this.checkRoles(request, input, org);
             input.setMrn(input.getMrn().toLowerCase());
             input.setIdOrganization(org.getId());
