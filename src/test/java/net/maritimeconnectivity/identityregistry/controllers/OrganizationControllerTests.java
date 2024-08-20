@@ -245,7 +245,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
@@ -416,7 +416,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the users orgMrn is different from mrn of the org - means it should fail
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
@@ -448,7 +448,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
@@ -477,7 +477,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
@@ -506,7 +506,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))
@@ -535,7 +535,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
         try {
             mvc.perform(get("/oidc/api/org/id/0").with(authentication(auth))

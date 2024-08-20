@@ -40,15 +40,19 @@ class TokenGenerator {
      * Helper function of build fake JwtAuthenticationToken
      *
      * @param mrn
+     * @param orgMrn
      * @param roles
      * @param permissions
      * @return
      */
-    static JwtAuthenticationToken generateKeycloakToken(String mrn, String roles, String permissions) {
+    static JwtAuthenticationToken generateKeycloakToken(String mrn, String orgMrn, String roles, String permissions) {
 //        AccessToken accessToken = new AccessToken();
         Map<String, Object> claims = new HashMap<>();
         if (mrn != null && !mrn.isEmpty()) {
             claims.put(MCPIdRegConstants.MRN_PROPERTY_NAME, mrn);
+        }
+        if (orgMrn != null) {
+            claims.put(MCPIdRegConstants.ORG_PROPERTY_NAME, orgMrn);
         }
         if (permissions != null && !permissions.isEmpty()) {
             claims.put(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME, permissions);

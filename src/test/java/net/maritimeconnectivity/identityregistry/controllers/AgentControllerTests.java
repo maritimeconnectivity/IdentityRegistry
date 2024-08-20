@@ -104,7 +104,7 @@ class AgentControllerTests {
 
         String agentJson = JSONSerializer.serialize(agent);
 
-        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
         given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
@@ -134,7 +134,7 @@ class AgentControllerTests {
 
         String agentJson = JSONSerializer.serialize(agent);
 
-        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:agent:user", "ROLE_ORG_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:agent:user", "urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
 
         given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
@@ -164,7 +164,7 @@ class AgentControllerTests {
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
@@ -192,7 +192,7 @@ class AgentControllerTests {
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
@@ -217,7 +217,7 @@ class AgentControllerTests {
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
@@ -240,7 +240,7 @@ class AgentControllerTests {
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3")
@@ -263,7 +263,7 @@ class AgentControllerTests {
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
-        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "ROLE_USER", "");
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
         try {
             mvc.perform(delete("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3")
