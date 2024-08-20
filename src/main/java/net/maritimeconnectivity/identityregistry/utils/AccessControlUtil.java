@@ -50,6 +50,8 @@ public class AccessControlUtil {
 
     private HasRoleUtil hasRoleUtil;
 
+    private MrnUtil mrnUtil;
+
     private OrganizationService organizationService;
 
     private AgentService agentService;
@@ -81,12 +83,18 @@ public class AccessControlUtil {
                 Map<String, Object> otherClaims = kat.getTokenAttributes();
                 if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
                     String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
-                    String org = "";
+                    String org = (String) otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME);
+                    if (org == null || org.trim().isEmpty()) {
+                        return false;
+                    }
                     if (mrn != null) {
                         String[] mrnParts = mrn.split(":");
-                        if (mrnParts.length < 7)
+                        if (mrnParts.length < 7) {
                             return false;
-                        org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
+                        }
+                        if (!mrnUtil.getOrgShortNameFromEntityMrn(mrn).equals(mrnUtil.getOrgShortNameFromOrgMrn(org))) {
+                            return false;
+                        }
                     }
                     if (org.equalsIgnoreCase(orgMrn)) {
                         log.debug("Entity from org: {} is in {}", org, orgMrn);
@@ -118,7 +126,7 @@ public class AccessControlUtil {
                         }
                     }
                 }
-                log.debug("Entity from org: " + otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
+                log.debug("Entity from org: {} is not in {}", otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME), orgMrn);
             }
             case PreAuthenticatedAuthenticationToken token -> {
                 log.debug("Certificate authentication in process");
@@ -284,6 +292,11 @@ public class AccessControlUtil {
     @Autowired
     public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
         this.hasRoleUtil = hasRoleUtil;
+    }
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
     }
 
     @Lazy
