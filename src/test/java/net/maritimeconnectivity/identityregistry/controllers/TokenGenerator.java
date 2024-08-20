@@ -39,11 +39,11 @@ class TokenGenerator {
     /**
      * Helper function of build fake JwtAuthenticationToken
      *
-     * @param mrn
-     * @param orgMrn
-     * @param roles
-     * @param permissions
-     * @return
+     * @param mrn         the MRN of the entity
+     * @param orgMrn      the MRN of the organization that the entity belongs to
+     * @param roles       the roles of the entity
+     * @param permissions the permissions of the entity
+     * @return a JWT authentication token
      */
     static JwtAuthenticationToken generateKeycloakToken(String mrn, String orgMrn, String roles, String permissions) {
 //        AccessToken accessToken = new AccessToken();
