@@ -294,7 +294,7 @@ class OrganizationControllerTests {
         List<Agent> agents = new ArrayList<>();
         agents.add(agent);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN");
         Organization mock1 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
@@ -345,7 +345,7 @@ class OrganizationControllerTests {
         agent.setIdOnBehalfOfOrganization(1L);
         agent.setIdActingOrganization(2L);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_USER", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_USER");
         Organization mock1 = mock(Organization.class);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
@@ -384,7 +384,7 @@ class OrganizationControllerTests {
         // Serialize org object
         String orgJson = this.serialize(org);
         // Create fake authentication object
-        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
+        Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         try {
             // Note that the mrn in the url is different from the org mrn - should mean it fails

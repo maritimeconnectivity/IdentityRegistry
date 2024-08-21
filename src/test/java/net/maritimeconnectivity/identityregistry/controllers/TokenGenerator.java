@@ -67,12 +67,11 @@ class TokenGenerator {
     /**
      * Helper function of build fake PreAuthenticatedAuthenticationToken - used for x509 authentication
      *
-     * @param orgMrn
-     * @param roles
-     * @param permissions
-     * @return
+     * @param orgMrn the MRN of the organization that the entity belongs to
+     * @param roles  the roles of the entity
+     * @return a PreAuthenticatedAuthenticationToken used for x509 authentication
      */
-    static PreAuthenticatedAuthenticationToken generatePreAuthenticatedAuthenticationToken(String orgMrn, String roles, String permissions) {
+    static PreAuthenticatedAuthenticationToken generatePreAuthenticatedAuthenticationToken(String orgMrn, String roles) {
         Collection<GrantedAuthority> authorities = generateGrantedAuthority(roles);
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
         String username = "urn:mrn:mcl:user:dma:dmauser";
