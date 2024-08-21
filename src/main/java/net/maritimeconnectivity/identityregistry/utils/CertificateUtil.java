@@ -83,22 +83,22 @@ public class CertificateUtil {
     @Getter
     private PKIConfiguration pkiConfiguration;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.user}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.user:6}")
     private int validityPeriodForUser;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.organization}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.organization:6}")
     private int validityPeriodForOrg;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.device}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.device:6}")
     private int validityPeriodForDevice;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.vessel}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.vessel:6}")
     private int validityPeriodForVessel;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.service}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.service:6}")
     private int validityPeriodForService;
 
-    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms}")
+    @Value("${net.maritimeconnectivity.idreg.certs.validity-period.mms:6}")
     private int validityPeriodForMms;
 
     @PostConstruct

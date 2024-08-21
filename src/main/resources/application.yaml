@@ -91,12 +91,12 @@ net:
                         file: /conf/pkcs11.cfg # https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html#GUID-C4ABFACB-B2C9-4E71-A313-79F881488BB9
                         pin: 0001password # the pin/password for the slot defined in the config file
                 validity-period: # unit: month
-                    user: 24
-                    device: 24
-                    vessel : 24
-                    organization: 24
-                    service: 24
-                    mms: 24
+                    user: 6
+                    device: 6
+                    vessel : 6
+                    organization: 6
+                    service: 6
+                    mms: 6
 
             # Email setup
             email:
@@ -154,10 +154,10 @@ spring.mail:
     default-encoding: UTF-8
     host: localhost
     port: 1025
-    #username: 
-    #password: 
+    #username:
+    #password:
     # Additional JavaMail session properties.
-    #properties.*= 
+    #properties.*=
     protocol: smtp
     # Test that the mail server is available on startup.
     test-connection: false
