@@ -123,6 +123,7 @@ public class MultiSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/service/**").denyAll())
                 .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
@@ -149,6 +150,7 @@ public class MultiSecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/service/**").authenticated());
 
         if (!useStandardSSL) {
