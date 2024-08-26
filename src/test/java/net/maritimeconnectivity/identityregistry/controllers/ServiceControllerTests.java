@@ -762,7 +762,7 @@ class ServiceControllerTests {
                     .header("Origin", "bla")
                     .content(patchJson)
                     .contentType("application/json")
-            ).andExpect(status().isOk());
+            ).andExpect(status().isNoContent());
         } catch (Exception e) {
             fail(e);
         }

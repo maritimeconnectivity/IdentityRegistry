@@ -887,7 +887,7 @@ public class ServiceController extends EntityController<Service> {
                 } catch (Exception e) {
                     log.error("Could not create Location header", e);
                 }
-                return new ResponseEntity<>(responseHeaders, HttpStatus.OK);
+                return new ResponseEntity<>(responseHeaders, HttpStatus.NO_CONTENT);
             }
             throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         } else {
