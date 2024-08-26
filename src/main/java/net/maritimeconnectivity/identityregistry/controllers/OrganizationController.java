@@ -113,7 +113,7 @@ public class OrganizationController extends BaseControllerWithCertificate {
         if (!mrnUtil.isEntityTypeValid(input)) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "The entity type in the MRN does not match the type of the entity being created.", request.getServletPath());
         }
-        if (!existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+        if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
             throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
         }
         input.setApproved(false);

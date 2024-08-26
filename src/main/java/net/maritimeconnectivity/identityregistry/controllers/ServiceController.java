@@ -95,7 +95,7 @@ public class ServiceController extends EntityController<Service> {
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            if (!existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+            if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
@@ -873,7 +873,7 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().equals(org.getId()) && orgShortName.equals(mrnUtil.getOrgShortNameFromEntityMrn(servicePatch.getMrn()))) {
-                if (existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn())) {
+                if (existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn()) && this.entityService.existsByMrn(servicePatch.getMrn())) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, "A service with the given MRN already exists.", request.getServletPath());
                 }
                 String oldMrn = servicePatch.getMrn();

@@ -87,7 +87,7 @@ class ExistsByMrnUtilTests {
     @Test
     void testMrnIsUnique() {
         String mrn = "urn:mrn:mcp:entity:idp1:org1:test";
-        assertTrue("MRN should be unique", existsByMrnUtil.isMrnAlreadyUsed(mrn));
+        assertFalse("MRN should be unique", existsByMrnUtil.isMrnAlreadyUsed(mrn));
     }
 
     /**
@@ -97,6 +97,6 @@ class ExistsByMrnUtilTests {
     void testMrnIsNotUnique() {
         String mrn = "urn:mrn:mcp:entity:idp1:org1:test";
         given(deviceRepository.existsByMrnIgnoreCase(mrn)).willReturn(true);
-        assertFalse("MRN should not be unique", existsByMrnUtil.isMrnAlreadyUsed(mrn));
+        assertTrue("MRN should not be unique", existsByMrnUtil.isMrnAlreadyUsed(mrn));
     }
 }

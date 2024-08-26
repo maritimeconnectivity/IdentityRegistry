@@ -72,7 +72,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            if (!existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+            if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
