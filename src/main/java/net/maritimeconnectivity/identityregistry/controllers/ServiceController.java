@@ -361,79 +361,14 @@ public class ServiceController extends EntityController<Service> {
             value = "/api/org/{orgMrn}/service/{serviceMrn}/{version}"
     )
     @Operation(
-            description = "Update a specific service identity",
+            description = "DEPRECATED: A service with a version cannot be updated until it has been migrated using the endpoint at /api/org/{orgMrn}/service/{serviceMrn}/{version}/migrate.\n" +
+                    "This endpoint will return an error if called.",
             deprecated = true
     )
     @Deprecated(forRemoval = true)
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> updateService(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody Service input, BindingResult bindingResult) throws McpBasicRestException {
-        ValidateUtil.hasErrors(bindingResult, request);
-        if (!serviceMrn.equalsIgnoreCase(input.getMrn())) {
-            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
-        }
-        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
-        if (org != null) {
-            // Check that the entity being updated belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
-                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-            }
-            Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
-            if (service == null) {
-                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
-            }
-            if (service.getIdOrganization().equals(org.getId())) {
-                if (input.getInstanceVersion() != null && !input.getInstanceVersion().isEmpty()) {
-                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED, request.getServletPath());
-                }
-
-                // Update the keycloak client for the service if needed
-                if (input.getOidcAccessType() != null && !input.getOidcAccessType().trim().isEmpty()) {
-                    // Check if the redirect uri is set if access type is not "bearer-only"
-                    if (!"bearer-only".equals(input.getOidcAccessType()) && (input.getOidcRedirectUri() == null || input.getOidcRedirectUri().trim().isEmpty())) {
-                        throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.OIDC_MISSING_REDIRECT_URL, request.getServletPath());
-                    }
-                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String clientSecret;
-                    try {
-                        if (service.getOidcClientId() != null && !service.getOidcClientId().isEmpty()) {
-                            clientSecret = keycloakAU.updateClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
-                        } else {
-                            service.generateOidcClientId();
-                            clientSecret = keycloakAU.createClient(service.getOidcClientId(), input.getOidcAccessType(), input.getOidcRedirectUri());
-                        }
-                    } catch (IOException e) {
-                        log.error("Error while updating/creating client in keycloak.", e);
-                        throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_CLIENT, request.getServletPath());
-                    } catch (DuplicatedKeycloakEntry dke) {
-                        throw new McpBasicRestException(HttpStatus.CONFLICT, dke.getErrorMessage(), request.getServletPath());
-                    }
-                    if ("confidential".equals(input.getOidcAccessType())) {
-                        service.setOidcClientSecret(clientSecret);
-                    } else {
-                        service.setOidcClientSecret(null);
-                    }
-                } else if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
-                    // Delete the keycloak client since the updated service does not use it
-                    keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    keycloakAU.deleteClient(service.getOidcClientId());
-                    service.setOidcAccessType(null);
-                    service.setOidcClientId(null);
-                    service.setOidcClientSecret(null);
-                    service.setOidcRedirectUri(null);
-                }
-                this.addVesselToServiceIfPresent(input, orgMrn, request);
-                input.selectiveCopyTo(service);
-                try {
-                    this.entityService.save(service);
-                    return new ResponseEntity<>(HttpStatus.OK);
-                } catch (DataIntegrityViolationException e) {
-                    throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
-                }
-            }
-            throw new McpBasicRestException(HttpStatus.FORBIDDEN, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
-        } else {
-            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
-        }
+        throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, "A Service with a version must be migrated before it can be updated.", request.getServletPath());
     }
 
     /**

@@ -633,10 +633,10 @@ class ServiceControllerTests {
                     .header("Origin", "bla")
                     .content(serviceJson)
                     .contentType("application/json")
-            ).andExpect(status().isBadRequest()).andReturn();
+            ).andExpect(status().isMethodNotAllowed()).andReturn();
 
             String responseBody = result.getResponse().getContentAsString();
-            assertTrue(responseBody.contains(MCPIdRegConstants.INSTANCE_VERSION_NOT_ALLOWED));
+            assertTrue(responseBody.contains("A Service with a version must be migrated before it can be updated."));
         } catch (Exception e) {
             fail(e);
         }
