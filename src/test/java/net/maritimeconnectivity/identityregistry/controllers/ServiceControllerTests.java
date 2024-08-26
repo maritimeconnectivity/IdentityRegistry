@@ -768,6 +768,100 @@ class ServiceControllerTests {
         }
     }
 
+    @Test
+    void testMigrateExistingServiceConflictingMrn() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion("0.3.4");
+        service.setIdOrganization(1L);
+        service.setCertificates(Set.of());
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
+                "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1L);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+
+        String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
+        // For whatever reason there is already an organization that is using the new MRN
+        given(this.organizationService.existsByMrn(newMrn)).willReturn(true);
+
+        ServicePatch servicePatch = new ServicePatch();
+        servicePatch.setMrn(newMrn);
+        String patchJson = serialize(servicePatch);
+
+        try {
+            mvc.perform(patch("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/migrate")
+                    .with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(patchJson)
+                    .contentType("application/json")
+            ).andExpect(status().isConflict());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testMigrateExistingServiceConflictingMrn2() {
+        // Build service object to test with
+        Service service = new Service();
+        service.setMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        service.setName("NW NM Service");
+        service.setInstanceVersion("0.3.4");
+        service.setIdOrganization(1L);
+        service.setCertificates(Set.of());
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
+                "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        when(org.getId()).thenReturn(1L);
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+
+        String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
+        // For whatever reason there is already another service that is using the new MRN
+        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(newMrn, null)).willReturn(new Service());
+
+        ServicePatch servicePatch = new ServicePatch();
+        servicePatch.setMrn(newMrn);
+        String patchJson = serialize(servicePatch);
+
+        try {
+            mvc.perform(patch("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/migrate")
+                    .with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(patchJson)
+                    .contentType("application/json")
+            ).andExpect(status().isConflict());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
     /**
      * Helper function to serialize a service to json
      *
