@@ -856,7 +856,8 @@ public class ServiceController extends EntityController<Service> {
     )
     @Operation(
             description = "Update the MRN of a Service entity that currently has an instance version registered and delete the instance version entirely. " +
-                    "Note that this operation will revoke all certificates that are currently associated with the Service entity and cannot be reverted."
+                    "Note that if the new MRN is different from the current MRN of the Service this operation will revoke all certificates that are currently associated with the Service entity. " +
+                    "Also note that the result of performing this operation cannot be reverted."
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<?> migrateServiceMrn(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody ServicePatch servicePatch) throws McpBasicRestException {
@@ -875,9 +876,12 @@ public class ServiceController extends EntityController<Service> {
                 if (entityService.getByMrn(servicePatch.getMrn()) != null) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, "A service with the given MRN already exists.", request.getServletPath());
                 }
+                String oldMrn = servicePatch.getMrn();
                 service.setMrn(servicePatch.getMrn());
                 service.setInstanceVersion(null);
-                service.revokeAllCertificates();
+                if (!servicePatch.getMrn().equals(oldMrn)) {
+                    service.revokeAllCertificates();
+                }
                 entityService.save(service);
 
                 HttpHeaders responseHeaders = new HttpHeaders();
