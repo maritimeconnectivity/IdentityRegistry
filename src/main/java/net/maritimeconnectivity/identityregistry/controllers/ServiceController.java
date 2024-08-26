@@ -873,8 +873,8 @@ public class ServiceController extends EntityController<Service> {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
             if (service.getIdOrganization().equals(org.getId()) && orgShortName.equals(mrnUtil.getOrgShortNameFromEntityMrn(servicePatch.getMrn()))) {
-                if (existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn()) && this.entityService.existsByMrn(servicePatch.getMrn())) {
-                    throw new McpBasicRestException(HttpStatus.CONFLICT, "A service with the given MRN already exists.", request.getServletPath());
+                if (((ServiceService) this.entityService).getServiceByMrnAndVersion(servicePatch.getMrn(), null) != null || this.existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn())) {
+                    throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
                 }
                 String oldMrn = servicePatch.getMrn();
                 service.setMrn(servicePatch.getMrn());
