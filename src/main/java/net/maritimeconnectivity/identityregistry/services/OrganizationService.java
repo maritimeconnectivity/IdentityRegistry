@@ -36,5 +36,5 @@ public interface OrganizationService extends BaseService<Organization> {
 
     Page<Organization> listAllPage(Pageable pageable);
 
-    boolean existByMrn(String mrn);
+    boolean existsByMrn(String mrn);
 }

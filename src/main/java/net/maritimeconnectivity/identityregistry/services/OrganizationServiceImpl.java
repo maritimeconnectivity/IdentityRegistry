@@ -102,7 +102,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
     }
 
     @Override
-    public boolean existByMrn(String mrn) {
+    public boolean existsByMrn(String mrn) {
         return organizationRepository.existsByMrnIgnoreCase(mrn);
     }
 }
