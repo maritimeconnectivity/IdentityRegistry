@@ -390,7 +390,7 @@ public class KeycloakAdminUtil {
      * @throws DuplicatedKeycloakEntry is thrown if the user already exists
      */
     public void createUser(User user, String password, Organization org, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        log.debug("Creating user: " + user.getMrn());
+        log.debug("Creating user: {}", user.getMrn());
 
         UserRepresentation kcUser = new UserRepresentation();
         kcUser.setEnabled(enabled);
@@ -424,14 +424,14 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.error("Creating user failed due to duplicated user" + errMsg);
+                    log.error("Creating user failed due to duplicated user {}", errMsg);
                     throw new DuplicatedKeycloakEntry("User with mrn: " + user.getMrn() + " already exists.", errMsg);
                 } else {
-                    log.error("Creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating user failed, status: {}, {}", ret.getStatus(), errMsg);
                     throw new IOException("User creating failed: " + errMsg);
                 }
             }
-            log.debug("Created user, status: " + ret.getStatus() + ", " + errMsg);
+            log.debug("Created user, status: {}, {}", ret.getStatus(), errMsg);
         }
 
         // Set credentials
@@ -443,7 +443,7 @@ public class KeycloakAdminUtil {
         // Find the user by searching for the username
         kcUser = getProjectUserRealm().users().search(user.getEmail(), null, null, null, -1, -1).getFirst();
         kcUser.setCredentials(Collections.singletonList(cred));
-        log.debug("Setting password for user: " + kcUser.getId());
+        log.debug("Setting password for user: {}", kcUser.getId());
         getProjectUserRealm().users().get(kcUser.getId()).resetPassword(cred);
         log.debug("Created user");
     }
@@ -616,10 +616,10 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.error("Creating client failed due to duplicated client" + errMsg);
+                    log.error("Creating client failed due to duplicated client {}", errMsg);
                     throw new DuplicatedKeycloakEntry("Client with mrn: " + clientId + " already exists.", errMsg);
                 } else {
-                    log.error("Creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating client failed, status: {}, {}", ret.getStatus(), errMsg);
                     throw new IOException("Client creation failed: " + errMsg);
                 }
             }
@@ -730,13 +730,13 @@ public class KeycloakAdminUtil {
     private String getFromKeycloak(String url, String token) {
         CloseableHttpClient client = HttpClientBuilder.create().build();
         try {
-            log.debug("get url: " + url);
+            log.debug("get url: {}", url);
             HttpGet get = new HttpGet(url);
             get.addHeader("Authorization", "Bearer " + token);
             try {
                 HttpResponse response = client.execute(get);
                 if (response.getStatusLine().getStatusCode() != 200) {
-                    log.debug("" + response.getStatusLine().getStatusCode());
+                    log.debug("{}", response.getStatusLine().getStatusCode());
                     return null;
                 }
                 return getContent(response.getEntity());
