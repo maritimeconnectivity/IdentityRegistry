@@ -88,7 +88,7 @@ net:
                 pkcs11:
                     enabled: false
                     config:
-                        file: /conf/pkcs11.cfg # https://docs.oracle.com/en/java/javase/17/security/pkcs11-reference-guide1.html#GUID-C4ABFACB-B2C9-4E71-A313-79F881488BB9
+                        file: /conf/pkcs11.cfg # https://docs.oracle.com/en/java/javase/21/security/pkcs11-reference-guide1.html#GUID-C4ABFACB-B2C9-4E71-A313-79F881488BB9
                         pin: 0001password # the pin/password for the slot defined in the config file
                 validity-period: # unit: month
                     user: 6
