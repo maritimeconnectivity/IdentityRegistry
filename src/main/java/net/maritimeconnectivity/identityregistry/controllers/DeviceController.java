@@ -167,7 +167,7 @@ public class DeviceController extends EntityController<Device> {
     )
     @PreAuthorize("hasRole('DEVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'DEVICE_ADMIN')")
     public ResponseEntity<String> newDeviceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String deviceMrn, @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE, null);
+        return this.signEntityCert(request, csr, orgMrn, deviceMrn, TYPE);
     }
 
     /**

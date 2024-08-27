@@ -170,7 +170,7 @@ public class MMSController extends EntityController<MMS> {
     )
     @PreAuthorize("hasRole('MMS_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'MMS_ADMIN')")
     public ResponseEntity<String> newMMSCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String mmsMrn, @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE, null);
+        return this.signEntityCert(request, csr, orgMrn, mmsMrn, TYPE);
     }
 
     /**

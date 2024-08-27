@@ -512,7 +512,7 @@ public class ServiceController extends EntityController<Service> {
     )
     @PreAuthorize("hasRole('SERVICE_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'SERVICE_ADMIN')")
     public ResponseEntity<String> newServiceCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE, null);
+        return this.signEntityCert(request, csr, orgMrn, serviceMrn, TYPE);
     }
 
     /**

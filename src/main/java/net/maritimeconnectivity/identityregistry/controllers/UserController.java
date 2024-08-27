@@ -311,7 +311,7 @@ public class UserController extends EntityController<User> {
     )
     @PreAuthorize("@accessControlUtil.isUser(#userMrn) or @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
     public ResponseEntity<String> newUserCertFromCsr(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @RequestBody String csr) throws McpBasicRestException {
-        return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE, null);
+        return this.signEntityCert(request, csr, orgMrn, userMrn, TYPE);
     }
 
     /**

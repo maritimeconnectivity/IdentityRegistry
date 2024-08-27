@@ -246,19 +246,15 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a PEM encoded certificate
      * @throws McpBasicRestException
      */
-    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type, String version) throws McpBasicRestException {
+    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            EntityModel entity;
-            if (type.equals("service") && version != null) {
-                entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
-            } else {
-                entity = this.entityService.getByMrn(entityMrn);
-            }
+
+            EntityModel entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
