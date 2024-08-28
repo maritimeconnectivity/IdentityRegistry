@@ -647,8 +647,13 @@ public class ServiceController extends EntityController<Service> {
                 // Get the keycloak json for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
-                    return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
+                    try {
+                        String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
+                        return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
+                    } catch (IOException e) {
+                        log.error("Getting keycloak JSON configuration for service failed", e);
+                        throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.SOMETHING_WENT_WRONG, request.getServletPath());
+                    }
                 }
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }
@@ -689,8 +694,13 @@ public class ServiceController extends EntityController<Service> {
                 // Get the keycloak json for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
-                    return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
+                    try {
+                        String keycloakJson = keycloakAU.getClientKeycloakJson(service.getOidcClientId());
+                        return new ResponseEntity<>(keycloakJson, HttpStatus.OK);
+                    } catch (IOException e) {
+                        log.error("Getting keycloak JSON configuration for service failed", e);
+                        throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.SOMETHING_WENT_WRONG, request.getServletPath());
+                    }
                 }
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }
@@ -728,11 +738,16 @@ public class ServiceController extends EntityController<Service> {
                 // Get the jboss xml for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
-                    HttpHeaders responseHeaders = new HttpHeaders();
-                    responseHeaders.setContentLength(jbossXml.length());
-                    responseHeaders.setContentType(MediaType.APPLICATION_XML);
-                    return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
+                    try {
+                        String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
+                        HttpHeaders responseHeaders = new HttpHeaders();
+                        responseHeaders.setContentLength(jbossXml.length());
+                        responseHeaders.setContentType(MediaType.APPLICATION_XML);
+                        return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
+                    } catch (IOException e) {
+                        log.error("Getting keycloak XML configuration for service failed", e);
+                        throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.SOMETHING_WENT_WRONG, request.getServletPath());
+                    }
                 }
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }
@@ -772,11 +787,16 @@ public class ServiceController extends EntityController<Service> {
                 // Get the jboss xml for the client the service represents if it exists
                 if (service.getOidcAccessType() != null && !service.getOidcAccessType().trim().isEmpty()) {
                     keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                    String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
-                    HttpHeaders responseHeaders = new HttpHeaders();
-                    responseHeaders.setContentLength(jbossXml.length());
-                    responseHeaders.setContentType(MediaType.APPLICATION_XML);
-                    return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
+                    try {
+                        String jbossXml = keycloakAU.getClientJbossXml(service.getOidcClientId());
+                        HttpHeaders responseHeaders = new HttpHeaders();
+                        responseHeaders.setContentLength(jbossXml.length());
+                        responseHeaders.setContentType(MediaType.APPLICATION_XML);
+                        return new ResponseEntity<>(jbossXml, responseHeaders, HttpStatus.OK);
+                    } catch (IOException e) {
+                        log.error("Getting keycloak XML configuration for service failed", e);
+                        throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.SOMETHING_WENT_WRONG, request.getServletPath());
+                    }
                 }
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.OIDC_CONF_FILE_NOT_AVAILABLE, request.getServletPath());
             }

@@ -443,7 +443,11 @@ class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
-        given(this.keycloakAU.getClientJbossXml("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
+        try {
+            given(this.keycloakAU.getClientJbossXml("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
+        } catch (IOException e) {
+            fail(e);
+        }
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")

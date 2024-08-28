@@ -625,7 +625,7 @@ public class KeycloakAdminUtil {
             }
         }
         if (!"public".equals(type)) {
-            // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
+            // The client secret can't be retrieved by the ClientRepresentation (bug?), so we need to use the ClientResource
             ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).getFirst();
             return getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
         } else {
@@ -700,7 +700,7 @@ public class KeycloakAdminUtil {
      * @param clientId client id/name
      * @return the keycloak json
      */
-    public String getClientKeycloakJson(String clientId) {
+    public String getClientKeycloakJson(String clientId) throws IOException {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).getFirst();
         String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
         String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-keycloak-json";
@@ -713,7 +713,7 @@ public class KeycloakAdminUtil {
      * @param clientId client id/name
      * @return the keycloak json
      */
-    public String getClientJbossXml(String clientId) {
+    public String getClientJbossXml(String clientId) throws IOException {
         ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).getFirst();
         String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
         String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-jboss-subsystem";
@@ -727,28 +727,17 @@ public class KeycloakAdminUtil {
      * @param token The access_token to use for identification
      * @return Returns a string representation of the result
      */
-    private String getFromKeycloak(String url, String token) {
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        try {
+    private String getFromKeycloak(String url, String token) throws IOException {
+        try(CloseableHttpClient client = HttpClientBuilder.create().build()) {
             log.debug("get url: {}", url);
             HttpGet get = new HttpGet(url);
             get.addHeader("Authorization", "Bearer " + token);
-            try {
-                HttpResponse response = client.execute(get);
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    log.debug("{}", response.getStatusLine().getStatusCode());
-                    return null;
-                }
-                return getContent(response.getEntity());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            HttpResponse response = client.execute(get);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                log.debug("{}", response.getStatusLine().getStatusCode());
+                return null;
             }
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                log.error("Failed GET from Keycloak", e);
-            }
+            return getContent(response.getEntity());
         }
     }
 

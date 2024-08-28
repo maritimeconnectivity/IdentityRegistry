@@ -67,5 +67,6 @@ public class MCPIdRegConstants {
     public static final String MRN_PROPERTY_NAME = "mrn";
     public static final String PERMISSIONS_PROPERTY_NAME = "permissions";
     public static final String UNKNOWN_AUTHENTICATION_METHOD = "Unknown authentication method: {}";
+    public static final String SOMETHING_WENT_WRONG = "Something went wrong while trying to get resource.";
     public static final String ROLE_PREFIX = "ROLE_";
 }
