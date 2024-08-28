@@ -63,6 +63,7 @@ import java.net.URISyntaxException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
+import java.util.regex.Pattern;
 
 @RestController
 @Slf4j
@@ -842,7 +843,7 @@ public class ServiceController extends EntityController<Service> {
 
                 HttpHeaders responseHeaders = new HttpHeaders();
                 try {
-                    String location = request.getRequestURL().toString().split("/" + version)[0];
+                    String location = request.getRequestURL().toString().split(Pattern.quote("/" + version))[0];
                     responseHeaders.setLocation(new URI(location));
                 } catch (Exception e) {
                     log.error("Could not create Location header", e);
