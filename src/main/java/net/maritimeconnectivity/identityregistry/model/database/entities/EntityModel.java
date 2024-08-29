@@ -48,8 +48,10 @@ public abstract class EntityModel extends CertificateModel {
     @Column(name = "mrn_subsidiary")
     private String mrnSubsidiary;
 
+    @Deprecated(forRemoval = true)
     @URL(regexp = "^(http|https).*")
-    @Schema(description = "URL of MMS that the identity is registered")
+    @Schema(description = "DEPRECATED: URL of MMS that the identity is registered.\n" +
+            "Note that this is not part of the official specification and will be deleted in the future.", deprecated = true)
     @Column(name = "home_mms_url")
     private String homeMMSUrl;
 
