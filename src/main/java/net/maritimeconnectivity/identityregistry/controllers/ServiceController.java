@@ -833,10 +833,9 @@ public class ServiceController extends EntityController<Service> {
                 if (((ServiceService) this.entityService).getServiceByMrnAndVersion(servicePatch.getMrn(), null) != null || this.existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn())) {
                     throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
                 }
-                String oldMrn = servicePatch.getMrn();
                 service.setMrn(servicePatch.getMrn());
                 service.setInstanceVersion(null);
-                if (!servicePatch.getMrn().equals(oldMrn)) {
+                if (!servicePatch.getMrn().equals(serviceMrn)) {
                     service.revokeAllCertificates();
                 }
                 entityService.save(service);
