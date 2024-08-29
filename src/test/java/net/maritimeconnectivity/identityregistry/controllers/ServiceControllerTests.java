@@ -54,6 +54,7 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.junit.jupiter.api.Assertions.fail;
 import static org.mockito.ArgumentMatchers.any;
@@ -761,12 +762,14 @@ class ServiceControllerTests {
         String patchJson = serialize(servicePatch);
 
         try {
-            mvc.perform(patch("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/migrate")
+            MvcResult result = mvc.perform(patch("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/migrate")
                     .with(authentication(auth))
                     .header("Origin", "bla")
                     .content(patchJson)
                     .contentType("application/json")
-            ).andExpect(status().isNoContent());
+            ).andExpect(status().isNoContent()).andReturn();
+            String location = result.getResponse().getHeader("Location");
+            assertEquals("http://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4", location);
         } catch (Exception e) {
             fail(e);
         }

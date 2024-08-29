@@ -843,7 +843,7 @@ public class ServiceController extends EntityController<Service> {
 
                 HttpHeaders responseHeaders = new HttpHeaders();
                 try {
-                    String location = request.getRequestURL().toString().split(Pattern.quote("/" + version))[0];
+                    String location = request.getRequestURL().toString().split(Pattern.quote("/" + serviceMrn))[0] + "/" + servicePatch.getMrn();
                     responseHeaders.setLocation(new URI(location));
                 } catch (Exception e) {
                     log.error("Could not create Location header", e);
