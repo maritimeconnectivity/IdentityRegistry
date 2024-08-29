@@ -101,6 +101,11 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     @Override
+    public Service getByMrn(String mrn) {
+        return getServiceByMrnAndVersion(mrn, null);
+    }
+
+    @Override
     public boolean existsByMrn(String mrn) {
         return serviceRepository.existsByMrnIgnoreCase(mrn);
     }
