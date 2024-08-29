@@ -28,6 +28,8 @@ public interface CertificateService {
 
     Certificate getCertificateBySerialNumber(BigInteger serialNumber);
 
+    Certificate getCertificateByThumbprint(String thumbprint);
+
     Certificate saveCertificate(Certificate certificate);
 
     void deleteCertificate(Long id);

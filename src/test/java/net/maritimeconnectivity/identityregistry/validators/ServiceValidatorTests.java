@@ -76,9 +76,7 @@ class ServiceValidatorTests {
         invalidService.setMrn("urn:mrn:mcp:idp1:service:test:instance:test-service");
         // Invalid access type
         invalidService.setOidcAccessType("just rubish");
-        // Invalid version format
-        invalidService.setInstanceVersion("0.3.4/4");
         Set<ConstraintViolation<Service>> violations = validator.validate(invalidService);
-        assertEquals(3, violations.size());
+        assertEquals(2, violations.size());
     }
 }

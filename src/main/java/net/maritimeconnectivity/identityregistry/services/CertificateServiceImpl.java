@@ -48,6 +48,11 @@ public class CertificateServiceImpl implements CertificateService {
     }
 
     @Override
+    public Certificate getCertificateByThumbprint(String thumbprint) {
+        return certificateRepository.getByThumbprint(thumbprint);
+    }
+
+    @Override
     public Certificate saveCertificate(Certificate certificate) {
         return certificateRepository.save(certificate);
     }

@@ -28,7 +28,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -40,7 +39,7 @@ import java.util.regex.Pattern;
 public class MrnUtil {
 
     public final Pattern mrnPattern = Pattern.compile("^urn:mrn:([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):([a-z0-9][-a-z0-9]{0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)((\\?\\+((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?(\\?=((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?)?(#(((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?$", Pattern.CASE_INSENSITIVE);
-    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(device|org|user|vessel|service|mms):([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)$", Pattern.CASE_INSENSITIVE);
+    public final Pattern mcpMrnPattern = Pattern.compile("^urn:mrn:mcp:(entity|mir|mms|msr|(device|org|user|vessel|service)):([a-z]{2}|([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]){3,22}):([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]|[!$&'()*+,;=:@])(([a-z0-9\\-._~]|%[0-9a-f][0-9a-f]|[!$&'()*+,;=:@])|/)*$", Pattern.CASE_INSENSITIVE);
 
     @Getter
     @Setter
@@ -69,7 +68,7 @@ public class MrnUtil {
             throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         if (mrnSplit.length > 7) {
-            List<String> idList = new ArrayList<>(Arrays.asList(mrnSplit).subList(6, mrnSplit.length));
+            List<String> idList = Arrays.asList(mrnSplit).subList(6, mrnSplit.length);
             return String.join(":", idList);
         }
         return mrnSplit[mrnSplit.length - 1];
@@ -100,25 +99,21 @@ public class MrnUtil {
     public boolean isEntityTypeValid(CertificateModel entity) {
         if (entity instanceof Organization org) {
             String entityType = getEntityType(org.getMrn());
-            return entityType.equalsIgnoreCase("org");
+            return entityType.equalsIgnoreCase("entity") || entityType.equalsIgnoreCase("org");
         }
         if (entity instanceof EntityModel entityModel) {
             String entityType = getEntityType(entityModel.getMrn());
-            if (entityModel instanceof Device) {
-                return entityType.equalsIgnoreCase("device");
+            if (entityType.equalsIgnoreCase("entity")) {
+                return true;
             }
-            if (entityModel instanceof MMS) {
-                return entityType.equalsIgnoreCase("mms");
-            }
-            if (entityModel instanceof Service) {
-                return entityType.equalsIgnoreCase("service");
-            }
-            if (entityModel instanceof User) {
-                return entityType.equalsIgnoreCase("user");
-            }
-            if (entityModel instanceof Vessel) {
-                return entityType.equalsIgnoreCase("vessel");
-            }
+            return switch (entityModel) {
+                case Device ignored -> entityType.equalsIgnoreCase("device");
+                case MMS ignored -> entityType.equalsIgnoreCase("mms");
+                case Service ignored -> entityType.equalsIgnoreCase("service");
+                case User ignored -> entityType.equalsIgnoreCase("user");
+                case Vessel ignored -> entityType.equalsIgnoreCase("vessel");
+                default -> false;
+            };
         }
         return false;
     }

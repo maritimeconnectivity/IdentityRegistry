@@ -46,9 +46,9 @@ import java.util.Set;
 @Slf4j
 public class AccessControlUtil {
 
-    public static final String ORG_MRN_TEMPLATE = "urn:mrn:mcp:org:%s:%s";
-
     private HasRoleUtil hasRoleUtil;
+
+    private MrnUtil mrnUtil;
 
     private OrganizationService organizationService;
 
@@ -74,29 +74,75 @@ public class AccessControlUtil {
         }
         log.debug("User not a SITE_ADMIN");
         // Check if the user is part of the organization
-        if (auth instanceof JwtAuthenticationToken kat) {
-            log.debug("OIDC authentication in process");
-            // Keycloak authentication
-            Map<String, Object> otherClaims = kat.getTokenAttributes();
-            if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
-                String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
-                String org = "";
-                if (mrn != null) {
-                    String[] mrnParts = mrn.split(":");
-                    if (mrnParts.length < 7)
+        switch (auth) {
+            case JwtAuthenticationToken kat -> {
+                log.debug("OIDC authentication in process");
+                // Keycloak authentication
+                Map<String, Object> otherClaims = kat.getTokenAttributes();
+                if (otherClaims.containsKey(MCPIdRegConstants.MRN_PROPERTY_NAME)) {
+                    String mrn = (String) otherClaims.get(MCPIdRegConstants.MRN_PROPERTY_NAME);
+                    String org = (String) otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME);
+                    if (org == null || org.trim().isEmpty()) {
                         return false;
-                    org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
+                    }
+                    if (mrn != null) {
+                        String[] mrnParts = mrn.split(":");
+                        if (mrnParts.length < 7) {
+                            return false;
+                        }
+                        if (!mrnUtil.getOrgShortNameFromEntityMrn(mrn).equals(mrnUtil.getOrgShortNameFromOrgMrn(org))) {
+                            return false;
+                        }
+                    }
+                    if (org.equalsIgnoreCase(orgMrn)) {
+                        log.debug("Entity from org: {} is in {}", org, orgMrn);
+                        return true;
+                    }
+                    Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                    Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(org);
+                    if (organization != null && agentOrganization != null) {
+                        List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
+                        if (!agents.isEmpty()) {
+                            log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
+                            if (roleNeeded != null) {
+                                if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                                    roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
+                                for (Agent agent : agents) {
+                                    List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                                            .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
+                                            .toList();
+                                    Set<GrantedAuthority> reachableGrantedAuthorities =
+                                            new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
+                                    final String finalRoleNeeded = roleNeeded;
+                                    if (reachableGrantedAuthorities.stream().anyMatch(ga -> finalRoleNeeded.equals(ga.getAuthority())))
+                                        return true;
+                                }
+                                log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
+                                return false;
+                            }
+                            return true;
+                        }
+                    }
                 }
-                if (org.equalsIgnoreCase(orgMrn)) {
-                    log.debug("Entity from org: {} is in {}", org, orgMrn);
+                log.debug("Entity from org: {} is not in {}", otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME), orgMrn);
+            }
+            case PreAuthenticatedAuthenticationToken token -> {
+                log.debug("Certificate authentication in process");
+                // Certificate authentication
+                // Check that the Organization name of the accessed organization and the organization in the certificate is equal
+                InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+                // The O(rganization) value in the certificate is an MRN
+                String certOrgMrn = person.getO();
+                if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
+                    log.debug("Entity with O={} is in {}", certOrgMrn, orgMrn);
                     return true;
                 }
                 Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
-                Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(org);
+                Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(certOrgMrn);
                 if (organization != null && agentOrganization != null) {
                     List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                     if (!agents.isEmpty()) {
-                        log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
+                        log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
                         if (roleNeeded != null) {
                             if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
                                 roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
@@ -106,56 +152,18 @@ public class AccessControlUtil {
                                         .toList();
                                 Set<GrantedAuthority> reachableGrantedAuthorities =
                                         new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                                final String finalRoleNeeded = roleNeeded;
-                                if (reachableGrantedAuthorities.stream().anyMatch(ga -> finalRoleNeeded.equals(ga.getAuthority())))
+                                if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
                                     return true;
                             }
-                            log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
+                            log.debug("Entity with O={} who is agent for {} does does not have the needed role {}", certOrgMrn, orgMrn, roleNeeded);
                             return false;
                         }
                         return true;
                     }
                 }
+                log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
             }
-            log.debug("Entity from org: " + otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME) + " is not in " + orgMrn);
-        } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
-            log.debug("Certificate authentication in process");
-            // Certificate authentication
-            // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
-            // The O(rganization) value in the certificate is an MRN
-            String certOrgMrn = person.getO();
-            if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
-                log.debug("Entity with O={} is in {}", certOrgMrn, orgMrn);
-                return true;
-            }
-            Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
-            Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(certOrgMrn);
-            if (organization != null && agentOrganization != null) {
-                List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
-                if (!agents.isEmpty()) {
-                    log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
-                    if (roleNeeded != null) {
-                        if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
-                            roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
-                        for (Agent agent : agents) {
-                            List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
-                                    .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
-                                    .toList();
-                            Set<GrantedAuthority> reachableGrantedAuthorities =
-                                    new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                            if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
-                                return true;
-                        }
-                        log.debug("Entity with O={} who is agent for {} does does not have the needed role {}", certOrgMrn, orgMrn, roleNeeded);
-                        return false;
-                    }
-                    return true;
-                }
-            }
-            log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
-        } else {
-            log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+            default -> log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
         }
         return false;
     }
@@ -190,7 +198,7 @@ public class AccessControlUtil {
                 String[] mrnParts = mrn.split(":");
                 if (mrnParts.length < 7)
                     return false;
-                String org = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
+                String org = (String) otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME);
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
@@ -232,7 +240,7 @@ public class AccessControlUtil {
             String[] mrnParts = userMrn.split(":");
             if (mrnParts.length < 7)
                 return Collections.emptyList();
-            userOrgMrn = String.format(ORG_MRN_TEMPLATE, mrnParts[4], mrnParts[5]);
+            userOrgMrn = (String) otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
             InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
             userOrgMrn = person.getO();
@@ -282,6 +290,11 @@ public class AccessControlUtil {
     @Autowired
     public void setHasRoleUtil(HasRoleUtil hasRoleUtil) {
         this.hasRoleUtil = hasRoleUtil;
+    }
+
+    @Autowired
+    public void setMrnUtil(MrnUtil mrnUtil) {
+        this.mrnUtil = mrnUtil;
     }
 
     @Lazy

@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -74,7 +73,6 @@ public class VesselImageController {
     @Operation(
             description = "Create a new vessel image using POST"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> createVesselImagePost(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestParam("image") MultipartFile image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
@@ -116,7 +114,6 @@ public class VesselImageController {
     @Operation(
             description = "Create or update a vessel image using PUT"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> updateVesselImagePut(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn, @RequestBody byte[] image) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
@@ -151,7 +148,6 @@ public class VesselImageController {
     @Operation(
             description = "Get the image of a specified vessel"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<?> getVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);
@@ -181,7 +177,6 @@ public class VesselImageController {
     @Operation(
             description = "Delete the image of a specified vessel"
     )
-    @ResponseBody
     @PreAuthorize("hasRole('VESSEL_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'VESSEL_ADMIN')")
     public ResponseEntity<?> deleteVesselImage(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
         Vessel vessel = this.vesselService.getByMrn(vesselMrn);

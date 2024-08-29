@@ -120,7 +120,7 @@ public class User extends EntityModel {
         String orgCountryCode = organization.getCountry();
         String[] locales = Locale.getISOCountries();
         for (String countryCode : locales) {
-            Locale loc = new Locale("", countryCode);
+            Locale loc = Locale.of("", countryCode);
             if (loc.getDisplayCountry(Locale.ENGLISH).equals(orgCountryCode)) {
                 orgCountryCode = loc.getCountry();
                 break;

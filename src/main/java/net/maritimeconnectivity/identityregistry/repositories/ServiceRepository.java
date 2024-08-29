@@ -25,12 +25,16 @@ import java.util.List;
 
 public interface ServiceRepository extends PagingAndSortingRepository<Service, Long>, CrudRepository<Service, Long> {
     Page<Service> findByidOrganization(Long orgId, Pageable pageable);
+
     List<Service> findByidOrganization(Long orgId);
 
     void deleteByidOrganization(Long orgId);
 
-    List<Service> findByName(String lastName);
+    boolean existsByMrnIgnoreCase(String mrn);
+
+    Page<Service> findByMrnStartingWithIgnoreCase(String mrn, Pageable pageable);
+
+    List<Service> findByMrnStartingWithIgnoreCase(String mrn);
 
     Service getByMrnIgnoreCaseAndInstanceVersion(String mrn, String version);
-    Page<Service> findByMrnIgnoreCase(String mrn, Pageable pageable);
 }

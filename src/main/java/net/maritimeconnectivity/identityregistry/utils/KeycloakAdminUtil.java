@@ -390,7 +390,7 @@ public class KeycloakAdminUtil {
      * @throws DuplicatedKeycloakEntry is thrown if the user already exists
      */
     public void createUser(User user, String password, Organization org, boolean enabled) throws IOException, DuplicatedKeycloakEntry {
-        log.debug("Creating user: " + user.getMrn());
+        log.debug("Creating user: {}", user.getMrn());
 
         UserRepresentation kcUser = new UserRepresentation();
         kcUser.setEnabled(enabled);
@@ -424,14 +424,14 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.error("Creating user failed due to duplicated user" + errMsg);
+                    log.error("Creating user failed due to duplicated user {}", errMsg);
                     throw new DuplicatedKeycloakEntry("User with mrn: " + user.getMrn() + " already exists.", errMsg);
                 } else {
-                    log.error("Creating user failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating user failed, status: {}, {}", ret.getStatus(), errMsg);
                     throw new IOException("User creating failed: " + errMsg);
                 }
             }
-            log.debug("Created user, status: " + ret.getStatus() + ", " + errMsg);
+            log.debug("Created user, status: {}, {}", ret.getStatus(), errMsg);
         }
 
         // Set credentials
@@ -441,9 +441,9 @@ public class KeycloakAdminUtil {
         // Make sure the user updates the password on first login
         cred.setTemporary(true);
         // Find the user by searching for the username
-        kcUser = getProjectUserRealm().users().search(user.getEmail(), null, null, null, -1, -1).get(0);
+        kcUser = getProjectUserRealm().users().search(user.getEmail(), null, null, null, -1, -1).getFirst();
         kcUser.setCredentials(Collections.singletonList(cred));
-        log.debug("Setting password for user: " + kcUser.getId());
+        log.debug("Setting password for user: {}", kcUser.getId());
         getProjectUserRealm().users().get(kcUser.getId()).resetPassword(cred);
         log.debug("Created user");
     }
@@ -494,7 +494,7 @@ public class KeycloakAdminUtil {
             log.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
         }
-        UserRepresentation user = userReps.get(0);
+        UserRepresentation user = userReps.getFirst();
         boolean updated = false;
         if (email != null && !email.trim().isEmpty()) {
             user.setEmail(email);
@@ -535,7 +535,7 @@ public class KeycloakAdminUtil {
         if (attr.containsKey(attributeName)) {
             List<String> oldAttributeValue = attr.get(attributeName);
             if (oldAttributeValue != null && !oldAttributeValue.isEmpty()) {
-                String attributeValue = oldAttributeValue.get(0);
+                String attributeValue = oldAttributeValue.getFirst();
                 if (attributeValue == null || !attributeValue.equals(newAttributeValue)) {
                     attr.put(attributeName, Collections.singletonList(Objects.requireNonNullElse(newAttributeValue, "")));
                     user.setAttributes(attr);
@@ -564,24 +564,24 @@ public class KeycloakAdminUtil {
         List<UserRepresentation> users = getProjectUserRealm().users().search(email, null, null, null, -1, -1);
         // If we found one, delete it
         if (!users.isEmpty()) {
-            getProjectUserRealm().users().get(users.get(0).getId()).remove();
+            getProjectUserRealm().users().get(users.getFirst().getId()).remove();
         } else {
             // Second try: Find the user by searching for the email
             users = getProjectUserRealm().users().search(null, null, null, email, -1, -1);
             // If we found one, delete it
             if (!users.isEmpty()) {
-                getProjectUserRealm().users().get(users.get(0).getId()).remove();
+                getProjectUserRealm().users().get(users.getFirst().getId()).remove();
             }
         }
         // delete the user in the broker realm
         users = getBrokerRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
-            getBrokerRealm().users().get(users.get(0).getId()).remove();
+            getBrokerRealm().users().get(users.getFirst().getId()).remove();
         }
         // delete the user in the certificates realm
         users = getCertificatesRealm().users().search(mrn, null, null, null, -1, -1);
         if (!users.isEmpty()) {
-            getCertificatesRealm().users().get(users.get(0).getId()).remove();
+            getCertificatesRealm().users().get(users.getFirst().getId()).remove();
         }
     }
 
@@ -616,17 +616,17 @@ public class KeycloakAdminUtil {
             String errMsg = ret.readEntity(String.class);
             if (ret.getStatus() != 201) {
                 if (ret.getStatus() == 409) {
-                    log.error("Creating client failed due to duplicated client" + errMsg);
+                    log.error("Creating client failed due to duplicated client {}", errMsg);
                     throw new DuplicatedKeycloakEntry("Client with mrn: " + clientId + " already exists.", errMsg);
                 } else {
-                    log.error("Creating client failed, status: " + ret.getStatus() + ", " + errMsg);
+                    log.error("Creating client failed, status: {}, {}", ret.getStatus(), errMsg);
                     throw new IOException("Client creation failed: " + errMsg);
                 }
             }
         }
         if (!"public".equals(type)) {
-            // The client secret can't be retrived by the ClientRepresentation (bug?), so we need to use the ClientResource
-            ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).get(0);
+            // The client secret can't be retrieved by the ClientRepresentation (bug?), so we need to use the ClientResource
+            ClientRepresentation createdClient = getBrokerRealm().clients().findByClientId(clientId).getFirst();
             return getBrokerRealm().clients().get(createdClient.getId()).getSecret().getValue();
         } else {
             return "";
@@ -666,7 +666,7 @@ public class KeycloakAdminUtil {
                 throw new IOException("Client creation failed due to the client already existing, though it should not! ");
             }
         }
-        ClientRepresentation client = clients.get(0);
+        ClientRepresentation client = clients.getFirst();
         client.setClientAuthenticatorType("client-secret");
         if (redirectUri != null && !redirectUri.trim().isEmpty()) {
             client.setRedirectUris(Collections.singletonList(redirectUri));
@@ -690,7 +690,7 @@ public class KeycloakAdminUtil {
      * @param clientId the ID of the client that should be deleted
      */
     public void deleteClient(String clientId) {
-        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).getFirst();
         getBrokerRealm().clients().get(client.getId()).remove();
     }
 
@@ -700,8 +700,8 @@ public class KeycloakAdminUtil {
      * @param clientId client id/name
      * @return the keycloak json
      */
-    public String getClientKeycloakJson(String clientId) {
-        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+    public String getClientKeycloakJson(String clientId) throws IOException {
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).getFirst();
         String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
         String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-keycloak-json";
         return getFromKeycloak(url, token);
@@ -713,8 +713,8 @@ public class KeycloakAdminUtil {
      * @param clientId client id/name
      * @return the keycloak json
      */
-    public String getClientJbossXml(String clientId) {
-        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).get(0);
+    public String getClientJbossXml(String clientId) throws IOException {
+        ClientRepresentation client = getBrokerRealm().clients().findByClientId(clientId).getFirst();
         String token = keycloakBrokerInstance.tokenManager().getAccessTokenString();
         String url = keycloakBrokerBaseUrl + "admin/realms/" + keycloakBrokerRealm + "/clients/" + client.getId() + "/installation/providers/keycloak-oidc-jboss-subsystem";
         return getFromKeycloak(url, token);
@@ -727,28 +727,17 @@ public class KeycloakAdminUtil {
      * @param token The access_token to use for identification
      * @return Returns a string representation of the result
      */
-    private String getFromKeycloak(String url, String token) {
-        CloseableHttpClient client = HttpClientBuilder.create().build();
-        try {
-            log.debug("get url: " + url);
+    private String getFromKeycloak(String url, String token) throws IOException {
+        try(CloseableHttpClient client = HttpClientBuilder.create().build()) {
+            log.debug("get url: {}", url);
             HttpGet get = new HttpGet(url);
             get.addHeader("Authorization", "Bearer " + token);
-            try {
-                HttpResponse response = client.execute(get);
-                if (response.getStatusLine().getStatusCode() != 200) {
-                    log.debug("" + response.getStatusLine().getStatusCode());
-                    return null;
-                }
-                return getContent(response.getEntity());
-            } catch (IOException e) {
-                throw new RuntimeException(e);
+            HttpResponse response = client.execute(get);
+            if (response.getStatusLine().getStatusCode() != 200) {
+                log.debug("{}", response.getStatusLine().getStatusCode());
+                return null;
             }
-        } finally {
-            try {
-                client.close();
-            } catch (IOException e) {
-                log.error("Failed GET from Keycloak", e);
-            }
+            return getContent(response.getEntity());
         }
     }
 

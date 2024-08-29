@@ -34,4 +34,6 @@ public interface EntityRepository<T> extends PagingAndSortingRepository<T, Long>
     T getByMrnIgnoreCase(String mrn);
 
     T getByMrnSubsidiaryIgnoreCase(String subMrn);
+
+    boolean existsByMrnIgnoreCase(String mrn);
 }

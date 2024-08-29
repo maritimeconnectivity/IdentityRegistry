@@ -34,4 +34,5 @@ public interface OrganizationRepository extends PagingAndSortingRepository<Organ
 
     Page<Organization> findByApprovedTrue(Pageable pageable);
 
+    boolean existsByMrnIgnoreCase(String mrn);
 }

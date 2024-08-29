@@ -146,6 +146,13 @@ class MrnUtilsTests {
     }
 
     @Test
+    void validatingOrgMRN3() {
+        String orgMrn = "urn:mrn:mcp:entity:idp1:org1";
+        boolean result = mrnUtil.validateMCPMrn(orgMrn);
+        assertTrue("Org MRN should be valid", result);
+    }
+
+    @Test
     void validatingVesselMRN1() {
         String vesselMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
         boolean ret = mrnUtil.validateMCPMrn(vesselMrn);
@@ -158,6 +165,13 @@ class MrnUtilsTests {
         String vesselMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-løwenørn";
         boolean result = mrnUtil.validateMrn(vesselMrn);
         assertFalse("The MRN should not be valid", result);
+    }
+
+    @Test
+    void validatingVesselMRN3() {
+        String vesselMrn = "urn:mrn:mcp:entity:idp1:dma:poul-loewenoern";
+        boolean ret = mrnUtil.validateMCPMrn(vesselMrn);
+        assertTrue("Vessel MRN should be valid", ret);
     }
 
     @Test
@@ -180,6 +194,15 @@ class MrnUtilsTests {
         device.setMrn("urn:mrn:mcp:user:idp1:dma:secretary:bob");
         boolean valid = mrnUtil.isEntityTypeValid(device);
         assertFalse("Entity type validation should have failed", valid);
+    }
+
+    @Test
+    void checkDeviceWithEntityTypeInMrn() {
+        Device device = new Device();
+        device.setMrn("urn:mrn:mcp:entity:idp1:org1:device1");
+        boolean valid = mrnUtil.isEntityTypeValid(device);
+        assertTrue("Entity type validation should be valid", valid);
+        assertTrue("Device MRN should be a valid MCP MRN", mrnUtil.validateMCPMrn(device.getMrn()));
     }
 
 }

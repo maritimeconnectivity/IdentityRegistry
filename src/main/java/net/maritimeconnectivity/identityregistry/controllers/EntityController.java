@@ -29,6 +29,7 @@ import net.maritimeconnectivity.identityregistry.services.RoleService;
 import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
 import net.maritimeconnectivity.identityregistry.utils.CsrUtil;
+import net.maritimeconnectivity.identityregistry.utils.ExistsByMrnUtil;
 import net.maritimeconnectivity.identityregistry.utils.MCPIdRegConstants;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -56,6 +57,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     protected OrganizationService organizationService;
     protected RoleService roleService;
     protected AccessControlUtil accessControlUtil;
+    protected ExistsByMrnUtil existsByMrnUtil;
 
     /**
      * Creates a new Entity
@@ -69,6 +71,9 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             // Check that the entity being created belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.CONFLICT, MCPIdRegConstants.ENTITY_WITH_MRN_ALREADY_EXISTS, request.getServletPath());
             }
             input.setIdOrganization(org.getId());
             // check that the requesting user has a role that is equal to or higher than the one given to the new entity
@@ -214,7 +219,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             EntityModel entity;
-            if (type.equals("service")) {
+            if (type.equals("service") && version != null) {
                 entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
             } else {
                 entity = this.entityService.getByMrn(entityMrn);
@@ -241,19 +246,15 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
      * @return a PEM encoded certificate
      * @throws McpBasicRestException
      */
-    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type, String version) throws McpBasicRestException {
+    protected ResponseEntity<String> signEntityCert(HttpServletRequest request, String csr, String orgMrn, String entityMrn, String type) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(entityMrn))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            EntityModel entity;
-            if (type.equals("service")) {
-                entity = ((ServiceService) this.entityService).getServiceByMrnAndVersion(entityMrn, version);
-            } else {
-                entity = this.entityService.getByMrn(entityMrn);
-            }
+
+            EntityModel entity = this.entityService.getByMrn(entityMrn);
             if (entity == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -344,5 +345,10 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
     @Autowired
     public void setAccessControlUtil(AccessControlUtil accessControlUtil) {
         this.accessControlUtil = accessControlUtil;
+    }
+
+    @Autowired
+    public void setExistsByMrnUtil(ExistsByMrnUtil existsByMrnUtil) {
+        this.existsByMrnUtil = existsByMrnUtil;
     }
 }

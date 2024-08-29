@@ -22,6 +22,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -47,17 +48,32 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
         return this.filterResult(ret);
     }
 
+    @Override
     public Service getServiceByMrnAndVersion(String mrn, String version) {
         return serviceRepository.getByMrnIgnoreCaseAndInstanceVersion(mrn, version);
     }
 
-    public Service getByMrn(String mrn) {
-        throw new UnsupportedOperationException("Single services cannot be fetched using only MRN!");
+    @Override
+    public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
+        Page<Service> ret = serviceRepository.findByMrnStartingWithIgnoreCase(mrn, pageable);
+        return this.filterResult(ret);
     }
 
-    public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
-        Page<Service> ret = serviceRepository.findByMrnIgnoreCase(mrn, pageable);
-        return this.filterResult(ret);
+    @Override
+    public List<Service> getServicesByMrn(String mrn) {
+        List<Service> services = serviceRepository.findByMrnStartingWithIgnoreCase(mrn);
+        return this.filterResult(services);
+    }
+
+    @Override
+    public Service getNewestServiceByMrn(String mrn) {
+        List<Service> services = getServicesByMrn(mrn);
+        int mrnSplitLength = mrn.split(":").length;
+
+        services = services.stream()
+                .filter(s -> s.getMrn().split(":").length == mrnSplitLength + 1)
+                .sorted(Comparator.comparing(Service::getCreatedAt)).toList();
+        return services.isEmpty() ? null : services.getFirst();
     }
 
     @Transactional
@@ -84,5 +100,9 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
         return filterResult(ret.orElse(null));
     }
 
+    @Override
+    public boolean existsByMrn(String mrn) {
+        return serviceRepository.existsByMrnIgnoreCase(mrn);
+    }
 }
 

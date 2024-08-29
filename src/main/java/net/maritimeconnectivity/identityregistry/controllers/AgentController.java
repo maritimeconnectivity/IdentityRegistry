@@ -41,7 +41,6 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -71,7 +70,6 @@ public class AgentController {
     @Operation(
             description = "Returns a page of agents for the given organization"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Agent> getAgents(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -95,7 +93,6 @@ public class AgentController {
     @Operation(
             description = "Returns the list of all organization that can be acted on behalf of"
     )
-    @ResponseBody
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public Page<Agent> getActingOnBehalfOf(HttpServletRequest request, @PathVariable String orgMrn, @ParameterObject Pageable pageable) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
@@ -116,7 +113,6 @@ public class AgentController {
             value = "/api/org/{orgMrn}/agent/{agentId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     @Operation(
             description = "Get a specific agent"
     )
@@ -146,7 +142,6 @@ public class AgentController {
             value = "/api/org/{orgMrn}/agent",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     @Operation(
             description = "Creates a new agent"
     )
@@ -184,7 +179,6 @@ public class AgentController {
             value = "/api/org/{orgMrn}/agent/{agentId}",
             produces = MediaType.APPLICATION_JSON_VALUE
     )
-    @ResponseBody
     @Operation(
             description = "Update an existing agent"
     )
@@ -221,7 +215,6 @@ public class AgentController {
     @DeleteMapping(
             value = "/api/org/{orgMrn}/agent/{agentId}"
     )
-    @ResponseBody
     @Operation(
             description = "Deletes a given agent"
     )

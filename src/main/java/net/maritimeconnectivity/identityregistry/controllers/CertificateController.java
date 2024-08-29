@@ -43,7 +43,6 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
@@ -81,7 +80,6 @@ public class CertificateController {
     @Operation(
             description = "Get the CRL of the specified CA"
     )
-    @ResponseBody
     public ResponseEntity<String> getCRL(@PathVariable String caAlias) {
         // If looking for the root CRL we load that from a file and return it.
         if (certUtil.getRootCAAlias().equals(caAlias)) {
@@ -131,7 +129,6 @@ public class CertificateController {
             description = "POST mapping for OCSP",
             requestBody = @io.swagger.v3.oas.annotations.parameters.RequestBody(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1")
     )
-    @ResponseBody
     public ResponseEntity<byte[]> postOCSP(@PathVariable String caAlias, @RequestBody byte[] input) {
         return generateOCSPResponseEntity(caAlias, input);
     }
@@ -143,7 +140,6 @@ public class CertificateController {
     @Operation(
             description = "GET mapping for OCSP"
     )
-    @ResponseBody
     public ResponseEntity<byte[]> getOCSP(@PathVariable String caAlias, @Parameter(description = "OCSP request that is encoded as defined in RFC 6960 Appendix A.1") @PathVariable String ocspRequest) {
         byte[] decodedOCSP = Base64.decode(ocspRequest);
         return generateOCSPResponseEntity(caAlias, decodedOCSP);

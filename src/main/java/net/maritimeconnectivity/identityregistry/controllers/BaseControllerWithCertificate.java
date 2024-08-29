@@ -122,15 +122,12 @@ public abstract class BaseControllerWithCertificate {
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ENTITY_ORG_ID_MISSING, request.getServletPath());
                 }
 
-                BigInteger serialNumber = null;
+                BigInteger serialNumber;
 
                 // Make sure that the serial number is unique
-                boolean isUniqueSerialNumber = false;
-                while (!isUniqueSerialNumber) {
+                do {
                     serialNumber = certificateUtil.getCertificateBuilder().generateSerialNumber(p11PKIConfiguration);
-                    if (this.certificateService.countCertificatesBySerialNumber(serialNumber) == 0)
-                        isUniqueSerialNumber = true;
-                }
+                } while (this.certificateService.countCertificatesBySerialNumber(serialNumber) != 0);
                 X509Certificate userCert = createX509Certificate(org, type, request, publicKey, authProvider, p11PKIConfiguration, attrs, o, name, email, uid, validityPeriod, serialNumber);
                 return createCertificate(certOwner, org, request, serialNumber, userCert);
             }

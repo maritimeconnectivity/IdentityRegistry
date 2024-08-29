@@ -15,10 +15,9 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.model.database.TimestampModel;
 import net.maritimeconnectivity.identityregistry.utils.AccessControlUtil;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,10 +26,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
+@Slf4j
 @Transactional(readOnly = true)
 public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseService<T> {
-    private static final Logger logger = LoggerFactory.getLogger(BaseServiceImpl.class);
-
     protected final List<String> authorizedRoles = Arrays.asList("ORG_ADMIN", "SITE_ADMIN");
 
     protected AccessControlUtil accessControlUtil;
@@ -47,7 +45,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
     protected T filterResult(T data) {
         if (data != null && data.hasSensitiveFields() && !isAuthorized()) {
             // If not authorized to see all we clean the object for sensitive data.
-            logger.debug("Clearing Sensitive Fields");
+            log.debug("Clearing Sensitive Fields");
             data.clearSensitiveFields();
         }
         return data;
@@ -70,7 +68,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
     protected Iterable<T> filterIterable(Iterable<T> data) {
         // If not authorized to see all we clean the object for sensitive data.
         if (!isAuthorized()) {
-            logger.debug("Clearing Sensitive Fields");
+            log.debug("Clearing Sensitive Fields");
             for (T entity : data) {
                 if (!entity.hasSensitiveFields()) {
                     break;
@@ -89,7 +87,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
 
     @Transactional
     public T save(T entity) {
-        logger.debug("Just saved entity");
+        log.debug("Just saved entity");
         return getRepository().save(entity);
     }
 

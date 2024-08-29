@@ -29,11 +29,12 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
-import org.springframework.security.config.annotation.web.configurers.oauth2.server.resource.OAuth2ResourceServerConfigurer;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMapper;
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
@@ -54,10 +55,9 @@ public class MultiSecurityConfig {
 
     @Bean
     public RoleHierarchy roleHierarchy() {
-        RoleHierarchyImpl roleHierarchy = new RoleHierarchyImpl();
         // If the hierarchy is changed, remember to update the hierarchy above and the list in
         // net.maritimeconnectivity.identityregistry.controllers.RoleController:getAvailableRoles()
-        roleHierarchy.setHierarchy("""
+        return RoleHierarchyImpl.fromHierarchy("""
                 ROLE_SITE_ADMIN > ROLE_APPROVE_ORG
                 ROLE_SITE_ADMIN > ROLE_ORG_ADMIN
                 ROLE_ORG_ADMIN > ROLE_ENTITY_ADMIN
@@ -70,7 +70,6 @@ public class MultiSecurityConfig {
                 ROLE_VESSEL_ADMIN > ROLE_USER
                 ROLE_SERVICE_ADMIN > ROLE_USER
                 ROLE_DEVICE_ADMIN > ROLE_USER""");
-        return roleHierarchy;
     }
 
     @Bean
@@ -108,7 +107,7 @@ public class MultiSecurityConfig {
         http
                 .securityMatcher("/oidc/**")
                 .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
-                .csrf().disable()
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
                         .requestMatchers(HttpMethod.POST, "/oidc/api/org/apply").permitAll()
@@ -119,12 +118,14 @@ public class MultiSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/oidc/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/secom/v1/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/oidc/api/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/oidc/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/service/**").denyAll())
-                .oauth2ResourceServer(OAuth2ResourceServerConfigurer::jwt);
+                .oauth2ResourceServer(oauth2 -> oauth2.jwt(Customizer.withDefaults()));
         return http.build();
     }
 
@@ -133,7 +134,7 @@ public class MultiSecurityConfig {
     public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService) throws Exception {
         http
                 .securityMatcher("/x509/**", "/service/**")
-                .csrf().disable()
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
                         .requestMatchers(HttpMethod.POST, "/x509/api/org/apply").permitAll()
@@ -144,10 +145,12 @@ public class MultiSecurityConfig {
                         .requestMatchers(HttpMethod.GET, "/v3/api-docs/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/swagger-ui/**").permitAll()
                         .requestMatchers(HttpMethod.OPTIONS, "/x509/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/secom/v1/**").permitAll()
                         .requestMatchers(HttpMethod.POST, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.PUT, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.DELETE, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/x509/api/**").authenticated()
+                        .requestMatchers(HttpMethod.PATCH, "/x509/api/**").authenticated()
                         .requestMatchers(HttpMethod.GET, "/service/**").authenticated());
 
         if (!useStandardSSL) {
@@ -165,9 +168,9 @@ public class MultiSecurityConfig {
             // Using this approach is not recommended since we don't extract all the information from
             // the certificate, as done in the approach above.
             http
-                    .x509()
-                    .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
-                    .userDetailsService(new X509UserDetailsService());
+                    .x509(x509 -> x509
+                            .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
+                            .userDetailsService(new X509UserDetailsService()));
         }
         return http.build();
     }
