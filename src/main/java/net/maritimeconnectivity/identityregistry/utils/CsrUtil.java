@@ -18,8 +18,8 @@ package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import lombok.NonNull;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
+import org.apache.commons.lang3.StringUtils;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.bouncycastle.util.io.pem.PemObject;
 import org.bouncycastle.util.io.pem.PemReader;
@@ -40,7 +40,10 @@ public class CsrUtil {
      * @return an object containing a PKCS#10 CSR
      * @throws McpBasicRestException is thrown if given CSR cannot be parsed
      */
-    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, @NonNull String pemCsr) throws McpBasicRestException {
+    public static JcaPKCS10CertificationRequest getCsrFromPem(HttpServletRequest request, String pemCsr) throws McpBasicRestException {
+        if (StringUtils.isBlank(pemCsr)) {
+            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, "CSR cannot be empty.", request.getServletPath());
+        }
         PemReader pemReader = new PemReader(new StringReader(pemCsr));
         try {
             PemObject pemObject = pemReader.readPemObject();
