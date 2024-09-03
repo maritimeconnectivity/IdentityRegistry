@@ -1,5 +1,6 @@
 /*
  * Copyright 2017 Danish Maritime Authority.
+ * Copyright 2020 Maritime Connectivity Platform Consortium
  *
  *  Licensed under the Apache License, Version 2.0 (the "License");
  *  you may not use this file except in compliance with the License.
