@@ -27,9 +27,7 @@ ENV LOADER_PATH=/modules
 
 COPY --from=builder /usr/local/apr/lib /usr/lib/
 
-RUN mkdir /conf
-
-RUN mkdir $LOADER_PATH
+RUN mkdir /conf $LOADER_PATH
 
 # Download the MariaDB client connector from Maven Central
 ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
