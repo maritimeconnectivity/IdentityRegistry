@@ -40,7 +40,7 @@ ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/my
 # Install native libraries that can be used by Spring Boot's embedded Tomcat server for improved performance
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libapr1 && rm -rf /var/lib/apt/lists* /var/cache/apt/archives/*
 
-ADD mcp-identityregistry-core-latest.jar .
+COPY mcp-identityregistry-core-latest.jar .
 
 EXPOSE 8443
 
