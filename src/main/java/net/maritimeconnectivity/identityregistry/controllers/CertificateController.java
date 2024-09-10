@@ -166,9 +166,6 @@ public class CertificateController {
             OCSPResponse ocspResponse = new OCSPResponse(new OCSPResponseStatus(OCSPResponseStatus.MALFORMED_REQUEST), null);
             return new OCSPResp(ocspResponse).getEncoded();
         }
-        /* TODO: verify signature - needed?
-        if (ocspreq.isSigned()) {
-        }*/
         Map<CertificateID, CertificateStatus> certificateStatusMap = new HashMap<>();
         Req[] requests = ocspreq.getRequestList();
         for (Req req : requests) {
