@@ -16,6 +16,7 @@
 
 package net.maritimeconnectivity.identityregistry.model.data;
 
+import io.swagger.v3.oas.annotations.media.Schema;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -29,10 +30,12 @@ import net.maritimeconnectivity.identityregistry.validators.MCPMRN;
 @NoArgsConstructor
 @AllArgsConstructor
 @ToString
+@Schema(description = "Model object containing the patch content for migrating a Service entity")
 public class ServicePatch implements JsonSerializable {
     /**
      * The new MRN of the Service
      */
     @MCPMRN
+    @Schema(description = "The new MCP MRN that you want to give the service", requiredMode = Schema.RequiredMode.REQUIRED)
     private String mrn;
 }
