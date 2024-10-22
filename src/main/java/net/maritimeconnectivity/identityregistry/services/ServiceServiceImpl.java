@@ -69,6 +69,11 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     @Override
     public Service getNewestServiceByMrn(String mrn) {
         List<Service> services = getServicesByMrn(mrn);
+
+        if (services.size() == 1) {
+            return services.getFirst();
+        }
+
         int mrnSplitLength = mrn.split(":").length;
 
         services = services.stream()
