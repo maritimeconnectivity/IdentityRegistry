@@ -176,7 +176,7 @@ public class ServiceController extends EntityController<Service> {
             if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
-            Page<Service> services = ((ServiceService) this.entityService).getServicesByMrn(serviceMrn, pageable);
+            Page<Service> services = ((ServiceService) this.entityService).getServicesByMrnPrefix(serviceMrn, pageable);
             if (services == null || !services.hasContent()) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
@@ -220,7 +220,7 @@ public class ServiceController extends EntityController<Service> {
             }
 
             // Else, check if there are any services that have the MRN as prefix of their MRN and return the latest that was created
-            service = ((ServiceService) entityService).getNewestServiceByMrn(serviceMrn);
+            service = ((ServiceService) entityService).getNewestServiceByMrnPrefix(serviceMrn);
             if (service == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }

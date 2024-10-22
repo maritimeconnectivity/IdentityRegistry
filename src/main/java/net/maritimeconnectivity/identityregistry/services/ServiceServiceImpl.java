@@ -55,21 +55,25 @@ public class ServiceServiceImpl extends EntityServiceImpl<Service> implements Se
     }
 
     @Override
-    public Page<Service> getServicesByMrn(String mrn, Pageable pageable) {
+    public Page<Service> getServicesByMrnPrefix(String mrn, Pageable pageable) {
         Page<Service> ret = serviceRepository.findByMrnStartingWithIgnoreCase(mrn, pageable);
         return this.filterResult(ret);
     }
 
     @Override
-    public List<Service> getServicesByMrn(String mrn) {
+    public List<Service> getServicesByMrnPrefix(String mrn) {
         List<Service> services = serviceRepository.findByMrnStartingWithIgnoreCase(mrn);
         return this.filterResult(services);
     }
 
     @Override
-    public Service getNewestServiceByMrn(String mrn) {
-        List<Service> services = getServicesByMrn(mrn);
+    public Service getNewestServiceByMrnPrefix(String mrn) {
+        List<Service> services = serviceRepository.findByMrnIgnoreCase(mrn);
+        if (services.size() == 1) {
+            return services.getFirst();
+        }
 
+        services = getServicesByMrnPrefix(mrn);
         if (services.size() == 1) {
             return services.getFirst();
         }

@@ -33,6 +33,8 @@ public interface ServiceRepository extends PagingAndSortingRepository<Service, L
 
     boolean existsByMrnIgnoreCase(String mrn);
 
+    List<Service> findByMrnIgnoreCase(String mrn);
+
     Page<Service> findByMrnStartingWithIgnoreCase(String mrn, Pageable pageable);
 
     List<Service> findByMrnStartingWithIgnoreCase(String mrn);

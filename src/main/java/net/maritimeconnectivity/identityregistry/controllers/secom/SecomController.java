@@ -109,7 +109,7 @@ public class SecomController {
         };
 
         if (entity == null && "service".equals(type)) {
-            entity = serviceService.getNewestServiceByMrn(mrn);
+            entity = serviceService.getNewestServiceByMrnPrefix(mrn);
         }
 
         if (entity != null) {
