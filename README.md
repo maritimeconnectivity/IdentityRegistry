@@ -21,7 +21,7 @@ The database can be dropped with this command:
 ```
 
 ## Build
-* Requirement : OpenJDK 17
+* Requirement : OpenJDK 21
 
 Build using you favorite IDE or using the console:
 ```sh
