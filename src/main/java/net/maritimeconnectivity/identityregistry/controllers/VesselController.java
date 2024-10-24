@@ -230,7 +230,10 @@ public class VesselController extends EntityController<Vessel> {
 
     @Override
     protected Vessel getCertEntity(Certificate cert) {
-        return cert.getVessel();
+        if (cert != null) {
+            return cert.getVessel();
+        }
+        return null;
     }
 
     @Autowired

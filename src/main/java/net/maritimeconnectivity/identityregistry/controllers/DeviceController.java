@@ -191,7 +191,10 @@ public class DeviceController extends EntityController<Device> {
 
     @Override
     protected Device getCertEntity(Certificate cert) {
-        return cert.getDevice();
+        if (cert != null) {
+            return cert.getDevice();
+        }
+        return null;
     }
 
     @Autowired

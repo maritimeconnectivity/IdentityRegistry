@@ -202,7 +202,10 @@ public class MMSController extends EntityController<MMS> {
 
     @Override
     protected MMS getCertEntity(Certificate cert) {
-        return cert.getMms();
+        if (cert != null) {
+            return cert.getMms();
+        }
+        return null;
     }
 
     @Autowired

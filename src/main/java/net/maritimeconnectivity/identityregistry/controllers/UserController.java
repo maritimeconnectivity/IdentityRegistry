@@ -441,7 +441,10 @@ public class UserController extends EntityController<User> {
 
     @Override
     protected User getCertEntity(Certificate cert) {
-        return cert.getUser();
+        if (cert != null) {
+            return cert.getUser();
+        }
+        return null;
     }
 
     @Autowired

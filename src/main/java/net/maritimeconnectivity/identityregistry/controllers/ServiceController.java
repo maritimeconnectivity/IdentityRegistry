@@ -858,7 +858,10 @@ public class ServiceController extends EntityController<Service> {
 
     @Override
     protected Service getCertEntity(Certificate cert) {
-        return cert.getService();
+        if (cert != null) {
+            return cert.getService();
+        }
+        return null;
     }
 
     @Override
