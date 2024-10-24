@@ -567,6 +567,9 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().equals(org.getId())) {
                 Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
+                if (cert == null) {
+                    throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+                }
                 Service certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().equals(service.getId())) {
                     this.revokeCertificate(cert.getSerialNumber(), input, request);
@@ -608,6 +611,9 @@ public class ServiceController extends EntityController<Service> {
             }
             if (service.getIdOrganization().equals(org.getId())) {
                 Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
+                if (cert == null) {
+                    throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+                }
                 Service certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().equals(service.getId())) {
                     this.revokeCertificate(cert.getSerialNumber(), input, request);

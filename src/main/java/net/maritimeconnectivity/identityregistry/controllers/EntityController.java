@@ -297,6 +297,9 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
             }
             if (entity.getIdOrganization().equals(org.getId())) {
                 Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
+                if (cert == null) {
+                    throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+                }
                 T certEntity = getCertEntity(cert);
                 if (certEntity != null && certEntity.getId().equals(entity.getId())) {
                     this.revokeCertificate(cert.getSerialNumber(), input, request);

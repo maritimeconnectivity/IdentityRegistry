@@ -431,6 +431,9 @@ public class OrganizationController extends BaseControllerWithCertificate {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             Certificate cert = this.certificateService.getCertificateBySerialNumber(certId);
+            if (cert == null) {
+                throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.CERTIFICATE_NOT_FOUND, request.getServletPath());
+            }
             Organization certOrg = cert.getOrganization();
             if (certOrg != null && certOrg.getId().compareTo(org.getId()) == 0) {
                 this.revokeCertificate(certId, input, request);
