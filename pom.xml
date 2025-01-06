@@ -48,7 +48,7 @@
 		<maven.compiler.release>21</maven.compiler.release>
 		<keycloak.version>26.0.3</keycloak.version>
 		<springdoc-openapi.version>2.6.0</springdoc-openapi.version>
-		<twelvemonkeys.version>3.11.0</twelvemonkeys.version>
+		<twelvemonkeys.version>3.12.0</twelvemonkeys.version>
 	</properties>
 
 	<dependencies>
