@@ -75,6 +75,7 @@ net:
 
             # Certificate setup
             certs:
+                #client-cert-header: ssl-client-cert # this is the name that nginx ingress controller for the client certificate
                 sub-ca-keystore-path: mcp-sub-ca-keystore.jks
                 sub-ca-keystore-password: changeit
                 sub-ca-key-password: changeit

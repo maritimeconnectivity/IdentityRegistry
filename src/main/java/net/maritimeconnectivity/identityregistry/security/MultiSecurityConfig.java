@@ -54,6 +54,9 @@ public class MultiSecurityConfig {
     @Value("${server.ssl.enabled:false}")
     private boolean useStandardSSL;
 
+    @Value("${net.maritimeconnectivity.idreg.certs.client-cert-header:X-Client-Certificate}")
+    private String clientCertHeader;
+
     @Bean
     public RoleHierarchy roleHierarchy() {
         // If the hierarchy is changed, remember to update the hierarchy above and the list in
@@ -162,7 +165,7 @@ public class MultiSecurityConfig {
             // Create and setup the filter used to extract the client certificate from the header
             RequestHeaderAuthenticationFilter certFilter = new RequestHeaderAuthenticationFilter();
             certFilter.setAuthenticationManager(providerManager);
-            certFilter.setPrincipalRequestHeader("X-Client-Certificate");
+            certFilter.setPrincipalRequestHeader(clientCertHeader);
             certFilter.setExceptionIfHeaderMissing(false);
             http.addFilter(certFilter);
         } else {
