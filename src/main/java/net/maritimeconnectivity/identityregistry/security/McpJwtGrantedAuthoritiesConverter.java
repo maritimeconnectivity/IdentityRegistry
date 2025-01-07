@@ -51,16 +51,7 @@ public class McpJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collect
     public Collection<GrantedAuthority> convert(Jwt jwt) {
         List<GrantedAuthority> grantedAuthorities = new ArrayList<>();
 
-        Organization org = null;
-        String mrn = jwt.getClaimAsString(MCPIdRegConstants.MRN_PROPERTY_NAME);
-        if (mrn != null) {
-            String[] mrnParts = mrn.split(":");
-            if (mrnParts.length >= 7) {
-                String orgMrn = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
-                log.debug("Found org mrn: {}", orgMrn);
-                org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
-            }
-        }
+        Organization org = getOrganization(jwt);
 
         if (org != null) {
             List<String> usersPermissions = jwt.getClaimAsStringList(MCPIdRegConstants.PERMISSIONS_PROPERTY_NAME);
@@ -84,5 +75,30 @@ public class McpJwtGrantedAuthoritiesConverter implements Converter<Jwt, Collect
             }
         }
         return new ArrayList<>(grantedAuthoritiesMapper.mapAuthorities(grantedAuthorities));
+    }
+
+    private Organization getOrganization(Jwt jwt) {
+        Organization org = null;
+        String orgMrn = jwt.getClaimAsString(MCPIdRegConstants.ORG_PROPERTY_NAME);
+        if (orgMrn != null) {
+            log.debug("Found org mrn: {}", orgMrn);
+            org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        } else {
+            String mrn = jwt.getClaimAsString(MCPIdRegConstants.MRN_PROPERTY_NAME);
+            if (mrn != null) {
+                String[] mrnParts = mrn.split(":");
+                if (mrnParts.length >= 7) {
+                    orgMrn = String.format("urn:mrn:mcp:entity:%s:%s", mrnParts[4], mrnParts[5]);
+                    log.debug("Trying org mrn with 'entity': {}", orgMrn);
+                    org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                    if (org == null) {
+                        orgMrn = String.format("urn:mrn:mcp:org:%s:%s", mrnParts[4], mrnParts[5]);
+                        log.debug("Trying org mrn with 'org': {}", orgMrn);
+                        org = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                    }
+                }
+            }
+        }
+        return org;
     }
 }
