@@ -109,7 +109,7 @@ public class MultiSecurityConfig {
     @Order(1)
     public SecurityFilterChain oidcFilterChain(HttpSecurity http) throws Exception {
         http
-                .securityMatcher("/oidc/**")
+                .securityMatcher("/oidc/**", "/v3/api-docs", "/v3/api-docs/**")
                 .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
