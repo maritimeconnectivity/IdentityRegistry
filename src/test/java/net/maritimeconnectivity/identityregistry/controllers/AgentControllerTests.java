@@ -108,7 +108,12 @@ class AgentControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
         given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
+        given(onBehalfOfOrg.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
+        given(this.organizationService.getOrganizationByMrn(actingOrg.getMrn())).willReturn(actingOrg);
+        given(this.organizationService.getOrganizationByMrnNoFilter(actingOrg.getMrn())).willReturn(actingOrg);
+        given(actingOrg.getMrn()).willReturn("urn:mrn:mcp:org:idp1:agent");
         given(this.agentService.save(any())).willReturn(agent);
         given(onBehalfOfOrg.getId()).willReturn(2L);
 
@@ -162,6 +167,8 @@ class AgentControllerTests {
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
@@ -189,7 +196,9 @@ class AgentControllerTests {
 
         String agentJson = JSONSerializer.serialize(agent);
 
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 
@@ -237,7 +246,9 @@ class AgentControllerTests {
 
         Organization organization = mock(Organization.class);
 
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
         given(this.agentService.getById(3L)).willReturn(agent);
         given(organization.getId()).willReturn(1L);
 

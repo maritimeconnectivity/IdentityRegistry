@@ -156,7 +156,8 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter(org.getMrn())).willReturn(org);
+        given(this.organizationService.getOrganizationByMrn(org.getMrn())).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
@@ -324,6 +325,7 @@ class UserControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma@dma", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
         try {
