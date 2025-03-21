@@ -59,6 +59,9 @@ public class AccessControlUtil {
 
     private RoleHierarchy roleHierarchy;
 
+    private final SimpleGrantedAuthority roleSiteAdmin = new SimpleGrantedAuthority("ROLE_SITE_ADMIN");
+
+
     public boolean hasAccessToOrg(String orgMrn, String roleNeeded) {
         if (orgMrn == null || orgMrn.trim().isEmpty()) {
             log.debug("The orgMrn was empty!");
@@ -66,14 +69,19 @@ public class AccessControlUtil {
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         // First check if the user is a SITE_ADMIN, in which case he gets access.
-        for (GrantedAuthority authority : auth.getAuthorities()) {
-            String role = authority.getAuthority();
-            log.debug("User has role: {}", role);
-            if ("ROLE_SITE_ADMIN".equals(role)) {
-                return true;
-            }
+        if (auth.getAuthorities().contains(roleSiteAdmin)) {
+            return true;
         }
         log.debug("User not a SITE_ADMIN");
+
+        SimpleGrantedAuthority role = null;
+        if (roleNeeded != null && !roleNeeded.trim().isEmpty()) {
+            if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
+                roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
+            role = new SimpleGrantedAuthority(roleNeeded);
+        }
+        Set<GrantedAuthority> userGrantedAuthorities = new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(auth.getAuthorities()));
+
         // Check if the user is part of the organization
         switch (auth) {
             case JwtAuthenticationToken kat -> {
@@ -95,29 +103,24 @@ public class AccessControlUtil {
                             return false;
                         }
                     }
-                    if (org.equalsIgnoreCase(orgMrn)) {
+                    Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
+                    if (organization == null) {
+                        return false;
+                    }
+                    if (org.equalsIgnoreCase(orgMrn) && organization.getMrn().equalsIgnoreCase(orgMrn)) {
                         log.debug("Entity from org: {} is in {}", org, orgMrn);
+                        if (role != null) {
+                            return userGrantedAuthorities.contains(role);
+                        }
                         return true;
                     }
-                    Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
                     Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(org);
-                    if (organization != null && agentOrganization != null) {
+                    if (agentOrganization != null) {
                         List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                         if (!agents.isEmpty()) {
                             log.debug("Entity from org: {} is an agent for {}", org, orgMrn);
-                            if (roleNeeded != null) {
-                                if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
-                                    roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
-                                for (Agent agent : agents) {
-                                    List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
-                                            .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
-                                            .toList();
-                                    Set<GrantedAuthority> reachableGrantedAuthorities =
-                                            new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                                    final String finalRoleNeeded = roleNeeded;
-                                    if (reachableGrantedAuthorities.stream().anyMatch(ga -> finalRoleNeeded.equals(ga.getAuthority())))
-                                        return true;
-                                }
+                            if (role != null) {
+                                if (hasAgentAuthority(role, userGrantedAuthorities, agents)) return true;
                                 log.debug("Entity from org: {} who is agent for {} does not have the needed role {}", org, orgMrn, roleNeeded);
                                 return false;
                             }
@@ -134,28 +137,21 @@ public class AccessControlUtil {
                 InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
                 // The O(rganization) value in the certificate is an MRN
                 String certOrgMrn = person.getO();
+                Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
                 if (orgMrn.equalsIgnoreCase(certOrgMrn)) {
                     log.debug("Entity with O={} is in {}", certOrgMrn, orgMrn);
+                    if (role != null) {
+                        return userGrantedAuthorities.contains(role);
+                    }
                     return true;
                 }
-                Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
                 Organization agentOrganization = organizationService.getOrganizationByMrnNoFilter(certOrgMrn);
                 if (organization != null && agentOrganization != null) {
                     List<Agent> agents = agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(organization.getId(), agentOrganization.getId());
                     if (!agents.isEmpty()) {
                         log.debug("Entity with O={} is an agent for {}", certOrgMrn, orgMrn);
-                        if (roleNeeded != null) {
-                            if (!roleNeeded.startsWith(MCPIdRegConstants.ROLE_PREFIX))
-                                roleNeeded = MCPIdRegConstants.ROLE_PREFIX + roleNeeded;
-                            for (Agent agent : agents) {
-                                List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
-                                        .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
-                                        .toList();
-                                Set<GrantedAuthority> reachableGrantedAuthorities =
-                                        new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
-                                if (reachableGrantedAuthorities.contains(new SimpleGrantedAuthority(roleNeeded)))
-                                    return true;
-                            }
+                        if (role != null) {
+                            if (hasAgentAuthority(role, userGrantedAuthorities, agents)) return true;
                             log.debug("Entity with O={} who is agent for {} does does not have the needed role {}", certOrgMrn, orgMrn, roleNeeded);
                             return false;
                         }
@@ -165,6 +161,20 @@ public class AccessControlUtil {
                 log.debug("Entity with O={} is not in {}", certOrgMrn, orgMrn);
             }
             default -> log.debug(MCPIdRegConstants.UNKNOWN_AUTHENTICATION_METHOD, auth.getClass().getName());
+        }
+        return false;
+    }
+
+    private boolean hasAgentAuthority(SimpleGrantedAuthority role, Set<GrantedAuthority> userGrantedAuthorities, List<Agent> agents) {
+        for (Agent agent : agents) {
+            List<SimpleGrantedAuthority> allowedGrantedAuthorities = agent.getAllowedRoles().stream()
+                    .map(allowedAgentRole -> new SimpleGrantedAuthority(allowedAgentRole.getRoleName()))
+                    .toList();
+            Set<GrantedAuthority> reachableGrantedAuthorities =
+                    new HashSet<>(roleHierarchy.getReachableGrantedAuthorities(allowedGrantedAuthorities));
+            if (reachableGrantedAuthorities.contains(role) && userGrantedAuthorities.contains(role)) {
+                return true;
+            }
         }
         return false;
     }
