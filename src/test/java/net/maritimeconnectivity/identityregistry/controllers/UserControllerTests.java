@@ -699,6 +699,60 @@ class UserControllerTests {
         }
     }
 
+    @Test
+    void testIssueCertificateForOtherUserWithoutRights() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1L);
+        user.setPermissions(null);
+        // Build user object to issue certificate for
+        User otherUser = new User();
+        otherUser.setMrn("urn:mrn:mcp:user:idp1:dma:other");
+        otherUser.setFirstName("Other");
+        otherUser.setLastName("User");
+        otherUser.setEmail("other@example.com");
+        otherUser.setIdOrganization(1L);
+        otherUser.setPermissions(null);
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:other")).willReturn(otherUser);
+        when(org.getId()).thenReturn(1L);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:other/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().isForbidden()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            assertNotNull(content);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
     /**
      * Helper function to serialize a user to json
      *
