@@ -140,6 +140,7 @@ public class MultiSecurityConfig {
     public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService) throws Exception {
         http
                 .securityMatcher("/x509/**", "/service/**")
+                .addFilterBefore(new SimpleCorsFilter(), ChannelProcessingFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
