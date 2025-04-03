@@ -20,6 +20,7 @@
 package net.maritimeconnectivity.identityregistry.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Component;
 
 import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
@@ -32,6 +33,7 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 
 @Slf4j
+@Component
 public class SimpleCorsFilter implements Filter {
 
     public SimpleCorsFilter() {
