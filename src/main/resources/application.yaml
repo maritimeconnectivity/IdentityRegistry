@@ -60,10 +60,6 @@ net:
 
             keycloak-client-template: mcp-client-template
 
-            auto-approve-organizations: true
-            admin-org: DMA
-            admin-permission: admin
-
             allow-create-user-for-federated-org: false
 
             # The DN of the certificate used to sync users from keycloak
