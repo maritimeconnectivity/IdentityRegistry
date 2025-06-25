@@ -77,7 +77,7 @@ public class OpenAPIConfig {
                                 "Two versions of the API are available - one that requires authentication using OpenID Connect and one that requires authentication using a X.509 client certificate.<br>" +
                                 "The OpenAPI descriptions for the two versions are available <a href=\"%s\">here</a> and <a href=\"%s\">here</a>.<br>" +
                                 "Additionally, a SECOM based API is also available for which the OpenAPI description can be found <a href=\"%s\">here</a>.", oidcUrl, x509Url, secomUrl))
-                        .version("1.3.5")
+                        .version("1.3.6")
                         .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
