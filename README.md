@@ -165,28 +165,7 @@ curl -k -H "Content-Type: application/json" -H "Authorization: Bearer $TOKEN" --
 
 Looking at FakeSMTP an email will has been sent to the email-address of the user with a temporary password that the user much change at first login. The user has been created in the "Users" realm, since DMA has not set up a dedicated Identity Provider. To actually use the login you will need a web based client connected to keycloak. The MCP Management Portal is a good example, and it can be run locally.
 
-We can also issue a certificate for the user which can then be used for authentication:
-```sh
-curl -k -H "Authorization: Bearer $TOKEN" https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new
-```
-
-```ps1
-> Invoke-RestMethod -Uri https://localhost/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:dma-employee/certificate/issue-new -Headers @{"Authorization" = "Bearer $token"} -Method Get
-```
-This will return a BASE64 encoded JKS keystore, a BASE64 encoded PKCS#12 keystore, a password for the keystores, a public key and private key and a certificate in PEM format embedded in JSON, looking something like this:
-```json
-{
-    "jksKeystore": "/u3+7QAA...",
-    "keystorePassword": "fg3543s...",
-    "pemCertificate": {
-          "certificate": "-----BEGIN CERTIFICATE-----\\nMIID4zCCA2igAwIBAgIBATAKBggqhkjOPQQ...",
-          "privateKey": "-----BEGIN PRIVATE KEY-----\\nMIG/AgEAMBAGByqGSM49AgEGBSuBBAAiBIGn...",
-          "publicKey": "-----BEGIN PUBLIC KEY-----\\nMHYwEAYHKoZIzj0CAQYFK4EEACIDYgAECysC+u..."
-    },
-    "pkcs12Keystore": "MIIGmAIB..."   
-}
-```
-Note that this is the only time the private key is available, so make sure to save it. Save the output into separate files. Make sure to replace "\\\\n" with linebreaks!
+We can also issue a certificate for the user which can then be used for authentication. To do this the procedure that is described [here](#certificate-issuing-by-certificate-signing-request).
 
 The certificate can now be used to authenticate the user. For example, we can use it to create a vessel as shown below. Notice that we use https://localhost/x509/api/... instead of https://localhost/oidc/api/... when relying on certificate authentication.
 
