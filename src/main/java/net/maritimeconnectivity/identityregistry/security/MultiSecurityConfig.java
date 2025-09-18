@@ -40,11 +40,11 @@ import org.springframework.security.core.authority.mapping.GrantedAuthoritiesMap
 import org.springframework.security.core.userdetails.UserDetailsByNameServiceWrapper;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
 import org.springframework.security.web.SecurityFilterChain;
-import org.springframework.security.web.access.channel.ChannelProcessingFilter;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationProvider;
 import org.springframework.security.web.authentication.preauth.PreAuthenticatedAuthenticationToken;
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
+import org.springframework.security.web.transport.HttpsRedirectFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -110,7 +110,7 @@ public class MultiSecurityConfig {
     public SecurityFilterChain oidcFilterChain(HttpSecurity http, SimpleCorsFilter simpleCorsFilter) throws Exception {
         http
                 .securityMatcher("/oidc/**", "/v3/api-docs", "/v3/api-docs/**")
-                .addFilterBefore(simpleCorsFilter, ChannelProcessingFilter.class)
+                .addFilterBefore(simpleCorsFilter, HttpsRedirectFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/oidc/api/report-bug").permitAll()
@@ -140,7 +140,7 @@ public class MultiSecurityConfig {
     public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService, SimpleCorsFilter simpleCorsFilter) throws Exception {
         http
                 .securityMatcher("/x509/**", "/service/**")
-                .addFilterBefore(simpleCorsFilter, ChannelProcessingFilter.class)
+                .addFilterBefore(simpleCorsFilter, HttpsRedirectFilter.class)
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers(HttpMethod.POST, "/x509/api/report-bug").permitAll()
