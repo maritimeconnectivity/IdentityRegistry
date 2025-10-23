@@ -37,12 +37,12 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.MockitoAnnotations;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
 import org.springframework.test.web.servlet.MockMvc;
@@ -78,32 +78,32 @@ class OrganizationControllerTests {
 
     private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     private DeviceServiceImpl deviceService;
-    @MockBean
+    @MockitoBean
     private ServiceService serviceService;
-    @MockBean
+    @MockitoBean
     private EntityService<User> userService;
 
-    @MockBean
+    @MockitoBean
     private RoleService roleService;
 
-    @MockBean
+    @MockitoBean
     private EmailUtil emailUtil;
 
-    @MockBean
+    @MockitoBean
     private OrganizationService organizationService;
 
-    @MockBean
+    @MockitoBean
     private KeycloakAdminUtil keycloakAU;
 
-    @MockBean
+    @MockitoBean
     private CertificateService certificateService;
 
-    @MockBean
+    @MockitoBean
     private AgentService agentService;
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     @BeforeEach

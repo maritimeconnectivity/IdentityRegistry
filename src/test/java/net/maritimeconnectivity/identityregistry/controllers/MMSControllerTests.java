@@ -20,7 +20,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.MMS;
-import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.MMSService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -28,7 +27,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
@@ -36,8 +34,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -69,13 +69,13 @@ class MMSControllerTests {
     private WebApplicationContext context;
 
     private MockMvc mvc;
-    @MockBean(value = {MMSService.class})
-    private EntityService<MMS> entityService;
+    @MockitoBean
+    private MMSService mmsService;
 
-    @MockBean
+    @MockitoBean
     private OrganizationService organizationService;
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     @BeforeEach
@@ -93,7 +93,7 @@ class MMSControllerTests {
     @WithMockUser()
     @Test
     void testAccessGetMMSWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(new MMS());
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(new MMS());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
@@ -129,16 +129,16 @@ class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(mmsJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(mmsJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
-        verify(((MMSService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
+        verify(((MMSService) this.mmsService), atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
     }
 
     /**
@@ -168,7 +168,7 @@ class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
@@ -206,7 +206,7 @@ class MMSControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
@@ -246,7 +246,7 @@ class MMSControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
@@ -332,7 +332,7 @@ class MMSControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
@@ -355,15 +355,8 @@ class MMSControllerTests {
     private String serialize(MMS mms) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            // Convert object to JSON string
-            String jsonInString = mapper.writeValueAsString(mms);
-            //System.out.println(jsonInString);
-
             // Convert object to JSON string and pretty print
-            jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mms);
-            //System.out.println(jsonInString);
-
-            return jsonInString;
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(mms);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }

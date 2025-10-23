@@ -28,15 +28,16 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationToken;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
@@ -70,13 +71,13 @@ class AgentControllerTests {
 
     private MockMvc mvc;
 
-    @MockBean
+    @MockitoBean
     private OrganizationService organizationService;
 
-    @MockBean
+    @MockitoBean
     private AgentService agentService;
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     @BeforeEach
@@ -176,7 +177,7 @@ class AgentControllerTests {
 
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
-                    .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+                    .header("Origin", "bla")).andExpect(status().isOk()).andExpect(content().json(agentJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
@@ -207,7 +208,7 @@ class AgentControllerTests {
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent/3").with(authentication(auth))
                             .header("Origin", "bla").contentType("application/json").content(agentJson))
-                    .andExpect(status().isOk()).andExpect(content().json(agentJson, false));
+                    .andExpect(status().isOk()).andExpect(content().json(agentJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }

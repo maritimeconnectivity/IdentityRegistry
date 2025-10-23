@@ -25,7 +25,6 @@ import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.repositories.VesselRepository;
 import net.maritimeconnectivity.identityregistry.services.CertificateService;
-import net.maritimeconnectivity.identityregistry.services.EntityService;
 import net.maritimeconnectivity.identityregistry.services.OrganizationService;
 import net.maritimeconnectivity.identityregistry.services.ServiceService;
 import net.maritimeconnectivity.identityregistry.utils.KeycloakAdminUtil;
@@ -35,7 +34,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -44,8 +42,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -83,22 +83,22 @@ class ServiceControllerTests {
     private WebApplicationContext context;
 
     private MockMvc mvc;
-    @MockBean(value = {ServiceService.class})
-    private EntityService<Service> entityService;
+    @MockitoBean
+    private ServiceService serviceService;
 
-    @MockBean
+    @MockitoBean
     private OrganizationService organizationService;
 
-    @MockBean
+    @MockitoBean
     private KeycloakAdminUtil keycloakAU;
 
-    @MockBean
+    @MockitoBean
     private CertificateService certificateService;
 
-    @MockBean
+    @MockitoBean
     private VesselRepository vesselRepository;
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     @BeforeEach
@@ -176,7 +176,7 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
-        when(entityService.save(any())).thenReturn(service);
+        when(serviceService.save(any())).thenReturn(service);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").header("Origin", "bla")
@@ -184,7 +184,7 @@ class ServiceControllerTests {
                             .contentType(MediaType.APPLICATION_JSON)
                             .with(authentication(auth)))
                     .andExpect(status().isCreated())
-                    .andExpect(content().json(serviceJson, false));
+                    .andExpect(content().json(serviceJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
@@ -196,7 +196,7 @@ class ServiceControllerTests {
     @WithMockUser()
     @Test
     void testAccessGetServiceWithVersionWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
@@ -210,7 +210,7 @@ class ServiceControllerTests {
     @WithMockUser()
     @Test
     void testAccessGetServiceWithoutVersionWithoutRights() {
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(new Service());
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").header("Origin", "bla")).andExpect(status().isForbidden());
         } catch (Exception e) {
@@ -245,16 +245,16 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
-        verify(((ServiceService) this.entityService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
+        verify(((ServiceService) this.serviceService), atLeastOnce()).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
     }
 
     /**
@@ -283,16 +283,16 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(service);
+        given(((ServiceService) this.serviceService).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
-        verify(((ServiceService) this.entityService), atLeastOnce()).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
+        verify(((ServiceService) this.serviceService), atLeastOnce()).getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm");
     }
 
     /**
@@ -322,12 +322,12 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(serviceJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
@@ -360,7 +360,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
@@ -400,7 +400,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4").with(authentication(auth))
@@ -446,7 +446,7 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             given(this.keycloakAU.getClientJbossXml("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
@@ -490,7 +490,7 @@ class ServiceControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
@@ -535,7 +535,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
@@ -587,7 +587,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
         when(org.getId()).thenReturn(1L);
         try {
             MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
@@ -636,7 +636,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
         when(org.getId()).thenReturn(1L);
         try {
             MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
@@ -684,7 +684,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
+        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
         when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
@@ -761,7 +761,7 @@ class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
 
         ServicePatch servicePatch = new ServicePatch();
         servicePatch.setMrn(service.getMrn() + ":" + service.getInstanceVersion());
@@ -807,7 +807,7 @@ class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
 
         String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
         // For whatever reason there is already an organization that is using the new MRN
@@ -855,11 +855,11 @@ class ServiceControllerTests {
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         when(org.getId()).thenReturn(1L);
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
 
         String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
         // For whatever reason there is already another service that is using the new MRN
-        given(((ServiceService) this.entityService).getServiceByMrnAndVersion(newMrn, null)).willReturn(new Service());
+        given(((ServiceService) this.serviceService).getServiceByMrnAndVersion(newMrn, null)).willReturn(new Service());
 
         ServicePatch servicePatch = new ServicePatch();
         servicePatch.setMrn(newMrn);

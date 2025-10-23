@@ -36,7 +36,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.http.MediaType;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
@@ -45,8 +44,10 @@ import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.security.test.web.servlet.setup.SecurityMockMvcConfigurers;
 import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.context.web.WebAppConfiguration;
+import org.springframework.test.json.JsonCompareMode;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -87,19 +88,19 @@ class UserControllerTests {
     private WebApplicationContext context;
 
     private MockMvc mvc;
-    @MockBean
+    @MockitoBean
     private EntityService<User> entityService;
 
-    @MockBean
+    @MockitoBean
     private OrganizationService organizationService;
 
-    @MockBean
+    @MockitoBean
     private KeycloakAdminUtil keycloakAU;
 
-    @MockBean
+    @MockitoBean
     private CertificateService certificateService;
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     @Getter
@@ -163,7 +164,7 @@ class UserControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(userJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }
@@ -331,7 +332,7 @@ class UserControllerTests {
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma@dma/user/urn:mrn:mcp:user:idp1:DMA@dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
-            ).andExpect(status().isOk()).andExpect(content().json(userJson, false));
+            ).andExpect(status().isOk()).andExpect(content().json(userJson, JsonCompareMode.LENIENT));
         } catch (Exception e) {
             fail(e);
         }

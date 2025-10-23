@@ -22,9 +22,9 @@ import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocatio
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.security.oauth2.jwt.JwtDecoder;
 import org.springframework.test.context.ActiveProfiles;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import jakarta.validation.ConstraintViolation;
@@ -43,7 +43,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @ActiveProfiles("test")
 class CertificateRevocationTests {
 
-    @MockBean
+    @MockitoBean
     JwtDecoder jwtDecoder;
 
     private Validator validator;
