@@ -62,12 +62,12 @@ class X509HeaderUserDetailsServiceTest {
     X509HeaderUserDetailsService x509HeaderUserDetailsService;
 
     @BeforeEach
-    void setUp() throws Exception {
+    void setUp() {
         MockitoAnnotations.openMocks(this);
     }
 
     @Test
-    void loadUserByUsernameVessel1() throws Exception {
+    void loadUserByUsernameVessel1() {
         // Load certificate from file
         String certFile = "src/test/resources/Certificate_Myboat.pem";
         String contents = null;
@@ -91,7 +91,7 @@ class X509HeaderUserDetailsServiceTest {
     }
 
     //@Test
-    void loadUserByUsernameVessel2() throws Exception {
+    void loadUserByUsernameVessel2() {
         // Load certificate from file
         String certFile = "src/test/resources/Certificate_My_vessel.pem";
         String contents = null;
