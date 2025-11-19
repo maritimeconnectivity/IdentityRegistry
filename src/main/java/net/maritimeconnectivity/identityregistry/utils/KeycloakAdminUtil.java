@@ -205,11 +205,11 @@ public class KeycloakAdminUtil {
     }
 
     private Map<String, String> idpAttributes2Map(Set<IdentityProviderAttribute> input) {
-        log.debug("In idpAttributes2Map, number of attrs: " + input.size());
+        log.debug("In idpAttributes2Map, number of attrs: {}", input.size());
         Map<String, String> ret = new HashMap<>();
         for (IdentityProviderAttribute atr : input) {
             ret.put(atr.getAttributeName(), atr.getAttributeValue());
-            log.debug("idp attr name: " + atr.getAttributeName() + ", value: " + atr.getAttributeValue());
+            log.debug("idp attr name: {}, value: {}", atr.getAttributeName(), atr.getAttributeValue());
         }
         return ret;
     }
@@ -278,7 +278,7 @@ public class KeycloakAdminUtil {
             getBrokerRealm().identityProviders().get(name).update(idp);
         } else {
             try (Response ret = getBrokerRealm().identityProviders().create(idp)) {
-                log.debug("Returned status from creating IDP: " + ret.getStatus());
+                log.debug("Returned status from creating IDP: {}", ret.getStatus());
                 if (ret.getStatus() != 201) {
                     throw new IOException("Could not create IDP");
                 }
@@ -492,7 +492,7 @@ public class KeycloakAdminUtil {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.USER_EMAIL_UPDATE_NOT_ALLOWED, path);
         }
         if (userReps.size() != 1) {
-            log.debug("Skipping user update! Found " + userReps.size() + " users while trying to update, expected 1");
+            log.debug("Skipping user update! Found {} users while trying to update, expected 1", userReps.size());
             throw new IOException("User update failed! Found " + userReps.size() + " users while trying to update, expected 1");
         }
         UserRepresentation user = userReps.getFirst();

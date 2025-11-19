@@ -69,7 +69,7 @@ public class AttributesUtil {
                 case "flagstate" -> attrs.put(PKIConstants.MC_OID_FLAGSTATE, attr.getAttributeValue());
                 case "ais-class" -> attrs.put(PKIConstants.MC_OID_AIS_SHIPTYPE, attr.getAttributeValue());
                 case "port-of-register" -> attrs.put(PKIConstants.MC_OID_PORT_OF_REGISTER, attr.getAttributeValue());
-                default -> log.debug("Unexpected attribute value: " + attrName);
+                default -> log.debug("Unexpected attribute value: {}", attrName);
             }
         }
         return attrs;
