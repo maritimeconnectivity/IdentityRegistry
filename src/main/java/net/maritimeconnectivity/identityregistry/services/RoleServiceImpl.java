@@ -16,6 +16,7 @@
  */
 package net.maritimeconnectivity.identityregistry.services;
 
+import lombok.Getter;
 import net.maritimeconnectivity.identityregistry.model.database.Role;
 import net.maritimeconnectivity.identityregistry.repositories.RoleRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,6 +28,7 @@ import java.util.List;
 @Service
 public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleService {
 
+    @Getter
     protected RoleRepository repository;
 
     @Autowired
@@ -46,10 +48,6 @@ public class RoleServiceImpl extends BaseServiceImpl<Role> implements RoleServic
     @Transactional
     public void deleteByOrg(Long id) {
         this.getRepository().deleteByidOrganization(id);
-    }
-
-    public RoleRepository getRepository() {
-        return this.repository;
     }
 
 }
