@@ -25,7 +25,9 @@ ENV MARIADB_VERSION=3.5.6
 ENV MYSQL_VERSION=9.5.0
 ENV LOADER_PATH=/modules
 
-COPY --from=builder /usr/local/apr/lib /usr/lib/
+RUN mkdir /usr/lib/tcnative
+
+COPY --from=builder /usr/local/apr/lib /usr/lib/tcnative/
 
 RUN mkdir /conf $LOADER_PATH
 
@@ -42,4 +44,4 @@ COPY mcp-identityregistry-core-latest.jar .
 
 EXPOSE 8443
 
-CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mcp-identityregistry-core-latest.jar", "--spring.config.location=/conf/application.yaml"]
+CMD ["java", "-Dspring.profiles.active=docker", "-jar", "mcp-identityregistry-core-latest.jar", "--spring.config.location=/conf/application.yaml", "-Djava.library.path=/usr/lib/tcnative"]
