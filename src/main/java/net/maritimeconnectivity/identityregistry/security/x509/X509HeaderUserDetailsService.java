@@ -63,7 +63,7 @@ public class X509HeaderUserDetailsService implements UserDetailsService {
 
         // Get user details from the certificate
         PKIIdentity user = CertificateHandler.getIdentityFromCert(userCertificate);
-        if (user == null) {
+        if (user.getDn() == null || user.getDn().isEmpty()) {
             log.warn("Extraction of data from the certificate failed");
             throw new UsernameNotFoundException("Extraction of data from the client certificate failed");
         }
