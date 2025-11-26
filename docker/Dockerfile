@@ -7,7 +7,9 @@
 
 FROM eclipse-temurin:21-jdk AS builder
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libapr1-dev libssl-dev tar gzip build-essential file && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y build-essential file gzip libapr1-dev libssl-dev tar \
+    && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.9/source/tomcat-native-2.0.9-src.tar.gz tomcat-native.tar.gz
 
@@ -38,7 +40,8 @@ ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB
 ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
 
 # Install native libraries that can be used by Spring Boot's embedded Tomcat server for improved performance
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y libapr1 && rm -rf /var/lib/apt/lists* /var/cache/apt/archives/*
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install -y libapr1 && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
 COPY mcp-identityregistry-core-latest.jar .
 
