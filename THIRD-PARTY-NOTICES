@@ -37,3 +37,8 @@ H2 Database
 ======================
 Mozilla Public License Version 2.0 and Eclipse Public License - Version 1.0
 https://github.com/h2database/h2database
+
+PostgreSQL JDBC Driver
+======================
+BSD 2-Clause License
+https://jdbc.postgresql.org/
