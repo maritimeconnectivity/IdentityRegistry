@@ -68,6 +68,13 @@ class MrnUtilsTests {
         assertEquals("Org shortname should be 'org1:test'", "org1:test", ret);
     }
 
+    @Test
+    void validateEntityMrnIsInOrg() {
+        String orgMrn = "urn:mrn:mcp:org:idp1:org1:test";
+        String entityMrn = "urn:mrn:mcp:entity:idp1:org1:test:entity1";
+        assertTrue("Entity should be in org", mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn));
+    }
+
 //    @Test
 //    void extractOrgValidatorFromOrgShortname1() {
 //        String orgMrn = "dfds@bimco";

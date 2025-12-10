@@ -55,6 +55,21 @@ public class MrnUtil {
         return String.join(":", mrnSplit.subList(5, mrnSplit.size()));
     }
 
+    public Pattern getOrgMrnPrefixPattern(String orgMrn) {
+        if (!mcpMrnPattern.matcher(orgMrn).matches()) {
+            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
+        }
+        String[] split = orgMrn.split(":");
+        split[3] = "(entity|mir|mms|msr|(device|org|user|vessel|service))";
+        String regex = String.join(":", split);
+        return Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
+    }
+
+    public boolean entityMrnCorrespondsToOrgMrn(String entityMrn, String orgMrn) {
+        Pattern pattern = getOrgMrnPrefixPattern(orgMrn);
+        return pattern.split(entityMrn).length == 2;
+    }
+
     public String getOrgShortNameFromEntityMrn(String entityMrn) {
         String[] mrnSplit = entityMrn.split(":");
         if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
