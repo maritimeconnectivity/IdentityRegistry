@@ -48,11 +48,11 @@ public class MrnUtil {
     private String ipId;
 
     public String getOrgShortNameFromOrgMrn(String orgMrn) {
-        String[] mrnSplit = orgMrn.split(":");
+        List<String> mrnSplit = List.of(orgMrn.split(":"));
         if (!mcpMrnPattern.matcher(orgMrn).matches()) {
             throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
-        return mrnSplit[mrnSplit.length - 1];
+        return String.join(":", mrnSplit.subList(5, mrnSplit.size()));
     }
 
     public String getOrgShortNameFromEntityMrn(String entityMrn) {

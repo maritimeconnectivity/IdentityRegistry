@@ -61,6 +61,13 @@ class MrnUtilsTests {
         assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
     }
 
+    @Test
+    void extractOrgShortnameFromOrgMRN3() {
+        String orgMrn = "urn:mrn:mcp:org:idp1:org1:test";
+        String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
+        assertEquals("Org shortname should be 'org1:test'", "org1:test", ret);
+    }
+
 //    @Test
 //    void extractOrgValidatorFromOrgShortname1() {
 //        String orgMrn = "dfds@bimco";
