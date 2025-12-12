@@ -29,7 +29,6 @@ import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -69,26 +68,6 @@ public class MrnUtil {
         Pattern pattern = getOrgMrnPrefixPattern(orgMrn);
         String[] split = pattern.split(entityMrn);
         return split.length == 2 && split[0].isEmpty();
-    }
-
-    public String getOrgShortNameFromEntityMrn(String entityMrn) {
-        String[] mrnSplit = entityMrn.split(":");
-        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
-            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
-        }
-        return mrnSplit[5];
-    }
-
-    public String getEntityIdFromMrn(String entityMrn) {
-        String[] mrnSplit = entityMrn.split(":");
-        if (!mcpMrnPattern.matcher(entityMrn).matches() || mrnSplit.length < 7) {
-            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
-        }
-        if (mrnSplit.length > 7) {
-            List<String> idList = Arrays.asList(mrnSplit).subList(6, mrnSplit.length);
-            return String.join(":", idList);
-        }
-        return mrnSplit[mrnSplit.length - 1];
     }
 
     public boolean isNotMrnEmpty(String mrn) {

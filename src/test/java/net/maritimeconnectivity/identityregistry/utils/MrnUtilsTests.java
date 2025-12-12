@@ -17,7 +17,6 @@
 package net.maritimeconnectivity.identityregistry.utils;
 
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
-import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -80,70 +79,6 @@ class MrnUtilsTests {
         String orgMrn = "urn:mrn:mcp:org:idp1:org1:test";
         String entityMrn = "urn:mrn:mcp:entity:idp1:org2:test:entity1";
         assertFalse("Entity should not be in org", mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn));
-    }
-
-//    @Test
-//    void extractOrgValidatorFromOrgShortname1() {
-//        String orgMrn = "dfds@bimco";
-//        String ret = mrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
-//        assertEquals("Org validator should be 'bimco'","bimco", ret);
-//    }
-//
-//    @Test
-//    void extractOrgValidatorFromOrgShortname2() {
-//        String orgMrn = "bimco";
-//        String ret = mrnUtil.getOrgValidatorFromOrgShortname(orgMrn);
-//        assertEquals("Org validator should be 'maritimecloud-idreg'","maritimecloud-idreg", ret);
-//    }
-
-    @Test
-    void extractOrgShortnameFromUserMRN1() {
-        String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
-        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dma'", "dma", ret);
-    }
-
-    @Test
-    void extractOrgShortnameFromUserMRN2() {
-        String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:fiskerfinn";
-        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
-    }
-
-    @Test
-    void extractOrgShortnameFromUserMRN3() {
-        String userMrn = "urn:mrn:mcp:user:thc";
-        Assertions.assertThrows(IllegalArgumentException.class, () -> {
-            mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        });
-    }
-
-    @Test
-    void extractOrgShortnameFromVesselMRN1() {
-        String userMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
-        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dma'", "dma", ret);
-    }
-
-    @Test
-    void extractOrgShortnameFromVesselMRN2() {
-        String userMrn = "urn:mrn:mcp:user:idp1:dfds@bimco:crown-seaways";
-        String ret = mrnUtil.getOrgShortNameFromEntityMrn(userMrn);
-        assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
-    }
-
-    @Test
-    void extractUserIdFromUserMRN1() {
-        String userMrn = "urn:mrn:mcp:user:idp1:dma:b00345";
-        String ret = mrnUtil.getEntityIdFromMrn(userMrn);
-        assertEquals("User id should be 'b00345'", "b00345", ret);
-    }
-
-    @Test
-    void extractUserIdFromUserMRN2() {
-        String userMrn = "urn:mrn:mcp:user:idp1:dma:secretary:bob";
-        String ret = mrnUtil.getEntityIdFromMrn(userMrn);
-        assertEquals("User id should be 'secretary:bob'", "secretary:bob", ret);
     }
 
     @Test
