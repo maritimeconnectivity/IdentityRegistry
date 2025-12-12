@@ -67,7 +67,8 @@ public class MrnUtil {
 
     public boolean entityMrnCorrespondsToOrgMrn(String entityMrn, String orgMrn) {
         Pattern pattern = getOrgMrnPrefixPattern(orgMrn);
-        return pattern.split(entityMrn).length == 2;
+        String[] split = pattern.split(entityMrn);
+        return split.length == 2 && split[0].isEmpty();
     }
 
     public String getOrgShortNameFromEntityMrn(String entityMrn) {
