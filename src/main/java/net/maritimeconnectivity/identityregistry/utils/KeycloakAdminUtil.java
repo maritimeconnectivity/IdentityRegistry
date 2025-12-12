@@ -729,7 +729,7 @@ public class KeycloakAdminUtil {
      * @return Returns a string representation of the result
      */
     private String getFromKeycloak(String url, String token) throws IOException {
-        try(CloseableHttpClient client = HttpClientBuilder.create().build()) {
+        try (CloseableHttpClient client = HttpClientBuilder.create().build()) {
             log.debug("get url: {}", url);
             HttpGet get = new HttpGet(url);
             get.addHeader("Authorization", "Bearer " + token);

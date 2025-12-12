@@ -29,5 +29,6 @@ public interface ServiceService extends EntityService<Service> {
     Page<Service> getServicesByMrnPrefix(String mrn, Pageable pageable);
 
     List<Service> getServicesByMrnPrefix(String mrn);
+
     Service getNewestServiceByMrnPrefix(String mrn);
 }

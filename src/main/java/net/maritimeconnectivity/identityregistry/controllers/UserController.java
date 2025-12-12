@@ -106,7 +106,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
@@ -196,7 +196,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             this.checkRoles(request, input, org);
@@ -247,7 +247,7 @@ public class UserController extends EntityController<User> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(userMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(userMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             User user = this.entityService.getByMrn(userMrn);
@@ -355,7 +355,7 @@ public class UserController extends EntityController<User> {
         // The organization does not exists - check if this a an organization hosted by an external "validator".
         if (org == null && orgAddress != null && orgName != null) {
             // Check that the org shortname is the same for the orgMrn and originalErrorMessage
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
             }
             // Since the permissions of this user will be used as a template for administrator permissions, it must be

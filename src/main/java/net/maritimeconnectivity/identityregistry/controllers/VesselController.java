@@ -22,6 +22,7 @@ import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
+import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Service;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Vessel;
 import net.maritimeconnectivity.identityregistry.services.EntityService;
@@ -126,12 +127,17 @@ public class VesselController extends EntityController<Vessel> {
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Set<Service>> getVesselServices(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
-        if (!mrnUtil.entityMrnCorrespondsToOrgMrn(vesselMrn, orgMrn)) {
-            throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+        Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
+        if (org != null) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(vesselMrn, org.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
+            }
+            Vessel vessel = this.entityService.getByMrn(vesselMrn);
+            Set<Service> services = vessel.getServices();
+            return new ResponseEntity<>(services, HttpStatus.OK);
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
         }
-        Vessel vessel = this.entityService.getByMrn(vesselMrn);
-        Set<Service> services = vessel.getServices();
-        return new ResponseEntity<>(services, HttpStatus.OK);
     }
 
     /**

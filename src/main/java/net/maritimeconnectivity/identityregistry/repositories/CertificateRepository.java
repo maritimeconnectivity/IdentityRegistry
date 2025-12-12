@@ -28,11 +28,17 @@ import java.util.List;
 
 public interface CertificateRepository extends CrudRepository<Certificate, Long> {
     int countBySerialNumber(BigInteger serialNumber);
+
     Certificate getBySerialNumber(BigInteger serialNumber);
+
     Certificate getByThumbprint(String thumbprint);
+
     List<Certificate> findByvessel(Vessel vessel);
+
     List<Certificate> findBydevice(Device device);
+
     List<Certificate> findByuser(User user);
+
     List<Certificate> findByCertificateAuthorityIgnoreCaseAndRevokedTrueAndRevokedAtIsBefore(String caAlias, Date date);
 }
 

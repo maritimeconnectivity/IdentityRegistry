@@ -70,7 +70,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
@@ -110,7 +110,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -139,7 +139,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -168,7 +168,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn);
@@ -216,7 +216,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             EntityModel entity;
@@ -251,7 +251,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
 
@@ -288,7 +288,7 @@ public abstract class EntityController<T extends EntityModel> extends BaseContro
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, orgMrn)) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(entityMrn, org.getMrn())) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             T entity = this.entityService.getByMrn(entityMrn.toLowerCase());
