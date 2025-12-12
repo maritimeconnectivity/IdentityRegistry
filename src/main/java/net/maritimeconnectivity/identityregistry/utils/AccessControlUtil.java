@@ -99,7 +99,7 @@ public class AccessControlUtil {
                         if (mrnParts.length < 7) {
                             return false;
                         }
-                        if (!mrnUtil.getOrgShortNameFromEntityMrn(mrn).equals(mrnUtil.getOrgShortNameFromOrgMrn(org))) {
+                        if (!mrnUtil.entityMrnCorrespondsToOrgMrn(mrn, org)) {
                             return false;
                         }
                     }

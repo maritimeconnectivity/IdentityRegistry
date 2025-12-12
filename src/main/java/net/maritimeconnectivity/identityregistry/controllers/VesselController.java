@@ -126,7 +126,7 @@ public class VesselController extends EntityController<Vessel> {
     )
     @PreAuthorize("@accessControlUtil.hasAccessToOrg(#orgMrn, null)")
     public ResponseEntity<Set<Service>> getVesselServices(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String vesselMrn) throws McpBasicRestException {
-        if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
+        if (!mrnUtil.entityMrnCorrespondsToOrgMrn(vesselMrn, orgMrn)) {
             throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
         }
         Vessel vessel = this.entityService.getByMrn(vesselMrn);

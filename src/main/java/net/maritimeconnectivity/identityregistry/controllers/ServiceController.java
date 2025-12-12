@@ -94,7 +94,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being created belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(input.getMrn(), orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             if (existsByMrnUtil.isMrnAlreadyUsed(input.getMrn())) {
@@ -173,7 +173,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Page<Service> services = ((ServiceService) this.entityService).getServicesByMrnPrefix(serviceMrn, pageable);
@@ -209,7 +209,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
 
@@ -254,7 +254,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
@@ -291,7 +291,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being updated belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(input.getMrn()))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = this.entityService.getByMrn(serviceMrn);
@@ -390,7 +390,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = this.entityService.getByMrn(serviceMrn);
@@ -431,7 +431,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being deleted belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
@@ -558,7 +558,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = this.entityService.getByMrn(serviceMrn);
@@ -602,7 +602,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrnNoFilter(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
@@ -644,7 +644,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = this.entityService.getByMrn(serviceMrn);
@@ -691,7 +691,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
@@ -735,7 +735,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = this.entityService.getByMrn(serviceMrn);
@@ -784,7 +784,7 @@ public class ServiceController extends EntityController<Service> {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
             // Check that the entity being queried belongs to the organization
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
@@ -827,16 +827,15 @@ public class ServiceController extends EntityController<Service> {
     public ResponseEntity<?> migrateServiceMrn(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String serviceMrn, @PathVariable String version, @Valid @RequestBody ServicePatch servicePatch) throws McpBasicRestException {
         Organization org = this.organizationService.getOrganizationByMrn(orgMrn);
         if (org != null) {
-            String orgShortName = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
             // Check that the entity being queried belongs to the organization
-            if (!orgShortName.equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(serviceMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(serviceMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Service service = ((ServiceService) this.entityService).getServiceByMrnAndVersion(serviceMrn, version);
             if (service == null) {
                 throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ENTITY_NOT_FOUND, request.getServletPath());
             }
-            if (service.getIdOrganization().equals(org.getId()) && orgShortName.equals(mrnUtil.getOrgShortNameFromEntityMrn(servicePatch.getMrn()))) {
+            if (service.getIdOrganization().equals(org.getId()) && mrnUtil.entityMrnCorrespondsToOrgMrn(servicePatch.getMrn(), orgMrn)) {
                 if (this.existsByMrnUtil.isMrnAlreadyUsed(servicePatch.getMrn())) {
                     Service existingService = ((ServiceService) this.entityService).getServiceByMrnAndVersion(servicePatch.getMrn(), null);
                     if (existingService != null || !service.getMrn().equals(servicePatch.getMrn())) {
@@ -891,7 +890,7 @@ public class ServiceController extends EntityController<Service> {
     private void addVesselToServiceIfPresent(Service input, String orgMrn, HttpServletRequest request) throws McpBasicRestException {
         if (input.getVessel() != null) {
             String vesselMrn = input.getVessel().getMrn();
-            if (!mrnUtil.getOrgShortNameFromOrgMrn(orgMrn).equalsIgnoreCase(mrnUtil.getOrgShortNameFromEntityMrn(vesselMrn))) {
+            if (!mrnUtil.entityMrnCorrespondsToOrgMrn(vesselMrn, orgMrn)) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MISSING_RIGHTS, request.getServletPath());
             }
             Vessel vessel = this.vesselService.getByMrn(vesselMrn);
