@@ -134,7 +134,7 @@ public class AccessControlUtil {
                 log.debug("Certificate authentication in process");
                 // Certificate authentication
                 // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-                InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+                InetOrgPerson person = (InetOrgPerson) token.getPrincipal();
                 // The O(rganization) value in the certificate is an MRN
                 String certOrgMrn = person.getO();
                 Organization organization = organizationService.getOrganizationByMrnNoFilter(orgMrn);
@@ -185,7 +185,7 @@ public class AccessControlUtil {
             log.debug("Certificate authentication of user sync'er in process");
             // Certificate authentication
             // Check that the Organization name of the accessed organization and the organization in the certificate is equal
-            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            InetOrgPerson person = (InetOrgPerson) token.getPrincipal();
             if (userSyncMRN.equalsIgnoreCase(person.getUid()) && userSyncO.equalsIgnoreCase(person.getO())
                     // Hack alert! There is no country property in this type, so we misuse PostalAddress...
                     && userSyncOU.equals(person.getOu()) && userSyncC.equals(person.getPostalAddress())) {
@@ -213,7 +213,7 @@ public class AccessControlUtil {
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
-            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            InetOrgPerson person = (InetOrgPerson) token.getPrincipal();
             String mrn = person.getUid();
             String org = person.getO();
             if (mrn != null && org != null) {
@@ -253,7 +253,7 @@ public class AccessControlUtil {
                 return Collections.emptyList();
             userOrgMrn = (String) otherClaims.get(MCPIdRegConstants.ORG_PROPERTY_NAME);
         } else if (auth instanceof PreAuthenticatedAuthenticationToken token) {
-            InetOrgPerson person = ((InetOrgPerson) token.getPrincipal());
+            InetOrgPerson person = (InetOrgPerson) token.getPrincipal();
             userOrgMrn = person.getO();
         }
         if (!Objects.equals(orgMrn, userOrgMrn)) {
