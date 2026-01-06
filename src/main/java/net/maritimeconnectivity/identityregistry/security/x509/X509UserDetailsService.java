@@ -39,8 +39,6 @@ public class X509UserDetailsService implements UserDetailsService {
         Collection<GrantedAuthority> roles = new ArrayList<>();
         roles.add(role);
         X500Name x500name = new X500Name(certDN);
-        //User user = new User(getElement(x500name, BCStyle.CN), "", true /*enabled*/, true /* not-expired */, true /* cred-not-expired*/, true /* not-locked*/, roles);
-        //InetOrgPerson person = new InetOrgPerson();
         InetOrgPerson.Essence essence = new InetOrgPerson.Essence();
         String name = CertificateHandler.getElement(x500name, BCStyle.CN);
         essence.setUsername(name);
