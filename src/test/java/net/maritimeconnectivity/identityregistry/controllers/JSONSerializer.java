@@ -24,23 +24,15 @@ import java.io.IOException;
 class JSONSerializer {
 
     /**
-     * Helper function to serialize an object to json
+     * Helper function to serialize an object to JSON
      *
-     * @param object
-     * @return
+     * @param object the object to be JSON serialized
+     * @return the JSON serialized object
      */
     static String serialize(Object object) {
         ObjectMapper mapper = new ObjectMapper();
         try {
-            // Convert object to JSON string
-            String jsonInString = mapper.writeValueAsString(object);
-            //System.out.println(jsonInString);
-
-            // Convert object to JSON string and pretty print
-            jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
-            //System.out.println(jsonInString);
-
-            return jsonInString;
+            return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(object);
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
