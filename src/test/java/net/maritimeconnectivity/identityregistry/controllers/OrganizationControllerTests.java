@@ -16,7 +16,6 @@
  */
 package net.maritimeconnectivity.identityregistry.controllers;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import net.maritimeconnectivity.identityregistry.model.database.Agent;
 import net.maritimeconnectivity.identityregistry.model.database.AllowedAgentRole;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
@@ -49,7 +48,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.WebApplicationContext;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -132,7 +130,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
         given(this.organizationService.save(any())).willReturn(org);
         try {
             mvc.perform(post("/oidc/api/org/apply")
@@ -161,7 +159,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
         given(this.organizationService.save(any())).willReturn(org);
         try {
             mvc.perform(post("/oidc/api/org/apply")
@@ -244,7 +242,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -273,7 +271,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
 
         // Build the agent org object
         Organization agentOrg = new Organization();
@@ -330,7 +328,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
 
         // Build the agent org object
         Organization agentOrg = new Organization();
@@ -384,7 +382,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -416,7 +414,7 @@ class OrganizationControllerTests {
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Serialize org object
-        String orgJson = this.serialize(org);
+        String orgJson = JSONSerializer.serialize(org);
         // Create fake authentication object - note that the users orgMrn is different from mrn of the org - means it should fail
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -447,8 +445,6 @@ class OrganizationControllerTests {
         org.setName("Danish Maritime Authority");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        // Serialize org object
-        String orgJson = this.serialize(org);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -476,8 +472,6 @@ class OrganizationControllerTests {
         org.setName("Danish Maritime Authority");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        // Serialize org object
-        String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
@@ -505,8 +499,6 @@ class OrganizationControllerTests {
         org.setName("Danish Maritime Authority");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        // Serialize org object
-        String orgJson = this.serialize(org);
         // Create fake authentication object
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
@@ -534,8 +526,6 @@ class OrganizationControllerTests {
         org.setName("Danish Maritime Authority");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
-        // Serialize org object
-        String orgJson = this.serialize(org);
         // Create fake authentication object - note that the user mrn is from a different org that the organization, but the role should overrule that
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:sma", "urn:mrn:mcp:org:idp1:sma", "ROLE_SITE_ADMIN", "");
         given(this.organizationService.getOrganizationById(0L)).willReturn(org);
@@ -545,30 +535,6 @@ class OrganizationControllerTests {
             ).andExpect(status().isOk());
         } catch (Exception e) {
             fail(e);
-        }
-    }
-
-
-    /**
-     * Helper function to serialize an organization to json
-     *
-     * @param org
-     * @return
-     */
-    private String serialize(Organization org) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Convert object to JSON string
-            String jsonInString = mapper.writeValueAsString(org);
-            //System.out.println(jsonInString);
-
-            // Convert object to JSON string and pretty print
-            jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(org);
-            //System.out.println(jsonInString);
-
-            return jsonInString;
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
