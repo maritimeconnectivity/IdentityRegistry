@@ -60,6 +60,7 @@ import java.nio.file.Files;
 import java.util.HashSet;
 import java.util.Set;
 
+import static net.maritimeconnectivity.identityregistry.controllers.JSONSerializer.serialize;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -477,7 +478,6 @@ class UserControllerTests {
         user.setEmail("thcc@dma.dk");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
-        String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -523,7 +523,6 @@ class UserControllerTests {
         user.setEmail("thcc@dma.dk");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
-        String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -569,7 +568,6 @@ class UserControllerTests {
         user.setEmail("thcc@dma.dk");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
-        String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -616,7 +614,6 @@ class UserControllerTests {
         user.setEmail("thcc@dma.dk");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
-        String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -663,7 +660,6 @@ class UserControllerTests {
         user.setEmail("thcc@dma.dk");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
-        String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
         org.setMrn("urn:mrn:mcp:org:idp1:dma");
@@ -751,29 +747,6 @@ class UserControllerTests {
             assertNotNull(content);
         } catch (Exception e) {
             fail(e);
-        }
-    }
-
-    /**
-     * Helper function to serialize a user to json
-     *
-     * @param user
-     * @return
-     */
-    private String serialize(User user) {
-        ObjectMapper mapper = new ObjectMapper();
-        try {
-            // Convert object to JSON string
-            String jsonInString = mapper.writeValueAsString(user);
-            //System.out.println(jsonInString);
-
-            // Convert object to JSON string and pretty print
-            jsonInString = mapper.writerWithDefaultPrettyPrinter().writeValueAsString(user);
-            //System.out.println(jsonInString);
-
-            return jsonInString;
-        } catch (IOException e) {
-            throw new RuntimeException(e.getMessage(), e);
         }
     }
 
