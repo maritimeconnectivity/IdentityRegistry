@@ -28,6 +28,6 @@ import lombok.ToString;
 @ToString
 @AllArgsConstructor
 public class DuplicatedKeycloakEntry extends Exception {
-    protected final String errorMessage;
-    protected final String originalErrorMessage;
+    private final String errorMessage;
+    private final String originalErrorMessage;
 }

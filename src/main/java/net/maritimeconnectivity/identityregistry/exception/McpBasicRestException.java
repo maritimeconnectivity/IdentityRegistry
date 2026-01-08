@@ -28,11 +28,11 @@ import java.time.Instant;
 public class McpBasicRestException extends Exception {
 
     // mimics the standard spring error structure on exceptions 
-    protected final HttpStatus status;
-    protected final String error;
-    protected final String errorMessage;
-    protected final String path;
-    protected final long timestamp;
+    private final HttpStatus status;
+    private final String error;
+    private final String errorMessage;
+    private final String path;
+    private final long timestamp;
 
     public McpBasicRestException(HttpStatus status, String errorMessage, String path) {
         this.status = status;

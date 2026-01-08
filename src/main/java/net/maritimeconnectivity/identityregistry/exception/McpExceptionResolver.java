@@ -29,7 +29,7 @@ public class McpExceptionResolver {
     @ExceptionHandler(McpBasicRestException.class)
     public ResponseEntity<ExceptionModel> processRestError(McpBasicRestException ex) {
         // mimics the standard spring error structure on exceptions 
-        ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.path);
+        ExceptionModel exp = new ExceptionModel(ex.getTimestamp(), ex.getStatus().value(), ex.getError(), ex.getErrorMessage(), ex.getPath());
         HttpHeaders httpHeaders = new HttpHeaders();
         httpHeaders.setContentType(MediaType.APPLICATION_JSON);
         return new ResponseEntity<>(exp, httpHeaders, ex.getStatus());
