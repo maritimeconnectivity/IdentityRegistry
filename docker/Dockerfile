@@ -11,7 +11,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y build-essential file gzip libapr1-dev libssl-dev tar \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.9/source/tomcat-native-2.0.9-src.tar.gz tomcat-native.tar.gz
+ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.13/source/tomcat-native-2.0.13-src.tar.gz tomcat-native.tar.gz
 
 RUN tar -xvf tomcat-native.tar.gz && mv tomcat-native*/ tomcat-native/
 
