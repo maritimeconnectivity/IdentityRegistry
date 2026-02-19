@@ -24,7 +24,7 @@ FROM eclipse-temurin:21-jre
 LABEL org.opencontainers.image.source="https://github.com/maritimeconnectivity/IdentityRegistry"
 
 ENV MARIADB_VERSION=3.5.7
-ENV MYSQL_VERSION=9.5.0
+ENV MYSQL_VERSION=9.6.0
 ENV LOADER_PATH=/modules
 
 RUN mkdir /usr/lib/tcnative
