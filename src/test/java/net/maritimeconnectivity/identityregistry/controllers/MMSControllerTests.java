@@ -138,7 +138,7 @@ class MMSControllerTests {
         } catch (Exception e) {
             fail(e);
         }
-        verify(((MMSService) this.mmsService), atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
+        verify(this.mmsService, atLeastOnce()).getByMrn("urn:mrn:mcp:mms:idp1:dma:test1");
     }
 
     /**
