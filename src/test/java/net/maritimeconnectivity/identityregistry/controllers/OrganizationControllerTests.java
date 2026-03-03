@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 import static org.junit.jupiter.api.Assertions.fail;
@@ -538,4 +539,155 @@ class OrganizationControllerTests {
         }
     }
 
+    @Test
+    void testUpdateUnapprovedOrgWithRights() {
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+
+        Organization updatedOrg = new Organization();
+        updatedOrg.setMrn("urn:mrn:mcp:org:idp1:dma");
+        updatedOrg.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        updatedOrg.setCountry("Denmark");
+        updatedOrg.setUrl("http://dma.dk");
+        updatedOrg.setEmail("info@dma.dk");
+        updatedOrg.setName("Danish Maritime Authority");
+        updatedOrg.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = JSONSerializer.serialize(updatedOrg);
+
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_APPROVE_ORG", "");
+        given(this.organizationService.getOrganizationByMrnDisregardApproved(org.getMrn())).willReturn(org);
+
+        try {
+            mvc.perform(put("/oidc/api/org/unapprovedorg/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isOk());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testUpdateUnapprovedOrgWithoutRights() {
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+
+        Organization updatedOrg = new Organization();
+        updatedOrg.setMrn("urn:mrn:mcp:org:idp1:dma");
+        updatedOrg.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        updatedOrg.setCountry("Denmark");
+        updatedOrg.setUrl("http://dma.dk");
+        updatedOrg.setEmail("info@dma.dk");
+        updatedOrg.setName("Danish Maritime Authority");
+        updatedOrg.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = JSONSerializer.serialize(updatedOrg);
+
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        given(this.organizationService.getOrganizationByMrnDisregardApproved(org.getMrn())).willReturn(org);
+
+        try {
+            mvc.perform(put("/oidc/api/org/unapprovedorg/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isForbidden());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testUpdateUnapprovedOrgAlreadyApproved() {
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setApproved(true);
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+
+        Organization updatedOrg = new Organization();
+        updatedOrg.setMrn("urn:mrn:mcp:org:idp1:dma");
+        updatedOrg.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        updatedOrg.setCountry("Denmark");
+        updatedOrg.setUrl("http://dma.dk");
+        updatedOrg.setEmail("info@dma.dk");
+        updatedOrg.setName("Danish Maritime Authority");
+        updatedOrg.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = JSONSerializer.serialize(updatedOrg);
+
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_APPROVE_ORG", "");
+        given(this.organizationService.getOrganizationByMrnDisregardApproved(org.getMrn())).willReturn(org);
+
+        try {
+            mvc.perform(put("/oidc/api/org/unapprovedorg/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testUpdateUnapprovedOrgWrongMrn() {
+        Organization org = new Organization();
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+
+        Organization updatedOrg = new Organization();
+        updatedOrg.setMrn("urn:mrn:mcp:org:idp1:sma");
+        updatedOrg.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        updatedOrg.setCountry("Denmark");
+        updatedOrg.setUrl("http://dma.dk");
+        updatedOrg.setEmail("info@dma.dk");
+        updatedOrg.setName("Danish Maritime Authority");
+        updatedOrg.setIdentityProviderAttributes(identityProviderAttributes);
+        // Serialize org object
+        String orgJson = JSONSerializer.serialize(updatedOrg);
+
+        // Create fake authentication object
+        Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_APPROVE_ORG", "");
+        given(this.organizationService.getOrganizationByMrnDisregardApproved(org.getMrn())).willReturn(org);
+
+        try {
+            mvc.perform(put("/oidc/api/org/unapprovedorg/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .content(orgJson)
+                    .contentType("application/json")
+            ).andExpect(status().isBadRequest());
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
 }
