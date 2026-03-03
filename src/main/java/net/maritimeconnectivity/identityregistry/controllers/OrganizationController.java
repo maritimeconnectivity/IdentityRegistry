@@ -160,6 +160,41 @@ public class OrganizationController extends BaseControllerWithCertificate {
     }
 
     /**
+     * Updates info about the unapproved organization identified by the given ID
+     *
+     * @return a reply
+     * @throws McpBasicRestException
+     */
+    @PutMapping(
+            value = "/api/org/unapprovedorg/{orgMrn}",
+            produces = MediaType.APPLICATION_JSON_VALUE
+    )
+    @Operation(
+            description = "Update an unapproved organization"
+    )
+    @PreAuthorize("hasRole('ROLE_APPROVE_ORG')")
+    public ResponseEntity<?> updateUnapprovedOrganization(HttpServletRequest request, @PathVariable String orgMrn,
+                                                          @Valid @RequestBody Organization input,
+                                                          BindingResult bindingResult) throws McpBasicRestException {
+        ValidateUtil.hasErrors(bindingResult, request);
+        Organization org = this.organizationService.getOrganizationByMrnDisregardApproved(orgMrn);
+        if (org != null) {
+            if (org.isApproved()) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.ORG_ALREADY_APPROVED, request.getServletPath());
+            }
+
+            if (!orgMrn.equalsIgnoreCase(input.getMrn())) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.URL_DATA_MISMATCH, request.getServletPath());
+            }
+            input.selectiveCopyTo(org);
+            this.organizationService.save(org);
+            return new ResponseEntity<>(HttpStatus.OK);
+        } else {
+            throw new McpBasicRestException(HttpStatus.NOT_FOUND, MCPIdRegConstants.ORG_NOT_FOUND, request.getServletPath());
+        }
+    }
+
+    /**
      * Approves the organization identified by the given ID
      *
      * @return a reply...
