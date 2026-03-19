@@ -7,7 +7,7 @@ on:
 
 jobs:
   build_project:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
@@ -20,23 +20,23 @@ jobs:
       - name: Build with Maven
         run: mvn -U -B -Dspring.profiles.active=test clean install && cp target/mcp-identityregistry-core-latest.jar docker/
       - name: Setup Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@v4
       - name: Login to GHCR
-        uses: docker/login-action@v3
+        uses: docker/login-action@v4
         with:
           registry: ghcr.io
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
       - name: Docker meta
         id: meta
-        uses: docker/metadata-action@v5
+        uses: docker/metadata-action@v6
         with:
           images: |
             ghcr.io/maritimeconnectivity/identityregistry
           tags: |
             type=semver,pattern={{version}}
       - name: Build and push Docker image
-        uses: docker/build-push-action@v6
+        uses: docker/build-push-action@v7
         with:
           context: docker
           tags: ${{ steps.meta.outputs.tags }}
