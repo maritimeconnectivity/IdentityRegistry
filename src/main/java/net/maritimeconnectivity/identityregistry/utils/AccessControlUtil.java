@@ -200,6 +200,9 @@ public class AccessControlUtil {
 
     public boolean isUser(String userMRN) {
         User user = this.userService.getByMrn(userMRN);
+        if (user == null) {
+            return false;
+        }
         Organization organization = this.organizationService.getOrganizationByIdNoFilter(user.getIdOrganization());
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth instanceof JwtAuthenticationToken kat) {
