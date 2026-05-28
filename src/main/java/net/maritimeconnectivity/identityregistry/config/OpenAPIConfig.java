@@ -31,8 +31,24 @@ public class OpenAPIConfig {
 
     @Value("${net.maritimeconnectivity.idreg.openapi.oidc-base-path}")
     private String oidcBasePath;
+
     @Value("${net.maritimeconnectivity.idreg.openapi.x509-base-path}")
     private String x509BasePath;
+
+    @Value("${net.maritimeconnectivity.idreg.openapi.title:Maritime Connectivity Platform Identity Registry API}")
+    private String title;
+
+    @Value("${net.maritimeconnectivity.idreg.openapi.version}")
+    private String version;
+
+    @Value("${net.maritimeconnectivity.idreg.openapi.contactName:Maritime Connectivity Platform}")
+    private String contactName;
+
+    @Value("${net.maritimeconnectivity.idreg.openapi.contactUrl:https://maritimeconnectivity.net}")
+    private String contactUrl;
+
+    @Value("${net.maritimeconnectivity.idreg.openapi.contactEmail:info@maritimeconnectivity.net}")
+    private String contactEmail;
 
     @Bean
     public GroupedOpenApi oidcApi() {
@@ -72,13 +88,13 @@ public class OpenAPIConfig {
         String secomUrl = oidcBasePath + v3ApiDocs + secomApi().getGroup();
 
         return new OpenAPI()
-                .info(new Info().title("Maritime Connectivity Platform Identity Registry API")
+                .info(new Info().title(title)
                         .description(String.format("The MCP Identity Registry API can be used for managing entities in the Maritime Connectivity Platform.<br>" +
                                 "Two versions of the API are available - one that requires authentication using OpenID Connect and one that requires authentication using a X.509 client certificate.<br>" +
                                 "The OpenAPI descriptions for the two versions are available <a href=\"%s\">here</a> and <a href=\"%s\">here</a>.<br>" +
                                 "Additionally, a SECOM based API is also available for which the OpenAPI description can be found <a href=\"%s\">here</a>.", oidcUrl, x509Url, secomUrl))
-                        .version("1.3.7")
-                        .contact(new Contact().name("Maritime Connectivity Platform").url("https://maritimeconnectivity.net").email("info@maritimeconnectivity.net"))
+                        .version(version)
+                        .contact(new Contact().name(contactName).url(contactUrl).email(contactEmail))
                         .license(new License().name("Apache 2.0").url("https://www.apache.org/licenses/LICENSE-2.0")))
                 .externalDocs(new ExternalDocumentation()
                         .description("MCP Identity Registry docs")
