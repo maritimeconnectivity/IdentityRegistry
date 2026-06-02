@@ -5,7 +5,7 @@
 # When using in non-local environment it is recommened to generate new trust and keystores and place them in
 # the conf-folder and point to them in application.yaml.
 
-FROM eclipse-temurin:21-jdk AS builder
+FROM eclipse-temurin:25-jdk AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update && apt-get install -y build-essential file gzip libapr1-dev libssl-dev tar \
@@ -19,7 +19,7 @@ WORKDIR tomcat-native/native
 
 RUN ./configure && make && make install
 
-FROM eclipse-temurin:21-jre
+FROM eclipse-temurin:25-jre
 
 LABEL org.opencontainers.image.source="https://github.com/maritimeconnectivity/IdentityRegistry"
 
