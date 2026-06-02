@@ -46,7 +46,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <java.version>25</java.version>
         <maven.compiler.release>25</maven.compiler.release>
-        <keycloak.version>26.0.8</keycloak.version>
+        <keycloak.version>26.0.9</keycloak.version>
         <springdoc-openapi.version>3.0.3</springdoc-openapi.version>
         <twelvemonkeys.version>3.13.1</twelvemonkeys.version>
     </properties>
