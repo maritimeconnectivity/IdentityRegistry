@@ -19,6 +19,7 @@ package net.maritimeconnectivity.identityregistry.security;
 import net.maritimeconnectivity.identityregistry.config.SimpleCorsFilter;
 import net.maritimeconnectivity.identityregistry.security.x509.X509HeaderUserDetailsService;
 import net.maritimeconnectivity.identityregistry.security.x509.X509UserDetailsService;
+import org.aopalliance.intercept.MethodInvocation;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,6 +31,7 @@ import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyAuthoritiesMapper;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchyImpl;
 import org.springframework.security.authentication.ProviderManager;
+import org.springframework.security.authorization.DefaultAuthorizationManagerFactory;
 import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -45,6 +47,8 @@ import org.springframework.security.web.authentication.preauth.PreAuthenticatedA
 import org.springframework.security.web.authentication.preauth.RequestHeaderAuthenticationFilter;
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.transport.HttpsRedirectFilter;
+
+import java.security.cert.X509Certificate;
 
 @Configuration
 @EnableWebSecurity
@@ -84,7 +88,9 @@ public class MultiSecurityConfig {
     @Bean
     public MethodSecurityExpressionHandler webExpressionHandler() {
         DefaultMethodSecurityExpressionHandler defaultMethodSecurityExpressionHandler = new DefaultMethodSecurityExpressionHandler();
-        defaultMethodSecurityExpressionHandler.setRoleHierarchy(roleHierarchy());
+        DefaultAuthorizationManagerFactory<MethodInvocation> authorizationManagerFactory = new DefaultAuthorizationManagerFactory<>();
+        authorizationManagerFactory.setRoleHierarchy(roleHierarchy());
+        defaultMethodSecurityExpressionHandler.setAuthorizationManagerFactory(authorizationManagerFactory);
         return defaultMethodSecurityExpressionHandler;
     }
 
@@ -178,7 +184,7 @@ public class MultiSecurityConfig {
             // the certificate, as done in the approach above.
             http
                     .x509(x509 -> x509
-                            .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
+                            .x509PrincipalExtractor(X509Certificate::getSubjectX500Principal) // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
                             .userDetailsService(new X509UserDetailsService()));
         }
         return http.build();
