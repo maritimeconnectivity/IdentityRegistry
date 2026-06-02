@@ -48,6 +48,8 @@ import org.springframework.security.web.authentication.preauth.RequestHeaderAuth
 import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.security.web.transport.HttpsRedirectFilter;
 
+import java.security.cert.X509Certificate;
+
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity
@@ -182,7 +184,7 @@ public class MultiSecurityConfig {
             // the certificate, as done in the approach above.
             http
                     .x509(x509 -> x509
-                            .subjectPrincipalRegex("(.*)") // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
+                            .x509PrincipalExtractor(X509Certificate::getSubjectX500Principal) // Extract all and let it be handled by the X509UserDetailsService. "CN=(.*?)," for CommonName only
                             .userDetailsService(new X509UserDetailsService()));
         }
         return http.build();
