@@ -20,7 +20,6 @@ import com.twelvemonkeys.servlet.image.IIOProviderContextListener;
 import org.bouncycastle.jce.provider.BouncyCastleProvider;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.ldap.LdapAutoConfiguration;
 import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 
@@ -29,7 +28,7 @@ import jakarta.servlet.ServletException;
 import java.security.Security;
 
 
-@SpringBootApplication(exclude = LdapAutoConfiguration.class)
+@SpringBootApplication
 public class McpIdregApplication extends SpringBootServletInitializer {
 
     public static void main(String[] args) {

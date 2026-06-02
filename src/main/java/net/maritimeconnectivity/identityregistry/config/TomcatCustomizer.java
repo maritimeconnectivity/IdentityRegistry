@@ -16,8 +16,8 @@
 
 package net.maritimeconnectivity.identityregistry.config;
 
-import org.springframework.boot.web.embedded.tomcat.TomcatConnectorCustomizer;
-import org.springframework.boot.web.embedded.tomcat.TomcatServletWebServerFactory;
+import org.springframework.boot.tomcat.TomcatConnectorCustomizer;
+import org.springframework.boot.tomcat.servlet.TomcatServletWebServerFactory;
 import org.springframework.boot.web.server.WebServerFactoryCustomizer;
 import org.springframework.stereotype.Component;
 
