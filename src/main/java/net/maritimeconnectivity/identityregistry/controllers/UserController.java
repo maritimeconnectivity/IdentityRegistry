@@ -44,6 +44,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.BindingResult;
@@ -146,8 +147,13 @@ public class UserController extends EntityController<User> {
                 } catch (IOException | NullPointerException e) {
                     throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_CREATING_KC_USER, request.getServletPath());
                 }
-                // Send email to user with credentials
-                emailUtil.sendUserCreatedEmail(newUser.getEmail(), newUser.getFirstName() + " " + newUser.getLastName(), newUser.getEmail(), password);
+                try {
+                    // Send email to user with credentials
+                    emailUtil.sendUserCreatedEmail(newUser.getEmail(), newUser.getFirstName() + " " + newUser.getLastName(), newUser.getEmail(), password);
+                } catch (MailException e) {
+                    log.error("Could not send email with credentials to user", e);
+                    throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, "Creation of user was successful, but sending mail with credentials failed.", request.getServletPath());
+                }
             } else if (("external-idp".equals(org.getFederationType()) || "own-idp".equals(org.getFederationType())) && !allowCreateUserForFederatedOrg) {
                 throw new McpBasicRestException(HttpStatus.METHOD_NOT_ALLOWED, MCPIdRegConstants.ORG_IS_FEDERATED, request.getServletPath());
             }

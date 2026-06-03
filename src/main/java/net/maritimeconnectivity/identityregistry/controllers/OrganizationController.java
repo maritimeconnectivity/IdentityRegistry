@@ -50,6 +50,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -139,10 +140,21 @@ public class OrganizationController extends BaseControllerWithCertificate {
             log.error("Application for organization with MRN {} was not stored", input.getMrn());
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.ERROR_STORING_ENTITY, request.getServletPath());
         }
+
         // Send email to organization saying that the application is awaiting approval
         emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
         // Send email to admin saying that an Organization is awaiting approval
         emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName(), newOrg.getMrn());
+        try {
+            // Send email to organization saying that the application is awaiting approval
+            emailUtil.sendOrgAwaitingApprovalEmail(newOrg.getEmail(), newOrg.getName());
+            // Send email to admin saying that an Organization is awaiting approval
+            emailUtil.sendAdminOrgAwaitingApprovalEmail(newOrg.getName(), newOrg.getMrn());
+        } catch (MailException e) {
+            log.error("Could not send email(s) after storing application for registration", e);
+            throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Your application was successfully registered, but something went wrong while trying to send a confirmation.", request.getServletPath());
+        }
         return new ResponseEntity<>(newOrg, headers, HttpStatus.CREATED);
     }
 
