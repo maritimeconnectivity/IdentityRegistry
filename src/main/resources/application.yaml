@@ -94,6 +94,10 @@ net:
                     organization: 6
                     service: 6
                     mms: 6
+                unofficial-algorithm-support:
+                    rsa: false
+                    dsa: false
+                    eddsa: false
 
             # Email setup
             email:

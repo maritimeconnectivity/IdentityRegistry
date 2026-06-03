@@ -40,6 +40,7 @@ import org.bouncycastle.operator.jcajce.JcaContentVerifierProviderBuilder;
 import org.bouncycastle.pkcs.PKCSException;
 import org.bouncycastle.pkcs.jcajce.JcaPKCS10CertificationRequest;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -79,6 +80,12 @@ public abstract class BaseControllerWithCertificate {
     protected MrnUtil mrnUtil;
 
     private static final String[] INSECURE_HASHES = {"MD2", "MD4", "MD5", "SHA0", "SHA1"};
+
+    private boolean isRsaAllowed;
+
+    private boolean isDsaAllowed;
+
+    private boolean isEddsaAllowed;
 
     protected Certificate signCertificate(JcaPKCS10CertificationRequest csr, CertificateModel certOwner, Organization org, String type, HttpServletRequest request) throws McpBasicRestException {
         PublicKey publicKey;
@@ -220,16 +227,16 @@ public abstract class BaseControllerWithCertificate {
     private void checkPublicKey(PublicKey publicKey, HttpServletRequest request) throws McpBasicRestException {
         SignatureAlgorithm algorithm;
         int keyLength;
-        if (publicKey instanceof RSAPublicKey rsaPublicKey) {
+        if (publicKey instanceof RSAPublicKey rsaPublicKey && isRsaAllowed) {
             keyLength = rsaPublicKey.getModulus().bitLength();
             algorithm = SignatureAlgorithm.RSA;
         } else if (publicKey instanceof ECPublicKey ecPublicKey) {
             keyLength = ecPublicKey.getParams().getCurve().getField().getFieldSize();
             algorithm = SignatureAlgorithm.ECDSA;
-        } else if (publicKey instanceof DSAPublicKey dsaPublicKey) {
+        } else if (publicKey instanceof DSAPublicKey dsaPublicKey && isDsaAllowed) {
             keyLength = dsaPublicKey.getParams().getP().bitLength();
             algorithm = SignatureAlgorithm.DSA;
-        } else if ("EdDSA".equals(publicKey.getAlgorithm())) {
+        } else if ("EdDSA".equals(publicKey.getAlgorithm()) && isEddsaAllowed) {
             keyLength = 256;
             algorithm = SignatureAlgorithm.EDDSA;
         } else {
@@ -308,5 +315,20 @@ public abstract class BaseControllerWithCertificate {
     @Autowired
     public void setMrnUtil(MrnUtil mrnUtil) {
         this.mrnUtil = mrnUtil;
+    }
+
+    @Value("${net.maritimeconnectivity.idreg.certs.unofficial-algorithm-support.rsa:false}")
+    public void setRsaAllowed(boolean rsaAllowed) {
+        isRsaAllowed = rsaAllowed;
+    }
+
+    @Value("${net.maritimeconnectivity.idreg.certs.unofficial-algorithm-support.dsa:false}")
+    public void setDsaAllowed(boolean dsaAllowed) {
+        isDsaAllowed = dsaAllowed;
+    }
+
+    @Value("${net.maritimeconnectivity.idreg.certs.unofficial-algorithm-support.eddsa:false}")
+    public void setEddsaAllowed(boolean eddsaAllowed) {
+        isEddsaAllowed = eddsaAllowed;
     }
 }

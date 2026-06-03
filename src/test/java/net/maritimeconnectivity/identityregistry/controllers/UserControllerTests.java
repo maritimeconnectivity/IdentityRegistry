@@ -101,6 +101,9 @@ class UserControllerTests {
     @MockitoBean
     private CertificateService certificateService;
 
+    @Autowired
+    private UserController userController;
+
     @MockitoBean
     JwtDecoder jwtDecoder;
 
@@ -514,7 +517,7 @@ class UserControllerTests {
     }
 
     @Test
-    void testIssueCertificateUsingCsrWithEdDSA() {
+    void testIssueCertificateUsingCsrWithEdDSASupported() {
         // Build user object to test with
         User user = new User();
         user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
@@ -544,6 +547,8 @@ class UserControllerTests {
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
+        this.userController.setEddsaAllowed(true);
+
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/ed25519.csr").toPath()));
             MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
@@ -553,6 +558,55 @@ class UserControllerTests {
             ).andExpect(status().isCreated()).andReturn();
             String content = result.getResponse().getContentAsString();
             assertNotNull(content);
+        } catch (Exception e) {
+            fail(e);
+        }
+    }
+
+    @Test
+    void testIssueCertificateUsingCsrWithEdDSAUnsupported() {
+        // Build user object to test with
+        User user = new User();
+        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
+        user.setFirstName("Thomas");
+        user.setLastName("Christensen");
+        user.setEmail("thcc@dma.dk");
+        user.setIdOrganization(1L);
+        user.setPermissions("MCADMIN");
+        // Build org object to test with
+        Organization org = spy(Organization.class);
+        org.setMrn("urn:mrn:mcp:org:idp1:dma");
+        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
+        org.setCountry("Denmark");
+        org.setUrl("http://dma.dk");
+        org.setEmail("dma@dma.dk");
+        org.setName("Danish Maritime Authority");
+        org.setFederationType("external-idp");
+        Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
+        org.setIdentityProviderAttributes(identityProviderAttributes);
+        org.setCertificateAuthority("urn:mrn:mcp:ca:idp1:mcp-idreg");
+        // Create fake authentication token
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        // Setup mock returns
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
+        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        when(org.getId()).thenReturn(1L);
+
+        this.userController.setEddsaAllowed(false);
+
+        try {
+            String csr = new String(Files.readAllBytes(new File("src/test/resources/ed25519.csr").toPath()));
+            MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc/certificate/issue-new/csr").with(authentication(auth))
+                    .header("Origin", "bla")
+                    .contentType(MediaType.TEXT_PLAIN)
+                    .content(csr)
+            ).andExpect(status().isBadRequest()).andReturn();
+            String content = result.getResponse().getContentAsString();
+            assertNotNull(content);
+            ExceptionModel exceptionModel = deserializeError(content);
+            assertEquals(MCPIdRegConstants.PUBLIC_KEY_INVALID, exceptionModel.getMessage(), "Message is not as expected");
         } catch (Exception e) {
             fail(e);
         }
@@ -588,6 +642,8 @@ class UserControllerTests {
         given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
+
+        this.userController.setRsaAllowed(true);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakRSA.csr").toPath()));
@@ -680,6 +736,8 @@ class UserControllerTests {
         given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
         when(org.getId()).thenReturn(1L);
+
+        this.userController.setRsaAllowed(true);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/RSAWeakSig.csr").toPath()));
