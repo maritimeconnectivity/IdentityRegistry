@@ -18,6 +18,7 @@
 package net.maritimeconnectivity.identityregistry.controllers;
 
 import io.swagger.v3.oas.annotations.Operation;
+import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.BugReport;
 import net.maritimeconnectivity.identityregistry.utils.EmailUtil;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.mail.MailException;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import jakarta.mail.MessagingException;
 import jakarta.servlet.http.HttpServletRequest;
 
+@Slf4j
 @RestController
 @RequestMapping(value = {"oidc", "x509"})
 public class BugReportController {
@@ -48,7 +51,8 @@ public class BugReportController {
     public ResponseEntity<?> reportBug(HttpServletRequest request, @RequestBody BugReport report) throws McpBasicRestException {
         try {
             emailUtil.sendBugReport(report);
-        } catch (MessagingException e) {
+        } catch (MailException | MessagingException e) {
+            log.error("Failed to send bug report", e);
             throw new McpBasicRestException(HttpStatus.INTERNAL_SERVER_ERROR, MCPIdRegConstants.BUG_REPORT_CREATION_FAILED, request.getServletPath());
         }
         return new ResponseEntity<>(HttpStatus.OK);

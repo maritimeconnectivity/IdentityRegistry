@@ -20,6 +20,7 @@ import net.maritimeconnectivity.identityregistry.model.data.BugReport;
 import net.maritimeconnectivity.identityregistry.model.data.BugReportAttachment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.mail.MailException;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -69,7 +70,7 @@ public class EmailUtil {
         this.mailSender = mailSender;
     }
 
-    public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) {
+    public void sendOrgAwaitingApprovalEmail(String sendTo, String orgName) throws MailException {
         if (sendTo == null || sendTo.trim().isEmpty()) {
             throw new IllegalArgumentException("No email address!");
         }
@@ -81,7 +82,7 @@ public class EmailUtil {
         this.mailSender.send(msg);
     }
 
-    public void sendAdminOrgAwaitingApprovalEmail(String orgName, String orgMrn) {
+    public void sendAdminOrgAwaitingApprovalEmail(String orgName, String orgMrn) throws MailException {
         SimpleMailMessage msg = new SimpleMailMessage();
         msg.setTo(adminEmail);
         msg.setFrom(from);
@@ -90,7 +91,7 @@ public class EmailUtil {
         this.mailSender.send(msg);
     }
 
-    public void sendUserCreatedEmail(String sendTo, String userName, String loginName, String loginPassword) {
+    public void sendUserCreatedEmail(String sendTo, String userName, String loginName, String loginPassword) throws MailException {
         if (sendTo == null || sendTo.trim().isEmpty()) {
             throw new IllegalArgumentException("No email address!");
         }
@@ -102,7 +103,7 @@ public class EmailUtil {
         this.mailSender.send(msg);
     }
 
-    public void sendBugReport(BugReport report) throws MessagingException {
+    public void sendBugReport(BugReport report) throws MessagingException, MailException {
         MimeMessage message = this.mailSender.createMimeMessage();
         MimeMessageHelper helper = new MimeMessageHelper(message, true);
         helper.setTo(bugReportEmail);
