@@ -135,7 +135,7 @@ net:
             openapi: # base URLs for the OIDC and X.509 versions of the API
                 oidc-base-path: https://api.maritimeconnectivity.net/
                 x509-base-path: https://api-x509.maritimeconnectivity.net/
-                version: @project.version@
+                version: 1.3.9
 
 # Test db-connection, used to avoid connection timeout errors
 spring.datasource:
