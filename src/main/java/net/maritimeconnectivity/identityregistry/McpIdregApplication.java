@@ -31,7 +31,7 @@ import java.security.Security;
 @SpringBootApplication
 public class McpIdregApplication extends SpringBootServletInitializer {
 
-    public static void main(String[] args) {
+    static void main(String[] args) {
         // Set awt to be headless to avoid issues when scaling images (logos)
         System.setProperty("java.awt.headless", "true");
         // Set Bouncy Castle as Provider, used for Certificates.
