@@ -113,7 +113,7 @@ public class MultiSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain oidcFilterChain(HttpSecurity http, SimpleCorsFilter simpleCorsFilter) throws Exception {
+    public SecurityFilterChain oidcFilterChain(HttpSecurity http, SimpleCorsFilter simpleCorsFilter) {
         http
                 .securityMatcher("/oidc/**", "/v3/api-docs", "/v3/api-docs/**")
                 .addFilterBefore(simpleCorsFilter, HttpsRedirectFilter.class)
@@ -143,7 +143,7 @@ public class MultiSecurityConfig {
 
     @Bean
     @Order(1)
-    public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService, SimpleCorsFilter simpleCorsFilter) throws Exception {
+    public SecurityFilterChain x509FilterChain(HttpSecurity http, X509HeaderUserDetailsService x509HeaderUserDetailsService, SimpleCorsFilter simpleCorsFilter) {
         http
                 .securityMatcher("/x509/**", "/service/**")
                 .addFilterBefore(simpleCorsFilter, HttpsRedirectFilter.class)
