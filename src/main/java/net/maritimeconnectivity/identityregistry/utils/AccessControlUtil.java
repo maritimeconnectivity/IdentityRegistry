@@ -226,7 +226,7 @@ public class AccessControlUtil {
             InetOrgPerson person = (InetOrgPerson) token.getPrincipal();
             String mrn = person.getUid();
             String org = person.getO();
-            if (mrn != null && org != null) {
+            if (org != null) {
                 return user.getMrn().equals(mrn) && organization.getMrn().equals(org);
             }
         }
