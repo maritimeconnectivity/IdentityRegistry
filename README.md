@@ -21,9 +21,9 @@ The database can be dropped with this command:
 ```
 
 ## Build
-* Requirement : OpenJDK 21
+* Requirement : OpenJDK 25 or higher.
 
-Build using you favorite IDE or using the console:
+Build using your favorite IDE or using the console:
 ```sh
 mvn clean install
 ```
