@@ -68,7 +68,14 @@ public class AccessControlUtil {
             return false;
         }
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        // First check if the user is a SITE_ADMIN, in which case he gets access.
+
+        // Check if there actually is an authentication context
+        if (auth == null) {
+            log.debug("No authentication found!");
+            return false;
+        }
+
+        // First, check if the user is a SITE_ADMIN, in which case he gets access.
         if (auth.getAuthorities().contains(roleSiteAdmin)) {
             return true;
         }
