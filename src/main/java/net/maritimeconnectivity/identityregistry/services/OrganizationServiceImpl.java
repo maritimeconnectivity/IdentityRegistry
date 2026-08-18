@@ -85,7 +85,7 @@ public class OrganizationServiceImpl extends BaseServiceImpl<Organization> imple
 
     @Override
     protected Page<Organization> filterResult(Page<Organization> data) {
-        if (data != null && !data.hasContent() && !accessControlUtil.hasRole("SITE_ADMIN")) {
+        if (data != null && data.hasContent() && !accessControlUtil.hasRole("SITE_ADMIN")) {
             // If not authorized to see all we clean the object for sensitive data.
             boolean isAuthorized = isAuthorized();
             for (Organization org : data) {

@@ -53,7 +53,7 @@ public abstract class BaseServiceImpl<T extends TimestampModel> implements BaseS
     }
 
     protected Page<T> filterResult(Page<T> data) {
-        if (data != null && !data.hasContent()) {
+        if (data != null && data.hasContent()) {
             data = (Page<T>) this.filterIterable(data);
         }
         return data;
