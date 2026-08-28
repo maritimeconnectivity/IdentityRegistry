@@ -16,6 +16,7 @@
 package net.maritimeconnectivity.identityregistry.validators;
 
 
+import net.maritimeconnectivity.identityregistry.exception.InvalidMrnException;
 import net.maritimeconnectivity.identityregistry.utils.MrnUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -44,7 +45,7 @@ public class MCPMRNValidator implements ConstraintValidator<MCPMRN, String> {
     public boolean isValid(String value, ConstraintValidatorContext context) {
         try {
             return mrnUtil.validateMCPMrn(value);
-        } catch (IllegalArgumentException e) {
+        } catch (IllegalArgumentException | InvalidMrnException e) {
             context.disableDefaultConstraintViolation();
             context
                     .buildConstraintViolationWithTemplate(e.getMessage())

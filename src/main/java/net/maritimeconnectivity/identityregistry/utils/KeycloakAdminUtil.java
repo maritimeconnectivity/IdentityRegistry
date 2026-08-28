@@ -19,6 +19,7 @@ package net.maritimeconnectivity.identityregistry.utils;
 import lombok.NoArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import net.maritimeconnectivity.identityregistry.exception.DuplicatedKeycloakEntry;
+import net.maritimeconnectivity.identityregistry.exception.InvalidMrnException;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.database.IdentityProviderAttribute;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
@@ -221,7 +222,7 @@ public class KeycloakAdminUtil {
      * @param input  map containing data about the IDP
      * @throws IOException is thrown if the IDP could not be created
      */
-    public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException {
+    public void createIdentityProvider(String orgMrn, Set<IdentityProviderAttribute> input) throws IOException, InvalidMrnException {
         String name = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         Map<String, String> idpAtrMap = idpAttributes2Map(input);
         // Check for valid input
@@ -366,7 +367,7 @@ public class KeycloakAdminUtil {
      *
      * @param orgMrn MRN of the IDP to delete.
      */
-    public void deleteIdentityProvider(String orgMrn) {
+    public void deleteIdentityProvider(String orgMrn) throws InvalidMrnException {
         // First delete any users associated with the IDP. Find it by username, which is the mrn
         String alias = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         String searchStr = mrnUtil.getMrnPrefix(orgMrn) + ":user:" + alias + ":";

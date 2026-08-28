@@ -18,6 +18,8 @@ package net.maritimeconnectivity.identityregistry.utils;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.slf4j.Slf4j;
+import net.maritimeconnectivity.identityregistry.exception.InvalidMrnException;
 import net.maritimeconnectivity.identityregistry.model.database.CertificateModel;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
@@ -36,6 +38,7 @@ import java.util.regex.Pattern;
  * Utility class to validate and extract certain info from MRNs
  */
 @Component
+@Slf4j
 public class MrnUtil {
 
     public final Pattern mrnPattern = Pattern.compile("^urn:mrn:([a-z0-9]([a-z0-9]|-){0,20}[a-z0-9]):([a-z0-9][-a-z0-9]{0,20}[a-z0-9]):((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/)*)((\\?\\+((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?(\\?=((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?)?(#(((([-._a-z0-9]|~)|%[0-9a-f][0-9a-f]|([!$&'()*+,;=])|:|@)|/|\\?)*))?$", Pattern.CASE_INSENSITIVE);
@@ -46,17 +49,17 @@ public class MrnUtil {
     @Value("${net.maritimeconnectivity.idreg.ip-id}")
     private String ipId;
 
-    public String getOrgShortNameFromOrgMrn(String orgMrn) {
+    public String getOrgShortNameFromOrgMrn(String orgMrn) throws InvalidMrnException {
         List<String> mrnSplit = List.of(orgMrn.split(":"));
         if (!mcpMrnPattern.matcher(orgMrn).matches()) {
-            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
+            throw new InvalidMrnException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         return String.join(":", mrnSplit.subList(5, mrnSplit.size()));
     }
 
-    public Pattern getOrgMrnPrefixPattern(String orgMrn) {
+    public Pattern getOrgMrnPrefixPattern(String orgMrn) throws InvalidMrnException {
         if (!mcpMrnPattern.matcher(orgMrn).matches()) {
-            throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
+            throw new InvalidMrnException(MCPIdRegConstants.MRN_IS_NOT_VALID);
         }
         String[] split = orgMrn.split(":");
         split[3] = "(entity|mir|mms|msr|(device|org|user|vessel|service))";
@@ -65,7 +68,13 @@ public class MrnUtil {
     }
 
     public boolean entityMrnCorrespondsToOrgMrn(String entityMrn, String orgMrn) {
-        Pattern pattern = getOrgMrnPrefixPattern(orgMrn);
+        Pattern pattern;
+        try {
+            pattern = getOrgMrnPrefixPattern(orgMrn);
+        } catch (InvalidMrnException e) {
+            log.debug("Invalid MRN provided: {}", orgMrn);
+            return false;
+        }
         String[] split = pattern.split(entityMrn);
         return split.length == 2 && split[0].isEmpty();
     }
@@ -78,14 +87,14 @@ public class MrnUtil {
         return isNotMrnEmpty(mrn) && mrnPattern.matcher(mrn).matches();
     }
 
-    public boolean validateMCPMrn(String mrn) {
+    public boolean validateMCPMrn(String mrn) throws InvalidMrnException {
         if (validateMrn(mrn) && mcpMrnPattern.matcher(mrn).matches()) {
             String[] parts = mrn.split(":");
             if (parts.length < 6) {
-                throw new IllegalArgumentException(MCPIdRegConstants.MRN_IS_NOT_VALID);
+                throw new InvalidMrnException(MCPIdRegConstants.MRN_IS_NOT_VALID);
             }
             if (!parts[4].equals(ipId)) {
-                throw new IllegalArgumentException("MCP MRN does not contain the correct identity provider ID: " + ipId);
+                throw new InvalidMrnException("MCP MRN does not contain the correct identity provider ID: " + ipId);
             }
             return true;
         }

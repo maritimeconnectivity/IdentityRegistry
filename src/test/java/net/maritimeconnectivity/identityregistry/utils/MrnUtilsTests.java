@@ -16,6 +16,7 @@
  */
 package net.maritimeconnectivity.identityregistry.utils;
 
+import net.maritimeconnectivity.identityregistry.exception.InvalidMrnException;
 import net.maritimeconnectivity.identityregistry.model.database.entities.Device;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -47,21 +48,21 @@ class MrnUtilsTests {
     JwtDecoder jwtDecoder;
 
     @Test
-    void extractOrgShortnameFromOrgMRN1() {
+    void extractOrgShortnameFromOrgMRN1() throws InvalidMrnException {
         String orgMrn = "urn:mrn:mcp:org:idp1:dma";
         String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         assertEquals("Org shortname should be 'dma'", "dma", ret);
     }
 
     @Test
-    void extractOrgShortnameFromOrgMRN2() {
+    void extractOrgShortnameFromOrgMRN2() throws InvalidMrnException {
         String orgMrn = "urn:mrn:mcp:org:idp1:dfds@bimco";
         String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         assertEquals("Org shortname should be 'dfds@bimco'", "dfds@bimco", ret);
     }
 
     @Test
-    void extractOrgShortnameFromOrgMRN3() {
+    void extractOrgShortnameFromOrgMRN3() throws InvalidMrnException {
         String orgMrn = "urn:mrn:mcp:org:idp1:org1:test";
         String ret = mrnUtil.getOrgShortNameFromOrgMrn(orgMrn);
         assertEquals("Org shortname should be 'org1:test'", "org1:test", ret);
@@ -82,14 +83,14 @@ class MrnUtilsTests {
     }
 
     @Test
-    void validatingServiceInstanceMRN1() {
+    void validatingServiceInstanceMRN1() throws InvalidMrnException {
         String userMrn = "urn:mrn:mcp:service:idp1:dma:instance:nw-nm-design:nw-nm-prod";
         boolean ret = mrnUtil.validateMCPMrn(userMrn);
         assertTrue("Service MRN should be valid", ret);
     }
 
     @Test
-    void validatingOrgMRN1() {
+    void validatingOrgMRN1() throws InvalidMrnException {
         String orgMrn = "urn:mrn:mcp:org:idp1:dma";
         boolean ret = mrnUtil.validateMCPMrn(orgMrn);
         assertTrue("Org MRN should be valid", ret);
@@ -103,14 +104,14 @@ class MrnUtilsTests {
     }
 
     @Test
-    void validatingOrgMRN3() {
+    void validatingOrgMRN3() throws InvalidMrnException {
         String orgMrn = "urn:mrn:mcp:entity:idp1:org1";
         boolean result = mrnUtil.validateMCPMrn(orgMrn);
         assertTrue("Org MRN should be valid", result);
     }
 
     @Test
-    void validatingVesselMRN1() {
+    void validatingVesselMRN1() throws InvalidMrnException {
         String vesselMrn = "urn:mrn:mcp:vessel:idp1:dma:poul-loewenoern";
         boolean ret = mrnUtil.validateMCPMrn(vesselMrn);
         assertTrue("Vessel MRN should be valid", ret);
@@ -125,7 +126,7 @@ class MrnUtilsTests {
     }
 
     @Test
-    void validatingVesselMRN3() {
+    void validatingVesselMRN3() throws InvalidMrnException {
         String vesselMrn = "urn:mrn:mcp:entity:idp1:dma:poul-loewenoern";
         boolean ret = mrnUtil.validateMCPMrn(vesselMrn);
         assertTrue("Vessel MRN should be valid", ret);
@@ -154,7 +155,7 @@ class MrnUtilsTests {
     }
 
     @Test
-    void checkDeviceWithEntityTypeInMrn() {
+    void checkDeviceWithEntityTypeInMrn() throws InvalidMrnException {
         Device device = new Device();
         device.setMrn("urn:mrn:mcp:entity:idp1:org1:device1");
         boolean valid = mrnUtil.isEntityTypeValid(device);

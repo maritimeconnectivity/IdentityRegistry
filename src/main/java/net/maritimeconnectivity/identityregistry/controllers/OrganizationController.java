@@ -19,6 +19,7 @@ package net.maritimeconnectivity.identityregistry.controllers;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import lombok.extern.slf4j.Slf4j;
+import net.maritimeconnectivity.identityregistry.exception.InvalidMrnException;
 import net.maritimeconnectivity.identityregistry.exception.McpBasicRestException;
 import net.maritimeconnectivity.identityregistry.model.data.CertificateRevocation;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
@@ -232,6 +233,8 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IDP_URL, request.getServletPath());
             } catch (IOException e) {
                 throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+            } catch (InvalidMrnException e) {
+                throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MRN_IS_NOT_VALID, request.getServletPath());
             }
         }
         // Enabled the organization and save it
@@ -332,7 +335,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
                 // If the IDP setup is different we delete the old IDP in keycloak
                 if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()
                         && !IdentityProviderAttribute.listsEquals(org.getIdentityProviderAttributes(), input.getIdentityProviderAttributes())) {
-                    keycloakAU.deleteIdentityProvider(input.getMrn());
+                    try {
+                        keycloakAU.deleteIdentityProvider(input.getMrn());
+                    } catch (InvalidMrnException e) {
+                        throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MRN_IS_NOT_VALID, request.getServletPath());
+                    }
                 }
                 try {
                     keycloakAU.createIdentityProvider(input.getMrn().toLowerCase(), input.getIdentityProviderAttributes());
@@ -340,12 +347,18 @@ public class OrganizationController extends BaseControllerWithCertificate {
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.INVALID_IDP_URL, request.getServletPath());
                 } catch (IOException e) {
                     throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.COULD_NOT_GET_DATA_FROM_IDP, request.getServletPath());
+                } catch (InvalidMrnException e) {
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MRN_IS_NOT_VALID, request.getServletPath());
                 }
                 org.setFederationType("own-idp");
             } else if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 // Remove old IDP if new input doesn't contain IDP info
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(input.getMrn());
+                try {
+                    keycloakAU.deleteIdentityProvider(input.getMrn());
+                } catch (InvalidMrnException e) {
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MRN_IS_NOT_VALID, request.getServletPath());
+                }
                 // TODO: Determine if setting to "external-idp" could be done as well.
                 org.setFederationType("test-idp");
             }
@@ -376,7 +389,11 @@ public class OrganizationController extends BaseControllerWithCertificate {
             //  TODO: we need to do some sync'ing with the Service Registry.
             if (org.getIdentityProviderAttributes() != null && !org.getIdentityProviderAttributes().isEmpty()) {
                 keycloakAU.init(KeycloakAdminUtil.BROKER_INSTANCE);
-                keycloakAU.deleteIdentityProvider(org.getMrn());
+                try {
+                    keycloakAU.deleteIdentityProvider(org.getMrn());
+                } catch (InvalidMrnException e) {
+                    throw new McpBasicRestException(HttpStatus.BAD_REQUEST, MCPIdRegConstants.MRN_IS_NOT_VALID, request.getServletPath());
+                }
             } else {
                 for (User user : this.userService.listAllFromOrg(org.getId())) {
                     keycloakAU.deleteUser(user.getEmail(), user.getMrn());
