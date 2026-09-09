@@ -8,12 +8,12 @@
 FROM eclipse-temurin:25-jdk AS builder
 
 ENV DEBIAN_FRONTEND=noninteractive
-RUN apt-get update && apt-get install -y build-essential file gzip libapr1-dev libssl-dev tar \
+RUN apt-get update && apt-get install -y build-essential file libapr1-dev libssl-dev \
     && rm -rf /var/lib/apt/lists/* /var/cache/apt/archives/*
 
-ADD https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.16/source/tomcat-native-2.0.16-src.tar.gz tomcat-native.tar.gz
+ADD --checksum=sha256:785fdd99a202f442b085bc718d2fbeb393b85979aa4a2943302118c4acd68630 --unpack=true https://dlcdn.apache.org/tomcat/tomcat-connectors/native/2.0.16/source/tomcat-native-2.0.16-src.tar.gz .
 
-RUN tar -xvf tomcat-native.tar.gz && mv tomcat-native*/ tomcat-native/
+RUN mv tomcat-native*/ tomcat-native/
 
 WORKDIR tomcat-native/native
 
@@ -24,7 +24,9 @@ FROM eclipse-temurin:25-jre
 LABEL org.opencontainers.image.source="https://github.com/maritimeconnectivity/IdentityRegistry"
 
 ENV MARIADB_VERSION=3.5.10
+ENV MARIADB_CHECKSUM=919b8c1c771d9ee3465811462f242c9543ab401e140c64988ddbf1d8abcb18b2
 ENV MYSQL_VERSION=9.7.0
+ENV MYSQL_CHECKSUM=0353648eaa1c91e0f4020c959abf756bc866ffd583df22ae6b6f6e0cbd43eb44
 ENV LOADER_PATH=/modules
 
 RUN mkdir /usr/lib/tcnative
@@ -34,10 +36,10 @@ COPY --from=builder /usr/local/apr/lib /usr/lib/tcnative/
 RUN mkdir /conf $LOADER_PATH
 
 # Download the MariaDB client connector from Maven Central
-ADD https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
+ADD --checksum=$MARIADB_CHECKSUM https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
 
 # Download the MySQL client connector from Maven Central
-ADD https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
+ADD --checksum=$MYSQL_CHECKSUM https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
 
 # Install native libraries that can be used by Spring Boot's embedded Tomcat server for improved performance
 ENV DEBIAN_FRONTEND=noninteractive
