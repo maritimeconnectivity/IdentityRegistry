@@ -36,10 +36,10 @@ COPY --from=builder /usr/local/apr/lib /usr/lib/tcnative/
 RUN mkdir /conf $LOADER_PATH
 
 # Download the MariaDB client connector from Maven Central
-ADD --checksum=$MARIADB_CHECKSUM https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
+ADD --checksum=sha256:$MARIADB_CHECKSUM https://repo1.maven.org/maven2/org/mariadb/jdbc/mariadb-java-client/$MARIADB_VERSION/mariadb-java-client-$MARIADB_VERSION.jar $LOADER_PATH
 
 # Download the MySQL client connector from Maven Central
-ADD --checksum=$MYSQL_CHECKSUM https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
+ADD --checksum=sha256:$MYSQL_CHECKSUM https://repo1.maven.org/maven2/com/mysql/mysql-connector-j/$MYSQL_VERSION/mysql-connector-j-$MYSQL_VERSION.jar $LOADER_PATH
 
 # Install native libraries that can be used by Spring Boot's embedded Tomcat server for improved performance
 ENV DEBIAN_FRONTEND=noninteractive
