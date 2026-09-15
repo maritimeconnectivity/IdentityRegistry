@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Lazy;
 import org.springframework.security.access.hierarchicalroles.RoleHierarchy;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.authority.FactorGrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.ldap.userdetails.InetOrgPerson;
@@ -245,6 +246,10 @@ public class AccessControlUtil {
             userGrantedAuthorities = new HashSet<>(roleHierarchy
                     .getReachableGrantedAuthorities(auth.getAuthorities()));
             for (GrantedAuthority authority : userGrantedAuthorities) {
+                // We don't want to include authorities related to the authentication method
+                if (authority instanceof FactorGrantedAuthority) {
+                    continue;
+                }
                 roles.add(authority.getAuthority());
             }
         } else {
@@ -281,6 +286,11 @@ public class AccessControlUtil {
                 agentGrantedAuthorities.retainAll(userGrantedAuthorities);
                 agentGrantedAuthorities.forEach(ga -> roleSet.add(ga.getAuthority()));
             }
+
+            // Remove roles related to authentication method if present
+            roleSet.remove(FactorGrantedAuthority.BEARER_AUTHORITY);
+            roleSet.remove(FactorGrantedAuthority.X509_AUTHORITY);
+
             roles = new ArrayList<>(roleSet);
         }
         return roles;
