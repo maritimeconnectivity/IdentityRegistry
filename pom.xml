@@ -22,7 +22,7 @@
 
     <groupId>net.maritimeconnectivity.identityregistry</groupId>
     <artifactId>mcp-identityregistry-core</artifactId>
-    <version>1.4.1-SNAPSHOT</version>
+    <version>1.4.1</version>
     <packaging>jar</packaging>
 
     <name>mcp-identityregistry-core</name>
