@@ -50,7 +50,7 @@
         <springdoc-openapi.version>3.1.1</springdoc-openapi.version>
         <twelvemonkeys.version>3.15.0</twelvemonkeys.version>
         <tomcat.version>11.0.25</tomcat.version>
-        <mcp-pki.version>1.4.4-SNAPSHOT</mcp-pki.version>
+        <mcp-pki.version>1.4.4</mcp-pki.version>
     </properties>
 
     <dependencies>
