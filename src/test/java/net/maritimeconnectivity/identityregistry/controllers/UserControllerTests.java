@@ -389,28 +389,28 @@ class UserControllerTests {
     void testCreateUserForNonFederatedOrg() {
         // Build user object to test with
         User user = new User();
-        user.setMrn("urn:mrn:mcp:user:idp1:dma:thc");
-        user.setFirstName("Thomas");
-        user.setLastName("Christensen");
-        user.setEmail("thcc@dma.dk");
+        user.setMrn("urn:mrn:mcp:user:idp1:org1:user1");
+        user.setFirstName("User");
+        user.setLastName("User");
+        user.setEmail("user@example.com");
         user.setIdOrganization(1L);
         user.setPermissions("MCADMIN");
         String userJson = serialize(user);
         // Build org object to test with
         Organization org = spy(Organization.class);
-        org.setMrn("urn:mrn:mcp:org:idp1:dma");
-        org.setAddress("Carl Jakobsensvej 31, 2500 Valby");
-        org.setCountry("Denmark");
-        org.setUrl("http://dma.dk");
-        org.setEmail("dma@dma.dk");
-        org.setName("Danish Maritime Authority");
+        org.setMrn("urn:mrn:mcp:org:idp1:org1");
+        org.setAddress("404 Somewhere Street");
+        org.setCountry("United States of America (the)");
+        org.setUrl("https://example.com");
+        org.setEmail("example@example.com");
+        org.setName("Test Organization");
         org.setFederationType("test-idp");
         Set<IdentityProviderAttribute> identityProviderAttributes = new HashSet<>();
         org.setIdentityProviderAttributes(identityProviderAttributes);
         // Create fake authentication token
-        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
+        JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:org1", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:org1")).willReturn(org);
         given(this.entityService.save(any())).willReturn(user);
         when(org.getId()).thenReturn(1L);
 
@@ -419,7 +419,7 @@ class UserControllerTests {
         wiser.start();
 
         try {
-            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user").with(authentication(auth))
+            mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:org1/user").with(authentication(auth))
                     .header("Origin", "Bla")
                     .content(userJson)
                     .contentType("application/json")).andExpect(status().isCreated());
