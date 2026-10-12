@@ -23,6 +23,7 @@ import lombok.Setter;
 import lombok.ToString;
 import net.maritimeconnectivity.identityregistry.model.database.Certificate;
 import net.maritimeconnectivity.identityregistry.model.database.Organization;
+import net.maritimeconnectivity.pki.CountryMapper;
 import net.maritimeconnectivity.pki.PKIIdentity;
 import org.bouncycastle.asn1.x500.X500Name;
 
@@ -117,16 +118,30 @@ public class User extends EntityModel {
     }
 
     public String constructDN(Organization organization) {
-        // Try to find the correct country code, else we just use the country name as code
-        String orgCountryCode = organization.getCountry();
-        String[] locales = Locale.getISOCountries();
-        for (String countryCode : locales) {
-            Locale loc = Locale.of("", countryCode);
-            if (loc.getDisplayCountry(Locale.ENGLISH).equals(orgCountryCode)) {
-                orgCountryCode = loc.getCountry();
-                break;
+        String country = organization.getCountry();
+
+        // Try to find the correct country code, else we just use the unknown country code
+        String orgCountryCode = "XX";
+
+        // If the country is already 2 characters, we check if it is a valid country code
+        if (country != null && country.trim().length() == 2) {
+            String tmp = country.trim();
+            if (!Locale.of("", tmp).getDisplayCountry(Locale.ENGLISH).isEmpty()) {
+                orgCountryCode = tmp;
+            }
+        } else if (CountryMapper.ISO_TITLE_OVERRIDES.containsKey(country)) {
+            orgCountryCode = CountryMapper.ISO_TITLE_OVERRIDES.get(country);
+        } else {
+            String[] locales = Locale.getISOCountries();
+            for (String countryCode : locales) {
+                Locale loc = Locale.of("", countryCode);
+                if (loc.getDisplayCountry(Locale.ENGLISH).equalsIgnoreCase(country)) {
+                    orgCountryCode = loc.getCountry();
+                    break;
+                }
             }
         }
+
         String fullName = firstName + " " + lastName;
         String dn = String.format("C=%s, O=%s, OU=user, CN=%s, UID=%s, E=%s", escapeSpecialCharacters(orgCountryCode), escapeSpecialCharacters(organization.getMrn()),
                 escapeSpecialCharacters(fullName), escapeSpecialCharacters(getMrn()), escapeSpecialCharacters(getEmail()));
