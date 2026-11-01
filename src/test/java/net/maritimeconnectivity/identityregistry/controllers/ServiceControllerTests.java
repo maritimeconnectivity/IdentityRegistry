@@ -134,8 +134,7 @@ class ServiceControllerTests {
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
 
         try {
             MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service").header("Origin", "bla")
@@ -174,8 +173,7 @@ class ServiceControllerTests {
         // Create fake authentication token, note that the user mrn is different from the org mrn, but being SITE_ADMIN should overrule that
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN,ROLE_SITE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
         when(serviceService.save(any())).thenReturn(service);
 
         try {
@@ -243,10 +241,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -282,9 +277,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", service);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -359,9 +352,8 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
         given(this.serviceService.getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -399,9 +391,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4", service);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -445,9 +435,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4", service);
         try {
             given(this.keycloakAU.getClientJbossXml("urn:mrn:mcp:service:idp1:dma:instance:nw-nm:0.3.4")).willReturn("<secure-deployment name=\"WAR MODULE NAME.war\"><realm>MaritimeCloud</realm>...</secure-deployment>");
         } catch (IOException e) {
@@ -488,10 +476,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(service);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4/jbossxml").with(authentication(auth))
                     .header("Origin", "bla")
@@ -534,9 +519,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", oldService);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -586,9 +569,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", oldService);
         try {
             MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -635,9 +616,8 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
         given(this.serviceService.getServiceByMrnAndVersion("urn:mrn:mcp:service:idp1:dma:instance:nw-nm", "0.3.4")).willReturn(oldService);
-        when(org.getId()).thenReturn(1L);
         try {
             MvcResult result = mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm/0.3.4").with(authentication(auth))
                     .header("Origin", "bla")
@@ -683,9 +663,7 @@ class ServiceControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.serviceService.getByMrn("urn:mrn:mcp:service:idp1:dma:instance:nw-nm")).willReturn(oldService);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(org, "urn:mrn:mcp:service:idp1:dma:instance:nw-nm", oldService);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/service/urn:mrn:mcp:service:idp1:dma:instance:nw-nm").with(authentication(auth))
                     .header("Origin", "bla")
@@ -719,8 +697,7 @@ class ServiceControllerTests {
         org.setIdentityProviderAttributes(identityProviderAttributes);
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:entity:idp1:org1:user", "urn:mrn:mcp:entity:idp1:org1", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:entity:idp1:org1")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:entity:idp1:org1");
 
         try {
             MvcResult result = mvc.perform(post("/oidc/api/org/urn:mrn:mcp:entity:idp1:org1/service").with(authentication(auth))
@@ -758,10 +735,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
                 "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
-        given(this.serviceService.getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, service.getMrn(), service.getInstanceVersion());
 
         ServicePatch servicePatch = new ServicePatch();
         servicePatch.setMrn(service.getMrn() + ":" + service.getInstanceVersion());
@@ -804,10 +778,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
                 "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
-        given(this.serviceService.getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, service.getMrn(), service.getInstanceVersion());
 
         ServicePatch servicePatch = new ServicePatch();
         servicePatch.setMrn(service.getMrn());
@@ -850,10 +821,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
                 "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
-        given(this.serviceService.getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, service.getMrn(), service.getInstanceVersion());
 
         String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
         // For whatever reason there is already an organization that is using the new MRN
@@ -898,10 +866,7 @@ class ServiceControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user",
                 "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        when(org.getId()).thenReturn(1L);
-        given(this.serviceService.getServiceByMrnAndVersion(service.getMrn(), service.getInstanceVersion())).willReturn(service);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, service, service.getMrn(), service.getInstanceVersion());
 
         String newMrn = "urn:mrn:mcp:entity:idp1:dma:instance:nw-nm";
         // For whatever reason there is already another service that is using the new MRN
@@ -938,5 +903,21 @@ class ServiceControllerTests {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(Organization org, String getOrganizationByMrnNoFilterArg1) {
+        given(this.organizationService.getOrganizationByMrnNoFilter(getOrganizationByMrnNoFilterArg1)).willReturn(org);
+        when(org.getId()).thenReturn(1L);
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnAnd2MoreStubs(Organization org, Service service, String getServiceByMrnAndVersionArg1, String getServiceByMrnAndVersionArg2) {
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.serviceService.getServiceByMrnAndVersion(getServiceByMrnAndVersionArg1, getServiceByMrnAndVersionArg2)).willReturn(service);
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByMrnStubs(Organization org, String getByMrnArg1, Service getByMrnReturnValue) {
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterStubs(org, "urn:mrn:mcp:org:idp1:dma");
+        given(this.serviceService.getByMrn(getByMrnArg1)).willReturn(getByMrnReturnValue);
     }
 }
