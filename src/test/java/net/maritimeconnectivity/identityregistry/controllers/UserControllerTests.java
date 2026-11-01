@@ -162,9 +162,7 @@ class UserControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrnNoFilter(org.getMrn())).willReturn(org);
-        given(this.organizationService.getOrganizationByMrn(org.getMrn())).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(org, user, org.getMrn(), "urn:mrn:mcp:user:idp1:dma:thc");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -240,9 +238,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_SERVICE_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(org, user, "urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:user:idp1:dma:thc");
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -283,10 +279,8 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndSaveStubs(org, user, "urn:mrn:mcp:org:idp1:dma");
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        given(this.entityService.save(any())).willReturn(user);
-        when(org.getId()).thenReturn(1L);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -329,10 +323,8 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma@dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma@dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:DMA@dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(org, user, "urn:mrn:mcp:org:idp1:dma@dma", "urn:mrn:mcp:user:idp1:DMA@dma:thc");
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma@dma/user/urn:mrn:mcp:user:idp1:DMA@dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -410,9 +402,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:org1", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:org1")).willReturn(org);
-        given(this.entityService.save(any())).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndSaveStubs(org, user, "urn:mrn:mcp:org:idp1:org1");
 
         // setup mock SMTP server
         Wiser wiser = Wiser.port(smtpServerPort);
@@ -457,9 +447,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(org, user, "urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:user:idp1:dma:thc");
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/user/urn:mrn:mcp:user:idp1:dma:thc").with(authentication(auth))
                     .header("Origin", "bla")
@@ -496,11 +484,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
@@ -541,11 +525,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         this.userController.setEddsaAllowed(true);
 
@@ -588,11 +568,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         this.userController.setEddsaAllowed(false);
 
@@ -637,11 +613,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         this.userController.setRsaAllowed(true);
 
@@ -685,11 +657,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/WeakEC.csr").toPath()));
@@ -731,11 +699,7 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
-        when(org.getId()).thenReturn(1L);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
 
         this.userController.setRsaAllowed(true);
 
@@ -787,12 +751,8 @@ class UserControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken(user.getMrn(), "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
-        given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:thc")).willReturn(user);
+        setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(org, user);
         given(this.entityService.getByMrn("urn:mrn:mcp:user:idp1:dma:other")).willReturn(otherUser);
-        when(org.getId()).thenReturn(1L);
 
         try {
             String csr = new String(Files.readAllBytes(new File("src/test/resources/ecCsr.csr").toPath()));
@@ -815,5 +775,23 @@ class UserControllerTests {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(Organization org, User user, String getOrganizationByMrnArg1, String getByMrnArg1) {
+        given(this.organizationService.getOrganizationByMrn(getOrganizationByMrnArg1)).willReturn(org);
+        given(this.entityService.getByMrn(getByMrnArg1)).willReturn(user);
+        when(org.getId()).thenReturn(1L);
+    }
+
+    private void setupEntityServiceGetByMrnAndGetIdAndGetOrganizationByMrnAnd2MoreStubs(Organization org, User user) {
+        setupTimestampModelGetIdAndGetOrganizationByMrnAndGetByMrnStubs(org, user, "urn:mrn:mcp:org:idp1:dma", "urn:mrn:mcp:user:idp1:dma:thc");
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        given(this.organizationService.getOrganizationByIdNoFilter(1L)).willReturn(org);
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndSaveStubs(Organization org, User user, String getOrganizationByMrnNoFilterArg1) {
+        given(this.organizationService.getOrganizationByMrnNoFilter(getOrganizationByMrnNoFilterArg1)).willReturn(org);
+        given(this.entityService.save(any())).willReturn(user);
+        when(org.getId()).thenReturn(1L);
     }
 }
