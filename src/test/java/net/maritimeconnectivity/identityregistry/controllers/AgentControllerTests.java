@@ -108,15 +108,13 @@ class AgentControllerTests {
 
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
-        given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAnd1MoreStubs(actingOrg, onBehalfOfOrg);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
         given(onBehalfOfOrg.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
         given(this.organizationService.getOrganizationByMrn(actingOrg.getMrn())).willReturn(actingOrg);
         given(this.organizationService.getOrganizationByMrnNoFilter(actingOrg.getMrn())).willReturn(actingOrg);
         given(actingOrg.getMrn()).willReturn("urn:mrn:mcp:org:idp1:agent");
         given(this.agentService.save(any())).willReturn(agent);
-        given(onBehalfOfOrg.getId()).willReturn(2L);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent").with(authentication(auth))
@@ -143,9 +141,7 @@ class AgentControllerTests {
 
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:agent:user", "urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN", "");
 
-        given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
-        given(onBehalfOfOrg.getId()).willReturn(2L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAnd1MoreStubs(actingOrg, onBehalfOfOrg);
 
         try {
             mvc.perform(post("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/agent").with(authentication(auth))
@@ -168,10 +164,8 @@ class AgentControllerTests {
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(organization, agent);
         given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
-        given(this.agentService.getById(3L)).willReturn(agent);
-        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
@@ -198,10 +192,8 @@ class AgentControllerTests {
         String agentJson = JSONSerializer.serialize(agent);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(organization, agent);
         given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
-        given(this.agentService.getById(3L)).willReturn(agent);
-        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
@@ -224,9 +216,7 @@ class AgentControllerTests {
 
         String agentJson = JSONSerializer.serialize(agent);
 
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
-        given(this.agentService.getById(3L)).willReturn(agent);
-        given(organization.getId()).willReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(organization, agent);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
@@ -248,10 +238,8 @@ class AgentControllerTests {
         Organization organization = mock(Organization.class);
 
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(organization, agent);
         given(organization.getMrn()).willReturn("urn:mrn:mcp:org:idp1:dma");
-        given(this.agentService.getById(3L)).willReturn(agent);
-        given(organization.getId()).willReturn(1L);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_ORG_ADMIN", "");
 
@@ -272,9 +260,7 @@ class AgentControllerTests {
 
         Organization organization = mock(Organization.class);
 
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
-        given(this.agentService.getById(3L)).willReturn(agent);
-        given(organization.getId()).willReturn(1L);
+        setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(organization, agent);
 
         Authentication auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
 
@@ -285,5 +271,21 @@ class AgentControllerTests {
         } catch (Exception e) {
             fail(e);
         }
+    }
+
+    private void setupTimestampModelGetIdAndGetByIdStubs(Agent agent, Organization organization) {
+        given(this.agentService.getById(3L)).willReturn(agent);
+        given(organization.getId()).willReturn(1L);
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAndGetByIdStubs(Organization organization, Agent agent) {
+        setupTimestampModelGetIdAndGetByIdStubs(agent, organization);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(organization);
+    }
+
+    private void setupTimestampModelGetIdAndGetOrganizationByMrnNoFilterAnd1MoreStubs(Organization actingOrg, Organization onBehalfOfOrg) {
+        given(this.organizationService.getOrganizationByIdNoFilter(any())).willReturn(actingOrg);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(onBehalfOfOrg);
+        given(onBehalfOfOrg.getId()).willReturn(2L);
     }
 }
