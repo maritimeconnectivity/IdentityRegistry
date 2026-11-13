@@ -194,6 +194,7 @@ public class UserController extends EntityController<User> {
             description = "Update a specific user identity"
     )
     @PreAuthorize("hasRole('USER_ADMIN') and @accessControlUtil.hasAccessToOrg(#orgMrn, 'USER_ADMIN')")
+    @Transactional(rollbackFor = McpBasicRestException.class)
     public ResponseEntity<?> updateUser(HttpServletRequest request, @PathVariable String orgMrn, @PathVariable String userMrn, @Valid @RequestBody User input, BindingResult bindingResult) throws McpBasicRestException {
         ValidateUtil.hasErrors(bindingResult, request);
         if (!userMrn.equalsIgnoreCase(input.getMrn())) {
