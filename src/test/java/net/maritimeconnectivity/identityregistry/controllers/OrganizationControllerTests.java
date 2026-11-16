@@ -297,14 +297,11 @@ class OrganizationControllerTests {
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_ORG_ADMIN");
         Organization mock1 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
         List<Agent> agentList = mock();
-        given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
         given(agentList.iterator()).willReturn(agents.iterator());
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        setupOrganizationServiceGetOrganizationByMrnAnd2MoreStubs(mock1, mock2, agentList, org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
@@ -348,13 +345,10 @@ class OrganizationControllerTests {
         // Create fake authentication object
         Authentication auth = TokenGenerator.generatePreAuthenticatedAuthenticationToken("urn:mrn:mcp:org:idp1:agent", "ROLE_USER");
         Organization mock1 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
         Organization mock2 = mock(Organization.class);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
         List<Agent> agentList = mock();
-        given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
         given(agentList.isEmpty()).willReturn(false);
-        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
+        setupOrganizationServiceGetOrganizationByMrnAnd2MoreStubs(mock1, mock2, agentList, org);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma").with(authentication(auth))
                     .header("Origin", "bla")
@@ -689,5 +683,12 @@ class OrganizationControllerTests {
         } catch (Exception e) {
             fail(e);
         }
+    }
+
+    private void setupOrganizationServiceGetOrganizationByMrnAnd2MoreStubs(Organization mock1, Organization mock2, List<Agent> agentList, Organization org) {
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(mock1);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:agent")).willReturn(mock2);
+        given(this.agentService.getAgentsByIdOnBehalfOfOrgAndIdActingOrg(mock1.getId(), mock2.getId())).willReturn(agentList);
+        given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
     }
 }
