@@ -128,9 +128,7 @@ class MMSControllerTests {
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER", "");
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetByMrnAndGetOrganizationByMrnNoFilterStubs(org, mms);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -168,8 +166,7 @@ class MMSControllerTests {
         // Setup mock returns
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
         given(this.organizationService.getOrganizationByMrn("urn:mrn:mcp:org:idp1:sma")).willReturn(org);
-        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetByMrnStubs(org, mms);
         try {
             mvc.perform(get("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -205,9 +202,7 @@ class MMSControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetByMrnAndGetOrganizationByMrnNoFilterStubs(org, mms);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -245,9 +240,7 @@ class MMSControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_USER_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(mms);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetByMrnAndGetOrganizationByMrnNoFilterStubs(org, mms);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -331,9 +324,7 @@ class MMSControllerTests {
         // Create fake authentication token
         JwtAuthenticationToken auth = TokenGenerator.generateKeycloakToken("urn:mrn:mcp:user:idp1:dma:user", "urn:mrn:mcp:org:idp1:dma", "ROLE_MMS_ADMIN", "");
         // Setup mock returns
-        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
-        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(existingMms);
-        when(org.getId()).thenReturn(1L);
+        setupTimestampModelGetIdAndGetByMrnAndGetOrganizationByMrnNoFilterStubs(org, existingMms);
         try {
             mvc.perform(put("/oidc/api/org/urn:mrn:mcp:org:idp1:dma/mms/urn:mrn:mcp:mms:idp1:dma:test1").with(authentication(auth))
                     .header("Origin", "bla")
@@ -360,5 +351,15 @@ class MMSControllerTests {
         } catch (IOException e) {
             throw new RuntimeException(e.getMessage(), e);
         }
+    }
+
+    private void setupTimestampModelGetIdAndGetByMrnStubs(Organization org, MMS getByMrnReturnValue) {
+        given(this.mmsService.getByMrn("urn:mrn:mcp:mms:idp1:dma:test1")).willReturn(getByMrnReturnValue);
+        when(org.getId()).thenReturn(1L);
+    }
+
+    private void setupTimestampModelGetIdAndGetByMrnAndGetOrganizationByMrnNoFilterStubs(Organization org, MMS getByMrnReturnValue) {
+        setupTimestampModelGetIdAndGetByMrnStubs(org, getByMrnReturnValue);
+        given(this.organizationService.getOrganizationByMrnNoFilter("urn:mrn:mcp:org:idp1:dma")).willReturn(org);
     }
 }
